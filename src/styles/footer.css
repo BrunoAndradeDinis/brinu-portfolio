@@ -1,0 +1,28 @@
+/**
+ * footer.css
+ * Centralizador de Estilização: Rodapé Minimalista Estilo Cowboy Bebop
+ * Todos os valores são estritamente derivados de tokens.css (AD-6).
+ */
+
+.bebop-manga-footer {
+  background-color: var(--color-space-surface-1);
+  border-top: var(--border-technical-thin) solid var(--color-space-border);
+  padding: var(--space-6);
+}
+
+.footer-wrap {
+  max-width: 140rem;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 1.2rem;
+  color: var(--color-muted-gray);
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.bebop-signature {
+  color: var(--color-bebop-amber);
+  letter-spacing: 0.15em;
+}

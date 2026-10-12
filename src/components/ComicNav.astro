@@ -1,0 +1,41 @@
+---
+/**
+ * ComicNav.astro
+ * Barra de navegação superior estilo manga brutalista inspirado em mew.xyz.
+ * Estilos centralizados e desacoplados em src/styles/nav.css.
+ */
+import '../styles/nav.css';
+---
+
+<header class="comic-nav">
+  <div class="comic-nav__brand">
+    <div class="brand-avatar-badge">
+      <img
+        src="/assets/brinu-avatar.jpg"
+        alt="Bruno Dinis (Brinu)"
+        class="brand-avatar-img"
+      />
+    </div>
+    <span class="brand-title font-display">BRUNO DINIS // BRINU</span>
+  </div>
+
+  <nav class="comic-nav__actions" aria-label="Navegação Principal">
+    <a href="#works" class="btn-pill-action font-display">
+      <span>SELECTED WORKS</span>
+      <span aria-hidden="true" class="btn-arrow">▾</span>
+    </a>
+
+    <button
+      type="button"
+      class="btn-circle-menu"
+      aria-label="Abrir Menu de Cenas"
+      onclick="alert('Menu Cockpit em desenvolvimento para a próxima epic!')"
+    >
+      <span class="menu-icon-bars" aria-hidden="true">
+        <span></span>
+        <span></span>
+        <span></span>
+      </span>
+    </button>
+  </nav>
+</header>

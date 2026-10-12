@@ -1,0 +1,67 @@
+---
+/**
+ * StoryboardReel.astro
+ * Seção Selected Works com Tiras de Película 35mm e Cards de Projetos Autorais.
+ * Estilos centralizados e desacoplados em src/styles/storyboard.css.
+ */
+import '../styles/storyboard.css';
+---
+
+<section id="works" class="film-storyboard-section">
+  <div class="section-badge-bar">
+    <span class="comic-section-tag font-mono">[ ACT I // 35MM FILM REEL ]</span>
+    <h2 class="section-title font-display">SELECTED WORKS</h2>
+  </div>
+
+  <div class="film-tracks-container">
+    <!-- Trilho 1 Inclinado -->
+    <div class="film-track rotate-angle-neg">
+      <article class="film-card">
+        <div class="film-card__meta font-mono">
+          <span>REEL 01 // CLOUD BACKEND</span>
+          <span class="pill-badge">DISTRIBUTED</span>
+        </div>
+        <h3 class="film-card__title font-display">AuraStream & Painel Stream</h3>
+        <p class="film-card__desc font-body">
+          Engine de transmissão e infraestrutura de nuvem resiliente operando pipelines de mídia de alta disponibilidade.
+        </p>
+      </article>
+
+      <article class="film-card">
+        <div class="film-card__meta font-mono">
+          <span>REEL 02 // CONCURRENCY</span>
+          <span class="pill-badge">PARSER</span>
+        </div>
+        <h3 class="film-card__title font-display">Quake Log Parser</h3>
+        <p class="film-card__desc font-body">
+          Parser assíncrono de logs de partidas em tempo real construído com TypeScript puro, Docker e testes automatizados.
+        </p>
+      </article>
+    </div>
+
+    <!-- Trilho 2 Inclinado com Parallax Oposto -->
+    <div class="film-track rotate-angle-pos">
+      <article class="film-card film-card--alt">
+        <div class="film-card__meta font-mono">
+          <span>REEL 03 // FRONTEND</span>
+          <span class="pill-badge">GAMIFIED</span>
+        </div>
+        <h3 class="film-card__title font-display">Jokenpo Franky</h3>
+        <p class="film-card__desc font-body">
+          Arena retrô com lógica orientada a eventos, animações táteis a 60 FPS e experiência imersiva de jogo.
+        </p>
+      </article>
+
+      <article class="film-card film-card--alt">
+        <div class="film-card__meta font-mono">
+          <span>REEL 04 // EDITORIAL</span>
+          <span class="pill-badge">NOIR DESIGN</span>
+        </div>
+        <h3 class="film-card__title font-display">The Warriors</h3>
+        <p class="film-card__desc font-body">
+          Design editorial cru de alta fidelidade homenageando o clássico cult, com arquitetura frontend minimalista.
+        </p>
+      </article>
+    </div>
+  </div>
+</section>

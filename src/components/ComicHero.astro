@@ -1,0 +1,88 @@
+---
+/**
+ * ComicHero.astro
+ * Hero Section Carmesim Monumental (#FE0000) com Tipografia Colossal "BRINU" em Preto Sólido.
+ * Estilos centralizados e desacoplados em src/styles/hero.css.
+ */
+import '../styles/hero.css';
+---
+
+<!-- Fita Ticker Tape Contínua de Abertura -->
+<div class="hero-ticker" aria-hidden="true">
+  <div class="hero-ticker__track font-display">
+    <span>• ARCHITECTING RESILIENT DISTRIBUTED SYSTEMS • CREATIVE TECHNOLOGIST • MAGALU CLOUD • PAI DA HELENA • NOIVO • 60 FPS • SEE YOU SPACE COWBOY •</span>
+    <span>• ARCHITECTING RESILIENT DISTRIBUTED SYSTEMS • CREATIVE TECHNOLOGIST • MAGALU CLOUD • PAI DA HELENA • NOIVO • 60 FPS • SEE YOU SPACE COWBOY •</span>
+  </div>
+</div>
+
+<!-- Hero Monumental Carmesim com Tipografia Preta Colossal -->
+<section class="comic-hero" id="hero">
+  <div class="comic-hero__stage">
+    <!-- Letras Monumentais "BRINU" em Preto Sólido -->
+    <h1 class="hero-monument font-display" aria-label="BRINU">
+      <span class="letter">B</span>
+      <span class="letter">R</span>
+      <span class="letter letter--center">
+        I
+        <!-- Personagem / Avatar Integrado no Glifo Central (Estilo Mew.xyz) -->
+        <div class="hero-avatar-cutout">
+          <img
+            src="/assets/brinu-avatar.jpg"
+            alt="Retrato Noir do Bruno"
+            class="avatar-cutout-img"
+          />
+          <span class="avatar-tag font-spray">HELENA'S DAD</span>
+        </div>
+      </span>
+      <span class="letter">N</span>
+      <span class="letter">U</span>
+    </h1>
+
+    <!-- Textos de Canto Estilo Editorial de Quadrinhos (Quarta Imagem) -->
+    <div class="comic-hero__footer">
+      <div class="footer-block footer-block--left">
+        <p class="comic-headline font-display">
+          FOR TOO LONG<br />
+          BORING CODE<br />
+          HAS RULED THE WEB
+        </p>
+        <a href="#works" class="comic-scroll-cta font-mono">
+          <span class="arrow-down">↓</span>
+          <span>THE CRAFT HAS BEGUN</span>
+        </a>
+      </div>
+
+      <div class="footer-block footer-block--right">
+        <p class="comic-headline font-display">
+          TURNING COMPLEX<br />
+          ARCHITECTURES INTO<br />
+          CINEMATIC ART
+        </p>
+        <div class="social-comic-links">
+          <a
+            href="https://github.com/BrunoAndradeDinis"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="social-pill font-mono"
+          >
+            GITHUB
+          </a>
+          <a
+            href="https://linkedin.com/in/brunoandradedinis"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="social-pill font-mono"
+          >
+            LINKEDIN
+          </a>
+          <a
+            href="mailto:bruno.andrade.dinis@gmail.com"
+            class="social-pill font-mono"
+          >
+            E-MAIL
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
