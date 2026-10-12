@@ -1,0 +1,291 @@
+/**
+ * Bebop Brutalist Global Styles & Utilities
+ * Responsive Fluid Viewport Scaling + Layout Utilities + Comic Manga Primitives
+ */
+
+/* ==========================================================================
+   1. RESET & FLUID SCALING
+   ========================================================================== */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --size: 375;
+}
+
+@media (min-width: 650px) {
+  :root {
+    --size: 1800;
+  }
+}
+
+html {
+  font-size: calc(1000vw / var(--size));
+  background-color: var(--color-space-base);
+  color: var(--color-paper-white);
+  font-family: var(--font-body);
+  overflow-x: hidden;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+  background-color: var(--color-space-base);
+  color: var(--color-paper-white);
+  font-family: var(--font-body);
+  line-height: 1.5;
+}
+
+::selection {
+  background-color: var(--color-bebop-red);
+  color: var(--color-paper-white);
+}
+
+/* ==========================================================================
+   2. TYPOGRAPHY CLASSES
+   ========================================================================== */
+
+.font-display {
+  font-family: var(--font-display);
+  font-weight: 900;
+  line-height: 0.92;
+  letter-spacing: -0.03em;
+  text-transform: uppercase;
+}
+
+.font-spray {
+  font-family: var(--font-spray);
+  font-weight: 400;
+  line-height: 1.0;
+  text-transform: uppercase;
+}
+
+.font-mono {
+  font-family: var(--font-mono);
+  font-weight: 400;
+  line-height: 1.5;
+  letter-spacing: 0.04em;
+}
+
+.font-body {
+  font-family: var(--font-body);
+  font-weight: 400;
+  line-height: 1.5;
+  letter-spacing: -0.01em;
+}
+
+/* ==========================================================================
+   3. BRUTALIST BUTTONS & INTERACTIVE PRIMITIVES
+   ========================================================================== */
+
+.btn-brutalist {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-2) var(--space-6);
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: -0.02em;
+  color: var(--color-space-base);
+  background-color: var(--color-contrast-pink);
+  border: var(--border-comic-heavy) solid var(--color-space-base);
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  text-decoration: none;
+  user-select: none;
+  overflow: hidden;
+  box-shadow: 0 0.4rem 0 var(--color-space-base);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast), background-color var(--transition-fast);
+}
+
+.btn-brutalist:hover {
+  transform: translateY(-0.2rem);
+  box-shadow: 0 0.6rem 0 var(--color-space-base);
+}
+
+.btn-brutalist:active {
+  transform: translateY(0.2rem);
+  box-shadow: 0 0.2rem 0 var(--color-space-base);
+}
+
+.btn-brutalist--acid {
+  background-color: var(--color-acid-green);
+  color: var(--color-space-base);
+}
+
+.btn-brutalist--red {
+  background-color: var(--color-bebop-red);
+  color: var(--color-paper-white);
+}
+
+.btn-brutalist--amber {
+  background-color: var(--color-bebop-amber);
+  color: var(--color-space-base);
+}
+
+.btn-brutalist--outline {
+  background-color: transparent;
+  color: var(--color-paper-white);
+  border: var(--border-comic-medium) solid var(--color-paper-white);
+  box-shadow: none;
+}
+
+.btn-brutalist--outline:hover {
+  background-color: var(--color-paper-white);
+  color: var(--color-space-base);
+}
+
+/* Spray reveal overlay effect */
+.h-spray {
+  position: relative;
+  overflow: hidden;
+}
+
+.h-spray__overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background-color: var(--color-bebop-red);
+  color: var(--color-paper-white);
+  clip-path: inset(0 100% 0 0 round var(--radius-pill));
+  transform: scaleY(0.7);
+  transform-origin: left;
+  transition: clip-path 0.35s cubic-bezier(1, 0.26, 0, 1), transform 0.35s cubic-bezier(1, 0.26, 0, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+}
+
+.btn-brutalist:hover .h-spray__overlay,
+.h-spray:hover .h-spray__overlay {
+  clip-path: inset(0 0 0 0 round var(--radius-pill));
+  transform: scaleY(1);
+}
+
+.h-spray__content {
+  position: relative;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+/* ==========================================================================
+   4. HUD & STORYBOARD PRIMITIVES
+   ========================================================================== */
+
+.hud-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-3);
+  background-color: var(--color-space-surface-1);
+  border: 1px solid var(--color-space-border);
+  border-radius: var(--radius-md);
+  color: var(--color-bebop-amber);
+  font-family: var(--font-mono);
+  font-size: 1.2rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.hud-badge--green {
+  color: var(--color-acid-green);
+  border-color: rgba(46, 254, 12, 0.3);
+}
+
+.hud-badge--red {
+  color: var(--color-bebop-red);
+  border-color: rgba(254, 0, 0, 0.4);
+}
+
+/* Storyboard rotation utilities */
+.rotate-angle-pos {
+  transform: rotate(2.5deg);
+  transform-origin: center;
+}
+
+.rotate-angle-neg {
+  transform: rotate(-2.5deg);
+  transform-origin: center;
+}
+
+/* ==========================================================================
+   5. TICKER TAPE MARQUEE
+   ========================================================================== */
+
+@keyframes marquee {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  100% {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+.ticker-tape {
+  width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  user-select: none;
+  background-color: var(--color-bebop-red);
+  color: var(--color-paper-white);
+  border-top: var(--border-comic-medium) solid var(--color-space-base);
+  border-bottom: var(--border-comic-medium) solid var(--color-space-base);
+  padding: var(--space-2) 0;
+  font-family: var(--font-display);
+  font-size: 1.8rem;
+  font-weight: 900;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+  display: flex;
+}
+
+.ticker-tape__track {
+  display: inline-flex;
+  width: max-content;
+  animation: marquee 25s linear infinite;
+  will-change: transform;
+}
+
+.ticker-tape:hover .ticker-tape__track {
+  animation-play-state: paused;
+}
+
+/* ==========================================================================
+   6. ACCESSIBILITY & PREFERS-REDUCED-MOTION
+   ========================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .ticker-tape__track {
+    animation: none !important;
+    transform: none !important;
+  }
+}

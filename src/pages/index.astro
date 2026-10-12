@@ -1,15 +1,323 @@
 ---
+/**
+ * index.astro
+ * Bebop Brutalist Terminal — Portfolio Landing
+ * Showcases fluid typography, token palette, spray hover reveal, CRT overlay, and 35mm storyboard angles.
+ */
 import BaseLayout from '../layouts/BaseLayout.astro';
 ---
 
-<BaseLayout title="Bruno Dinis // Brinu — Portfolio">
-  <main id="main-content">
-    <section id="hero-preview" style="min-height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; background-color: #0B0B12; color: #EDEAE5; font-family: monospace; text-align: center; padding: 2rem;">
-      <p style="color: #E5A93C; font-size: 0.875rem; letter-spacing: 0.2em; text-transform: uppercase; margin-bottom: 0.5rem;">[ SYSTEM INITIALIZED // ASTRO 5 ]</p>
-      <h1 style="font-size: 2.5rem; margin: 0 0 1rem 0; letter-spacing: -0.02em;">Bruno de Andrade Dinis // Brinu</h1>
-      <p style="color: #A5A5B2; max-width: 600px; line-height: 1.6; margin: 0;">
-        Retro-futuristic engineering substrate online. Core infrastructure ready for tokens, motion coordinator, and reactive islands.
+<BaseLayout title="Bruno Dinis // Brinu — Software Engineer & Creative Technologist">
+  <main id="main-content" class="portfolio-container">
+    <!-- Top Cockpit HUD -->
+    <header class="cockpit-hud">
+      <div class="cockpit-hud__left">
+        <span class="hud-badge hud-badge--green">
+          <span class="hud-dot"></span>
+          SYS: ONLINE // ASTRO 5
+        </span>
+        <span class="hud-badge">OP: BRUNO DINIS</span>
+      </div>
+
+      <div class="cockpit-hud__right">
+        <span class="hud-badge hud-badge--red">BOUNTY: 300,000,000₩</span>
+        <button
+          id="crt-toggle-btn"
+          class="hud-badge hud-badge--green crt-toggle-button"
+          type="button"
+          aria-label="Alternar modo CRT"
+          onclick="window.toggleCrtMode && window.toggleCrtMode()"
+        >
+          CRT: <span id="crt-status-text">[ATIVO]</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Hero Monumental Section -->
+    <section class="hero-section" id="hero">
+      <div class="hero-header">
+        <p class="hero-surtitle font-mono">[ 2026 // COCKPIT BEBOP ]</p>
+        <h1 class="hero-title font-display">
+          BRINU
+        </h1>
+        <div class="hero-spray-tag font-spray">
+          <span>// CREATIVE TECHNOLOGIST & BACKEND CRAFTSMAN</span>
+        </div>
+      </div>
+
+      <p class="hero-bio font-body">
+        Engenheiro de Software na <strong>Magalu Cloud</strong>, pai da <strong>Helena</strong> e noivo.
+        Construo arquiteturas resilientes, interfaces de alto impacto visual e experiências web com alma retrofuturista dos anos 90.
       </p>
+
+      <div class="hero-actions">
+        <a href="#projects" class="btn-brutalist h-spray">
+          <div class="h-spray__overlay">
+            <span>BOUNTY BOARD</span>
+          </div>
+          <div class="h-spray__content">
+            <span>EXPLORAR PROJETOS</span>
+            <span aria-hidden="true">→</span>
+          </div>
+        </a>
+
+        <a href="https://github.com/BrunoAndradeDinis" target="_blank" rel="noopener noreferrer" class="btn-brutalist btn-brutalist--acid">
+          <span>GITHUB // BRINU</span>
+        </a>
+      </div>
     </section>
+
+    <!-- Ticker Tape Marquee -->
+    <div class="ticker-tape" aria-hidden="true">
+      <div class="ticker-tape__track">
+        <span>• OPERATOR: BRUNO DINIS • MAGALU CLOUD • PAI DA HELENA • NOIVO • BOUNTY: 300,000,000 WOOLONGS • BEBOP TERMINAL • 60 FPS PERFORMANCE •</span>
+        <span>• OPERATOR: BRUNO DINIS • MAGALU CLOUD • PAI DA HELENA • NOIVO • BOUNTY: 300,000,000 WOOLONGS • BEBOP TERMINAL • 60 FPS PERFORMANCE •</span>
+      </div>
+    </div>
+
+    <!-- Storyboard Angle Preview Panels -->
+    <section id="projects" class="storyboard-preview">
+      <div class="storyboard-grid">
+        <article class="storyboard-card rotate-angle-neg">
+          <div class="storyboard-card__header">
+            <span class="font-mono">[ FRAME 01 // 35MM ]</span>
+            <span class="hud-badge hud-badge--green">SYSTEM ARCHITECTURE</span>
+          </div>
+          <h2 class="storyboard-card__title font-display">AuraStream & Quake Parser</h2>
+          <p class="font-body">
+            Sistemas distribuídos, processamento de logs assíncronos e pipelines resilientes com zero dependências externas supérfluas.
+          </p>
+        </article>
+
+        <article class="storyboard-card rotate-angle-pos">
+          <div class="storyboard-card__header">
+            <span class="font-mono">[ FRAME 02 // LAB ]</span>
+            <span class="hud-badge hud-badge--red">CREATIVE EXPERIMENTS</span>
+          </div>
+          <h2 class="storyboard-card__title font-display">Jokenpo & The Warriors</h2>
+          <p class="font-body">
+            Jogos retrô interativos, lógica orientada a eventos e interfaces ricas desenvolvidas com rigor técnico e animações táteis.
+          </p>
+        </article>
+      </div>
+    </section>
+
+    <!-- Footer Cockpit Telemetry -->
+    <footer class="cockpit-footer font-mono">
+      <div class="cockpit-footer__content">
+        <p>TERMINAL: BRINU.DEV // STATUS: OPERATIONAL</p>
+        <p class="cockpit-footer__quote">"SEE YOU SPACE COWBOY..."</p>
+      </div>
+    </footer>
   </main>
 </BaseLayout>
+
+<style>
+  .portfolio-container {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    background-color: var(--color-space-base);
+    color: var(--color-paper-white);
+    position: relative;
+  }
+
+  /* Cockpit HUD */
+  .cockpit-hud {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--space-4) var(--space-6);
+    border-bottom: var(--border-technical-thin) solid var(--color-space-border);
+    background-color: rgba(17, 17, 30, 0.75);
+    backdrop-filter: blur(8px);
+    position: sticky;
+    top: 0;
+    z-index: var(--z-hud);
+  }
+
+  .cockpit-hud__left,
+  .cockpit-hud__right {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    flex-wrap: wrap;
+  }
+
+  .hud-dot {
+    width: 0.8rem;
+    height: 0.8rem;
+    border-radius: 50%;
+    background-color: var(--color-acid-green);
+    display: inline-block;
+    box-shadow: 0 0 8px var(--color-acid-green);
+  }
+
+  .crt-toggle-button {
+    cursor: pointer;
+    background: transparent;
+    transition: background-color var(--transition-fast), color var(--transition-fast);
+  }
+
+  .crt-toggle-button:hover {
+    background-color: var(--color-acid-green);
+    color: var(--color-space-base);
+  }
+
+  /* Hero Section */
+  .hero-section {
+    padding: var(--space-16) var(--space-6) var(--space-12);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    max-width: 140rem;
+    margin: 0 auto;
+    width: 100%;
+  }
+
+  .hero-header {
+    position: relative;
+    margin-bottom: var(--space-6);
+  }
+
+  .hero-surtitle {
+    color: var(--color-bebop-amber);
+    font-size: 1.4rem;
+    letter-spacing: 0.2em;
+    margin-bottom: var(--space-2);
+  }
+
+  .hero-title {
+    font-size: clamp(6rem, 18vw, 19.5rem);
+    color: var(--color-paper-white);
+    margin: 0;
+    line-height: 0.88;
+    text-shadow: 0 0.5rem 0 var(--color-space-surface-2);
+    user-select: none;
+  }
+
+  .hero-spray-tag {
+    color: var(--color-bebop-red);
+    font-size: clamp(1.6rem, 2.5vw, 2.8rem);
+    letter-spacing: 0.05em;
+    transform: rotate(-2deg);
+    margin-top: calc(-1 * var(--space-2));
+    background-color: var(--color-paper-white);
+    color: var(--color-space-base);
+    padding: var(--space-1) var(--space-3);
+    display: inline-block;
+    border: var(--border-comic-medium) solid var(--color-space-base);
+    border-radius: var(--radius-sm);
+  }
+
+  .hero-bio {
+    max-width: 65rem;
+    font-size: clamp(1.4rem, 1.8vw, 2.0rem);
+    color: var(--color-muted-gray);
+    line-height: 1.6;
+    margin-bottom: var(--space-8);
+  }
+
+  .hero-bio strong {
+    color: var(--color-paper-white);
+  }
+
+  .hero-actions {
+    display: flex;
+    gap: var(--space-4);
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  /* Storyboard Angle Preview */
+  .storyboard-preview {
+    padding: var(--space-16) var(--space-6);
+    max-width: 130rem;
+    margin: 0 auto;
+    width: 100%;
+  }
+
+  .storyboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(32rem, 1fr));
+    gap: var(--space-8);
+  }
+
+  .storyboard-card {
+    background-color: var(--color-space-surface-1);
+    border: var(--border-comic-heavy) solid var(--color-space-base);
+    border-radius: var(--radius-lg);
+    padding: var(--space-6);
+    box-shadow: 0 1rem 0 var(--color-space-surface-2);
+    transition: transform var(--transition-fast);
+  }
+
+  .storyboard-card:hover {
+    transform: translateY(-0.5rem) scale(1.02);
+  }
+
+  .storyboard-card__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-4);
+  }
+
+  .storyboard-card__title {
+    font-size: 2.6rem;
+    margin-bottom: var(--space-3);
+    color: var(--color-paper-white);
+  }
+
+  .storyboard-card p {
+    color: var(--color-muted-gray);
+    font-size: 1.5rem;
+    line-height: 1.5;
+  }
+
+  /* Footer */
+  .cockpit-footer {
+    border-top: var(--border-technical-thin) solid var(--color-space-border);
+    padding: var(--space-6);
+    background-color: var(--color-space-surface-1);
+  }
+
+  .cockpit-footer__content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 140rem;
+    margin: 0 auto;
+    font-size: 1.2rem;
+    color: var(--color-muted-gray);
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+
+  .cockpit-footer__quote {
+    color: var(--color-bebop-amber);
+    letter-spacing: 0.15em;
+  }
+</style>
+
+<script is:inline>
+  // Sync the HUD CRT status text with actual state
+  function updateCrtButtonLabel(enabled) {
+    const textEl = document.getElementById('crt-status-text');
+    if (textEl) {
+      textEl.textContent = enabled ? '[ATIVO]' : '[DESLIGADO]';
+    }
+  }
+
+  // Initial check
+  const isCrt = document.documentElement.getAttribute('data-crt') !== 'false';
+  updateCrtButtonLabel(isCrt);
+
+  // Listen for changes
+  window.addEventListener('crt-mode-change', (e) => {
+    updateCrtButtonLabel(e.detail.enabled);
+  });
+</script>
