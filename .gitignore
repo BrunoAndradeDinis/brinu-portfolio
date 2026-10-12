@@ -25,3 +25,9 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
+
+# BMAD & AI Planning / Brainstorm
+_bmad/
+_bmad-output/
+init.md
+brainstorm-data.md
