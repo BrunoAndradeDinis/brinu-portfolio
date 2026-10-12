@@ -2,11 +2,12 @@
 /**
  * BaseLayout.astro
  * Root HTML shell for the Bebop Brutalist Portfolio.
- * Centralizes design tokens, global styles, Google Fonts typography, and CRT overlay.
+ * Centralizes design tokens, global styles, Google Fonts typography, Intro Preloader, and CRT overlay.
  */
 import '../styles/tokens.css';
 import '../styles/global.css';
 import CrtOverlay from '../components/CrtOverlay.astro';
+import IntroPreloader from '../components/IntroPreloader.astro';
 
 interface Props {
   title?: string;
@@ -39,11 +40,14 @@ const {
     <meta name="description" content={description} />
   </head>
   <body>
+    <!-- Abertura Cinemática com Transição de Cortina "BRINU" -->
+    <IntroPreloader />
+
     <div id="app-root">
       <slot />
     </div>
 
-    <!-- Retro CRT Scanline & Phosphor Overlay -->
+    <!-- Retro CRT Scanline & Phosphor Overlay (Sutil e Atmosférico) -->
     <CrtOverlay />
   </body>
 </html>
