@@ -15,7 +15,7 @@
   <div class="intro-preloader__canvas-wrapper">
     <svg
       class="intro-preloader__svg"
-      viewBox="0 0 1400 420"
+      viewBox="0 0 2000 450"
       preserveAspectRatio="xMidYMid meet"
       aria-hidden="true"
     >
@@ -24,7 +24,7 @@
         <clipPath id="brinu-letters-clip">
           <text
             x="50%"
-            y="72%"
+            y="74%"
             text-anchor="middle"
             class="svg-clip-text"
           >
@@ -36,40 +36,48 @@
       <!-- Grupo com as Imagens Deslizando Horizontalmente Por Dentro das Letras -->
       <g clip-path="url(#brinu-letters-clip)">
         <!-- Fundo escuro interno -->
-        <rect x="0" y="0" width="1400" height="420" fill="var(--color-space-base)" />
+        <rect x="0" y="0" width="2000" height="450" fill="var(--color-space-base)" />
 
         <!-- Trilha de Imagens em Movimento Horizontal Contínuo -->
         <g class="intro-filmstrip-track">
           <image
             href="/assets/brinu-avatar.jpg"
-            x="-200"
+            x="-250"
             y="-50"
             width="550"
-            height="500"
+            height="520"
             preserveAspectRatio="xMidYMid slice"
           />
           <image
             href="/assets/brinu-avatar.jpg"
-            x="350"
+            x="300"
             y="-50"
             width="550"
-            height="500"
+            height="520"
             preserveAspectRatio="xMidYMid slice"
           />
           <image
             href="/assets/brinu-avatar.jpg"
-            x="900"
+            x="850"
             y="-50"
             width="550"
-            height="500"
+            height="520"
             preserveAspectRatio="xMidYMid slice"
           />
           <image
             href="/assets/brinu-avatar.jpg"
-            x="1450"
+            x="1400"
             y="-50"
             width="550"
-            height="500"
+            height="520"
+            preserveAspectRatio="xMidYMid slice"
+          />
+          <image
+            href="/assets/brinu-avatar.jpg"
+            x="1950"
+            y="-50"
+            width="550"
+            height="520"
             preserveAspectRatio="xMidYMid slice"
           />
         </g>
@@ -78,8 +86,8 @@
         <rect
           x="0"
           y="0"
-          width="1400"
-          height="420"
+          width="2000"
+          height="450"
           fill="rgba(var(--color-bebop-red-rgb), 0.15)"
           style="mix-blend-mode: color-burn;"
         />
@@ -88,7 +96,7 @@
       <!-- Contorno Externo das Letras Estilo Quadrinhos -->
       <text
         x="50%"
-        y="72%"
+        y="74%"
         text-anchor="middle"
         class="svg-stroke-text"
       >
@@ -127,14 +135,14 @@
   .intro-preloader__backdrop {
     position: absolute;
     inset: 0;
-    background: radial-gradient(circle at center, var(--color-space-surface-2) 0%, var(--color-space-base) 80%);
+    background-color: var(--color-space-base);
     pointer-events: none;
   }
 
   .intro-preloader__canvas-wrapper {
     position: relative;
     width: 90vw;
-    max-width: 1400px;
+    max-width: 1600px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -150,15 +158,15 @@
   .svg-clip-text {
     font-family: var(--font-display);
     font-weight: 900;
-    font-size: 320px;
-    letter-spacing: -12px;
+    font-size: 260px;
+    letter-spacing: -6px;
   }
 
   .svg-stroke-text {
     font-family: var(--font-display);
     font-weight: 900;
-    font-size: 320px;
-    letter-spacing: -12px;
+    font-size: 260px;
+    letter-spacing: -6px;
     fill: none;
     stroke: rgba(var(--color-paper-white-rgb), 0.15);
     stroke-width: var(--border-comic-medium);
@@ -240,8 +248,9 @@
       }, 900);
     }
 
-    // Abertura com duração automática de ~2.4 segundos
-    const autoTimer = setTimeout(dismissPreloader, 2400);
+    // Abertura com duração automática de ~3.8 segundos (pausada se ?freeze para inspeção e testes)
+    const isFrozen = window.location.search.includes('freeze');
+    const autoTimer = isFrozen ? null : setTimeout(dismissPreloader, 3800);
 
     // Permite ao usuário clicar ou pressionar qualquer tecla para avançar imediatamente
     preloader.addEventListener('click', () => {

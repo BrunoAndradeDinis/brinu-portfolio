@@ -44,15 +44,28 @@
   width: 100%;
 }
 
+/* Palco Tipográfico Central */
+.hero-monument-wrapper {
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: var(--space-4) 0;
+}
+
 /* Tipografia Colossal Monumental em Preto Sólido */
 .hero-monument {
   display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  white-space: nowrap;
   justify-content: space-between;
   align-items: center;
-  font-size: clamp(8rem, 21vw, 26rem);
-  line-height: 0.82;
+  font-size: clamp(6rem, 18vw, 24rem);
+  line-height: 0.85;
   color: var(--color-space-base);
-  margin: var(--space-4) 0;
+  margin: 0;
   user-select: none;
   letter-spacing: -0.04em;
   width: 100%;
@@ -60,29 +73,32 @@
 
 .hero-monument .letter {
   display: inline-block;
-  position: relative;
-}
-
-.letter--center {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+  flex-shrink: 0;
+  line-height: 0.85;
 }
 
 /* Avatar Noir Integrado no Glifo Central */
-.hero-avatar-cutout {
+.hero-avatar-wrapper {
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: clamp(7rem, 14vw, 18rem);
-  height: clamp(7rem, 14vw, 18rem);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  z-index: var(--z-hud);
+  pointer-events: none;
+}
+
+.hero-avatar-cutout {
+  width: clamp(8rem, 15vw, 19rem);
+  height: clamp(8rem, 15vw, 19rem);
   border-radius: var(--radius-lg);
   border: var(--border-comic-thick) solid var(--color-space-base);
   overflow: hidden;
   background-color: var(--color-paper-white);
   box-shadow: var(--shadow-comic-lg);
-  z-index: var(--z-hud);
+  pointer-events: auto;
 }
 
 .avatar-cutout-img {
@@ -93,17 +109,18 @@
 }
 
 .avatar-tag {
-  position: absolute;
-  bottom: -0.2rem;
-  left: 50%;
-  transform: translateX(-50%) rotate(-4deg);
+  margin-top: calc(-1 * var(--space-2));
+  transform: rotate(-4deg);
   background-color: var(--color-bebop-amber);
   color: var(--color-space-base);
-  font-size: 1rem;
+  font-size: clamp(1rem, 1.2vw, 1.4rem);
+  font-weight: 700;
   padding: var(--space-1) var(--space-2);
   white-space: nowrap;
-  border: var(--border-technical-thin) solid var(--color-space-base);
+  border: var(--border-comic-medium) solid var(--color-space-base);
   border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-comic-xs);
+  pointer-events: auto;
 }
 
 /* Footer Editorial com Textos nos Cantos */
