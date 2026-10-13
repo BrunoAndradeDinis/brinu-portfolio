@@ -31,3 +31,7 @@ _bmad/
 _bmad-output/
 init.md
 brainstorm-data.md
+
+# Test artifacts
+scripts/*.png
+

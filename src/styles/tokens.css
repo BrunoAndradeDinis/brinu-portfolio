@@ -44,17 +44,27 @@
   --radius-pill: 2rem;
 
   /* Animations */
-  --animate-marquee: marquee 28s linear infinite;
-  --animate-filmstrip: filmstripPan 3.5s linear infinite;
+  --animate-marquee: marquee 70s linear infinite;
+  --animate-filmstrip: filmstripPan 6s linear infinite;
 
   @keyframes marquee {
-    0% { transform: translate3d(0, 0, 0); }
-    100% { transform: translate3d(-50%, 0, 0); }
+    0% {
+      transform: translate3d(0, 0, 0);
+    }
+
+    100% {
+      transform: translate3d(-50%, 0, 0);
+    }
   }
 
   @keyframes filmstripPan {
-    0% { transform: translateX(0); }
-    100% { transform: translateX(-550px); }
+    0% {
+      transform: translateX(0);
+    }
+
+    100% {
+      transform: translateX(-550px);
+    }
   }
 }
 

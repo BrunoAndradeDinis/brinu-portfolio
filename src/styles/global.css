@@ -7,13 +7,7 @@
    1. RESET & FLUID SCALING
    ========================================================================== */
 
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
+/* Universal reset is handled natively by Tailwind v4 base layer */
 
 html {
   background-color: var(--color-space-base);
@@ -48,8 +42,6 @@ body {
 .font-display {
   font-family: var(--font-display);
   font-weight: 900;
-  line-height: 0.92;
-  letter-spacing: -0.03em;
   text-transform: uppercase;
 }
 
@@ -236,7 +228,7 @@ body {
   white-space: nowrap;
   user-select: none;
   background-color: var(--color-bebop-red);
-  color: var(--color-paper-white);
+  color: var(--color-space-base);
   border-top: var(--border-comic-medium) solid var(--color-space-base);
   border-bottom: var(--border-comic-medium) solid var(--color-space-base);
   padding: var(--space-2) 0;
@@ -246,17 +238,19 @@ body {
   letter-spacing: -0.01em;
   text-transform: uppercase;
   display: flex;
+  transition: color var(--transition-fast);
+  cursor: default;
+}
+
+.ticker-tape:hover {
+  color: var(--color-paper-white);
 }
 
 .ticker-tape__track {
   display: inline-flex;
   width: max-content;
-  animation: marquee 25s linear infinite;
+  animation: marquee 36s linear infinite;
   will-change: transform;
-}
-
-.ticker-tape:hover .ticker-tape__track {
-  animation-play-state: paused;
 }
 
 /* ==========================================================================
