@@ -6,7 +6,7 @@
 
 :root {
   /* Colors: Space Base & Surfaces */
-  --color-space-base: #070612;
+  --color-space-base: #080808;
   --color-space-surface-1: #11111E;
   --color-space-surface-2: #1A1A2E;
   --color-space-border: #2A2A44;
@@ -73,6 +73,10 @@
   --transition-spring: 0.25s cubic-bezier(1, 0.26, 0, 1);
   --transition-smooth: 0.5s cubic-bezier(0.19, 1, 0.22, 1);
   --transition-curtain: 0.85s cubic-bezier(0.85, 0, 0.15, 1);
+
+  /* Layout Dimensions */
+  --height-comic-nav: 7rem;
+  --height-hero-ticker: 4.125rem;
 
   /* Elevation (Z-Index Scale) */
   --z-base: 0;
