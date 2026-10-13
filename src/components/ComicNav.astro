@@ -2,39 +2,45 @@
 /**
  * ComicNav.astro
  * Barra de navegação superior estilo manga brutalista inspirado em mew.xyz.
- * Estilos centralizados e desacoplados em src/styles/nav.css.
+ * Estilizada integralmente via Tailwind CSS v4 & Bebop Design Tokens.
  */
-import '../styles/nav.css';
 ---
 
-<header class="comic-nav">
-  <div class="comic-nav__brand">
-    <div class="brand-avatar-badge">
+<header class="sticky top-0 z-hud flex h-[7rem] w-full items-center justify-between border-b-[0.35rem] border-space-base bg-bebop-red px-6 sm:px-12 select-none box-border">
+  <!-- Brand / Avatar & Nome -->
+  <div class="flex items-center gap-4">
+    <div class="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-full border-4 border-space-base bg-paper-white shadow-[0_3px_0_var(--color-space-base)]">
       <img
         src="/assets/brinu-avatar.jpg"
         alt="Bruno Dinis (Brinu)"
-        class="brand-avatar-img"
+        class="h-full w-full object-cover"
       />
     </div>
-    <span class="brand-title font-display">BRUNO DINIS // BRINU</span>
+    <span class="font-display text-2xl sm:text-3xl font-black tracking-tight text-space-base leading-none">
+      BRUNO DINIS // BRINU
+    </span>
   </div>
 
-  <nav class="comic-nav__actions" aria-label="Navegação Principal">
-    <a href="#works" class="btn-pill-action font-display">
+  <!-- Ações de Navegação -->
+  <nav class="flex items-center gap-4" aria-label="Navegação Principal">
+    <a
+      href="#works"
+      class="inline-flex h-14 items-center gap-2 rounded-full border-4 border-space-base bg-contrast-pink px-6 sm:px-8 font-display text-base sm:text-lg font-black text-space-base shadow-[0_4px_0_var(--color-space-base)] transition-transform duration-150 hover:-translate-y-0.5 active:translate-y-0.5"
+    >
       <span>SELECTED WORKS</span>
-      <span aria-hidden="true" class="btn-arrow">▾</span>
+      <span aria-hidden="true" class="text-sm">▾</span>
     </a>
 
     <button
       type="button"
-      class="btn-circle-menu"
+      class="flex h-14 w-14 shrink-0 items-center justify-center rounded-full border-4 border-space-base bg-acid-green shadow-[0_4px_0_var(--color-space-base)] transition-transform duration-150 hover:-translate-y-0.5 hover:scale-105 active:translate-y-0.5 cursor-pointer"
       aria-label="Abrir Menu de Cenas"
       onclick="alert('Menu Cockpit em desenvolvimento para a próxima epic!')"
     >
-      <span class="menu-icon-bars" aria-hidden="true">
-        <span></span>
-        <span></span>
-        <span></span>
+      <span class="flex flex-col gap-1 w-6" aria-hidden="true">
+        <span class="block h-[3.5px] w-full rounded-sm bg-space-base"></span>
+        <span class="block h-[3.5px] w-full rounded-sm bg-space-base"></span>
+        <span class="block h-[3.5px] w-full rounded-sm bg-space-base"></span>
       </span>
     </button>
   </nav>

@@ -2,14 +2,13 @@
 /**
  * BebopFooter.astro
  * Rodapé minimalista noir inspirado na assinatura clássica de Cowboy Bebop.
- * Estilos centralizados e desacoplados em src/styles/footer.css.
+ * Estilizado integralmente via Tailwind CSS v4 & Bebop Design Tokens.
  */
-import '../styles/footer.css';
 ---
 
-<footer class="bebop-manga-footer">
-  <div class="footer-wrap font-mono">
+<footer class="border-t border-space-border bg-space-surface-1 px-6 py-8 sm:px-12 select-none">
+  <div class="mx-auto flex max-w-[140rem] flex-wrap items-center justify-between gap-4 font-mono text-xs sm:text-sm text-muted-gray">
     <p>BRINU.DEV // BRUNO DE ANDRADE DINIS // 2026</p>
-    <p class="bebop-signature">"SEE YOU SPACE COWBOY..."</p>
+    <p class="tracking-widest text-bebop-amber font-bold">"SEE YOU SPACE COWBOY..."</p>
   </div>
 </footer>

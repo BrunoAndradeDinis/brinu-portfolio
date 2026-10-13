@@ -4,10 +4,10 @@
  * Root HTML shell for the Bebop Brutalist Portfolio.
  * Centralizes design tokens, global styles, Google Fonts typography, Intro Preloader, and CRT overlay.
  */
-import '../styles/tokens.css';
-import '../styles/global.css';
-import CrtOverlay from '../components/CrtOverlay.astro';
-import IntroPreloader from '../components/IntroPreloader.astro';
+import "../styles/tokens.css";
+import "../styles/global.css";
+// import CrtOverlay from '../components/CrtOverlay.astro';
+import IntroPreloader from "../components/IntroPreloader.astro";
 
 interface Props {
   title?: string;
@@ -16,7 +16,7 @@ interface Props {
 
 const {
   title = "Bruno Dinis // Brinu — Software Engineer & Creative Technologist",
-  description = "Portfólio de engenharia de software e experiências digitais de Bruno de Andrade Dinis (Brinu). Foco em TypeScript, React, Astro e arquitetura de alta performance."
+  description = "Portfólio de engenharia de software e experiências digitais de Bruno de Andrade Dinis (Brinu). Foco em TypeScript, React, Astro e arquitetura de alta performance.",
 } = Astro.props;
 ---
 
@@ -48,6 +48,6 @@ const {
     </div>
 
     <!-- Retro CRT Scanline & Phosphor Overlay (Sutil e Atmosférico) -->
-    <CrtOverlay />
+    {/*<CrtOverlay />*/}
   </body>
 </html>

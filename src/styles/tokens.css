@@ -1,23 +1,17 @@
 /**
- * Bebop Brutalist Design System — CSS Custom Properties (Tokens)
+ * Bebop Brutalist Design System — Tailwind CSS v4 Theme Tokens & CSS Custom Properties
  * Invariant AD-6: All styles, colors, dimensions, and shadows are strictly driven by these tokens.
  * Zero hardcoded colors or literal styles allowed.
  */
+@import "tailwindcss";
 
-:root {
-  /* Colors: Space Base & Surfaces */
+@theme {
+  /* Colors */
   --color-space-base: #080808;
   --color-space-surface-1: #11111E;
   --color-space-surface-2: #1A1A2E;
   --color-space-border: #2A2A44;
 
-  /* Colors: RGB Components (para uso controlado em canais alfa/sombras) */
-  --color-space-base-rgb: 7, 6, 18;
-  --color-bebop-red-rgb: 254, 0, 0;
-  --color-acid-green-rgb: 46, 254, 12;
-  --color-paper-white-rgb: 251, 250, 244;
-
-  /* Colors: Vibrant Anime Noir Accents (mew.xyz + Cowboy Bebop) */
   --color-bebop-red: #FE0000;
   --color-bebop-amber: #EBA602;
   --color-acid-green: #2EFE0C;
@@ -33,13 +27,71 @@
   --font-mono: 'Space Mono', 'JetBrains Mono', monospace;
   --font-body: 'Inter', 'Helvetica Neue', sans-serif;
 
-  /* Brutalist Comic Manga Borders */
+  /* Brutalist Comic Manga Shadows & Glows */
+  --shadow-comic-xs: 0 2px 0 #080808;
+  --shadow-comic-sm: 0 3px 0 #080808;
+  --shadow-comic-md: 0 5px 0 #080808;
+  --shadow-comic-lg: 0 8px 0 #080808;
+  --shadow-comic-xl: 0 12px 0 #080808;
+  --shadow-glow-red: 0 8px 0 rgba(254, 0, 0, 0.4);
+  --shadow-glow-green: 0 8px 0 rgba(46, 254, 12, 0.3);
+
+  /* Layout Dimensions */
+  --spacing-comic-nav: 7rem;
+  --spacing-hero-ticker: 4.125rem;
+
+  /* Corner Radii */
+  --radius-pill: 2rem;
+
+  /* Animations */
+  --animate-marquee: marquee 28s linear infinite;
+  --animate-filmstrip: filmstripPan 3.5s linear infinite;
+
+  @keyframes marquee {
+    0% { transform: translate3d(0, 0, 0); }
+    100% { transform: translate3d(-50%, 0, 0); }
+  }
+
+  @keyframes filmstripPan {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-550px); }
+  }
+}
+
+:root {
+  /* Colors */
+  --color-space-base: #080808;
+  --color-space-surface-1: #11111E;
+  --color-space-surface-2: #1A1A2E;
+  --color-space-border: #2A2A44;
+
+  --color-space-base-rgb: 8, 8, 8;
+  --color-bebop-red-rgb: 254, 0, 0;
+  --color-acid-green-rgb: 46, 254, 12;
+  --color-paper-white-rgb: 251, 250, 244;
+
+  --color-bebop-red: #FE0000;
+  --color-bebop-amber: #EBA602;
+  --color-acid-green: #2EFE0C;
+  --color-contrast-pink: #F5B8D4;
+  --color-paper-white: #FBFAF4;
+  --color-muted-gray: #8A8A9E;
+  --color-crt-cyan: #30B5BB;
+  --color-alarm-red: #FF1A1A;
+
+  /* Typography */
+  --font-display: 'Heavitas', 'Syne', 'Cabinet Grotesk', sans-serif;
+  --font-spray: 'spray', 'Permanent Marker', cursive;
+  --font-mono: 'Space Mono', 'JetBrains Mono', monospace;
+  --font-body: 'Inter', 'Helvetica Neue', sans-serif;
+
+  /* Borders */
   --border-comic-thick: 0.7rem;
   --border-comic-heavy: 0.5rem;
   --border-comic-medium: 0.35rem;
   --border-technical-thin: 1px;
 
-  /* Corner Radii */
+  /* Radii */
   --radius-none: 0px;
   --radius-sm: 0.4rem;
   --radius-md: 1.0rem;
@@ -47,38 +99,36 @@
   --radius-pill: 2.0rem;
   --radius-full: 9999px;
 
-  /* Brutalist Comic Manga Shadows & Glows */
-  --shadow-comic-xs: 0 0.2rem 0 var(--color-space-base);
-  --shadow-comic-sm: 0 0.3rem 0 var(--color-space-base);
-  --shadow-comic-md: 0 0.5rem 0 var(--color-space-base);
-  --shadow-comic-lg: 0 0.8rem 0 var(--color-space-base);
-  --shadow-comic-xl: 0 1.2rem 0 var(--color-space-base);
-  --shadow-glow-red: 0 0.8rem 0 rgba(var(--color-bebop-red-rgb), 0.4);
-  --shadow-glow-green: 0 0.8rem 0 rgba(var(--color-acid-green-rgb), 0.3);
+  /* Shadows */
+  --shadow-comic-xs: 0 2px 0 var(--color-space-base);
+  --shadow-comic-sm: 0 3px 0 var(--color-space-base);
+  --shadow-comic-md: 0 5px 0 var(--color-space-base);
+  --shadow-comic-lg: 0 8px 0 var(--color-space-base);
+  --shadow-comic-xl: 0 12px 0 var(--color-space-base);
 
-  /* Spacing Scale (Responsive rem units relative to fluid base) */
-  --space-1: 0.4rem;
-  --space-2: 0.8rem;
-  --space-3: 1.2rem;
-  --space-4: 1.6rem;
-  --space-6: 2.4rem;
-  --space-8: 3.2rem;
-  --space-12: 4.8rem;
-  --space-16: 6.4rem;
-  --space-24: 9.6rem;
-  --space-32: 12.8rem;
+  /* Spacing */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+  --space-24: 6rem;
+  --space-32: 8rem;
 
-  /* Timing & Curves */
+  /* Timing */
   --transition-fast: 0.15s cubic-bezier(0.23, 1, 0.32, 1);
   --transition-spring: 0.25s cubic-bezier(1, 0.26, 0, 1);
   --transition-smooth: 0.5s cubic-bezier(0.19, 1, 0.22, 1);
   --transition-curtain: 0.85s cubic-bezier(0.85, 0, 0.15, 1);
 
-  /* Layout Dimensions */
+  /* Dimensions */
   --height-comic-nav: 7rem;
   --height-hero-ticker: 4.125rem;
 
-  /* Elevation (Z-Index Scale) */
+  /* Elevation */
   --z-base: 0;
   --z-filmstrip: 1;
   --z-stage: 2;

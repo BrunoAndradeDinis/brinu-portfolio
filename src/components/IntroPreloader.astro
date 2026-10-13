@@ -8,7 +8,11 @@
  */
 ---
 
-<div id="intro-preloader" class="intro-preloader" aria-label="Abertura Cinemática">
+<div
+  id="intro-preloader"
+  class="intro-preloader"
+  aria-label="Abertura Cinemática"
+>
   <div class="intro-preloader__backdrop"></div>
 
   <!-- SVG com Máscara Tipográfica Monumental "BRINU" -->
@@ -22,12 +26,7 @@
       <defs>
         <!-- Máscara de Recorte com o Nome "BRINU" -->
         <clipPath id="brinu-letters-clip">
-          <text
-            x="50%"
-            y="74%"
-            text-anchor="middle"
-            class="svg-clip-text"
-          >
+          <text x="50%" y="74%" text-anchor="middle" class="svg-clip-text">
             BRINU
           </text>
         </clipPath>
@@ -36,7 +35,12 @@
       <!-- Grupo com as Imagens Deslizando Horizontalmente Por Dentro das Letras -->
       <g clip-path="url(#brinu-letters-clip)">
         <!-- Fundo escuro interno -->
-        <rect x="0" y="0" width="2000" height="450" fill="var(--color-space-base)" />
+        <rect
+          x="0"
+          y="0"
+          width="2000"
+          height="450"
+          fill="var(--color-space-base)"></rect>
 
         <!-- Trilha de Imagens em Movimento Horizontal Contínuo -->
         <g class="intro-filmstrip-track">
@@ -89,24 +93,20 @@
           width="2000"
           height="450"
           fill="rgba(var(--color-bebop-red-rgb), 0.15)"
-          style="mix-blend-mode: color-burn;"
-        />
+          style="mix-blend-mode: color-burn;"></rect>
       </g>
 
       <!-- Contorno Externo das Letras Estilo Quadrinhos -->
-      <text
-        x="50%"
-        y="74%"
-        text-anchor="middle"
-        class="svg-stroke-text"
-      >
+      <text x="50%" y="74%" text-anchor="middle" class="svg-stroke-text">
         BRINU
       </text>
     </svg>
 
     <div class="intro-preloader__caption">
       <span class="caption-tag font-mono">[ 1996 // SCENE 01 ]</span>
-      <span class="caption-prompt font-mono">CLIQUE OU PRESSIONE QUALQUER TECLA PARA PULAR</span>
+      <span class="caption-prompt font-mono"
+        >CLIQUE OU PRESSIONE QUALQUER TECLA PARA PULAR</span
+      >
     </div>
   </div>
 </div>
@@ -225,7 +225,7 @@
 
 <script is:inline>
   (function () {
-    const preloader = document.getElementById('intro-preloader');
+    const preloader = document.getElementById("intro-preloader");
     if (!preloader) return;
 
     let dismissed = false;
@@ -234,11 +234,11 @@
       if (dismissed) return;
       dismissed = true;
 
-      preloader.classList.add('is-exiting');
-      document.documentElement.classList.add('intro-completed');
+      preloader.classList.add("is-exiting");
+      document.documentElement.classList.add("intro-completed");
 
       // Dispara evento na janela
-      window.dispatchEvent(new CustomEvent('intro-complete'));
+      window.dispatchEvent(new CustomEvent("intro-complete"));
 
       // Remove do DOM após conclusão da animação
       setTimeout(() => {
@@ -249,17 +249,17 @@
     }
 
     // Abertura com duração automática de ~3.8 segundos (pausada se ?freeze para inspeção e testes)
-    const isFrozen = window.location.search.includes('freeze');
+    const isFrozen = window.location.search.includes("freeze");
     const autoTimer = isFrozen ? null : setTimeout(dismissPreloader, 3800);
 
     // Permite ao usuário clicar ou pressionar qualquer tecla para avançar imediatamente
-    preloader.addEventListener('click', () => {
+    preloader.addEventListener("click", () => {
       clearTimeout(autoTimer);
       dismissPreloader();
     });
 
-    window.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' || e.key === ' ' || e.key === 'Enter') {
+    window.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" || e.key === " " || e.key === "Enter") {
         clearTimeout(autoTimer);
         dismissPreloader();
       }

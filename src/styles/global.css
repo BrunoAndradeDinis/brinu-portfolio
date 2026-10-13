@@ -15,18 +15,7 @@
   padding: 0;
 }
 
-:root {
-  --size: 375;
-}
-
-@media (min-width: 650px) {
-  :root {
-    --size: 1800;
-  }
-}
-
 html {
-  font-size: calc(1000vw / var(--size));
   background-color: var(--color-space-base);
   color: var(--color-paper-white);
   font-family: var(--font-body);

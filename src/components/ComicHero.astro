@@ -2,71 +2,76 @@
 /**
  * ComicHero.astro
  * Hero Section Carmesim Monumental (#FE0000) com Tipografia Colossal "BRINU" em Preto Sólido.
- * Estilos centralizados e desacoplados em src/styles/hero.css.
+ * Estilizada integralmente via Tailwind CSS v4 & Bebop Design Tokens.
  */
-import '../styles/hero.css';
 ---
 
 <!-- Fita Ticker Tape Contínua de Abertura -->
-<div class="hero-ticker" aria-hidden="true">
-  <div class="hero-ticker__track font-display">
-    <span>• ARCHITECTING RESILIENT DISTRIBUTED SYSTEMS • CREATIVE TECHNOLOGIST • MAGALU CLOUD • PAI DA HELENA • NOIVO • 60 FPS • SEE YOU SPACE COWBOY •</span>
-    <span>• ARCHITECTING RESILIENT DISTRIBUTED SYSTEMS • CREATIVE TECHNOLOGIST • MAGALU CLOUD • PAI DA HELENA • NOIVO • 60 FPS • SEE YOU SPACE COWBOY •</span>
+<div class="flex h-[4.125rem] w-full items-center overflow-hidden border-b-4 border-space-base bg-bebop-red select-none box-border" aria-hidden="true">
+  <div class="inline-flex shrink-0 items-center whitespace-nowrap animate-marquee font-display text-xl sm:text-2xl font-black tracking-tight text-space-base leading-none">
+    <span class="inline-block shrink-0 whitespace-nowrap pr-8">
+      • ARCHITECTING RESILIENT DISTRIBUTED SYSTEMS • CREATIVE TECHNOLOGIST • MAGALU CLOUD • PAI DA HELENA • NOIVO • 60 FPS • SEE YOU SPACE COWBOY •
+    </span>
+    <span class="inline-block shrink-0 whitespace-nowrap pr-8">
+      • ARCHITECTING RESILIENT DISTRIBUTED SYSTEMS • CREATIVE TECHNOLOGIST • MAGALU CLOUD • PAI DA HELENA • NOIVO • 60 FPS • SEE YOU SPACE COWBOY •
+    </span>
   </div>
 </div>
 
 <!-- Hero Monumental Carmesim com Tipografia Preta Colossal -->
-<section class="comic-hero" id="hero">
-  <div class="comic-hero__stage">
+<section class="relative flex min-h-[calc(100vh-7rem-4.125rem)] flex-col justify-between bg-bebop-red px-6 py-8 sm:px-12 sm:pb-16" id="hero">
+  <div class="mx-auto flex w-full max-w-[160rem] flex-1 flex-col justify-between">
     <!-- Palco Tipográfico com Letras Monumentais e Avatar Centralizado -->
-    <div class="hero-monument-wrapper">
-      <h1 class="hero-monument font-display" aria-label="BRINU">
-        <span class="letter">B</span>
-        <span class="letter">R</span>
-        <span class="letter">I</span>
-        <span class="letter">N</span>
-        <span class="letter">U</span>
+    <div class="relative my-4 flex w-full items-center justify-center">
+      <h1 class="flex w-full select-none flex-row flex-nowrap items-center justify-between whitespace-nowrap font-display text-[clamp(5rem,16vw,17rem)] font-black leading-[0.85] tracking-[-0.04em] text-space-base" aria-label="BRINU">
+        <span class="inline-block shrink-0 leading-[0.85]">B</span>
+        <span class="inline-block shrink-0 leading-[0.85]">R</span>
+        <span class="inline-block shrink-0 leading-[0.85]">I</span>
+        <span class="inline-block shrink-0 leading-[0.85]">N</span>
+        <span class="inline-block shrink-0 leading-[0.85]">U</span>
       </h1>
 
       <!-- Personagem / Avatar Noir Centralizado Sobreposto ao Glifo Central 'I' -->
-      <div class="hero-avatar-wrapper" aria-hidden="true">
-        <div class="hero-avatar-cutout">
+      <div class="pointer-events-none absolute left-1/2 top-1/2 z-10 flex -translate-x-1/2 -translate-y-1/2 flex-col items-center" aria-hidden="true">
+        <div class="pointer-events-auto h-[clamp(8rem,14vw,14rem)] w-[clamp(8rem,14vw,14rem)] overflow-hidden rounded-2xl border-4 sm:border-[0.5rem] border-space-base bg-paper-white shadow-[0_8px_0_var(--color-space-base)]">
           <img
             src="/assets/brinu-avatar.jpg"
             alt="Retrato Noir do Bruno"
-            class="avatar-cutout-img"
+            class="h-full w-full object-cover contrast-125"
           />
         </div>
-        <span class="avatar-tag font-spray">HELENA'S DAD</span>
+        <span class="pointer-events-auto -mt-2 -rotate-4 rounded-sm border-2 sm:border-[0.25rem] border-space-base bg-bebop-amber px-2.5 py-1 font-spray text-sm sm:text-base font-bold whitespace-nowrap text-space-base shadow-[0_2px_0_var(--color-space-base)]">
+          É uma cilada Brinu!
+        </span>
       </div>
     </div>
 
     <!-- Textos de Canto Estilo Editorial de Quadrinhos (Quarta Imagem) -->
-    <div class="comic-hero__footer">
-      <div class="footer-block footer-block--left">
-        <p class="comic-headline font-display">
+    <div class="mt-8 flex flex-wrap items-end justify-between gap-6">
+      <div class="flex flex-col">
+        <p class="mb-3 font-display text-[clamp(1.2rem,2vw,2rem)] font-extrabold leading-tight tracking-tight text-space-base">
           FOR TOO LONG<br />
           BORING CODE<br />
           HAS RULED THE WEB
         </p>
-        <a href="#works" class="comic-scroll-cta font-mono">
-          <span class="arrow-down">↓</span>
+        <a href="#works" class="inline-flex items-center gap-2 font-mono text-sm font-bold tracking-wider text-space-base transition-opacity hover:opacity-80">
+          <span class="inline-flex h-6 w-6 items-center justify-center rounded-full bg-space-base text-paper-white text-xs">↓</span>
           <span>THE CRAFT HAS BEGUN</span>
         </a>
       </div>
 
-      <div class="footer-block footer-block--right">
-        <p class="comic-headline font-display">
+      <div class="flex flex-col items-start sm:items-end">
+        <p class="mb-3 font-display text-[clamp(1.2rem,2vw,2rem)] font-extrabold leading-tight tracking-tight text-space-base text-left sm:text-right">
           TURNING COMPLEX<br />
           ARCHITECTURES INTO<br />
           CINEMATIC ART
         </p>
-        <div class="social-comic-links">
+        <div class="flex flex-wrap gap-2">
           <a
             href="https://github.com/BrunoAndradeDinis"
             target="_blank"
             rel="noopener noreferrer"
-            class="social-pill font-mono"
+            class="inline-block rounded-full bg-space-base px-3.5 py-1.5 font-mono text-xs font-bold text-paper-white transition-all hover:-translate-y-0.5 hover:bg-paper-white hover:text-space-base"
           >
             GITHUB
           </a>
@@ -74,13 +79,13 @@ import '../styles/hero.css';
             href="https://linkedin.com/in/brunoandradedinis"
             target="_blank"
             rel="noopener noreferrer"
-            class="social-pill font-mono"
+            class="inline-block rounded-full bg-space-base px-3.5 py-1.5 font-mono text-xs font-bold text-paper-white transition-all hover:-translate-y-0.5 hover:bg-paper-white hover:text-space-base"
           >
             LINKEDIN
           </a>
           <a
             href="mailto:bruno.andrade.dinis@gmail.com"
-            class="social-pill font-mono"
+            class="inline-block rounded-full bg-space-base px-3.5 py-1.5 font-mono text-xs font-bold text-paper-white transition-all hover:-translate-y-0.5 hover:bg-paper-white hover:text-space-base"
           >
             E-MAIL
           </a>

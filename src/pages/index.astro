@@ -5,15 +5,15 @@
  * Orquestrador limpo e modular das seções principais.
  * Zero código chumbado. Estilos centralizados e desacoplados por componente e domínio.
  */
-import BaseLayout from '../layouts/BaseLayout.astro';
-import ComicNav from '../components/ComicNav.astro';
-import ComicHero from '../components/ComicHero.astro';
-import StoryboardReel from '../components/StoryboardReel.astro';
-import BebopFooter from '../components/BebopFooter.astro';
+import BaseLayout from "../layouts/BaseLayout.astro";
+import ComicNav from "../components/ComicNav.astro";
+import ComicHero from "../components/ComicHero.astro";
+import StoryboardReel from "../components/StoryboardReel.astro";
+import BebopFooter from "../components/BebopFooter.astro";
 ---
 
-<BaseLayout title="Bruno Dinis // Brinu — Software Engineer & Creative Technologist">
-  <main id="main-content" class="bebop-home">
+<BaseLayout title="Brinu - Software Engineer & Creative Technologist">
+  <main id="main-content" class="flex min-h-screen flex-col overflow-x-hidden bg-bebop-red text-space-base">
     <!-- Top Bar Editorial Manga / mew.xyz -->
     <ComicNav />
 
@@ -27,14 +27,3 @@ import BebopFooter from '../components/BebopFooter.astro';
     <BebopFooter />
   </main>
 </BaseLayout>
-
-<style>
-  .bebop-home {
-    background-color: var(--color-bebop-red);
-    color: var(--color-space-base);
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    overflow-x: hidden;
-  }
-</style>
