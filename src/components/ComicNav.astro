@@ -44,9 +44,10 @@
 
     <button
       type="button"
+      id="cockpit-trigger-btn"
       class="flex h-10 w-10 sm:h-14 sm:w-14 shrink-0 items-center justify-center rounded-full border-3 sm:border-4 border-space-base bg-acid-green shadow-[0_3px_0_var(--color-space-base)] transition-transform duration-150 hover:-translate-y-0.5 hover:scale-105 active:translate-y-0.5 cursor-pointer"
-      aria-label="Abrir Menu de Cenas"
-      onclick="alert('Menu Cockpit em desenvolvimento para a próxima epic!')"
+      aria-label="Abrir Menu Cockpit"
+      aria-expanded="false"
     >
       <span
         class="flex flex-col gap-1 sm:gap-1.5 w-4 sm:w-6"
@@ -65,3 +66,19 @@
     </button>
   </nav>
 </header>
+
+<script>
+  const cockpitBtn = document.getElementById("cockpit-trigger-btn");
+  if (cockpitBtn) {
+    cockpitBtn.addEventListener("click", () => {
+      const isExpanded = cockpitBtn.getAttribute("aria-expanded") === "true";
+      cockpitBtn.setAttribute("aria-expanded", String(!isExpanded));
+      window.dispatchEvent(
+        new CustomEvent("cockpit:open", {
+          detail: { isOpen: !isExpanded },
+        })
+      );
+    });
+  }
+</script>
+

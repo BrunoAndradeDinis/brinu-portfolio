@@ -238,6 +238,8 @@
       if (dismissed) return;
       dismissed = true;
 
+      window.removeEventListener("keydown", onKeyDown);
+
       preloaderEl.classList.add("is-exiting");
       document.documentElement.classList.add("intro-completed");
 
@@ -257,18 +259,20 @@
     const isFrozen = window.location.search.includes("freeze");
     const autoTimer = isFrozen ? null : setTimeout(dismissPreloader, 3800);
 
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape" || e.key === " " || e.key === "Enter") {
+        if (autoTimer) clearTimeout(autoTimer);
+        dismissPreloader();
+      }
+    }
+
     // Permite ao usuário clicar ou pressionar qualquer tecla para avançar imediatamente
     preloader.addEventListener("click", () => {
       if (autoTimer) clearTimeout(autoTimer);
       dismissPreloader();
     });
 
-    window.addEventListener("keydown", (e) => {
-      if (e.key === "Escape" || e.key === " " || e.key === "Enter") {
-        if (autoTimer) clearTimeout(autoTimer);
-        dismissPreloader();
-      }
-    });
+    window.addEventListener("keydown", onKeyDown);
   }
 </script>
 

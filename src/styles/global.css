@@ -13,7 +13,7 @@ html {
   background-color: var(--color-space-base);
   color: var(--color-paper-white);
   font-family: var(--font-body);
-  overflow-x: hidden;
+  overflow-x: clip;
   scrollbar-gutter: stable;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -24,7 +24,7 @@ body {
   min-height: 100vh;
   margin: 0;
   padding: 0;
-  overflow-x: hidden;
+  overflow-x: clip;
   background-color: var(--color-space-base);
   color: var(--color-paper-white);
   font-family: var(--font-body);
