@@ -62,6 +62,11 @@ function setupAnchorInterception(): void {
   if (typeof document === 'undefined') return;
 
   handleAnchorClick = (event: MouseEvent) => {
+    // Ignora cliques que não sejam com o botão principal (esquerdo) ou com teclas modificadoras (abrir em nova aba)
+    if (event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) {
+      return;
+    }
+
     const target = event.target as HTMLElement | null;
     const anchor = target?.closest('a[href^="#"]') as HTMLAnchorElement | null;
     if (!anchor) return;
@@ -220,6 +225,10 @@ export function destroyMotionCoordinator(): void {
   if (lenisInstance) {
     lenisInstance.destroy();
     lenisInstance = null;
+  }
+
+  if (typeof document !== 'undefined') {
+    document.documentElement.classList.remove('lenis-stopped');
   }
 
   isInitialized = false;
