@@ -18,8 +18,8 @@
 
   <div class="mx-auto flex max-w-[140rem] flex-col gap-12">
     <!-- Trilho 1 Inclinado -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-8 -rotate-1 transition-transform duration-500 hover:rotate-0">
-      <article class="rounded-2xl border-4 border-bebop-red bg-space-surface-1 p-6 sm:p-8 shadow-[0_8px_0_rgba(254,0,0,0.4)] transition-transform duration-150 hover:-translate-y-1 hover:scale-[1.02]">
+    <div data-reel-track="1" class="grid grid-cols-1 sm:grid-cols-2 gap-8 -rotate-1 transition-transform duration-500 hover:rotate-0">
+      <article data-reel-card class="rounded-2xl border-4 border-bebop-red bg-space-surface-1 p-6 sm:p-8 shadow-[0_8px_0_rgba(254,0,0,0.4)] transition-transform duration-150 hover:-translate-y-1 hover:scale-[1.02]">
         <div class="mb-4 flex items-center justify-between font-mono text-xs text-muted-gray">
           <span>REEL 01 // CLOUD BACKEND</span>
           <span class="rounded-full bg-space-surface-2 px-3 py-1 text-paper-white">DISTRIBUTED</span>
@@ -32,7 +32,7 @@
         </p>
       </article>
 
-      <article class="rounded-2xl border-4 border-bebop-red bg-space-surface-1 p-6 sm:p-8 shadow-[0_8px_0_rgba(254,0,0,0.4)] transition-transform duration-150 hover:-translate-y-1 hover:scale-[1.02]">
+      <article data-reel-card class="rounded-2xl border-4 border-bebop-red bg-space-surface-1 p-6 sm:p-8 shadow-[0_8px_0_rgba(254,0,0,0.4)] transition-transform duration-150 hover:-translate-y-1 hover:scale-[1.02]">
         <div class="mb-4 flex items-center justify-between font-mono text-xs text-muted-gray">
           <span>REEL 02 // CONCURRENCY</span>
           <span class="rounded-full bg-space-surface-2 px-3 py-1 text-paper-white">PARSER</span>
@@ -47,8 +47,8 @@
     </div>
 
     <!-- Trilho 2 Inclinado com Parallax Oposto -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-8 rotate-1 transition-transform duration-500 hover:rotate-0">
-      <article class="rounded-2xl border-4 border-acid-green bg-space-surface-1 p-6 sm:p-8 shadow-[0_8px_0_rgba(46,254,12,0.3)] transition-transform duration-150 hover:-translate-y-1 hover:scale-[1.02]">
+    <div data-reel-track="2" class="grid grid-cols-1 sm:grid-cols-2 gap-8 rotate-1 transition-transform duration-500 hover:rotate-0">
+      <article data-reel-card class="rounded-2xl border-4 border-acid-green bg-space-surface-1 p-6 sm:p-8 shadow-[0_8px_0_rgba(46,254,12,0.3)] transition-transform duration-150 hover:-translate-y-1 hover:scale-[1.02]">
         <div class="mb-4 flex items-center justify-between font-mono text-xs text-muted-gray">
           <span>REEL 03 // FRONTEND</span>
           <span class="rounded-full bg-space-surface-2 px-3 py-1 text-paper-white">GAMIFIED</span>
@@ -61,7 +61,7 @@
         </p>
       </article>
 
-      <article class="rounded-2xl border-4 border-acid-green bg-space-surface-1 p-6 sm:p-8 shadow-[0_8px_0_rgba(46,254,12,0.3)] transition-transform duration-150 hover:-translate-y-1 hover:scale-[1.02]">
+      <article data-reel-card class="rounded-2xl border-4 border-acid-green bg-space-surface-1 p-6 sm:p-8 shadow-[0_8px_0_rgba(46,254,12,0.3)] transition-transform duration-150 hover:-translate-y-1 hover:scale-[1.02]">
         <div class="mb-4 flex items-center justify-between font-mono text-xs text-muted-gray">
           <span>REEL 04 // EDITORIAL</span>
           <span class="rounded-full bg-space-surface-2 px-3 py-1 text-paper-white">NOIR DESIGN</span>
@@ -76,3 +76,58 @@
     </div>
   </div>
 </section>
+
+<script>
+  import { gsap } from "../utils/motion";
+
+  const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  if (!prefersReducedMotion) {
+    const worksSection = document.getElementById("works");
+    const track1 = document.querySelector('[data-reel-track="1"]');
+    const track2 = document.querySelector('[data-reel-track="2"]');
+    const cards = document.querySelectorAll("[data-reel-card]");
+
+    if (worksSection && cards.length > 0) {
+      // Revelação em cascata dos cards com ScrollTrigger
+      gsap.from(cards, {
+        scrollTrigger: {
+          trigger: worksSection,
+          start: "top 80%",
+          toggleActions: "play none none reverse",
+        },
+        y: 35,
+        opacity: 0,
+        duration: 0.8,
+        stagger: 0.15,
+        ease: "power2.out",
+      });
+
+      // Parallax sutil oposto nas tiras de película simulando celuloide 35mm
+      if (track1 && track2) {
+        gsap.to(track1, {
+          scrollTrigger: {
+            trigger: worksSection,
+            start: "top bottom",
+            end: "bottom top",
+            scrub: 1.2,
+          },
+          x: -25,
+          ease: "none",
+        });
+
+        gsap.to(track2, {
+          scrollTrigger: {
+            trigger: worksSection,
+            start: "top bottom",
+            end: "bottom top",
+            scrub: 1.2,
+          },
+          x: 25,
+          ease: "none",
+        });
+      }
+    }
+  }
+</script>
+

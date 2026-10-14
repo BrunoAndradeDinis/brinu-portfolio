@@ -223,28 +223,33 @@
   }
 </style>
 
-<script is:inline>
-  (function () {
-    const preloader = document.getElementById("intro-preloader");
-    if (!preloader) return;
+<script>
+  import { pauseScroll, resumeScroll } from "../utils/motion";
 
+  const preloader = document.getElementById("intro-preloader");
+  if (preloader) {
+    const preloaderEl = preloader;
     let dismissed = false;
+
+    // Trava o scroll no início da cortina
+    pauseScroll();
 
     function dismissPreloader() {
       if (dismissed) return;
       dismissed = true;
 
-      preloader.classList.add("is-exiting");
+      preloaderEl.classList.add("is-exiting");
       document.documentElement.classList.add("intro-completed");
 
-      // Dispara evento na janela
+      // Destrava o scroll ao concluir a cortina
+      resumeScroll();
+
+      // Dispara evento customizado na janela
       window.dispatchEvent(new CustomEvent("intro-complete"));
 
       // Remove do DOM após conclusão da animação
       setTimeout(() => {
-        if (preloader.parentNode) {
-          preloader.parentNode.removeChild(preloader);
-        }
+        preloaderEl.remove();
       }, 900);
     }
 
@@ -254,15 +259,16 @@
 
     // Permite ao usuário clicar ou pressionar qualquer tecla para avançar imediatamente
     preloader.addEventListener("click", () => {
-      clearTimeout(autoTimer);
+      if (autoTimer) clearTimeout(autoTimer);
       dismissPreloader();
     });
 
     window.addEventListener("keydown", (e) => {
       if (e.key === "Escape" || e.key === " " || e.key === "Enter") {
-        clearTimeout(autoTimer);
+        if (autoTimer) clearTimeout(autoTimer);
         dismissPreloader();
       }
     });
-  })();
+  }
 </script>
+

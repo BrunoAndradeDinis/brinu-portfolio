@@ -49,5 +49,19 @@ const {
 
     <!-- Retro CRT Scanline & Phosphor Overlay (Sutil e Atmosférico) -->
     {/*<CrtOverlay />*/}
+
+    <!-- Coordenador de Movimento Unificado (Lenis + GSAP ScrollTrigger) -->
+    <script>
+      import { initMotionCoordinator } from "../utils/motion";
+
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", () => {
+          initMotionCoordinator();
+        });
+      } else {
+        initMotionCoordinator();
+      }
+    </script>
   </body>
 </html>
+
