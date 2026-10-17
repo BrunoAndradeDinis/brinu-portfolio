@@ -50,9 +50,14 @@ const {
     <!-- Retro CRT Scanline & Phosphor Overlay (Sutil e Atmosférico) -->
     {/*<CrtOverlay />*/}
 
-    <!-- Coordenador de Movimento Unificado (Lenis + GSAP ScrollTrigger) -->
+    <!-- Coordenador de Movimento Unificado (Lenis + GSAP ScrollTrigger) & Áudio Nativo -->
     <script>
       import { initMotionCoordinator } from "../utils/motion";
+      import { audioSynth } from "../utils/audio";
+
+      if (typeof window !== "undefined") {
+        (window as unknown as { bebopAudio: typeof audioSynth }).bebopAudio = audioSynth;
+      }
 
       if (document.readyState === "loading") {
         document.addEventListener("DOMContentLoaded", () => {
