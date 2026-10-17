@@ -87,7 +87,7 @@
       </div>
     </div>
 
-    <!-- Painel 2: Narrativa Editorial, Manifesto do Engenheiro & Ficha Técnica -->
+    <!-- Painel 2: Crônica Editorial, Manifesto do Engenheiro & Ficha Técnica -->
     <div
       data-about-content-panel
       class="lg:col-span-7 flex flex-col justify-between rounded-2xl sm:rounded-3xl border border-space-border/80 bg-space-surface-1/40 p-6 sm:p-8 md:p-10 backdrop-blur-xs shadow-comic-md"
@@ -95,10 +95,13 @@
       <div>
         <!-- Cabeçalho do Perfil -->
         <div class="mb-6 border-b border-space-border/60 pb-5">
-          <span class="font-mono text-xs font-bold uppercase tracking-widest text-bebop-amber">
-            // BIOGRAPHICAL DOSSIER • ARCHITECT & MAKER
-          </span>
-          <h3 class="mt-1 font-display text-2xl sm:text-3xl md:text-4xl font-black text-paper-white leading-tight uppercase">
+          <div class="flex items-center gap-2 mb-1.5">
+            <span class="inline-block w-2.5 h-2.5 rounded-full bg-acid-green animate-pulse" aria-hidden="true"></span>
+            <span class="font-mono text-xs font-bold uppercase tracking-widest text-bebop-amber">
+              // BIOGRAPHICAL DOSSIER • ARCHITECT & MAKER
+            </span>
+          </div>
+          <h3 class="font-display text-2xl sm:text-3xl md:text-4xl font-black text-paper-white leading-tight uppercase">
             THE SYSTEM OPERATOR
           </h3>
           <p class="mt-1.5 font-mono text-xs sm:text-sm font-semibold text-acid-green">
@@ -106,29 +109,49 @@
           </p>
         </div>
 
-        <!-- Narrativa Editorial Inicial -->
+        <!-- Crônica Autoral Editorial (Storyboard Narrativo) -->
         <div class="space-y-4 font-body text-sm sm:text-base text-paper-white/90 leading-relaxed mb-8">
           <p>
-            Engenheiro de Software focado em infraestrutura de nuvem resiliente, processamento assíncrono e arquitetura de sistemas distribuídos na <strong class="text-paper-white font-bold">Magalu Cloud</strong>.
+            Engenheiro de Software com foco na arquitetura de sistemas distribuídos de alta disponibilidade, computação em nuvem resiliente e pipelines de mídia assíncrona na <strong class="text-paper-white font-bold underline decoration-bebop-amber decoration-2 underline-offset-4">Magalu Cloud</strong>. Minha rotina é forjada no desafio contínuo de orquestrar streaming 24/7 sem interrupções, domar concorrência pesada e projetar serviços robustos onde falhas simplesmente não são uma opção.
           </p>
           <p>
-            Minha abordagem une o rigor da engenharia de computação — pipelines de streaming ininterrupto 24/7, parsing assíncrono concorrente e orquestração headless via FFmpeg/Xvfb — à paixão pela estética visual analógica dos anos 90, cinema cult e experiências interativas ricas a 60 FPS.
+            Mas a engenharia não termina no terminal de comando. Trago como assinatura uma obsessão estética inspirada no cinema analógico dos anos 90, na narrativa afiada de <em>Cowboy Bebop</em> e no impacto gráfico brutalista dos quadrinhos noir: interfaces táteis, expressivas e fluidas que rejeitam o padrão corporativo asséptico para operar a <strong>60 quadros por segundo</strong>.
           </p>
+          <p>
+            Acima de qualquer arquitetura em nuvem ou cluster distribuído, o que verdadeiramente ancora minha jornada é o centro humano: sou o pai orgulhoso da <strong class="text-contrast-pink font-semibold">Helena 👧❤️</strong> — minha fonte diária de entusiasmo, imaginação e propósito — e noivo apaixonado <span class="text-paper-white font-semibold">💍</span> pela mulher com quem compartilho os melhores capítulos dessa história.
+          </p>
+        </div>
+
+        <!-- Citação / Manifesto Estêncil em Quadrinhos -->
+        <div class="relative mb-8 rounded-xl border-2 border-space-border bg-space-surface-2/60 p-4 sm:p-5 shadow-comic-sm">
+          <div class="absolute -top-3 left-4 rounded bg-bebop-amber px-2 py-0.5 font-mono text-[10px] font-bold text-space-base uppercase tracking-wider shadow-comic-xs">
+            CORE MANIFESTO
+          </div>
+          <blockquote class="font-display text-xs sm:text-sm md:text-base text-paper-white italic font-bold leading-snug pt-1">
+            "Software de altíssimo rendimento arquitetural sem abrir mão de caráter estético, calor humano e alma autoral."
+          </blockquote>
+          <div class="mt-2 text-right font-spray text-sm text-acid-green">
+            — Brinu (Bruno Dinis)
+          </div>
         </div>
 
         <!-- Ficha Técnica do Operador (Estilo Cupom Fiscal / Telemetria Bebop) -->
         <div class="rounded-xl border border-space-border/80 bg-space-base/60 p-5 font-mono text-xs space-y-2.5">
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-muted-gray border-b border-space-border/40 pb-2">
             <span class="text-bebop-amber font-bold uppercase tracking-wider">CURRENT POSITION //</span>
-            <span class="text-paper-white font-semibold">Software Engineer @ Magalu Cloud</span>
+            <span class="text-paper-white font-semibold">Software Engineer @ Magalu Cloud ☁️</span>
           </div>
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-muted-gray border-b border-space-border/40 pb-2">
             <span class="text-acid-green font-bold uppercase tracking-wider">PRIMARY DOMAINS //</span>
-            <span class="text-paper-white font-semibold">Cloud Infrastructure, Video Streaming & Creative UI</span>
+            <span class="text-paper-white font-semibold">Cloud Infrastructure, Video Streaming & Expressive UI</span>
           </div>
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-muted-gray border-b border-space-border/40 pb-2">
             <span class="text-contrast-pink font-bold uppercase tracking-wider">HUMAN CORE //</span>
-            <span class="text-paper-white font-semibold">Pai da Helena 👧❤️ • Noivo 💍</span>
+            <span class="text-paper-white font-semibold">Pai da Helena 👧❤️ • Noivo Apaixonado 💍</span>
+          </div>
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-muted-gray border-b border-space-border/40 pb-2">
+            <span class="text-crt-cyan font-bold uppercase tracking-wider">ESSENTIAL TOOLING //</span>
+            <span class="text-paper-white font-semibold">Go • Node.js/TS • Docker/K8s • FFmpeg • Astro • GSAP</span>
           </div>
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-muted-gray pt-1">
             <span class="text-paper-white/60 font-bold uppercase tracking-wider">PHILOSOPHY //</span>
