@@ -1,0 +1,44 @@
+---
+/**
+ * CreativeLab.astro
+ * ATO 4: CREATIVE LAB — EXPERIMENTOS VISUAIS & ÁUDIO ANALÓGICO
+ * 100% Bebop Design Tokens + Tailwind CSS v4.
+ */
+import CrtTuner from "./lab/CrtTuner";
+---
+
+<section
+  id="lab"
+  class="relative border-t-[0.7rem] border-space-base bg-space-surface-1 px-4 py-16 sm:px-8 sm:py-20 md:px-12 md:py-24 text-paper-white select-none overflow-hidden"
+  aria-label="Creative Lab: Experimentos Visuais e Áudio Analógico"
+>
+  <!-- Faixa Editorial de Cabeçalho do Creative Lab -->
+  <div class="mx-auto mb-12 sm:mb-16 max-w-[140rem]">
+    <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 pb-4 border-b border-space-border/60">
+      <div>
+        <span class="mb-2 block font-mono text-xs sm:text-sm tracking-widest text-bebop-amber uppercase">
+          [ ACT IV // CREATIVE LAB • EXPERIMENTS ]
+        </span>
+        <h2
+          data-lab-title
+          class="font-display text-[clamp(2.2rem,6vw,5rem)] font-black tracking-tight text-paper-white leading-none uppercase"
+        >
+          CREATIVE LAB
+        </h2>
+      </div>
+
+      <div class="flex flex-col sm:items-end text-left sm:text-right font-mono text-xs text-muted-gray">
+        <span class="font-bold text-crt-cyan">STATUS: EXPERIMENTAL // ACTIVE</span>
+        <span class="text-[10px] sm:text-xs text-muted-gray tracking-wider">
+          WEB AUDIO • CRT SHADERS • 60 FPS INTERACTION
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Container de Experimentos do Lab -->
+  <div class="mx-auto max-w-[140rem] space-y-12">
+    <!-- Experimento 1: CRT Frequency Tuner -->
+    <CrtTuner client:visible />
+  </div>
+</section>
