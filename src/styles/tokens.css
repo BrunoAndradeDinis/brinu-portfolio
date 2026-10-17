@@ -43,6 +43,15 @@
   /* Corner Radii */
   --radius-pill: 2rem;
 
+  /* Elevation & Stacking Contexts */
+  --z-base: 0;
+  --z-filmstrip: 1;
+  --z-stage: 2;
+  --z-content: 5;
+  --z-hud: 50;
+  --z-overlay: 100;
+  --z-modal: 9999;
+
   /* Animations */
   --animate-marquee: marquee 70s linear infinite;
   --animate-filmstrip: filmstripPan 6s linear infinite;
@@ -143,7 +152,7 @@
   --z-filmstrip: 1;
   --z-stage: 2;
   --z-content: 5;
-  --z-hud: 10;
-  --z-overlay: 50;
+  --z-hud: 50;
+  --z-overlay: 100;
   --z-modal: 9999;
 }

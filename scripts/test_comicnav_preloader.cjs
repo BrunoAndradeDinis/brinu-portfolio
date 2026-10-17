@@ -63,9 +63,9 @@ async function testComicNavAndPreloader() {
     console.log('✓ Botão Acid Green disparou cockpit:open e atualizou aria-expanded com sucesso');
 
     // ------------------------------------------------------------------
-    // TESTE 3: Sticky Top Bar durante a rolagem
+    // TESTE 3: Comportamento de Rolagem Natural da ComicNav (não-sticky)
     // ------------------------------------------------------------------
-    console.log('\n[CENÁRIO 3] Testando persistência sticky da ComicNav durante rolagem...');
+    console.log('\n[CENÁRIO 3] Testando comportamento de rolagem natural da ComicNav (sem sticky)...');
     await page1.evaluate(() => window.scrollTo(0, 600));
     await page1.waitForTimeout(300);
 
@@ -82,8 +82,9 @@ async function testComicNavAndPreloader() {
     });
 
     assert(navPosition, 'Header deve existir');
-    assert.strictEqual(navPosition.top, 0, 'Header sticky deve permanecer exatamente em top: 0');
-    console.log(`✓ ComicNav permaneceu em top: 0px (position: ${navPosition.position}, z-index: ${navPosition.zIndex})`);
+    assert.strictEqual(navPosition.position, 'relative', 'Header deve possuir position: relative');
+    assert(navPosition.top < 0, 'Header deve rolar naturalmente para fora do viewport ao scrollar');
+    console.log(`✓ ComicNav rolou naturalmente com a página (position: ${navPosition.position}, top: ${navPosition.top}px, z-index: ${navPosition.zIndex})`);
 
     await context1.close();
 
