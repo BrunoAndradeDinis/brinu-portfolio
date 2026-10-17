@@ -8,6 +8,7 @@ import "../styles/tokens.css";
 import "../styles/global.css";
 // import CrtOverlay from '../components/CrtOverlay.astro';
 import IntroPreloader from "../components/IntroPreloader.astro";
+import RightClickGuard from "../components/RightClickGuard";
 
 interface Props {
   title?: string;
@@ -46,6 +47,9 @@ const {
     <div id="app-root">
       <slot />
     </div>
+
+    <!-- Intercepção Divertida do Botão Direito (Guia para F12 / DevTools) -->
+    <RightClickGuard client:load />
 
     <!-- Retro CRT Scanline & Phosphor Overlay (Sutil e Atmosférico) -->
     {/*<CrtOverlay />*/}
