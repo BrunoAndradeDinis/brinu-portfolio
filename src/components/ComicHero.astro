@@ -51,17 +51,21 @@
         <span class="inline-block shrink-0 leading-[0.85]" aria-hidden="true" data-hero-letter="U">U</span>
       </h1>
 
-      <!-- Personagem / Avatar Noir Centralizado Sobreposto ao Glifo Central 'I' -->
+      <!-- Posicionador Centralizado Absoluto (Isola -translate-x/y de interferências de GSAP) -->
       <div
-        id="hero-avatar-badge"
-        data-hero-avatar
-        role="button"
-        tabindex="0"
-        aria-label="Avatar oficial de Bruno Dinis recortado em celuloide com carimbo Helena's Dad. Clique para interagir."
-        aria-haspopup="true"
-        aria-expanded="false"
-        class="group absolute left-1/2 top-1/2 z-10 flex -translate-x-1/2 -translate-y-1/2 flex-col items-center cursor-pointer select-none transition-transform duration-300 ease-out hover:scale-105 active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-space-base"
+        class="absolute left-1/2 top-1/2 z-10 -translate-x-1/2 -translate-y-1/2 pointer-events-auto"
       >
+        <!-- Personagem / Avatar Noir Centralizado Sobreposto ao Glifo Central 'I' -->
+        <div
+          id="hero-avatar-badge"
+          data-hero-avatar
+          role="button"
+          tabindex="0"
+          aria-label="Avatar oficial de Bruno Dinis recortado em celuloide com carimbo Helena's Dad. Clique para interagir."
+          aria-haspopup="true"
+          aria-expanded="false"
+          class="group flex flex-col items-center cursor-pointer select-none transition-transform duration-300 ease-out hover:scale-105 active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-space-base"
+        >
         <!-- Balão Comic Falante de Microinteração Tátil -->
         <div
           id="avatar-comic-bubble"
@@ -128,6 +132,7 @@
         </div>
       </div>
     </div>
+  </div>
 
     <!-- Textos de Canto Estilo Editorial de Quadrinhos (Quarta Imagem) -->
     <div
