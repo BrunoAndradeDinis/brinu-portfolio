@@ -5,6 +5,7 @@
  * ATO 3: OPERATOR DOSSIER // LOG 1996
  * 100% Bebop Design Tokens + Tailwind CSS v4.
  */
+import SkillsGrid from "./SkillsGrid.astro";
 ---
 
 <section
@@ -161,6 +162,11 @@
       </div>
     </div>
   </div>
+
+  <!-- Matriz de Habilidades em Vinhetas de HQ -->
+  <div class="mx-auto max-w-[140rem]">
+    <SkillsGrid />
+  </div>
 </section>
 
 <script>
@@ -177,6 +183,7 @@
     const aboutSection = document.getElementById("about");
     const avatarPanel = document.querySelector("[data-about-avatar-panel]");
     const contentPanel = document.querySelector("[data-about-content-panel]");
+    const skillsMatrix = document.querySelector("[data-skills-matrix]");
 
     if (aboutSection && avatarPanel && contentPanel) {
       gsap.fromTo(
@@ -192,6 +199,25 @@
           y: 0,
           duration: 0.8,
           stagger: 0.2,
+          ease: "power2.out",
+          force3D: true,
+        }
+      );
+    }
+
+    if (skillsMatrix) {
+      gsap.fromTo(
+        skillsMatrix,
+        { opacity: 0, y: 30 },
+        {
+          scrollTrigger: {
+            trigger: skillsMatrix,
+            start: "top 85%",
+            once: true,
+          },
+          opacity: 1,
+          y: 0,
+          duration: 0.8,
           ease: "power2.out",
           force3D: true,
         }
