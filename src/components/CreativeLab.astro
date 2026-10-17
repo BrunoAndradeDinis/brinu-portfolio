@@ -19,7 +19,7 @@ import CyberDeck from "./lab/CyberDeck";
     <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 pb-4 border-b border-space-border/60">
       <div>
         <span class="mb-2 block font-mono text-xs sm:text-sm tracking-widest text-bebop-amber uppercase">
-          [ ACT IV // CREATIVE LAB • EXPERIMENTS ]
+          [ ACT IV // CREATIVE LAB • EXPERIMENTS & ANALOG AUDIO ]
         </span>
         <h2
           data-lab-title
@@ -32,21 +32,87 @@ import CyberDeck from "./lab/CyberDeck";
       <div class="flex flex-col sm:items-end text-left sm:text-right font-mono text-xs text-muted-gray">
         <span class="font-bold text-crt-cyan">STATUS: EXPERIMENTAL // ACTIVE</span>
         <span class="text-[10px] sm:text-xs text-muted-gray tracking-wider">
-          WEB AUDIO • CRT SHADERS • 60 FPS INTERACTION
+          WEB AUDIO • CRT SHADERS • THREE.JS • 60 FPS
         </span>
       </div>
+    </div>
+
+    <!-- Barra de Navegação Rápida do Laboratório -->
+    <div
+      data-lab-nav
+      class="mt-6 flex flex-wrap items-center gap-2.5 sm:gap-3 text-xs font-mono"
+      aria-label="Atalhos de navegação entre os experimentos do Creative Lab"
+    >
+      <span class="text-muted-gray uppercase text-[11px] font-bold mr-1">
+        EXPERIMENT INDEX //
+      </span>
+
+      <a
+        href="#lab-crt-tuner"
+        data-nav-tuner
+        class="px-3 py-1.5 rounded-lg border border-space-border bg-space-surface-2/80 text-paper-white font-bold hover:border-acid-green hover:text-acid-green transition-all shadow-comic-xs"
+      >
+        01 // CRT TUNER
+      </a>
+
+      <a
+        href="#lab-sonar-radar"
+        data-nav-sonar
+        class="px-3 py-1.5 rounded-lg border border-space-border bg-space-surface-2/80 text-paper-white font-bold hover:border-acid-green hover:text-acid-green transition-all shadow-comic-xs"
+      >
+        02 // BOUNTY SONAR
+      </a>
+
+      <a
+        href="#lab-cyber-deck"
+        data-nav-deck
+        class="px-3 py-1.5 rounded-lg border border-space-border bg-space-surface-2/80 text-paper-white font-bold hover:border-acid-green hover:text-acid-green transition-all shadow-comic-xs"
+      >
+        03 // ZERO-G DECK
+      </a>
     </div>
   </div>
 
   <!-- Container de Experimentos do Lab -->
-  <div class="mx-auto max-w-[140rem] space-y-12">
+  <div class="mx-auto max-w-[140rem] space-y-16">
     <!-- Experimento 1: CRT Frequency Tuner -->
-    <CrtTuner client:visible />
+    <div id="lab-crt-tuner" class="scroll-mt-28">
+      <CrtTuner client:visible />
+    </div>
 
     <!-- Experimento 2: Bounty Sonar Radar -->
-    <SonarRadar client:visible />
+    <div id="lab-sonar-radar" class="scroll-mt-28">
+      <SonarRadar client:visible />
+    </div>
 
     <!-- Experimento 3: Zero-G Cyber Deck (Cartucho 3D) -->
-    <CyberDeck client:visible />
+    <div id="lab-cyber-deck" class="scroll-mt-28">
+      <CyberDeck client:visible />
+    </div>
+  </div>
+
+  <!-- Barra de Diagnóstico e Telemetria de Hardware do Laboratório -->
+  <div class="mx-auto mt-16 max-w-[140rem] pt-8 border-t border-space-border/50 font-mono text-xs text-muted-gray">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="rounded-xl border border-space-border/60 bg-space-surface-2/60 p-4">
+        <span class="text-[10px] text-muted-gray uppercase block">GRAPHICS SUBSYSTEM</span>
+        <span class="font-bold text-crt-cyan">WEBGL 2.0 & CANVAS 2D</span>
+      </div>
+
+      <div class="rounded-xl border border-space-border/60 bg-space-surface-2/60 p-4">
+        <span class="text-[10px] text-muted-gray uppercase block">AUDIO SYNTH ENGINE</span>
+        <span class="font-bold text-acid-green">PURE WEB AUDIO (AD-4)</span>
+      </div>
+
+      <div class="rounded-xl border border-space-border/60 bg-space-surface-2/60 p-4">
+        <span class="text-[10px] text-muted-gray uppercase block">DETERMINISTIC RATE</span>
+        <span class="font-bold text-bebop-amber">60 FPS REALTIME TARGET</span>
+      </div>
+
+      <div class="rounded-xl border border-space-border/60 bg-space-surface-2/60 p-4">
+        <span class="text-[10px] text-muted-gray uppercase block">MEMORY LIFECYCLE</span>
+        <span class="font-bold text-paper-white">DISPOSE ACTIVE (AD-1 & AD-3)</span>
+      </div>
+    </div>
   </div>
 </section>
