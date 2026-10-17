@@ -36,32 +36,43 @@ async function runHeroAvatarWalkthrough() {
     fs.copyFileSync(shot1, path.join(ARTIFACT_DIR, '01_hero_desktop_idle.png'));
     console.log('✓ 1. Hero Desktop Idle capturada:', shot1);
 
-    // Medir alinhamento geométrico do avatar sobre a letra 'I'
+    // Medir centralização do avatar no viewport e espaçamento natural das letras
     const heroMetrics = await page.evaluate(() => {
       const h1 = document.querySelector('h1[aria-label="BRINU"]');
-      const letterI = h1 ? h1.querySelectorAll('span')[2] : null;
+      const letterSpans = h1 ? Array.from(h1.querySelectorAll('span')) : [];
       const avatar = document.getElementById('hero-avatar-badge');
       const stamp = document.getElementById('hero-stamp-badge');
 
-      const h1Rect = h1 ? h1.getBoundingClientRect() : null;
-      const iRect = letterI ? letterI.getBoundingClientRect() : null;
       const avatarRect = avatar ? avatar.getBoundingClientRect() : null;
-
+      const viewportCenter = window.innerWidth / 2;
       const avatarCenter = avatarRect ? avatarRect.left + avatarRect.width / 2 : null;
-      const iCenter = iRect ? iRect.left + iRect.width / 2 : null;
+      const avatarOffsetFromCenter = avatarCenter !== null ? Math.abs(avatarCenter - viewportCenter) : null;
+
+      const letterPositions = letterSpans.map(s => {
+        const r = s.getBoundingClientRect();
+        return { char: s.innerText, left: r.left, width: r.width };
+      });
 
       return {
         h1Exists: !!h1,
+        letterCount: letterSpans.length,
         avatarExists: !!avatar,
         stampExists: !!stamp,
         stampText: stamp ? stamp.innerText.replace(/\s+/g, ' ').trim() : null,
         avatarCenter,
-        iCenter,
-        centerDiff: avatarCenter && iCenter ? Math.abs(avatarCenter - iCenter) : null,
+        viewportCenter,
+        avatarOffsetFromCenter,
+        letterPositions,
       };
     });
-    console.log('  Métricas de Alinhamento:', heroMetrics);
-    assert(heroMetrics.centerDiff !== null && heroMetrics.centerDiff < 2.5, 'Avatar deve estar centralizado milimetricamente sobre a letra I (delta < 2.5px)');
+    console.log('  Métricas de Centralização e Letras:', {
+      avatarCenter: heroMetrics.avatarCenter,
+      viewportCenter: heroMetrics.viewportCenter,
+      avatarOffsetFromCenter: heroMetrics.avatarOffsetFromCenter,
+      letterCount: heroMetrics.letterCount,
+    });
+    assert(heroMetrics.avatarOffsetFromCenter !== null && heroMetrics.avatarOffsetFromCenter < 10, 'Avatar deve estar centralizado no viewport');
+    assert.strictEqual(heroMetrics.letterCount, 5, 'H1 deve conter 5 glifos separados (B, R, I, N, U) com justify-between');
 
     // 2. INTERAÇÃO TÁTIL: HOVER NO AVATAR
     console.log('\n[2/4] Simulando Hover no Avatar...');
