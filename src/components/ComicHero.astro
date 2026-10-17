@@ -6,25 +6,19 @@
  */
 ---
 
-<!-- Fita Ticker Tape Contínua de Abertura -->
+<!-- Fita Ticker Tape Contínua de Abertura (GPU-Accelerated 60 FPS) -->
 <div
   class="group flex h-[4.125rem] w-full items-center overflow-hidden border-t-3 border-b-6 border-space-base bg-bebop-red select-none box-border cursor-default"
   aria-hidden="true"
 >
   <div
-    class="inline-flex shrink-0 items-center whitespace-nowrap animate-marquee font-display text-base sm:text-xl lg:text-2xl tracking-wider text-space-base transition-colors duration-300 group-hover:text-paper-white leading-none"
+    class="inline-flex shrink-0 items-center whitespace-nowrap animate-marquee font-display text-base sm:text-xl lg:text-2xl tracking-wider text-space-base transition-colors duration-300 group-hover:text-paper-white group-hover:[animation-play-state:paused] leading-none will-change-transform"
   >
     <span class="inline-block shrink-0 whitespace-nowrap pr-12 sm:pr-16">
-      • SOFTWARE ENGINEER • CREATIVE TECHNOLOGIST • DISTRIBUTED SYSTEMS
-      ARCHITECTURE • FULL STACK DEVELOPMENT • HIGH PERFORMANCE (60 FPS) • CLOUD
-      &amp; DEVOPS • TYPESCRIPT • NODE.JS • REACT • ASTRO • DOCKER • RESILIENT
-      APIS •
+      • ARCHITECTING RESILIENT DISTRIBUTED SYSTEMS • CREATIVE TECHNOLOGIST • MAGALU CLOUD • PAI DA HELENA • NOIVO • 60 FPS • SEE YOU SPACE COWBOY •
     </span>
     <span class="inline-block shrink-0 whitespace-nowrap pr-12 sm:pr-16">
-      • SOFTWARE ENGINEER • CREATIVE TECHNOLOGIST • DISTRIBUTED SYSTEMS
-      ARCHITECTURE • FULL STACK DEVELOPMENT • HIGH PERFORMANCE (60 FPS) • CLOUD
-      &amp; DEVOPS • TYPESCRIPT • NODE.JS • REACT • ASTRO • DOCKER • RESILIENT
-      APIS •
+      • ARCHITECTING RESILIENT DISTRIBUTED SYSTEMS • CREATIVE TECHNOLOGIST • MAGALU CLOUD • PAI DA HELENA • NOIVO • 60 FPS • SEE YOU SPACE COWBOY •
     </span>
   </div>
 </div>
@@ -137,7 +131,7 @@
     <div
       class="mt-4 sm:mt-8 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-5 sm:gap-6 md:gap-8 pt-2 sm:pt-4"
     >
-      <!-- Canto Inferior Esquerdo -->
+      <!-- Canto Inferior Esquerdo: Manifesto "BORING CODE" & Âncora de Ação -->
       <div
         class="flex flex-col items-start text-left max-w-full sm:max-w-[48%] lg:max-w-md shrink-0"
       >
@@ -150,17 +144,19 @@
         </p>
         <a
           href="#works"
-          class="inline-flex items-center gap-1.5 sm:gap-2.5 font-mono text-[11px] sm:text-xs md:text-xs lg:text-sm tracking-wider text-space-base transition-opacity hover:opacity-80"
+          class="group/craft inline-flex items-center gap-1.5 sm:gap-2.5 font-mono text-[11px] sm:text-xs md:text-xs lg:text-sm tracking-wider text-space-base transition-opacity hover:opacity-85 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-space-base rounded-full"
+          aria-label="Explorar projetos selecionados: The Craft Has Begun"
         >
           <span
-            class="inline-flex h-4.5 w-4.5 sm:h-6 sm:w-6 items-center justify-center rounded-full bg-space-base text-paper-white text-[9px] sm:text-xs"
+            class="inline-flex h-5 w-5 sm:h-6 sm:w-6 items-center justify-center rounded-full bg-space-base text-paper-white text-[9px] sm:text-xs transition-transform duration-200 group-hover/craft:translate-y-0.5"
+            aria-hidden="true"
             >↓</span
           >
           <span class="font-black">THE CRAFT HAS BEGUN</span>
         </a>
       </div>
 
-      <!-- Canto Inferior Direito -->
+      <!-- Canto Inferior Direito: Manifesto "CINEMATIC ART" & Pílulas Sociais Táteis -->
       <div
         class="flex flex-col items-start sm:items-end text-left sm:text-right max-w-full sm:max-w-[50%] lg:max-w-md shrink-0"
       >
@@ -173,12 +169,15 @@
         </p>
         <div
           class="flex flex-wrap justify-start sm:justify-end gap-1.5 sm:gap-2 lg:gap-2.5"
+          role="list"
+          aria-label="Canais de Contato e Perfis Sociais"
         >
           <a
             href="https://github.com/BrunoAndradeDinis"
             target="_blank"
             rel="noopener noreferrer"
-            class="inline-block rounded-full bg-space-base px-2.5 py-1 sm:px-3 sm:py-1 md:px-3.5 md:py-1.5 lg:px-4 lg:py-1.5 font-mono text-[10px] sm:text-xs md:text-xs lg:text-sm font-bold text-paper-white transition-all hover:-translate-y-0.5 hover:bg-paper-white hover:text-space-base shadow-[0_2px_0_var(--color-space-base)]"
+            class="inline-block rounded-full bg-space-base px-2.5 py-1 sm:px-3 sm:py-1 md:px-3.5 md:py-1.5 lg:px-4 lg:py-1.5 font-mono text-[10px] sm:text-xs md:text-xs lg:text-sm font-bold text-paper-white transition-all duration-150 hover:-translate-y-0.5 hover:bg-paper-white hover:text-space-base shadow-[0_2px_0_var(--color-space-base)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-space-base"
+            aria-label="Perfil do GitHub de Bruno Dinis (abre em nova aba)"
           >
             GITHUB
           </a>
@@ -186,13 +185,15 @@
             href="https://linkedin.com/in/brunoandradedinis"
             target="_blank"
             rel="noopener noreferrer"
-            class="inline-block rounded-full bg-space-base px-2.5 py-1 sm:px-3 sm:py-1 md:px-3.5 md:py-1.5 lg:px-4 lg:py-1.5 font-mono text-[10px] sm:text-xs md:text-xs lg:text-sm font-bold text-paper-white transition-all hover:-translate-y-0.5 hover:bg-paper-white hover:text-space-base shadow-[0_2px_0_var(--color-space-base)]"
+            class="inline-block rounded-full bg-space-base px-2.5 py-1 sm:px-3 sm:py-1 md:px-3.5 md:py-1.5 lg:px-4 lg:py-1.5 font-mono text-[10px] sm:text-xs md:text-xs lg:text-sm font-bold text-paper-white transition-all duration-150 hover:-translate-y-0.5 hover:bg-paper-white hover:text-space-base shadow-[0_2px_0_var(--color-space-base)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-space-base"
+            aria-label="Perfil do LinkedIn de Bruno Dinis (abre em nova aba)"
           >
             LINKEDIN
           </a>
           <a
             href="mailto:bruno.andrade.dinis@gmail.com"
-            class="inline-block rounded-full bg-space-base px-2.5 py-1 sm:px-3 sm:py-1 md:px-3.5 md:py-1.5 lg:px-4 lg:py-1.5 font-mono text-[10px] sm:text-xs md:text-xs lg:text-sm font-bold text-paper-white transition-all hover:-translate-y-0.5 hover:bg-paper-white hover:text-space-base shadow-[0_2px_0_var(--color-space-base)]"
+            class="inline-block rounded-full bg-space-base px-2.5 py-1 sm:px-3 sm:py-1 md:px-3.5 md:py-1.5 lg:px-4 lg:py-1.5 font-mono text-[10px] sm:text-xs md:text-xs lg:text-sm font-bold text-paper-white transition-all duration-150 hover:-translate-y-0.5 hover:bg-paper-white hover:text-space-base shadow-[0_2px_0_var(--color-space-base)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-space-base"
+            aria-label="Enviar e-mail para bruno.andrade.dinis@gmail.com"
           >
             E-MAIL
           </a>
