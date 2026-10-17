@@ -12,8 +12,10 @@
 >
   <!-- Brand / Avatar Micro-Badge & Nome Editorial -->
   <a
+    id="comic-nav-logo"
+    data-brinu-logo
     href="/"
-    class="group flex items-center gap-3 sm:gap-5 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-space-base rounded-full"
+    class="group flex items-center gap-3 sm:gap-5 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-space-base rounded-full cursor-pointer"
     aria-label="Ir para o topo da página — Bruno Dinis (Brinu)"
   >
     <div
@@ -117,10 +119,41 @@
     });
   }
 
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", setupCockpitTrigger);
-  } else {
-    setupCockpitTrigger();
+  function setupCiladaTripleClick() {
+    const logo = document.getElementById("comic-nav-logo");
+    if (!logo) return;
+
+    let clickCount = 0;
+    let timer: ReturnType<typeof setTimeout> | null = null;
+
+    logo.addEventListener("click", (e) => {
+      e.preventDefault();
+      clickCount++;
+      if (timer) clearTimeout(timer);
+
+      if (clickCount >= 3) {
+        clickCount = 0;
+        window.dispatchEvent(new CustomEvent("bebop:cilada-trigger"));
+        return;
+      }
+
+      window.scrollTo({ top: 0, behavior: "smooth" });
+
+      timer = setTimeout(() => {
+        clickCount = 0;
+      }, 1200);
+    });
   }
-  document.addEventListener("astro:page-load", setupCockpitTrigger);
+
+  function initNav() {
+    setupCockpitTrigger();
+    setupCiladaTripleClick();
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initNav);
+  } else {
+    initNav();
+  }
+  document.addEventListener("astro:page-load", initNav);
 </script>
