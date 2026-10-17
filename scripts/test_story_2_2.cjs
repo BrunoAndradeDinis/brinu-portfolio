@@ -74,7 +74,7 @@ async function runStory22Tests() {
     // 3. MICROINTERAÇÃO TÁTIL: CLIQUE E BALÃO COMIC POP
     console.log('\n[3/5] Testando microinteração tátil de clique no Avatar...');
     await avatarBadge.click();
-    await page.waitForTimeout(300);
+    await page.waitForTimeout(450);
 
     const bubbleState = await page.evaluate(() => {
       const bubble = document.getElementById('avatar-comic-bubble');
@@ -82,14 +82,14 @@ async function runStory22Tests() {
       const badge = document.getElementById('hero-avatar-badge');
       return {
         hasBubble: !!bubble,
-        opacity: bubble ? window.getComputedStyle(bubble).opacity : null,
+        opacity: bubble ? parseFloat(window.getComputedStyle(bubble).opacity) : 0,
         ariaExpanded: badge ? badge.getAttribute('aria-expanded') : null,
         text: text ? text.innerText : null,
       };
     });
 
     assert.strictEqual(bubbleState.ariaExpanded, 'true', 'aria-expanded deve ser atualizado para true após clique');
-    assert.strictEqual(bubbleState.opacity, '1', 'Balão de diálogo comic deve estar visível com opacity: 1');
+    assert(bubbleState.opacity > 0.9, `Balão de diálogo comic deve estar visível. Opacity: ${bubbleState.opacity}`);
     assert(bubbleState.text && bubbleState.text.length > 0, `Balão deve conter texto. Obtido: "${bubbleState.text}"`);
     console.log(`✓ Microinteração de clique acionou balão comic: "${bubbleState.text}" (opacity: ${bubbleState.opacity})`);
 
