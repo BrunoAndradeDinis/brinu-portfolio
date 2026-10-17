@@ -1,0 +1,188 @@
+---
+/**
+ * About.astro
+ * Dossiê do Autor: Trajetória Técnica, Avatar Oficial em Moldura HQ & Storyboard Mangá.
+ * ATO 3: OPERATOR DOSSIER // LOG 1996
+ * 100% Bebop Design Tokens + Tailwind CSS v4.
+ */
+---
+
+<section
+  id="about"
+  class="relative border-t-[0.7rem] border-space-base bg-space-base px-4 py-16 sm:px-8 sm:py-20 md:px-12 md:py-24 text-paper-white select-none overflow-hidden"
+  aria-label="Dossiê do Autor: Bruno Dinis"
+>
+  <!-- Faixa Editorial de Cabeçalho de Dossiê -->
+  <div class="mx-auto mb-12 sm:mb-16 max-w-[140rem]">
+    <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 pb-4 border-b border-space-border/60">
+      <div>
+        <span class="mb-2 block font-mono text-xs sm:text-sm tracking-widest text-bebop-amber uppercase">
+          [ ACT II // OPERATOR DOSSIER • LOG 1996 ]
+        </span>
+        <h2
+          data-about-title
+          class="font-display text-[clamp(2.2rem,6vw,5rem)] font-black tracking-tight text-paper-white leading-none uppercase"
+        >
+          DOSSIER: BRINU
+        </h2>
+      </div>
+
+      <div class="flex flex-col sm:items-end text-left sm:text-right font-mono text-xs text-muted-gray">
+        <span class="font-bold text-acid-green">STATUS: ACTIVE // DEPLOYED</span>
+        <span class="text-[10px] sm:text-xs text-muted-gray tracking-wider">
+          MAGALU CLOUD • DISTRIBUTED SYSTEMS • CREATIVE TECHNOLOGIST
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Container Editorial de Dois Painéis Estilizados (Estilo Mangá Noir) -->
+  <div class="mx-auto max-w-[140rem] grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
+    <!-- Painel 1: Moldura do Avatar Oficial com Efeito Celuloide 35mm e Contornos HQ -->
+    <div
+      data-about-avatar-panel
+      class="lg:col-span-5 flex flex-col items-center lg:items-start"
+    >
+      <div
+        class="relative w-full max-w-[24rem] sm:max-w-[26rem] mx-auto lg:mx-0 rounded-2xl sm:rounded-3xl border-4 sm:border-[0.5rem] border-space-base bg-space-surface-2 p-3 sm:p-4 shadow-comic-lg overflow-hidden group transition-transform duration-300 hover:-translate-y-1"
+      >
+        <!-- Overlay de Celuloide / Scanlines Analógicas -->
+        <div
+          class="pointer-events-none absolute inset-0 z-10 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.35)_50%)] bg-[length:100%_4px] opacity-40 mix-blend-overlay"
+          aria-hidden="true"
+        />
+
+        <!-- Carimbo de Identificação Superior 35mm -->
+        <div
+          class="absolute top-4 sm:top-5 right-4 sm:right-5 z-20 rounded bg-space-base/90 border border-space-border/80 px-2.5 py-0.5 font-mono text-[9px] sm:text-[10px] font-bold text-bebop-amber uppercase tracking-wider backdrop-blur-xs"
+        >
+          FRAME // 35MM NOIR
+        </div>
+
+        <!-- Avatar Oficial com Dimensões Explícitas e Proporção Fixa (CLS = 0) -->
+        <div class="relative overflow-hidden rounded-xl sm:rounded-2xl border-2 border-space-base bg-space-base">
+          <img
+            id="about-official-avatar"
+            src="/assets/brinu-avatar.jpg"
+            alt="Retrato oficial ilustrado em estilo mangá noir de Bruno Dinis"
+            width={341}
+            height={394}
+            class="w-full h-auto aspect-[341/394] object-cover filter contrast-[1.05] brightness-[0.98] transition-transform duration-500 group-hover:scale-[1.03]"
+            loading="lazy"
+            decoding="async"
+          />
+        </div>
+
+        <!-- Badge de Operador Inferior Estilo Estêncil -->
+        <div class="mt-3 flex items-center justify-between font-mono text-xs">
+          <span
+            class="inline-flex items-center gap-1.5 rounded border border-space-base bg-bebop-red px-2.5 py-1 text-[11px] font-display font-black text-paper-white shadow-comic-xs uppercase tracking-wide"
+          >
+            <span>OPERATOR: BRINU</span>
+          </span>
+          <span class="text-[10px] sm:text-xs text-muted-gray uppercase font-semibold">
+            ID: BD-1996
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Painel 2: Narrativa Editorial, Manifesto do Engenheiro & Ficha Técnica -->
+    <div
+      data-about-content-panel
+      class="lg:col-span-7 flex flex-col justify-between rounded-2xl sm:rounded-3xl border border-space-border/80 bg-space-surface-1/40 p-6 sm:p-8 md:p-10 backdrop-blur-xs shadow-comic-md"
+    >
+      <div>
+        <!-- Cabeçalho do Perfil -->
+        <div class="mb-6 border-b border-space-border/60 pb-5">
+          <span class="font-mono text-xs font-bold uppercase tracking-widest text-bebop-amber">
+            // BIOGRAPHICAL DOSSIER • ARCHITECT & MAKER
+          </span>
+          <h3 class="mt-1 font-display text-2xl sm:text-3xl md:text-4xl font-black text-paper-white leading-tight uppercase">
+            THE SYSTEM OPERATOR
+          </h3>
+          <p class="mt-1.5 font-mono text-xs sm:text-sm font-semibold text-acid-green">
+            MAGALU CLOUD • DISTRIBUTED SYSTEMS • CREATIVE TECHNOLOGIST
+          </p>
+        </div>
+
+        <!-- Narrativa Editorial Inicial -->
+        <div class="space-y-4 font-body text-sm sm:text-base text-paper-white/90 leading-relaxed mb-8">
+          <p>
+            Engenheiro de Software focado em infraestrutura de nuvem resiliente, processamento assíncrono e arquitetura de sistemas distribuídos na <strong class="text-paper-white font-bold">Magalu Cloud</strong>.
+          </p>
+          <p>
+            Minha abordagem une o rigor da engenharia de computação — pipelines de streaming ininterrupto 24/7, parsing assíncrono concorrente e orquestração headless via FFmpeg/Xvfb — à paixão pela estética visual analógica dos anos 90, cinema cult e experiências interativas ricas a 60 FPS.
+          </p>
+        </div>
+
+        <!-- Ficha Técnica do Operador (Estilo Cupom Fiscal / Telemetria Bebop) -->
+        <div class="rounded-xl border border-space-border/80 bg-space-base/60 p-5 font-mono text-xs space-y-2.5">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-muted-gray border-b border-space-border/40 pb-2">
+            <span class="text-bebop-amber font-bold uppercase tracking-wider">CURRENT POSITION //</span>
+            <span class="text-paper-white font-semibold">Software Engineer @ Magalu Cloud</span>
+          </div>
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-muted-gray border-b border-space-border/40 pb-2">
+            <span class="text-acid-green font-bold uppercase tracking-wider">PRIMARY DOMAINS //</span>
+            <span class="text-paper-white font-semibold">Cloud Infrastructure, Video Streaming & Creative UI</span>
+          </div>
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-muted-gray border-b border-space-border/40 pb-2">
+            <span class="text-contrast-pink font-bold uppercase tracking-wider">HUMAN CORE //</span>
+            <span class="text-paper-white font-semibold">Pai da Helena 👧❤️ • Noivo 💍</span>
+          </div>
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-muted-gray pt-1">
+            <span class="text-paper-white/60 font-bold uppercase tracking-wider">PHILOSOPHY //</span>
+            <span class="text-paper-white italic">"High architectural throughput with uncompromising aesthetic character."</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { gsap } from "../utils/motion";
+
+  let isAboutInitialized = false;
+
+  function setupAboutScroll() {
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (prefersReducedMotion) return;
+    if (isAboutInitialized) return;
+    isAboutInitialized = true;
+
+    const aboutSection = document.getElementById("about");
+    const avatarPanel = document.querySelector("[data-about-avatar-panel]");
+    const contentPanel = document.querySelector("[data-about-content-panel]");
+
+    if (aboutSection && avatarPanel && contentPanel) {
+      gsap.fromTo(
+        [avatarPanel, contentPanel],
+        { opacity: 0, y: 35 },
+        {
+          scrollTrigger: {
+            trigger: aboutSection,
+            start: "top 80%",
+            once: true,
+          },
+          opacity: 1,
+          y: 0,
+          duration: 0.8,
+          stagger: 0.2,
+          ease: "power2.out",
+          force3D: true,
+        }
+      );
+    }
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", setupAboutScroll);
+  } else {
+    setupAboutScroll();
+  }
+  document.addEventListener("astro:page-load", () => {
+    isAboutInitialized = false;
+    setupAboutScroll();
+  });
+</script>

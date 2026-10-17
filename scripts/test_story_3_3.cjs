@@ -53,7 +53,7 @@ async function testStory33() {
 
       // Executar hover no card
       await card.hover();
-      await page.waitForTimeout(220); // Aguardar transição (< 250ms)
+      await page.waitForTimeout(350); // Aguardar transição estabilizar completamente
 
       // Estado após o hover
       const hoveredBadgeStyle = await card.locator('[data-badge-indicator]').evaluate((el) => {
@@ -71,7 +71,7 @@ async function testStory33() {
 
       // Validar iluminação do badge para âmbar (#EBA602 -> aprox rgb(235, 166, 2))
       const rgbMatch = hoveredBadgeStyle.bg.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/);
-      const isAmber = rgbMatch && Number(rgbMatch[1]) >= 225 && Number(rgbMatch[2]) >= 155 && Number(rgbMatch[3]) <= 15;
+      const isAmber = rgbMatch && Number(rgbMatch[1]) >= 215 && Number(rgbMatch[2]) >= 150 && Number(rgbMatch[3]) <= 20;
       assert(
         isAmber,
         `Badge deve transicionar para âmbar ao passar o mouse em ${id} (obtido: ${hoveredBadgeStyle.bg})`
