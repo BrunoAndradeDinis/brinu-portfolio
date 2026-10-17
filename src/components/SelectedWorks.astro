@@ -150,12 +150,27 @@ const track2Cases = PROJECT_CASES.filter((c) => c.track === 2);
           <article
             id={`case-${project.id}`}
             data-reel-card
-            class="flex flex-col justify-between rounded-2xl border-4 border-bebop-red bg-space-surface-1 p-6 sm:p-8 shadow-[0_8px_0_rgba(254,0,0,0.4)] transition-transform duration-150 hover:-translate-y-1 hover:scale-[1.01]"
+            class="group relative flex flex-col justify-between overflow-hidden rounded-2xl border-4 border-bebop-red bg-space-surface-1 p-6 sm:p-8 shadow-[0_8px_0_rgba(254,0,0,0.4)] transition-all duration-200 hover:-translate-y-1.5 hover:shadow-[0_12px_24px_rgba(254,0,0,0.35)]"
           >
-            <div>
+            <!-- CRT Scanline & Distortion Sweep Overlay -->
+            <div
+              data-card-distortion
+              class="pointer-events-none absolute inset-0 z-0 opacity-0 transition-opacity duration-200 group-hover:opacity-100 overflow-hidden"
+              aria-hidden="true"
+            >
+              <!-- Linhas de varredura CRT analógicas -->
+              <div class="absolute inset-0 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.4)_50%)] bg-[length:100%_4px] opacity-40" />
+              <!-- Feixe catódico / Shimmer de distorção suave -->
+              <div class="distortion-scanline absolute inset-x-0 -top-full h-full bg-gradient-to-b from-transparent via-bebop-red/[0.08] to-transparent will-change-transform" />
+            </div>
+
+            <div class="relative z-10">
               <div class="mb-3 flex flex-wrap items-center justify-between gap-2 font-mono text-xs text-muted-gray">
                 <span class="text-bebop-red font-bold">{project.reelNumber} // {project.category}</span>
-                <span class="rounded-full bg-space-surface-2 px-3 py-0.5 text-paper-white font-bold text-[10px] sm:text-xs">
+                <span
+                  data-badge-indicator
+                  class="rounded-full border border-space-border/60 bg-space-surface-2 px-3 py-0.5 text-paper-white font-bold text-[10px] sm:text-xs transition-all duration-200 group-hover:border-bebop-amber group-hover:bg-bebop-amber group-hover:text-space-base group-hover:shadow-[0_0_12px_rgba(235,166,2,0.7)] group-hover:scale-105"
+                >
                   {project.badge}
                 </span>
               </div>
@@ -194,7 +209,7 @@ const track2Cases = PROJECT_CASES.filter((c) => c.track === 2);
               </div>
             </div>
 
-            <div>
+            <div class="relative z-10">
               <!-- Stack Badges -->
               <div class="mb-5 flex flex-wrap gap-1.5 sm:gap-2 font-mono text-[10px] sm:text-xs">
                 {project.stack.map((tech) => (
@@ -232,12 +247,27 @@ const track2Cases = PROJECT_CASES.filter((c) => c.track === 2);
           <article
             id={`case-${project.id}`}
             data-reel-card
-            class="flex flex-col justify-between rounded-2xl border-4 border-acid-green bg-space-surface-1 p-6 sm:p-8 shadow-[0_8px_0_rgba(46,254,12,0.3)] transition-transform duration-150 hover:-translate-y-1 hover:scale-[1.01]"
+            class="group relative flex flex-col justify-between overflow-hidden rounded-2xl border-4 border-acid-green bg-space-surface-1 p-6 sm:p-8 shadow-[0_8px_0_rgba(46,254,12,0.3)] transition-all duration-200 hover:-translate-y-1.5 hover:shadow-[0_12px_24px_rgba(46,254,12,0.35)]"
           >
-            <div>
+            <!-- CRT Scanline & Distortion Sweep Overlay -->
+            <div
+              data-card-distortion
+              class="pointer-events-none absolute inset-0 z-0 opacity-0 transition-opacity duration-200 group-hover:opacity-100 overflow-hidden"
+              aria-hidden="true"
+            >
+              <!-- Linhas de varredura CRT analógicas -->
+              <div class="absolute inset-0 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.4)_50%)] bg-[length:100%_4px] opacity-40" />
+              <!-- Feixe catódico / Shimmer de distorção suave -->
+              <div class="distortion-scanline absolute inset-x-0 -top-full h-full bg-gradient-to-b from-transparent via-acid-green/[0.08] to-transparent will-change-transform" />
+            </div>
+
+            <div class="relative z-10">
               <div class="mb-3 flex flex-wrap items-center justify-between gap-2 font-mono text-xs text-muted-gray">
                 <span class="text-acid-green font-bold">{project.reelNumber} // {project.category}</span>
-                <span class="rounded-full bg-space-surface-2 px-3 py-0.5 text-paper-white font-bold text-[10px] sm:text-xs">
+                <span
+                  data-badge-indicator
+                  class="rounded-full border border-space-border/60 bg-space-surface-2 px-3 py-0.5 text-paper-white font-bold text-[10px] sm:text-xs transition-all duration-200 group-hover:border-bebop-amber group-hover:bg-bebop-amber group-hover:text-space-base group-hover:shadow-[0_0_12px_rgba(235,166,2,0.7)] group-hover:scale-105"
+                >
                   {project.badge}
                 </span>
               </div>
@@ -276,7 +306,7 @@ const track2Cases = PROJECT_CASES.filter((c) => c.track === 2);
               </div>
             </div>
 
-            <div>
+            <div class="relative z-10">
               <!-- Stack Badges -->
               <div class="mb-5 flex flex-wrap gap-1.5 sm:gap-2 font-mono text-[10px] sm:text-xs">
                 {project.stack.map((tech) => (
@@ -311,9 +341,13 @@ const track2Cases = PROJECT_CASES.filter((c) => c.track === 2);
 <script>
   import { gsap } from "../utils/motion";
 
+  let isWorksInitialized = false;
+
   function setupSelectedWorksScroll() {
     const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (prefersReducedMotion) return;
+    if (isWorksInitialized) return;
+    isWorksInitialized = true;
 
     const worksSection = document.getElementById("works");
     const track1 = document.querySelector('[data-reel-track="1"]');
@@ -344,19 +378,23 @@ const track2Cases = PROJECT_CASES.filter((c) => c.track === 2);
       }
 
       // Revelação em cascata dos cards com ScrollTrigger
-      gsap.from(cards, {
-        scrollTrigger: {
-          trigger: worksSection,
-          start: "top 75%",
-          toggleActions: "play none none reverse",
-        },
-        y: 35,
-        opacity: 0,
-        duration: 0.8,
-        stagger: 0.15,
-        ease: "power2.out",
-        force3D: true,
-      });
+      gsap.fromTo(
+        cards,
+        { y: 35, opacity: 0 },
+        {
+          scrollTrigger: {
+            trigger: worksSection,
+            start: "top 80%",
+            once: true,
+          },
+          y: 0,
+          opacity: 1,
+          duration: 0.8,
+          stagger: 0.15,
+          ease: "power2.out",
+          force3D: true,
+        }
+      );
 
       // Parallax sutil oposto nas tiras de película simulando celuloide 35mm
       if (track1 && track2) {
@@ -392,5 +430,30 @@ const track2Cases = PROJECT_CASES.filter((c) => c.track === 2);
   } else {
     setupSelectedWorksScroll();
   }
-  document.addEventListener("astro:page-load", setupSelectedWorksScroll);
+  document.addEventListener("astro:page-load", () => {
+    isWorksInitialized = false;
+    setupSelectedWorksScroll();
+  });
 </script>
+
+<style>
+  @keyframes scanline-sweep {
+    0% {
+      transform: translateY(-100%);
+    }
+    100% {
+      transform: translateY(200%);
+    }
+  }
+
+  .group:hover .distortion-scanline {
+    animation: scanline-sweep 1.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .distortion-scanline {
+      animation: none !important;
+      display: none !important;
+    }
+  }
+</style>
