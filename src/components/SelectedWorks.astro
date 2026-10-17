@@ -2,9 +2,13 @@
 /**
  * SelectedWorks.astro
  * Seção de Projetos Selecionados & Bounty Archive.
- * Grid técnico com linhas de 1px, marcadores cruzados (+) e trilhos 35mm.
+ * Grid técnico com linhas de 1px, marcadores cruzados (+) e dados canônicos dos 4 cases.
  * Estilizada integralmente via Tailwind CSS v4 & Bebop Design Tokens.
  */
+import { PROJECT_CASES } from "../data/cases";
+
+const track1Cases = PROJECT_CASES.filter((c) => c.track === 1);
+const track2Cases = PROJECT_CASES.filter((c) => c.track === 2);
 ---
 
 <section
@@ -142,53 +146,81 @@
         data-reel-track="1"
         class="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 -rotate-1 transition-transform duration-500 hover:rotate-0"
       >
-        <article
-          data-reel-card
-          class="rounded-2xl border-4 border-bebop-red bg-space-surface-1 p-6 sm:p-8 shadow-[0_8px_0_rgba(254,0,0,0.4)] transition-transform duration-150 hover:-translate-y-1 hover:scale-[1.02]"
-        >
-          <div class="mb-4 flex items-center justify-between font-mono text-xs text-muted-gray">
-            <span>REEL 01 // CLOUD BACKEND</span>
-            <span class="rounded-full bg-space-surface-2 px-3 py-1 text-paper-white font-bold">
-              DISTRIBUTED
-            </span>
-          </div>
-          <h3 class="mb-2 font-display text-2xl sm:text-3xl font-black text-paper-white">
-            AuraStream & Painel Stream
-          </h3>
-          <p class="font-body text-sm sm:text-base text-muted-gray leading-relaxed mb-4">
-            Engine de transmissão e infraestrutura de nuvem resiliente operando pipelines de mídia de alta disponibilidade na Magalu Cloud.
-          </p>
-          <div class="flex flex-wrap gap-2 font-mono text-[10px] sm:text-xs">
-            <span class="rounded border border-space-border px-2 py-0.5 text-muted-gray">Next.js 16</span>
-            <span class="rounded border border-space-border px-2 py-0.5 text-muted-gray">Node.js</span>
-            <span class="rounded border border-space-border px-2 py-0.5 text-muted-gray">FFmpeg</span>
-            <span class="rounded border border-space-border px-2 py-0.5 text-muted-gray">Magalu Cloud</span>
-          </div>
-        </article>
+        {track1Cases.map((project) => (
+          <article
+            id={`case-${project.id}`}
+            data-reel-card
+            class="flex flex-col justify-between rounded-2xl border-4 border-bebop-red bg-space-surface-1 p-6 sm:p-8 shadow-[0_8px_0_rgba(254,0,0,0.4)] transition-transform duration-150 hover:-translate-y-1 hover:scale-[1.01]"
+          >
+            <div>
+              <div class="mb-3 flex flex-wrap items-center justify-between gap-2 font-mono text-xs text-muted-gray">
+                <span class="text-bebop-red font-bold">{project.reelNumber} // {project.category}</span>
+                <span class="rounded-full bg-space-surface-2 px-3 py-0.5 text-paper-white font-bold text-[10px] sm:text-xs">
+                  {project.badge}
+                </span>
+              </div>
 
-        <article
-          data-reel-card
-          class="rounded-2xl border-4 border-bebop-red bg-space-surface-1 p-6 sm:p-8 shadow-[0_8px_0_rgba(254,0,0,0.4)] transition-transform duration-150 hover:-translate-y-1 hover:scale-[1.02]"
-        >
-          <div class="mb-4 flex items-center justify-between font-mono text-xs text-muted-gray">
-            <span>REEL 02 // CONCURRENCY</span>
-            <span class="rounded-full bg-space-surface-2 px-3 py-1 text-paper-white font-bold">
-              PARSER
-            </span>
-          </div>
-          <h3 class="mb-2 font-display text-2xl sm:text-3xl font-black text-paper-white">
-            Quake Log Parser
-          </h3>
-          <p class="font-body text-sm sm:text-base text-muted-gray leading-relaxed mb-4">
-            Parser assíncrono de logs de partidas em tempo real construído com TypeScript puro, Docker e testes automatizados.
-          </p>
-          <div class="flex flex-wrap gap-2 font-mono text-[10px] sm:text-xs">
-            <span class="rounded border border-space-border px-2 py-0.5 text-muted-gray">TypeScript</span>
-            <span class="rounded border border-space-border px-2 py-0.5 text-muted-gray">Node.js</span>
-            <span class="rounded border border-space-border px-2 py-0.5 text-muted-gray">MongoDB</span>
-            <span class="rounded border border-space-border px-2 py-0.5 text-muted-gray">Docker</span>
-          </div>
-        </article>
+              <h3 class="font-display text-2xl sm:text-3xl font-black text-paper-white leading-tight">
+                {project.title}
+              </h3>
+              <p class="font-mono text-xs text-bebop-amber font-semibold mb-3">
+                {project.subtitle}
+              </p>
+
+              <p class="font-body text-sm sm:text-base text-paper-white/90 leading-relaxed mb-4">
+                {project.description}
+              </p>
+
+              <!-- Bloco Técnico: Desafio & Solução -->
+              <div class="space-y-3 rounded-xl border border-space-border/60 bg-space-base/60 p-4 mb-4 font-mono text-xs text-muted-gray leading-relaxed">
+                <div>
+                  <span class="font-bold text-bebop-amber block text-[11px] uppercase tracking-wider mb-1">
+                    ⚡ DESAFIO TÉCNICO:
+                  </span>
+                  <p class="text-[11px] sm:text-xs text-paper-white/80">{project.challenge}</p>
+                </div>
+                <div>
+                  <span class="font-bold text-acid-green block text-[11px] uppercase tracking-wider mb-1">
+                    🛠️ SOLUÇÃO ARQUITETURAL:
+                  </span>
+                  <p class="text-[11px] sm:text-xs text-paper-white/80">{project.solution}</p>
+                </div>
+              </div>
+
+              <!-- Métrica / Impacto -->
+              <div class="mb-5 flex items-start gap-2 rounded-lg border border-bebop-red/30 bg-bebop-red/10 px-3 py-2 font-mono text-[11px] sm:text-xs text-paper-white">
+                <span class="text-bebop-red font-black shrink-0">METRIC //</span>
+                <span>{project.metric}</span>
+              </div>
+            </div>
+
+            <div>
+              <!-- Stack Badges -->
+              <div class="mb-5 flex flex-wrap gap-1.5 sm:gap-2 font-mono text-[10px] sm:text-xs">
+                {project.stack.map((tech) => (
+                  <span class="rounded border border-space-border bg-space-surface-2/60 px-2.5 py-1 text-paper-white font-medium">
+                    {tech}
+                  </span>
+                ))}
+              </div>
+
+              <!-- Links de Ação -->
+              <div class="flex flex-wrap items-center gap-3 pt-3 border-t border-space-border/60">
+                {project.links.map((link) => (
+                  <a
+                    href={link.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={link.ariaLabel}
+                    class="inline-flex items-center gap-1.5 rounded-full border-2 border-bebop-red bg-space-surface-2 px-3.5 py-1.5 font-mono text-xs font-bold text-paper-white shadow-comic-xs transition-all duration-150 hover:-translate-y-0.5 hover:bg-bebop-red hover:text-paper-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-bebop-red"
+                  >
+                    <span>{link.label}</span>
+                  </a>
+                ))}
+              </div>
+            </div>
+          </article>
+        ))}
       </div>
 
       <!-- Trilho 2 Inclinado com Parallax Oposto (Cases 3 & 4) -->
@@ -196,51 +228,81 @@
         data-reel-track="2"
         class="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 rotate-1 transition-transform duration-500 hover:rotate-0"
       >
-        <article
-          data-reel-card
-          class="rounded-2xl border-4 border-acid-green bg-space-surface-1 p-6 sm:p-8 shadow-[0_8px_0_rgba(46,254,12,0.3)] transition-transform duration-150 hover:-translate-y-1 hover:scale-[1.02]"
-        >
-          <div class="mb-4 flex items-center justify-between font-mono text-xs text-muted-gray">
-            <span>REEL 03 // FRONTEND</span>
-            <span class="rounded-full bg-space-surface-2 px-3 py-1 text-paper-white font-bold">
-              GAMIFIED
-            </span>
-          </div>
-          <h3 class="mb-2 font-display text-2xl sm:text-3xl font-black text-paper-white">
-            Jokenpo Franky
-          </h3>
-          <p class="font-body text-sm sm:text-base text-muted-gray leading-relaxed mb-4">
-            Arena retrô com lógica orientada a eventos, animações táteis a 60 FPS e experiência imersiva de jogo.
-          </p>
-          <div class="flex flex-wrap gap-2 font-mono text-[10px] sm:text-xs">
-            <span class="rounded border border-space-border px-2 py-0.5 text-muted-gray">Next.js 14</span>
-            <span class="rounded border border-space-border px-2 py-0.5 text-muted-gray">Tailwind CSS</span>
-            <span class="rounded border border-space-border px-2 py-0.5 text-muted-gray">State Machine</span>
-          </div>
-        </article>
+        {track2Cases.map((project) => (
+          <article
+            id={`case-${project.id}`}
+            data-reel-card
+            class="flex flex-col justify-between rounded-2xl border-4 border-acid-green bg-space-surface-1 p-6 sm:p-8 shadow-[0_8px_0_rgba(46,254,12,0.3)] transition-transform duration-150 hover:-translate-y-1 hover:scale-[1.01]"
+          >
+            <div>
+              <div class="mb-3 flex flex-wrap items-center justify-between gap-2 font-mono text-xs text-muted-gray">
+                <span class="text-acid-green font-bold">{project.reelNumber} // {project.category}</span>
+                <span class="rounded-full bg-space-surface-2 px-3 py-0.5 text-paper-white font-bold text-[10px] sm:text-xs">
+                  {project.badge}
+                </span>
+              </div>
 
-        <article
-          data-reel-card
-          class="rounded-2xl border-4 border-acid-green bg-space-surface-1 p-6 sm:p-8 shadow-[0_8px_0_rgba(46,254,12,0.3)] transition-transform duration-150 hover:-translate-y-1 hover:scale-[1.02]"
-        >
-          <div class="mb-4 flex items-center justify-between font-mono text-xs text-muted-gray">
-            <span>REEL 04 // EDITORIAL</span>
-            <span class="rounded-full bg-space-surface-2 px-3 py-1 text-paper-white font-bold">
-              NOIR DESIGN
-            </span>
-          </div>
-          <h3 class="mb-2 font-display text-2xl sm:text-3xl font-black text-paper-white">
-            The Warriors
-          </h3>
-          <p class="font-body text-sm sm:text-base text-muted-gray leading-relaxed mb-4">
-            Design editorial cru de alta fidelidade homenageando o clássico cult, com arquitetura frontend minimalista.
-          </p>
-          <div class="flex flex-wrap gap-2 font-mono text-[10px] sm:text-xs">
-            <span class="rounded border border-space-border px-2 py-0.5 text-muted-gray">HTML5</span>
-            <span class="rounded border border-space-border px-2 py-0.5 text-muted-gray">SCSS Grid</span>
-            <span class="rounded border border-space-border px-2 py-0.5 text-muted-gray">Gulp</span>
-          </div>
-        </article>
+              <h3 class="font-display text-2xl sm:text-3xl font-black text-paper-white leading-tight">
+                {project.title}
+              </h3>
+              <p class="font-mono text-xs text-bebop-amber font-semibold mb-3">
+                {project.subtitle}
+              </p>
+
+              <p class="font-body text-sm sm:text-base text-paper-white/90 leading-relaxed mb-4">
+                {project.description}
+              </p>
+
+              <!-- Bloco Técnico: Desafio & Solução -->
+              <div class="space-y-3 rounded-xl border border-space-border/60 bg-space-base/60 p-4 mb-4 font-mono text-xs text-muted-gray leading-relaxed">
+                <div>
+                  <span class="font-bold text-bebop-amber block text-[11px] uppercase tracking-wider mb-1">
+                    ⚡ DESAFIO TÉCNICO:
+                  </span>
+                  <p class="text-[11px] sm:text-xs text-paper-white/80">{project.challenge}</p>
+                </div>
+                <div>
+                  <span class="font-bold text-acid-green block text-[11px] uppercase tracking-wider mb-1">
+                    🛠️ SOLUÇÃO ARQUITETURAL:
+                  </span>
+                  <p class="text-[11px] sm:text-xs text-paper-white/80">{project.solution}</p>
+                </div>
+              </div>
+
+              <!-- Métrica / Impacto -->
+              <div class="mb-5 flex items-start gap-2 rounded-lg border border-acid-green/30 bg-acid-green/10 px-3 py-2 font-mono text-[11px] sm:text-xs text-paper-white">
+                <span class="text-acid-green font-black shrink-0">METRIC //</span>
+                <span>{project.metric}</span>
+              </div>
+            </div>
+
+            <div>
+              <!-- Stack Badges -->
+              <div class="mb-5 flex flex-wrap gap-1.5 sm:gap-2 font-mono text-[10px] sm:text-xs">
+                {project.stack.map((tech) => (
+                  <span class="rounded border border-space-border bg-space-surface-2/60 px-2.5 py-1 text-paper-white font-medium">
+                    {tech}
+                  </span>
+                ))}
+              </div>
+
+              <!-- Links de Ação -->
+              <div class="flex flex-wrap items-center gap-3 pt-3 border-t border-space-border/60">
+                {project.links.map((link) => (
+                  <a
+                    href={link.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={link.ariaLabel}
+                    class="inline-flex items-center gap-1.5 rounded-full border-2 border-acid-green bg-space-surface-2 px-3.5 py-1.5 font-mono text-xs font-bold text-paper-white shadow-comic-xs transition-all duration-150 hover:-translate-y-0.5 hover:bg-acid-green hover:text-space-base focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-acid-green"
+                  >
+                    <span>{link.label}</span>
+                  </a>
+                ))}
+              </div>
+            </div>
+          </article>
+        ))}
       </div>
     </div>
   </div>
