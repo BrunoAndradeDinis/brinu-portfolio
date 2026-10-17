@@ -39,20 +39,22 @@
         class="flex w-full select-none flex-row flex-nowrap items-center justify-between whitespace-nowrap font-display text-[clamp(3.5rem,16vw,5.5rem)] sm:text-[clamp(4.5rem,13.5vw,7rem)] md:text-[clamp(6.5rem,13.5vw,9.5rem)] lg:text-[clamp(9.5rem,14vw,14rem)] font-black leading-[0.85] tracking-tight text-space-base"
         aria-label="BRINU"
       >
-        <span class="inline-block shrink-0 leading-[0.85]" aria-hidden="true">B</span>
-        <span class="inline-block shrink-0 leading-[0.85]" aria-hidden="true">R</span>
+        <span class="inline-block shrink-0 leading-[0.85]" aria-hidden="true" data-hero-letter="B">B</span>
+        <span class="inline-block shrink-0 leading-[0.85]" aria-hidden="true" data-hero-letter="R">R</span>
         <span
           class="inline-block shrink-0 leading-[0.85] px-3.5 sm:px-7 md:px-11 lg:px-16 text-center"
           aria-hidden="true"
+          data-hero-letter="I"
           >I</span
         >
-        <span class="inline-block shrink-0 leading-[0.85]" aria-hidden="true">N</span>
-        <span class="inline-block shrink-0 leading-[0.85]" aria-hidden="true">U</span>
+        <span class="inline-block shrink-0 leading-[0.85]" aria-hidden="true" data-hero-letter="N">N</span>
+        <span class="inline-block shrink-0 leading-[0.85]" aria-hidden="true" data-hero-letter="U">U</span>
       </h1>
 
       <!-- Personagem / Avatar Noir Centralizado Sobreposto ao Glifo Central 'I' -->
       <div
         id="hero-avatar-badge"
+        data-hero-avatar
         role="button"
         tabindex="0"
         aria-label="Avatar oficial de Bruno Dinis recortado em celuloide com carimbo Helena's Dad. Clique para interagir."
@@ -133,6 +135,7 @@
     >
       <!-- Canto Inferior Esquerdo: Manifesto "BORING CODE" & Âncora de Ação -->
       <div
+        data-hero-manifesto="left"
         class="flex flex-col items-start text-left max-w-full sm:max-w-[48%] lg:max-w-md shrink-0"
       >
         <p
@@ -158,6 +161,7 @@
 
       <!-- Canto Inferior Direito: Manifesto "CINEMATIC ART" & Pílulas Sociais Táteis -->
       <div
+        data-hero-manifesto="right"
         class="flex flex-col items-start sm:items-end text-left sm:text-right max-w-full sm:max-w-[50%] lg:max-w-md shrink-0"
       >
         <p
@@ -204,6 +208,8 @@
 </section>
 
 <script>
+  import { gsap } from "../utils/motion";
+
   // Microinterações Táteis: Avatar Comic & Carimbo de Estêncil Helena's Dad
   function setupAvatarMicrointeraction() {
     const avatarBadge = document.getElementById("hero-avatar-badge");
@@ -257,11 +263,123 @@
     });
   }
 
+  // Transições Cinemáticas de Cortes Secos (Abertura Tank! de Cowboy Bebop)
+  function setupHeroScrollTransitions() {
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (prefersReducedMotion) return;
+
+    const heroSection = document.getElementById("hero");
+    if (!heroSection) return;
+
+    const letterB = heroSection.querySelector('[data-hero-letter="B"]');
+    const letterR = heroSection.querySelector('[data-hero-letter="R"]');
+    const letterI = heroSection.querySelector('[data-hero-letter="I"]');
+    const letterN = heroSection.querySelector('[data-hero-letter="N"]');
+    const letterU = heroSection.querySelector('[data-hero-letter="U"]');
+    const avatar = heroSection.querySelector("#hero-avatar-badge");
+    const manifestoLeft = heroSection.querySelector('[data-hero-manifesto="left"]');
+    const manifestoRight = heroSection.querySelector('[data-hero-manifesto="right"]');
+
+    // Timeline de saída cinemática inspirada na abertura Tank! de Cowboy Bebop
+    // Cortes secos e micro-parallax rítmico sem quebra de layout nem overflow
+    const heroExitTl = gsap.timeline({
+      scrollTrigger: {
+        trigger: heroSection,
+        start: "top top",
+        end: "bottom 15%",
+        scrub: 0.8,
+        invalidateOnRefresh: true,
+      },
+    });
+
+    if (letterB && letterR) {
+      heroExitTl.to(
+        [letterB, letterR],
+        {
+          x: -32,
+          opacity: 0.45,
+          ease: "power2.inOut",
+          force3D: true,
+        },
+        0
+      );
+    }
+
+    if (letterN && letterU) {
+      heroExitTl.to(
+        [letterN, letterU],
+        {
+          x: 32,
+          opacity: 0.45,
+          ease: "power2.inOut",
+          force3D: true,
+        },
+        0
+      );
+    }
+
+    if (letterI && avatar) {
+      heroExitTl.to(
+        letterI,
+        {
+          opacity: 0.35,
+          scale: 0.94,
+          ease: "power2.inOut",
+          force3D: true,
+        },
+        0
+      );
+
+      heroExitTl.to(
+        avatar,
+        {
+          y: -24,
+          scale: 0.92,
+          opacity: 0.65,
+          ease: "power2.inOut",
+          force3D: true,
+        },
+        0
+      );
+    }
+
+    if (manifestoLeft) {
+      heroExitTl.to(
+        manifestoLeft,
+        {
+          x: -24,
+          opacity: 0.3,
+          ease: "power1.inOut",
+          force3D: true,
+        },
+        0
+      );
+    }
+
+    if (manifestoRight) {
+      heroExitTl.to(
+        manifestoRight,
+        {
+          x: 24,
+          opacity: 0.3,
+          ease: "power1.inOut",
+          force3D: true,
+        },
+        0
+      );
+    }
+  }
+
+  function initComicHero() {
+    setupAvatarMicrointeraction();
+    setupHeroScrollTransitions();
+  }
+
   // Registra no carregamento inicial e em transições Astro
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", setupAvatarMicrointeraction);
+    document.addEventListener("DOMContentLoaded", initComicHero);
   } else {
-    setupAvatarMicrointeraction();
+    initComicHero();
   }
-  document.addEventListener("astro:page-load", setupAvatarMicrointeraction);
+  document.addEventListener("astro:page-load", initComicHero);
 </script>

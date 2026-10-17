@@ -6,7 +6,63 @@
  */
 ---
 
-<section id="works" class="border-t-[0.7rem] border-space-base bg-space-base px-6 py-20 sm:px-12 sm:py-28 text-paper-white select-none">
+<section id="works" class="border-t-[0.7rem] border-space-base bg-space-base px-6 py-12 sm:px-12 sm:py-20 text-paper-white select-none relative overflow-hidden">
+  <!-- Bebop 35mm Film Leader & Faixa de Corte Seco (Abertura Tank!) -->
+  <div
+    id="tank-jump-cut-strip"
+    data-tank-strip
+    class="relative -mx-6 sm:-mx-12 -mt-12 sm:-mt-20 mb-16 sm:mb-20 overflow-hidden border-b-4 border-space-surface-2 bg-space-base py-3 sm:py-4 select-none"
+  >
+    <!-- Trilho Superior de Perfurações de Celuloide 35mm (Sprocket Holes) -->
+    <div
+      class="flex w-full items-center justify-between gap-1.5 sm:gap-2 overflow-hidden px-2 opacity-80"
+      aria-hidden="true"
+    >
+      {Array.from({ length: 28 }).map(() => (
+        <span
+          class="inline-block h-2 sm:h-2.5 w-3.5 sm:w-5 shrink-0 rounded-[2px] border border-space-base bg-bebop-red shadow-[0_1px_0_var(--color-space-base)]"
+        />
+      ))}
+    </div>
+
+    <!-- Faixa Editorial de Corte Analógico Tank! -->
+    <div
+      class="mx-auto flex w-full max-w-[140rem] flex-wrap items-center justify-between gap-3 px-4 sm:px-8 py-2.5 sm:py-3.5"
+    >
+      <div class="flex items-center gap-2.5 sm:gap-3.5">
+        <span
+          data-jump-cut-badge
+          class="inline-flex items-center gap-1.5 rounded-sm border-2 border-space-base bg-bebop-red px-2.5 py-1 font-display text-[11px] sm:text-xs md:text-sm font-black tracking-wider text-paper-white shadow-comic-xs transition-transform duration-200"
+        >
+          <span>3, 2, 1 LET'S JAM</span>
+          <span class="inline-block h-1.5 w-1.5 rounded-full bg-paper-white animate-ping" />
+        </span>
+        <span class="font-mono text-[10px] sm:text-xs tracking-widest text-bebop-amber uppercase font-bold">
+          // CUT: 02 • 35MM REEL ARCHIVE
+        </span>
+      </div>
+
+      <div class="flex items-center gap-3 font-mono text-[9px] sm:text-xs tracking-wider text-muted-gray uppercase">
+        <span class="hidden md:inline">FRAMERATE: 60 FPS GPU-SYNC</span>
+        <span class="rounded-full border border-acid-green/40 bg-space-surface-1 px-2.5 py-0.5 font-bold text-acid-green">
+          SESSION #01
+        </span>
+      </div>
+    </div>
+
+    <!-- Trilho Inferior de Perfurações de Celuloide 35mm (Sprocket Holes) -->
+    <div
+      class="flex w-full items-center justify-between gap-1.5 sm:gap-2 overflow-hidden px-2 opacity-80"
+      aria-hidden="true"
+    >
+      {Array.from({ length: 28 }).map(() => (
+        <span
+          class="inline-block h-2 sm:h-2.5 w-3.5 sm:w-5 shrink-0 rounded-[2px] border border-space-base bg-bebop-red shadow-[0_1px_0_var(--color-space-base)]"
+        />
+      ))}
+    </div>
+  </div>
+
   <div class="mx-auto mb-16 max-w-[140rem]">
     <span class="mb-2 block font-mono text-sm tracking-widest text-bebop-amber">
       [ ACT I // 35MM FILM REEL ]
@@ -80,20 +136,43 @@
 <script>
   import { gsap } from "../utils/motion";
 
-  const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  function setupStoryboardScroll() {
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (prefersReducedMotion) return;
 
-  if (!prefersReducedMotion) {
     const worksSection = document.getElementById("works");
     const track1 = document.querySelector('[data-reel-track="1"]');
     const track2 = document.querySelector('[data-reel-track="2"]');
     const cards = document.querySelectorAll("[data-reel-card]");
+    const jumpCutBadge = document.querySelector("[data-jump-cut-badge]");
+    const tankStrip = document.querySelector("[data-tank-strip]");
 
     if (worksSection && cards.length > 0) {
+      // Efeito de corte seco Tank! no banner analógico
+      if (tankStrip && jumpCutBadge) {
+        gsap.fromTo(
+          jumpCutBadge,
+          { scale: 0.88, opacity: 0.7 },
+          {
+            scrollTrigger: {
+              trigger: tankStrip,
+              start: "top 90%",
+              end: "top 50%",
+              scrub: 0.6,
+            },
+            scale: 1,
+            opacity: 1,
+            ease: "power3.out",
+            force3D: true,
+          }
+        );
+      }
+
       // Revelação em cascata dos cards com ScrollTrigger
       gsap.from(cards, {
         scrollTrigger: {
           trigger: worksSection,
-          start: "top 80%",
+          start: "top 75%",
           toggleActions: "play none none reverse",
         },
         y: 35,
@@ -101,6 +180,7 @@
         duration: 0.8,
         stagger: 0.15,
         ease: "power2.out",
+        force3D: true,
       });
 
       // Parallax sutil oposto nas tiras de película simulando celuloide 35mm
@@ -114,6 +194,7 @@
           },
           x: -25,
           ease: "none",
+          force3D: true,
         });
 
         gsap.to(track2, {
@@ -125,9 +206,17 @@
           },
           x: 25,
           ease: "none",
+          force3D: true,
         });
       }
     }
   }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", setupStoryboardScroll);
+  } else {
+    setupStoryboardScroll();
+  }
+  document.addEventListener("astro:page-load", setupStoryboardScroll);
 </script>
 
