@@ -5,6 +5,7 @@
  * Chamada magnética para novos contratos e projetos de alto impacto.
  * 100% Bebop Design Tokens + Tailwind CSS v4.
  */
+import BountyDispatch from './BountyDispatch';
 ---
 
 <section
@@ -103,9 +104,9 @@
         </div>
       </div>
 
-      <!-- Coluna da Direita: Espaço reservado para o Mini-Terminal Bounty Dispatch (Story 7.2) -->
+      <!-- Coluna da Direita: Mini-Terminal Bounty Dispatch -->
       <div id="bounty-dispatch-container" class="lg:col-span-5">
-        <!-- Renderizado dinamicamente pelo componente React BountyDispatch.tsx -->
+        <BountyDispatch client:visible />
       </div>
     </div>
   </div>
