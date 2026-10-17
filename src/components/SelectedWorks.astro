@@ -1,0 +1,334 @@
+---
+/**
+ * SelectedWorks.astro
+ * Seção de Projetos Selecionados & Bounty Archive.
+ * Grid técnico com linhas de 1px, marcadores cruzados (+) e trilhos 35mm.
+ * Estilizada integralmente via Tailwind CSS v4 & Bebop Design Tokens.
+ */
+---
+
+<section
+  id="works"
+  class="relative border-t-[0.7rem] border-space-base bg-space-base px-4 py-12 sm:px-8 sm:py-16 md:px-12 md:py-20 text-paper-white select-none overflow-hidden"
+  aria-label="Bounty Archive: Projetos Autorais de Bruno Dinis"
+>
+  <!-- Bebop 35mm Film Leader & Faixa de Corte Seco (Abertura Tank!) -->
+  <div
+    id="tank-jump-cut-strip"
+    data-tank-strip
+    class="relative -mx-4 sm:-mx-8 md:-mx-12 -mt-12 sm:-mt-16 md:-mt-20 mb-12 sm:mb-16 md:mb-20 overflow-hidden border-b-4 border-space-surface-2 bg-space-base py-3 sm:py-4 select-none"
+  >
+    <!-- Trilho Superior de Perfurações de Celuloide 35mm (Sprocket Holes) -->
+    <div
+      class="flex w-full items-center justify-between gap-1.5 sm:gap-2 overflow-hidden px-2 opacity-80"
+      aria-hidden="true"
+    >
+      {Array.from({ length: 28 }).map(() => (
+        <span
+          class="inline-block h-2 sm:h-2.5 w-3.5 sm:w-5 shrink-0 rounded-[2px] border border-space-base bg-bebop-red shadow-[0_1px_0_var(--color-space-base)]"
+        />
+      ))}
+    </div>
+
+    <!-- Faixa Editorial de Corte Analógico Tank! -->
+    <div
+      class="mx-auto flex w-full max-w-[140rem] flex-wrap items-center justify-between gap-3 px-4 sm:px-8 py-2.5 sm:py-3.5"
+    >
+      <div class="flex items-center gap-2.5 sm:gap-3.5">
+        <span
+          data-jump-cut-badge
+          class="inline-flex items-center gap-1.5 rounded-sm border-2 border-space-base bg-bebop-red px-2.5 py-1 font-display text-[11px] sm:text-xs md:text-sm font-black tracking-wider text-paper-white shadow-comic-xs transition-transform duration-200"
+        >
+          <span>3, 2, 1 LET'S JAM</span>
+          <span class="inline-block h-1.5 w-1.5 rounded-full bg-paper-white animate-ping" />
+        </span>
+        <span class="font-mono text-[10px] sm:text-xs tracking-widest text-bebop-amber uppercase font-bold">
+          // CUT: 02 • 35MM REEL ARCHIVE
+        </span>
+      </div>
+
+      <div class="flex items-center gap-3 font-mono text-[9px] sm:text-xs tracking-wider text-muted-gray uppercase">
+        <span class="hidden md:inline">FRAMERATE: 60 FPS GPU-SYNC</span>
+        <span class="rounded-full border border-acid-green/40 bg-space-surface-1 px-2.5 py-0.5 font-bold text-acid-green">
+          SESSION #01
+        </span>
+      </div>
+    </div>
+
+    <!-- Trilho Inferior de Perfurações de Celuloide 35mm (Sprocket Holes) -->
+    <div
+      class="flex w-full items-center justify-between gap-1.5 sm:gap-2 overflow-hidden px-2 opacity-80"
+      aria-hidden="true"
+    >
+      {Array.from({ length: 28 }).map(() => (
+        <span
+          class="inline-block h-2 sm:h-2.5 w-3.5 sm:w-5 shrink-0 rounded-[2px] border border-space-base bg-bebop-red shadow-[0_1px_0_var(--color-space-base)]"
+        />
+      ))}
+    </div>
+  </div>
+
+  <!-- Cabeçalho Editorial com Título Temático BOUNTY ARCHIVE -->
+  <div class="mx-auto mb-12 sm:mb-16 max-w-[140rem]">
+    <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 pb-4 border-b border-space-border/60">
+      <div>
+        <span class="mb-2 block font-mono text-xs sm:text-sm tracking-widest text-bebop-amber uppercase">
+          [ ACT I // 35MM FILM REEL • BOUNTY ARCHIVE ]
+        </span>
+        <h2
+          data-bounty-title
+          class="font-display text-[clamp(2.2rem,6vw,5rem)] font-black tracking-tight text-paper-white leading-none uppercase"
+        >
+          BOUNTY ARCHIVE
+        </h2>
+      </div>
+
+      <div class="flex flex-col sm:items-end text-left sm:text-right font-mono text-xs text-muted-gray">
+        <span class="font-bold text-paper-white">SELECTED WORKS // 4 CASES</span>
+        <span class="text-[10px] sm:text-xs text-muted-gray tracking-wider">
+          MAGALU CLOUD • DISTRIBUTED SYSTEMS • CREATIVE FRONTEND
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Grid de Layout Técnico com Linhas de 1px e Marcadores Cruzados (+) -->
+  <div
+    data-technical-grid
+    class="relative mx-auto max-w-[140rem] rounded-2xl sm:rounded-3xl border border-space-border/80 bg-space-surface-1/30 p-5 sm:p-8 md:p-10 backdrop-blur-xs"
+  >
+    <!-- Marcadores Cruzados nos 4 Cantos (Crosshair Markers +) -->
+    <div
+      class="pointer-events-none absolute -top-3 -left-3 font-mono text-base sm:text-lg font-black text-bebop-amber select-none z-10"
+      aria-hidden="true"
+    >
+      +
+    </div>
+    <div
+      class="pointer-events-none absolute -top-3 -right-3 font-mono text-base sm:text-lg font-black text-bebop-amber select-none z-10"
+      aria-hidden="true"
+    >
+      +
+    </div>
+    <div
+      class="pointer-events-none absolute -bottom-3 -left-3 font-mono text-base sm:text-lg font-black text-bebop-amber select-none z-10"
+      aria-hidden="true"
+    >
+      +
+    </div>
+    <div
+      class="pointer-events-none absolute -bottom-3 -right-3 font-mono text-base sm:text-lg font-black text-bebop-amber select-none z-10"
+      aria-hidden="true"
+    >
+      +
+    </div>
+
+    <!-- Barra de Telemetria de Coordenadas de Grid -->
+    <div
+      class="mb-8 flex items-center justify-between border-b border-space-border/60 pb-3 font-mono text-[9px] sm:text-xs text-muted-gray uppercase select-none"
+      aria-hidden="true"
+    >
+      <div class="flex items-center gap-3">
+        <span class="h-2 w-2 rounded-full bg-acid-green animate-pulse"></span>
+        <span>GRID: 2-COL TECHNICAL ARCHIVE</span>
+      </div>
+      <span>COORD: 35.6895 // SECTOR: WORKS</span>
+    </div>
+
+    <!-- Conteúdo dos Cards em Grid (1 coluna em mobile -> 2 colunas em desktop) -->
+    <div class="flex flex-col gap-10 sm:gap-12">
+      <!-- Trilho 1 Inclinado (Cases 1 & 2) -->
+      <div
+        data-reel-track="1"
+        class="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 -rotate-1 transition-transform duration-500 hover:rotate-0"
+      >
+        <article
+          data-reel-card
+          class="rounded-2xl border-4 border-bebop-red bg-space-surface-1 p-6 sm:p-8 shadow-[0_8px_0_rgba(254,0,0,0.4)] transition-transform duration-150 hover:-translate-y-1 hover:scale-[1.02]"
+        >
+          <div class="mb-4 flex items-center justify-between font-mono text-xs text-muted-gray">
+            <span>REEL 01 // CLOUD BACKEND</span>
+            <span class="rounded-full bg-space-surface-2 px-3 py-1 text-paper-white font-bold">
+              DISTRIBUTED
+            </span>
+          </div>
+          <h3 class="mb-2 font-display text-2xl sm:text-3xl font-black text-paper-white">
+            AuraStream & Painel Stream
+          </h3>
+          <p class="font-body text-sm sm:text-base text-muted-gray leading-relaxed mb-4">
+            Engine de transmissão e infraestrutura de nuvem resiliente operando pipelines de mídia de alta disponibilidade na Magalu Cloud.
+          </p>
+          <div class="flex flex-wrap gap-2 font-mono text-[10px] sm:text-xs">
+            <span class="rounded border border-space-border px-2 py-0.5 text-muted-gray">Next.js 16</span>
+            <span class="rounded border border-space-border px-2 py-0.5 text-muted-gray">Node.js</span>
+            <span class="rounded border border-space-border px-2 py-0.5 text-muted-gray">FFmpeg</span>
+            <span class="rounded border border-space-border px-2 py-0.5 text-muted-gray">Magalu Cloud</span>
+          </div>
+        </article>
+
+        <article
+          data-reel-card
+          class="rounded-2xl border-4 border-bebop-red bg-space-surface-1 p-6 sm:p-8 shadow-[0_8px_0_rgba(254,0,0,0.4)] transition-transform duration-150 hover:-translate-y-1 hover:scale-[1.02]"
+        >
+          <div class="mb-4 flex items-center justify-between font-mono text-xs text-muted-gray">
+            <span>REEL 02 // CONCURRENCY</span>
+            <span class="rounded-full bg-space-surface-2 px-3 py-1 text-paper-white font-bold">
+              PARSER
+            </span>
+          </div>
+          <h3 class="mb-2 font-display text-2xl sm:text-3xl font-black text-paper-white">
+            Quake Log Parser
+          </h3>
+          <p class="font-body text-sm sm:text-base text-muted-gray leading-relaxed mb-4">
+            Parser assíncrono de logs de partidas em tempo real construído com TypeScript puro, Docker e testes automatizados.
+          </p>
+          <div class="flex flex-wrap gap-2 font-mono text-[10px] sm:text-xs">
+            <span class="rounded border border-space-border px-2 py-0.5 text-muted-gray">TypeScript</span>
+            <span class="rounded border border-space-border px-2 py-0.5 text-muted-gray">Node.js</span>
+            <span class="rounded border border-space-border px-2 py-0.5 text-muted-gray">MongoDB</span>
+            <span class="rounded border border-space-border px-2 py-0.5 text-muted-gray">Docker</span>
+          </div>
+        </article>
+      </div>
+
+      <!-- Trilho 2 Inclinado com Parallax Oposto (Cases 3 & 4) -->
+      <div
+        data-reel-track="2"
+        class="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 rotate-1 transition-transform duration-500 hover:rotate-0"
+      >
+        <article
+          data-reel-card
+          class="rounded-2xl border-4 border-acid-green bg-space-surface-1 p-6 sm:p-8 shadow-[0_8px_0_rgba(46,254,12,0.3)] transition-transform duration-150 hover:-translate-y-1 hover:scale-[1.02]"
+        >
+          <div class="mb-4 flex items-center justify-between font-mono text-xs text-muted-gray">
+            <span>REEL 03 // FRONTEND</span>
+            <span class="rounded-full bg-space-surface-2 px-3 py-1 text-paper-white font-bold">
+              GAMIFIED
+            </span>
+          </div>
+          <h3 class="mb-2 font-display text-2xl sm:text-3xl font-black text-paper-white">
+            Jokenpo Franky
+          </h3>
+          <p class="font-body text-sm sm:text-base text-muted-gray leading-relaxed mb-4">
+            Arena retrô com lógica orientada a eventos, animações táteis a 60 FPS e experiência imersiva de jogo.
+          </p>
+          <div class="flex flex-wrap gap-2 font-mono text-[10px] sm:text-xs">
+            <span class="rounded border border-space-border px-2 py-0.5 text-muted-gray">Next.js 14</span>
+            <span class="rounded border border-space-border px-2 py-0.5 text-muted-gray">Tailwind CSS</span>
+            <span class="rounded border border-space-border px-2 py-0.5 text-muted-gray">State Machine</span>
+          </div>
+        </article>
+
+        <article
+          data-reel-card
+          class="rounded-2xl border-4 border-acid-green bg-space-surface-1 p-6 sm:p-8 shadow-[0_8px_0_rgba(46,254,12,0.3)] transition-transform duration-150 hover:-translate-y-1 hover:scale-[1.02]"
+        >
+          <div class="mb-4 flex items-center justify-between font-mono text-xs text-muted-gray">
+            <span>REEL 04 // EDITORIAL</span>
+            <span class="rounded-full bg-space-surface-2 px-3 py-1 text-paper-white font-bold">
+              NOIR DESIGN
+            </span>
+          </div>
+          <h3 class="mb-2 font-display text-2xl sm:text-3xl font-black text-paper-white">
+            The Warriors
+          </h3>
+          <p class="font-body text-sm sm:text-base text-muted-gray leading-relaxed mb-4">
+            Design editorial cru de alta fidelidade homenageando o clássico cult, com arquitetura frontend minimalista.
+          </p>
+          <div class="flex flex-wrap gap-2 font-mono text-[10px] sm:text-xs">
+            <span class="rounded border border-space-border px-2 py-0.5 text-muted-gray">HTML5</span>
+            <span class="rounded border border-space-border px-2 py-0.5 text-muted-gray">SCSS Grid</span>
+            <span class="rounded border border-space-border px-2 py-0.5 text-muted-gray">Gulp</span>
+          </div>
+        </article>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { gsap } from "../utils/motion";
+
+  function setupSelectedWorksScroll() {
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (prefersReducedMotion) return;
+
+    const worksSection = document.getElementById("works");
+    const track1 = document.querySelector('[data-reel-track="1"]');
+    const track2 = document.querySelector('[data-reel-track="2"]');
+    const cards = document.querySelectorAll("[data-reel-card]");
+    const jumpCutBadge = document.querySelector("[data-jump-cut-badge]");
+    const tankStrip = document.querySelector("[data-tank-strip]");
+
+    if (worksSection && cards.length > 0) {
+      // Efeito de corte seco Tank! no banner analógico
+      if (tankStrip && jumpCutBadge) {
+        gsap.fromTo(
+          jumpCutBadge,
+          { scale: 0.88, opacity: 0.7 },
+          {
+            scrollTrigger: {
+              trigger: tankStrip,
+              start: "top 90%",
+              end: "top 50%",
+              scrub: 0.6,
+            },
+            scale: 1,
+            opacity: 1,
+            ease: "power3.out",
+            force3D: true,
+          }
+        );
+      }
+
+      // Revelação em cascata dos cards com ScrollTrigger
+      gsap.from(cards, {
+        scrollTrigger: {
+          trigger: worksSection,
+          start: "top 75%",
+          toggleActions: "play none none reverse",
+        },
+        y: 35,
+        opacity: 0,
+        duration: 0.8,
+        stagger: 0.15,
+        ease: "power2.out",
+        force3D: true,
+      });
+
+      // Parallax sutil oposto nas tiras de película simulando celuloide 35mm
+      if (track1 && track2) {
+        gsap.to(track1, {
+          scrollTrigger: {
+            trigger: worksSection,
+            start: "top bottom",
+            end: "bottom top",
+            scrub: 1.2,
+          },
+          x: -25,
+          ease: "none",
+          force3D: true,
+        });
+
+        gsap.to(track2, {
+          scrollTrigger: {
+            trigger: worksSection,
+            start: "top bottom",
+            end: "bottom top",
+            scrub: 1.2,
+          },
+          x: 25,
+          ease: "none",
+          force3D: true,
+        });
+      }
+    }
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", setupSelectedWorksScroll);
+  } else {
+    setupSelectedWorksScroll();
+  }
+  document.addEventListener("astro:page-load", setupSelectedWorksScroll);
+</script>
