@@ -58,23 +58,78 @@
 
       <!-- Personagem / Avatar Noir Centralizado Sobreposto ao Glifo Central 'I' -->
       <div
-        class="pointer-events-none absolute left-1/2 top-1/2 z-10 flex -translate-x-1/2 -translate-y-1/2 flex-col items-center"
-        aria-hidden="true"
+        id="hero-avatar-badge"
+        role="button"
+        tabindex="0"
+        aria-label="Avatar oficial de Bruno Dinis recortado em celuloide com carimbo Helena's Dad. Clique para interagir."
+        aria-haspopup="true"
+        aria-expanded="false"
+        class="group absolute left-1/2 top-1/2 z-10 flex -translate-x-1/2 -translate-y-1/2 flex-col items-center cursor-pointer select-none transition-transform duration-300 ease-out hover:scale-105 active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-space-base"
       >
+        <!-- Balão Comic Falante de Microinteração Tátil -->
         <div
-          class="pointer-events-auto h-[clamp(3.15rem,13vw,4.5rem)] w-[clamp(3.15rem,13vw,4.5rem)] sm:h-[clamp(5.5rem,12vw,7.5rem)] sm:w-[clamp(5.5rem,12vw,7.5rem)] md:h-[clamp(8rem,13vw,11.5rem)] md:w-[clamp(8rem,13vw,11.5rem)] lg:h-[clamp(11.5rem,14vw,15.5rem)] lg:w-[clamp(11.5rem,14vw,15.5rem)] overflow-hidden rounded-xl sm:rounded-2xl border-2 sm:border-4 md:border-[0.45rem] lg:border-[0.5rem] border-space-base bg-paper-white shadow-[0_3px_0_var(--color-space-base)] sm:shadow-[0_4px_0_var(--color-space-base)] md:shadow-[0_6px_0_var(--color-space-base)] lg:shadow-[0_8px_0_var(--color-space-base)] mr-3"
+          id="avatar-comic-bubble"
+          class="pointer-events-none absolute -top-9 sm:-top-12 md:-top-16 left-1/2 -translate-x-1/2 opacity-0 scale-75 transition-all duration-300 ease-out z-20"
+          role="status"
+          aria-live="polite"
+        >
+          <div
+            class="relative rounded-md border-2 border-space-base bg-paper-white px-2.5 py-1 sm:px-3.5 sm:py-1.5 font-display text-[9px] sm:text-xs md:text-sm font-black uppercase tracking-tight text-space-base shadow-[0_3px_0_var(--color-space-base)] sm:shadow-[0_4px_0_var(--color-space-base)] whitespace-nowrap"
+          >
+            <span id="avatar-comic-text">Pai da Helena &amp; Noivo Apaixonado! 👧💍</span>
+            <div
+              class="absolute -bottom-1.5 sm:-bottom-2 left-1/2 -translate-x-1/2 w-0 h-0 border-l-[6px] sm:border-l-[8px] border-l-transparent border-r-[6px] sm:border-r-[8px] border-r-transparent border-t-[6px] sm:border-t-[8px] border-t-space-base"
+              aria-hidden="true"
+            ></div>
+          </div>
+        </div>
+
+        <!-- Moldura de Quadrinhos & Celuloide 35mm -->
+        <div
+          class="relative h-[clamp(3.2rem,13vw,4.5rem)] w-[clamp(3.2rem,13vw,4.5rem)] sm:h-[clamp(5.5rem,12vw,7.5rem)] sm:w-[clamp(5.5rem,12vw,7.5rem)] md:h-[clamp(8rem,13vw,11.5rem)] md:w-[clamp(8rem,13vw,11.5rem)] lg:h-[clamp(11.5rem,14vw,15.5rem)] lg:w-[clamp(11.5rem,14vw,15.5rem)] overflow-hidden rounded-xl sm:rounded-2xl border-2 sm:border-4 md:border-[0.45rem] lg:border-[0.5rem] border-space-base bg-paper-white shadow-[0_3px_0_var(--color-space-base)] sm:shadow-[0_5px_0_var(--color-space-base)] md:shadow-[0_7px_0_var(--color-space-base)] lg:shadow-[0_10px_0_var(--color-space-base)]"
         >
           <img
             src="/assets/brinu-avatar.jpg"
-            alt="Retrato Noir do Bruno"
-            class="h-full w-full object-cover contrast-125"
+            alt="Retrato estilo HQ noir de Bruno Dinis"
+            class="h-full w-full object-cover contrast-125 saturate-110 transition-transform duration-500 ease-out group-hover:scale-110"
           />
+
+          <!-- Tag de Fotograma Celuloide 35mm estilo Cowboy Bebop -->
+          <div
+            class="pointer-events-none absolute top-1 sm:top-1.5 left-1.5 sm:left-2 flex items-center gap-1 font-mono text-[7px] sm:text-[9px] font-bold tracking-widest text-paper-white uppercase bg-space-base/85 px-1 py-0.5 rounded shadow-sm select-none"
+            aria-hidden="true"
+          >
+            <span class="inline-block h-1.5 w-1.5 rounded-full bg-bebop-red animate-pulse"></span>
+            <span>35MM</span>
+          </div>
+
+          <!-- Vinheta Celuloide e Textura Halftone Subtil -->
+          <div
+            class="pointer-events-none absolute inset-0 bg-gradient-to-t from-space-base/30 via-transparent to-transparent mix-blend-multiply"
+            aria-hidden="true"
+          ></div>
+          <div
+            class="pointer-events-none absolute inset-0 bg-[radial-gradient(#080808_1px,transparent_1px)] [background-size:6px_6px] opacity-10 mix-blend-overlay"
+            aria-hidden="true"
+          ></div>
         </div>
-        <span
-          class="pointer-events-auto -mt-1 sm:-mt-2.5 md:-mt-3 -rotate-4 rounded sm:rounded-md border-[1.5px] sm:border-2 md:border-[0.25rem] border-space-base bg-bebop-amber px-1.5 sm:px-2.5 md:px-3 py-0.5 sm:py-0.5 md:py-1 font-spray text-[9px] sm:text-xs md:text-sm lg:text-base font-bold whitespace-nowrap text-space-base shadow-[0_2px_0_var(--color-space-base)] sm:shadow-[0_3px_0_var(--color-space-base)]"
+
+        <!-- Carimbo de Estêncil "HELENA'S DAD" -->
+        <div
+          class="relative z-10 -mt-1.5 sm:-mt-2.5 md:-mt-3.5 transition-transform duration-300 ease-out group-hover:scale-105"
         >
-          É uma cilada Brinu!
-        </span>
+          <span
+            id="hero-stamp-badge"
+            class="inline-flex items-center gap-1 sm:gap-1.5 -rotate-3 rounded sm:rounded-md border-[1.5px] sm:border-2 md:border-[0.25rem] border-space-base bg-bebop-amber px-2 sm:px-3 md:px-4 py-0.5 sm:py-1 font-spray text-[10px] sm:text-xs md:text-sm lg:text-base font-bold whitespace-nowrap text-space-base shadow-[0_2px_0_var(--color-space-base)] sm:shadow-[0_3px_0_var(--color-space-base)] md:shadow-[0_4px_0_var(--color-space-base)] transition-all duration-200 group-hover:bg-acid-green group-hover:shadow-[0_4px_0_var(--color-space-base)]"
+          >
+            <span class="tracking-wider">HELENA'S DAD</span>
+            <span
+              class="inline-block text-[11px] sm:text-xs md:text-sm transition-transform duration-300 group-hover:scale-125"
+              aria-hidden="true"
+              >👧❤️</span
+            >
+          </span>
+        </div>
       </div>
     </div>
 
@@ -146,3 +201,66 @@
     </div>
   </div>
 </section>
+
+<script>
+  // Microinterações Táteis: Avatar Comic & Carimbo de Estêncil Helena's Dad
+  function setupAvatarMicrointeraction() {
+    const avatarBadge = document.getElementById("hero-avatar-badge");
+    const comicBubble = document.getElementById("avatar-comic-bubble");
+    const comicText = document.getElementById("avatar-comic-text");
+    const stampBadge = document.getElementById("hero-stamp-badge");
+
+    if (!avatarBadge || !comicBubble || !comicText) return;
+
+    const phrases = [
+      "Pai da Helena & Noivo Apaixonado! 👧💍",
+      "É uma cilada, Brinu! 💥",
+      "Software Engineer @ Magalu Cloud ☁️",
+      "See you space cowboy... 🚀",
+      "Alta performance a 60 FPS! ⚡",
+    ];
+    let phraseIndex = 0;
+    let dismissTimer: ReturnType<typeof setTimeout> | null = null;
+
+    const triggerComicPop = () => {
+      phraseIndex = (phraseIndex + 1) % phrases.length;
+      comicText.textContent = phrases[phraseIndex];
+      avatarBadge.setAttribute("aria-expanded", "true");
+
+      // Animação de pop do balão de quadrinhos
+      comicBubble.classList.remove("opacity-0", "scale-75");
+      comicBubble.classList.add("opacity-100", "scale-100");
+
+      // Vibração tátil no carimbo de estêncil
+      if (stampBadge) {
+        stampBadge.classList.add("scale-110", "rotate-2");
+        setTimeout(() => {
+          stampBadge.classList.remove("scale-110", "rotate-2");
+        }, 180);
+      }
+
+      if (dismissTimer) clearTimeout(dismissTimer);
+      dismissTimer = setTimeout(() => {
+        comicBubble.classList.remove("opacity-100", "scale-100");
+        comicBubble.classList.add("opacity-0", "scale-75");
+        avatarBadge.setAttribute("aria-expanded", "false");
+      }, 3000);
+    };
+
+    avatarBadge.addEventListener("click", triggerComicPop);
+    avatarBadge.addEventListener("keydown", (e: KeyboardEvent) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        triggerComicPop();
+      }
+    });
+  }
+
+  // Registra no carregamento inicial e em transições Astro
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", setupAvatarMicrointeraction);
+  } else {
+    setupAvatarMicrointeraction();
+  }
+  document.addEventListener("astro:page-load", setupAvatarMicrointeraction);
+</script>
