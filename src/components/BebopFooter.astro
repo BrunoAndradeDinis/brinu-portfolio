@@ -1,14 +1,143 @@
 ---
 /**
  * BebopFooter.astro
- * Rodapé minimalista noir inspirado na assinatura clássica de Cowboy Bebop.
- * Estilizado integralmente via Tailwind CSS v4 & Bebop Design Tokens.
+ * Rodapé Cinematográfico e Frase de Assinatura Noir
+ * 100% Bebop Design Tokens + Tailwind CSS v4.
  */
 ---
 
-<footer class="border-t border-space-border bg-space-surface-1 px-6 py-8 sm:px-12 select-none">
-  <div class="mx-auto flex max-w-[140rem] flex-wrap items-center justify-between gap-4 font-mono text-xs sm:text-sm text-muted-gray">
-    <p>BRINU.DEV // BRUNO DE ANDRADE DINIS // 2026</p>
-    <p class="tracking-widest text-bebop-amber font-bold">"SEE YOU SPACE COWBOY..."</p>
+<footer
+  data-bebop-footer
+  class="relative border-t-[0.7rem] border-space-base bg-space-base text-paper-white select-none overflow-hidden"
+  aria-label="Rodapé do Portfólio e Encerramento da Transmissão"
+>
+  <!-- Fita Ticker Tape de Fechamento Editorial (60 FPS GPU-Accelerated) -->
+  <div
+    class="ticker-tape !bg-bebop-amber !text-space-base !border-t-0 !border-b-4 !border-space-base !text-base sm:!text-lg md:!text-xl font-black"
+    aria-hidden="true"
+  >
+    <div class="ticker-tape__track">
+      <span class="px-4">
+        • SEE YOU SPACE COWBOY • 2026 BRINU.DEV • MAGALU CLOUD • CREATIVE TECHNOLOGIST • 60 FPS ACCELERATED • DISTRIBUTED SYSTEMS • PURE WEB AUDIO API •
+      </span>
+      <span class="px-4">
+        • SEE YOU SPACE COWBOY • 2026 BRINU.DEV • MAGALU CLOUD • CREATIVE TECHNOLOGIST • 60 FPS ACCELERATED • DISTRIBUTED SYSTEMS • PURE WEB AUDIO API •
+      </span>
+      <span class="px-4">
+        • SEE YOU SPACE COWBOY • 2026 BRINU.DEV • MAGALU CLOUD • CREATIVE TECHNOLOGIST • 60 FPS ACCELERATED • DISTRIBUTED SYSTEMS • PURE WEB AUDIO API •
+      </span>
+      <span class="px-4">
+        • SEE YOU SPACE COWBOY • 2026 BRINU.DEV • MAGALU CLOUD • CREATIVE TECHNOLOGIST • 60 FPS ACCELERATED • DISTRIBUTED SYSTEMS • PURE WEB AUDIO API •
+      </span>
+    </div>
+  </div>
+
+  <div class="mx-auto max-w-[140rem] px-4 py-16 sm:px-8 sm:py-24 md:px-12 md:py-28">
+    <!-- Caixa Monumental com a Assinatura Clássica "SEE YOU SPACE COWBOY…" -->
+    <div
+      data-footer-signature
+      class="relative rounded-3xl border-4 border-space-border/60 bg-space-surface-1/90 p-8 sm:p-12 md:p-16 text-center shadow-comic-lg overflow-hidden group"
+    >
+      <!-- Scanline de Fundo Sutil -->
+      <div
+        class="pointer-events-none absolute inset-0 bg-scanlines opacity-15 mix-blend-overlay"
+        aria-hidden="true"
+      ></div>
+
+      <!-- Badge Superior de Telemetria -->
+      <div class="relative z-10 inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-bebop-amber/40 bg-space-base/80 mb-6 sm:mb-8 font-mono text-[11px] sm:text-xs text-bebop-amber uppercase tracking-widest">
+        <span class="w-2 h-2 rounded-full bg-bebop-amber animate-pulse"></span>
+        <span>TRANSMISSION END // EPISODE 26 // BEBOP PROTOCOL</span>
+      </div>
+
+      <!-- Título Monumental da Assinatura -->
+      <h2
+        data-footer-signature-text
+        class="relative z-10 font-display text-[clamp(2.2rem,7vw,7.5rem)] font-black tracking-tight text-paper-white uppercase leading-none"
+      >
+        "SEE YOU SPACE COWBOY…"
+      </h2>
+
+      <!-- Frase Subtítulo Noir -->
+      <p class="relative z-10 mt-4 sm:mt-6 font-mono text-xs sm:text-sm md:text-base tracking-[0.25em] text-muted-gray uppercase font-bold">
+        YOU'RE GONNA CARRY THAT WEIGHT.
+      </p>
+    </div>
+
+    <!-- Barra de Conexões e Links Sociais Táteis -->
+    <div class="mt-12 sm:mt-16 pt-8 border-t border-space-border/60 flex flex-col md:flex-row items-center justify-between gap-6">
+      <!-- Links Sociais / Portais Rápidos -->
+      <div class="flex flex-wrap items-center justify-center md:justify-start gap-3 sm:gap-4 font-mono text-xs">
+        <a
+          href="https://github.com/BrunoAndradeDinis"
+          target="_blank"
+          rel="noopener noreferrer"
+          data-footer-github-link
+          class="px-5 py-3 rounded-xl border-2 border-space-border bg-space-surface-2 hover:border-acid-green hover:text-acid-green transition-all shadow-comic-xs font-bold uppercase"
+        >
+          GITHUB ↗
+        </a>
+
+        <a
+          href="https://www.linkedin.com/in/bruno-de-andrade-dinis"
+          target="_blank"
+          rel="noopener noreferrer"
+          data-footer-linkedin-link
+          class="px-5 py-3 rounded-xl border-2 border-space-border bg-space-surface-2 hover:border-crt-cyan hover:text-crt-cyan transition-all shadow-comic-xs font-bold uppercase"
+        >
+          LINKEDIN ↗
+        </a>
+
+        <a
+          href="mailto:bruno.a.dinis96@gmail.com"
+          data-footer-email-link
+          class="px-5 py-3 rounded-xl border-2 border-space-border bg-space-surface-2 hover:border-bebop-amber hover:text-bebop-amber transition-all shadow-comic-xs font-bold uppercase"
+        >
+          E-MAIL ✉
+        </a>
+
+        <a
+          href="/whoami"
+          data-footer-whoami-link
+          class="px-5 py-3 rounded-xl border-2 border-space-border bg-space-surface-2 hover:border-bebop-red hover:text-bebop-red transition-all shadow-comic-xs font-bold uppercase"
+        >
+          /WHOAMI ⚡
+        </a>
+      </div>
+
+      <!-- Botão Voltar ao Topo Suave -->
+      <div>
+        <a
+          href="#main-content"
+          data-footer-back-to-top
+          class="group inline-flex items-center gap-2 px-6 py-3.5 rounded-full border-3 border-space-base bg-paper-white text-space-base font-display text-xs sm:text-sm font-black uppercase tracking-wider hover:bg-acid-green transition-all shadow-comic-sm active:translate-x-0.5 active:translate-y-0.5"
+          aria-label="Voltar suavemente ao topo da nave"
+        >
+          <span>BACK TO COCKPIT</span>
+          <span class="group-hover:-translate-y-1 transition-transform font-mono">↑</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- Metadados de Copyright e Créditos Técnicos -->
+    <div class="mt-10 sm:mt-12 pt-6 border-t border-space-border/40 flex flex-col sm:flex-row items-center justify-between gap-4 font-mono text-[11px] sm:text-xs text-muted-gray text-center sm:text-left">
+      <div>
+        <p class="font-bold text-paper-white/80">
+          © 2026 BRUNO DE ANDRADE DINIS (BRINU) // ALL RIGHTS RESERVED.
+        </p>
+        <p class="mt-0.5 text-muted-gray/80">
+          DESIGNED & ENGINEERED IN CAMPINAS / SP • MAGALU CLOUD
+        </p>
+      </div>
+
+      <div class="sm:text-right">
+        <p class="text-bebop-amber/90">
+          ASTRO • REACT • TAILWIND V4 • GSAP • WEB AUDIO API
+        </p>
+        <p class="mt-0.5 text-muted-gray/70">
+          NO COOKIES • ZERO TRACKING • PURE RETROFUTURISTIC PERFORMANCE
+        </p>
+      </div>
+    </div>
   </div>
 </footer>
