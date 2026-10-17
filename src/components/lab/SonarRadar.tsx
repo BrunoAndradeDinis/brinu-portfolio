@@ -291,7 +291,16 @@ export const SonarRadar: React.FC = () => {
                 : 'bg-space-surface-2 border-space-border text-muted-gray hover:text-paper-white'
             }`}
           >
-            <span>{!isMuted ? '🔊' : '🔇'}</span>
+            {!isMuted ? (
+              <svg className="size-3.5 shrink-0" aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15.536 8.464a5 5 0 010 7.072M18.364 5.636a9 9 0 010 12.728M11 5L6 9H2v6h4l5 4V5z" />
+              </svg>
+            ) : (
+              <svg className="size-3.5 shrink-0" aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5.586 15H2v-6h3.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
+              </svg>
+            )}
             <span>{!isMuted ? 'SONAR AUDIO: ON' : 'SONAR AUDIO: MUTED'}</span>
           </button>
         </div>

@@ -38,7 +38,7 @@ export const BountyDispatch: React.FC = () => {
     return Object.keys(nextErrors).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     if (!validate()) {
@@ -112,8 +112,11 @@ export const BountyDispatch: React.FC = () => {
               }`}
             />
             {errors.name && (
-              <span data-error-name className="text-bebop-red text-[11px] mt-1 block font-bold">
-                ⚠ {errors.name}
+              <span data-error-name className="text-bebop-red text-[11px] mt-1.5 flex items-center gap-1.5 font-bold">
+                <svg className="size-3.5 shrink-0" aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                <span>{errors.name}</span>
               </span>
             )}
           </div>
@@ -143,8 +146,11 @@ export const BountyDispatch: React.FC = () => {
               }`}
             />
             {errors.email && (
-              <span data-error-email className="text-bebop-red text-[11px] mt-1 block font-bold">
-                ⚠ {errors.email}
+              <span data-error-email className="text-bebop-red text-[11px] mt-1.5 flex items-center gap-1.5 font-bold">
+                <svg className="size-3.5 shrink-0" aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                <span>{errors.email}</span>
               </span>
             )}
           </div>
@@ -174,8 +180,11 @@ export const BountyDispatch: React.FC = () => {
               }`}
             />
             {errors.message && (
-              <span data-error-message className="text-bebop-red text-[11px] mt-1 block font-bold">
-                ⚠ {errors.message}
+              <span data-error-message className="text-bebop-red text-[11px] mt-1.5 flex items-center gap-1.5 font-bold">
+                <svg className="size-3.5 shrink-0" aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                <span>{errors.message}</span>
               </span>
             )}
           </div>
@@ -184,10 +193,12 @@ export const BountyDispatch: React.FC = () => {
           <button
             type="submit"
             data-dispatch-submit-btn
-            className="w-full py-3.5 px-6 rounded-xl border-2 border-space-base bg-paper-white text-space-base font-mono font-black text-xs sm:text-sm uppercase tracking-wider hover:bg-acid-green hover:border-space-base transition-all duration-200 shadow-comic-sm active:translate-x-0.5 active:translate-y-0.5 flex items-center justify-center gap-2"
+            className="w-full py-3.5 px-6 rounded-xl border-2 border-space-base bg-paper-white text-space-base font-mono font-black text-xs sm:text-sm uppercase tracking-wider hover:bg-acid-green hover:border-space-base transition-all duration-200 shadow-comic-sm active:translate-x-0.5 active:translate-y-0.5 flex items-center justify-center gap-2 cursor-pointer"
           >
             <span>TRANSMIT CONTRACT PAYLOAD</span>
-            <span>🚀</span>
+            <svg className="size-4 shrink-0" aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+            </svg>
           </button>
         </form>
       ) : (
@@ -226,18 +237,24 @@ export const BountyDispatch: React.FC = () => {
               )}&body=${encodeURIComponent(
                 `Codename: ${name}\nEmail: ${email}\n\nMensagem:\n${message}`
               )}`}
-              className="flex-1 py-3 px-4 rounded-xl border-2 border-space-base bg-bebop-red text-paper-white text-center font-bold text-xs uppercase tracking-wider hover:bg-paper-white hover:text-space-base transition-all shadow-comic-xs"
+              className="flex-1 py-3 px-4 rounded-xl border-2 border-space-base bg-bebop-red text-paper-white text-center font-bold text-xs uppercase tracking-wider hover:bg-paper-white hover:text-space-base transition-all shadow-comic-xs inline-flex items-center justify-center gap-2"
             >
-              ENVIAR CÓPIA POR E-MAIL ✉
+              <span>ENVIAR CÓPIA POR E-MAIL</span>
+              <svg className="size-4 shrink-0" aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              </svg>
             </a>
 
             <button
               type="button"
               data-new-transmission-btn
               onClick={handleReset}
-              className="py-3 px-4 rounded-xl border-2 border-space-border bg-space-surface-1 text-paper-white font-bold text-xs uppercase tracking-wider hover:border-acid-green hover:text-acid-green transition-all shadow-comic-xs"
+              className="py-3 px-4 rounded-xl border-2 border-space-border bg-space-surface-1 text-paper-white font-bold text-xs uppercase tracking-wider hover:border-acid-green hover:text-acid-green transition-all shadow-comic-xs inline-flex items-center justify-center gap-2 cursor-pointer"
             >
-              NOVA TRANSMISSÃO ↺
+              <span>NOVA TRANSMISSÃO</span>
+              <svg className="size-4 shrink-0" aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
             </button>
           </div>
         </div>

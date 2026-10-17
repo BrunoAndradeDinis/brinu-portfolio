@@ -97,8 +97,8 @@ export const CiladaAlert: React.FC = () => {
       toggleState = !toggleState;
       if (typeof document !== 'undefined') {
         document.title = toggleState
-          ? '🚨 É UMA CILADA, BRINU! 🚨'
-          : '⚠️ ALERTA DE SISTEMA ⚠️';
+          ? '[ALERTA] É UMA CILADA, BRINU!'
+          : '[SISTEMA] ALERTA DE SOBRECARGA';
 
         // Alterna favicon dinâmico
         const linkEl = document.querySelector<HTMLLinkElement>("link[rel*='icon']");
@@ -182,7 +182,13 @@ export const CiladaAlert: React.FC = () => {
 
         {/* Mensagem Principal */}
         <div className="mt-6 text-center space-y-4">
-          <div className="text-4xl sm:text-5xl animate-bounce">🚨</div>
+          <div className="flex justify-center" aria-hidden="true">
+            <div className="relative flex items-center justify-center p-3 rounded-2xl bg-bebop-red/20 border-2 border-bebop-red shadow-[0_0_24px_rgba(254,0,0,0.6)] animate-pulse">
+              <svg className="size-10 sm:size-12 text-bebop-red" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+            </div>
+          </div>
 
           <h2
             data-cilada-title
@@ -223,9 +229,12 @@ export const CiladaAlert: React.FC = () => {
             type="button"
             data-cilada-dismiss
             onClick={deactivateAlarm}
-            className="w-full py-3.5 px-6 rounded-xl border-2 border-space-base bg-paper-white text-space-base font-mono font-black text-xs sm:text-sm uppercase tracking-wider hover:bg-bebop-red hover:text-paper-white transition-all duration-150 shadow-comic-sm active:translate-x-0.5 active:translate-y-0.5"
+            className="w-full py-3.5 px-6 rounded-xl border-2 border-space-base bg-paper-white text-space-base font-mono font-black text-xs sm:text-sm uppercase tracking-wider hover:bg-bebop-red hover:text-paper-white hover:border-space-base transition-all duration-150 shadow-comic-sm active:translate-x-0.5 active:translate-y-0.5 inline-flex items-center justify-center gap-2 cursor-pointer"
           >
-            🛑 DESATIVAR ALARME MANUALMENTE [ESC]
+            <svg className="size-4 shrink-0" aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+            </svg>
+            <span>DESATIVAR ALARME MANUALMENTE [ESC]</span>
           </button>
         </div>
       </div>

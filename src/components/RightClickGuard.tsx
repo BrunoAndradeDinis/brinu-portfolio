@@ -85,9 +85,11 @@ export const RightClickGuard: React.FC = () => {
           data-toast-close
           onClick={closeToast}
           aria-label="Fechar alerta"
-          className="w-7 h-7 rounded-lg border-2 border-space-border bg-space-surface-2 flex items-center justify-center font-mono text-xs font-bold text-muted-gray hover:text-paper-white hover:border-bebop-red hover:bg-bebop-red/20 transition-all active:scale-95 shadow-comic-xs"
+          className="w-7 h-7 rounded-lg border-2 border-space-border bg-space-surface-2 flex items-center justify-center font-mono text-xs font-bold text-muted-gray hover:text-paper-white hover:border-bebop-red hover:bg-bebop-red/20 transition-all active:scale-95 shadow-comic-xs cursor-pointer"
         >
-          ✕
+          <svg className="size-3.5 shrink-0" aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
         </button>
       </div>
 
@@ -113,7 +115,7 @@ export const RightClickGuard: React.FC = () => {
             <span className="font-bold text-bebop-amber">Ei cowboy!</span> Tentando inspecionar os circuitos pelo botão direito?
           </p>
           <p className="font-mono text-[11px] sm:text-xs text-muted-gray leading-normal">
-            Pressione <kbd className="px-1.5 py-0.5 rounded bg-space-surface-2 border border-space-border font-bold text-acid-green shadow-comic-xs">F12</kbd> para abrir o terminal de bordo. Há um <span className="text-paper-white font-bold">cupom fiscal retrô</span> esperando por você no console DevTools! 🤫
+            Pressione <kbd className="px-1.5 py-0.5 rounded bg-space-surface-2 border border-space-border font-bold text-acid-green shadow-comic-xs">F12</kbd> para abrir o terminal de bordo. O <span className="text-paper-white font-bold">cupom fiscal de telemetria</span> já está registrado no console DevTools.
           </p>
         </div>
       </div>

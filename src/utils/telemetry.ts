@@ -37,10 +37,10 @@ export function printBebopReceipt(): void {
 
   console.log(
     `%c============================================================
-              🧾 BEBOP TRANSIT & BOUNTY RECEIPT #1996
+              [RECEIPT] BEBOP TRANSIT & BOUNTY RECEIPT #1996
 ------------------------------------------------------------
 OPERADOR: Bruno de Andrade Dinis ("Brinu")
-STATUS:   Pai da Helena 👧❤️ | Noivo apaixonado 💍
+STATUS:   Pai da Helena | Noivo apaixonado
 BASE:     Magalu Cloud (Software Engineer - Cloud & Front)
 MISSAO:   Construir interfaces lendarias & arquitetura veloz
 ------------------------------------------------------------
@@ -55,7 +55,7 @@ TOTAL: 100% CLEAN CODE, HARDCORE PERFORMANCE & PASSION
 ============================================================
 COMANDOS EXECUTAVEIS NO CONSOLE (Digite direto no prompt):
   > whoami    -> Acessa a pagina/terminal secreta da nave
-  > cilada    -> ⚠️ ATENCAO: Dispara o alarme de emergencia!
+  > cilada    -> [ALERTA] Dispara o alarme de emergencia!
   > status    -> Reemite este cupom fiscal
   > projects  -> Links diretos para os repositorios
   > contact   -> Inicia contato direto via email
@@ -75,7 +75,7 @@ export function initTelemetry(): void {
     Object.defineProperty(window, 'whoami', {
       get: () => {
         window.location.href = '/whoami';
-        return '🚀 Teleportando para o terminal de bordo: /whoami';
+        return '[TELEPORT] Acessando o terminal de bordo: /whoami';
       },
       configurable: true,
     });
@@ -83,7 +83,7 @@ export function initTelemetry(): void {
     Object.defineProperty(window, 'cilada', {
       get: () => {
         window.dispatchEvent(new CustomEvent('bebop:cilada-trigger'));
-        return '🚨 CILADA ATIVADA COM SUCESSO!';
+        return '[ALERTA] Protocolo cilada ativado com sucesso.';
       },
       configurable: true,
     });
@@ -91,7 +91,7 @@ export function initTelemetry(): void {
     Object.defineProperty(window, 'status', {
       get: () => {
         printBebopReceipt();
-        return '🧾 Cupom fiscal reimpresso no console.';
+        return '[RECIBO] Cupom fiscal reimpresso no console.';
       },
       configurable: true,
     });
@@ -125,7 +125,7 @@ export function initTelemetry(): void {
             URL: 'https://magalu.cloud',
           },
         ]);
-        return '📁 Projetos carregados na tabela acima.';
+        return '[PROJETOS] Tabela de projetos carregada acima.';
       },
       configurable: true,
     });
@@ -134,7 +134,7 @@ export function initTelemetry(): void {
       get: () => {
         window.location.href =
           'mailto:bruno.a.dinis96@gmail.com?subject=[Projeto/Proposta]%20Contato%20via%20Console';
-        return '📬 Abrindo cliente de email...';
+        return '[CONTATO] Abrindo cliente de email...';
       },
       configurable: true,
     });

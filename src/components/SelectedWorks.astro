@@ -2,338 +2,206 @@
 /**
  * SelectedWorks.astro
  * Seção de Projetos Selecionados & Bounty Archive.
- * Grid técnico com linhas de 1px, marcadores cruzados (+) e dados canônicos dos 4 cases.
- * Estilizada integralmente via Tailwind CSS v4 & Bebop Design Tokens.
+ * Linguagem Neo-Brutalista: vermelho absoluto, preto puro, linhas sólidas,
+ * cantos retos e tipografia crua. Cartões como fichas de arquivo impressas.
  */
 import { PROJECT_CASES } from "../data/cases";
 
 const track1Cases = PROJECT_CASES.filter((c) => c.track === 1);
 const track2Cases = PROJECT_CASES.filter((c) => c.track === 2);
+
+// Classes completas (necessário para o scanner do Tailwind)
+const variants = {
+  red: {
+    card: "bg-bebop-red text-black border-4 border-black shadow-[8px_8px_0_#000] hover:-translate-x-1 hover:-translate-y-1 hover:shadow-[12px_12px_0_#000]",
+    head: "border-b-4 border-black",
+    meta: "text-black",
+    badge: "bg-black text-bebop-amber",
+    title: "text-black",
+    subtitle: "text-black/80",
+    body: "text-black",
+    block: "border-2 border-black bg-black text-paper-white",
+    label1: "text-bebop-amber",
+    label2: "text-acid-green",
+    metric: "bg-bebop-amber text-black border-2 border-black",
+    stack: "border-2 border-black text-black",
+    links: "border-t-4 border-black",
+    link: "border-2 border-black bg-black text-paper-white hover:bg-paper-white hover:text-black",
+  },
+  black: {
+    card: "bg-black text-paper-white border-4 border-black shadow-[8px_8px_0_#000] hover:-translate-x-1 hover:-translate-y-1 hover:shadow-[12px_12px_0_#000]",
+    head: "border-b-4 border-bebop-red",
+    meta: "text-bebop-red",
+    badge: "bg-bebop-red text-black",
+    title: "text-bebop-red",
+    subtitle: "text-bebop-amber",
+    body: "text-paper-white",
+    block: "border-2 border-bebop-red bg-black text-paper-white",
+    label1: "text-bebop-amber",
+    label2: "text-acid-green",
+    metric: "bg-bebop-red text-black border-2 border-bebop-red",
+    stack: "border-2 border-bebop-red text-bebop-red",
+    links: "border-t-4 border-bebop-red",
+    link: "border-2 border-bebop-red bg-bebop-red text-black hover:bg-bebop-amber hover:border-bebop-amber",
+  },
+} as const;
+
+const tracks = [
+  { id: 1, cases: track1Cases, v: variants.red },
+  { id: 2, cases: track2Cases, v: variants.black },
+];
 ---
 
 <section
   id="works"
-  class="relative border-t-[0.7rem] border-space-base bg-space-base px-4 py-12 sm:px-8 sm:py-16 md:px-12 md:py-20 text-paper-white select-none overflow-hidden"
+  class="relative border-t-4 border-black bg-bebop-red px-4 py-12 sm:px-8 sm:py-16 md:px-12 md:py-20 text-black select-none overflow-hidden"
   aria-label="Bounty Archive: Projetos Autorais de Bruno Dinis"
 >
-  <!-- Bebop 35mm Film Leader & Faixa de Corte Seco (Abertura Tank!) -->
+  <!-- Fita técnica preta (jump cut) -->
   <div
     id="tank-jump-cut-strip"
     data-tank-strip
-    class="relative -mx-4 sm:-mx-8 md:-mx-12 -mt-12 sm:-mt-16 md:-mt-20 mb-12 sm:mb-16 md:mb-20 overflow-hidden border-b-4 border-space-surface-2 bg-space-base py-3 sm:py-4 select-none"
+    class="relative -mx-4 sm:-mx-8 md:-mx-12 -mt-12 sm:-mt-16 md:-mt-20 mb-12 sm:mb-16 md:mb-20 overflow-hidden border-b-4 border-black bg-black py-3 sm:py-4"
   >
-    <!-- Trilho Superior de Perfurações de Celuloide 35mm (Sprocket Holes) -->
-    <div
-      class="flex w-full items-center justify-between gap-1.5 sm:gap-2 overflow-hidden px-2 opacity-80"
-      aria-hidden="true"
-    >
+    <div class="flex w-full items-center justify-between gap-2 overflow-hidden px-2" aria-hidden="true">
       {Array.from({ length: 28 }).map(() => (
-        <span
-          class="inline-block h-2 sm:h-2.5 w-3.5 sm:w-5 shrink-0 rounded-[2px] border border-space-base bg-bebop-red shadow-[0_1px_0_var(--color-space-base)]"
-        />
+        <span class="inline-block h-2 sm:h-2.5 w-3.5 sm:w-5 shrink-0 bg-bebop-red" />
       ))}
     </div>
 
-    <!-- Faixa Editorial de Corte Analógico Tank! -->
-    <div
-      class="mx-auto flex w-full max-w-[140rem] flex-wrap items-center justify-between gap-3 px-4 sm:px-8 py-2.5 sm:py-3.5"
-    >
-      <div class="flex items-center gap-2.5 sm:gap-3.5">
+    <div class="mx-auto flex w-full max-w-[140rem] flex-wrap items-center justify-between gap-3 px-4 sm:px-8 py-2.5 sm:py-3.5">
+      <div class="flex items-center gap-3">
         <span
           data-jump-cut-badge
-          class="inline-flex items-center gap-1.5 rounded-sm border-2 border-space-base bg-bebop-red px-2.5 py-1 font-display text-[11px] sm:text-xs md:text-sm font-black tracking-wider text-paper-white shadow-comic-xs transition-transform duration-200"
+          class="inline-flex items-center border-2 border-bebop-red bg-bebop-red px-2.5 py-1 font-display text-[11px] sm:text-xs md:text-sm font-black uppercase tracking-wider text-black"
         >
-          <span>3, 2, 1 LET'S JAM</span>
-          <span class="inline-block h-1.5 w-1.5 rounded-full bg-paper-white animate-ping" />
+          3, 2, 1 LET'S JAM
         </span>
         <span class="font-mono text-[10px] sm:text-xs tracking-widest text-bebop-amber uppercase font-bold">
-          // CUT: 02 • 35MM REEL ARCHIVE
+          // CUT: 02 :: 35MM REEL ARCHIVE
         </span>
       </div>
-
-      <div class="flex items-center gap-3 font-mono text-[9px] sm:text-xs tracking-wider text-muted-gray uppercase">
-        <span class="hidden md:inline">FRAMERATE: 60 FPS GPU-SYNC</span>
-        <span class="rounded-full border border-acid-green/40 bg-space-surface-1 px-2.5 py-0.5 font-bold text-acid-green">
-          SESSION #01
-        </span>
+      <div class="flex items-center gap-3 font-mono text-[9px] sm:text-xs tracking-wider text-paper-white uppercase">
+        <span class="hidden md:inline">[ FRAMERATE: 60 FPS ]</span>
+        <span class="border-2 border-acid-green px-2.5 py-0.5 font-bold text-acid-green">[ SESSION #01 ]</span>
       </div>
     </div>
 
-    <!-- Trilho Inferior de Perfurações de Celuloide 35mm (Sprocket Holes) -->
-    <div
-      class="flex w-full items-center justify-between gap-1.5 sm:gap-2 overflow-hidden px-2 opacity-80"
-      aria-hidden="true"
-    >
+    <div class="flex w-full items-center justify-between gap-2 overflow-hidden px-2" aria-hidden="true">
       {Array.from({ length: 28 }).map(() => (
-        <span
-          class="inline-block h-2 sm:h-2.5 w-3.5 sm:w-5 shrink-0 rounded-[2px] border border-space-base bg-bebop-red shadow-[0_1px_0_var(--color-space-base)]"
-        />
+        <span class="inline-block h-2 sm:h-2.5 w-3.5 sm:w-5 shrink-0 bg-bebop-red" />
       ))}
     </div>
   </div>
 
-  <!-- Cabeçalho Editorial com Título Temático BOUNTY ARCHIVE -->
+  <!-- Cabeçalho editorial -->
   <div class="mx-auto mb-12 sm:mb-16 max-w-[140rem]">
-    <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 pb-4 border-b border-space-border/60">
+    <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 pb-4 border-b-4 border-black">
       <div>
-        <span class="mb-2 block font-mono text-xs sm:text-sm tracking-widest text-bebop-amber uppercase">
-          [ ACT I // 35MM FILM REEL • BOUNTY ARCHIVE ]
+        <span class="mb-2 block font-mono text-xs sm:text-sm font-bold tracking-widest text-black uppercase">
+          [ ACT I // 35MM FILM REEL :: BOUNTY ARCHIVE ]
         </span>
         <h2
           data-bounty-title
-          class="font-display text-[clamp(2.2rem,6vw,5rem)] font-black tracking-tight text-paper-white leading-none uppercase"
+          class="font-display text-[clamp(2.2rem,6vw,5rem)] font-black tracking-tight text-black leading-none uppercase"
         >
           BOUNTY ARCHIVE
         </h2>
       </div>
-
-      <div class="flex flex-col sm:items-end text-left sm:text-right font-mono text-xs text-muted-gray">
-        <span class="font-bold text-paper-white">SELECTED WORKS // 4 CASES</span>
-        <span class="text-[10px] sm:text-xs text-muted-gray tracking-wider">
-          MAGALU CLOUD • DISTRIBUTED SYSTEMS • CREATIVE FRONTEND
+      <div class="flex flex-col sm:items-end text-left sm:text-right font-mono text-xs text-black uppercase">
+        <span class="font-black">SELECTED WORKS // 4 CASES</span>
+        <span class="text-[10px] sm:text-xs tracking-wider">
+          MAGALU CLOUD :: DISTRIBUTED SYSTEMS :: CREATIVE FRONTEND
         </span>
       </div>
     </div>
   </div>
 
-  <!-- Grid de Layout Técnico com Linhas de 1px e Marcadores Cruzados (+) -->
-  <div
-    data-technical-grid
-    class="relative mx-auto max-w-[140rem] rounded-2xl sm:rounded-3xl border border-space-border/80 bg-space-surface-1/30 p-5 sm:p-8 md:p-10 backdrop-blur-xs"
-  >
-    <!-- Marcadores Cruzados nos 4 Cantos (Crosshair Markers +) -->
+  <!-- Grid de arquivo técnico -->
+  <div data-technical-grid class="relative mx-auto max-w-[140rem]">
     <div
-      class="pointer-events-none absolute -top-3 -left-3 font-mono text-base sm:text-lg font-black text-bebop-amber select-none z-10"
+      class="mb-8 flex items-center justify-between border-b-2 border-black pb-3 font-mono text-[9px] sm:text-xs font-bold text-black uppercase"
       aria-hidden="true"
     >
-      +
-    </div>
-    <div
-      class="pointer-events-none absolute -top-3 -right-3 font-mono text-base sm:text-lg font-black text-bebop-amber select-none z-10"
-      aria-hidden="true"
-    >
-      +
-    </div>
-    <div
-      class="pointer-events-none absolute -bottom-3 -left-3 font-mono text-base sm:text-lg font-black text-bebop-amber select-none z-10"
-      aria-hidden="true"
-    >
-      +
-    </div>
-    <div
-      class="pointer-events-none absolute -bottom-3 -right-3 font-mono text-base sm:text-lg font-black text-bebop-amber select-none z-10"
-      aria-hidden="true"
-    >
-      +
-    </div>
-
-    <!-- Barra de Telemetria de Coordenadas de Grid -->
-    <div
-      class="mb-8 flex items-center justify-between border-b border-space-border/60 pb-3 font-mono text-[9px] sm:text-xs text-muted-gray uppercase select-none"
-      aria-hidden="true"
-    >
-      <div class="flex items-center gap-3">
-        <span class="h-2 w-2 rounded-full bg-acid-green animate-pulse"></span>
-        <span>GRID: 2-COL TECHNICAL ARCHIVE</span>
-      </div>
+      <span>:: GRID: 2-COL TECHNICAL ARCHIVE</span>
       <span>COORD: 35.6895 // SECTOR: WORKS</span>
     </div>
 
-    <!-- Conteúdo dos Cards em Grid (1 coluna em mobile -> 2 colunas em desktop) -->
     <div class="flex flex-col gap-10 sm:gap-12">
-      <!-- Trilho 1 Inclinado (Cases 1 & 2) -->
-      <div
-        data-reel-track="1"
-        class="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 -rotate-1 transition-transform duration-500 hover:rotate-0"
-      >
-        {track1Cases.map((project) => (
-          <article
-            id={`case-${project.id}`}
-            data-reel-card
-            class="group relative flex flex-col justify-between overflow-hidden rounded-2xl border-4 border-bebop-red bg-space-surface-1 p-6 sm:p-8 shadow-[0_8px_0_rgba(254,0,0,0.4)] transition-all duration-200 hover:-translate-y-1.5 hover:shadow-[0_12px_24px_rgba(254,0,0,0.35)]"
-          >
-            <!-- CRT Scanline & Distortion Sweep Overlay -->
-            <div
-              data-card-distortion
-              class="pointer-events-none absolute inset-0 z-0 opacity-0 transition-opacity duration-200 group-hover:opacity-100 overflow-hidden"
-              aria-hidden="true"
+      {tracks.map((track) => (
+        <div data-reel-track={track.id} class="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-10">
+          {track.cases.map((project) => (
+            <article
+              id={`case-${project.id}`}
+              data-reel-card
+              class:list={["group relative flex flex-col justify-between rounded-none transition-all duration-150", track.v.card]}
             >
-              <!-- Linhas de varredura CRT analógicas -->
-              <div class="absolute inset-0 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.4)_50%)] bg-[length:100%_4px] opacity-40" />
-              <!-- Feixe catódico / Shimmer de distorção suave -->
-              <div class="distortion-scanline absolute inset-x-0 -top-full h-full bg-gradient-to-b from-transparent via-bebop-red/[0.08] to-transparent will-change-transform" />
-            </div>
-
-            <div class="relative z-10">
-              <div class="mb-3 flex flex-wrap items-center justify-between gap-2 font-mono text-xs text-muted-gray">
-                <span class="text-bebop-red font-bold">{project.reelNumber} // {project.category}</span>
-                <span
-                  data-badge-indicator
-                  class="rounded-full border border-space-border/60 bg-space-surface-2 px-3 py-0.5 text-paper-white font-bold text-[10px] sm:text-xs transition-all duration-200 group-hover:border-bebop-amber group-hover:bg-bebop-amber group-hover:text-space-base group-hover:shadow-[0_0_12px_rgba(235,166,2,0.7)] group-hover:scale-105"
-                >
-                  {project.badge}
-                </span>
-              </div>
-
-              <h3 class="font-display text-2xl sm:text-3xl font-black text-paper-white leading-tight">
-                {project.title}
-              </h3>
-              <p class="font-mono text-xs text-bebop-amber font-semibold mb-3">
-                {project.subtitle}
-              </p>
-
-              <p class="font-body text-sm sm:text-base text-paper-white/90 leading-relaxed mb-4">
-                {project.description}
-              </p>
-
-              <!-- Bloco Técnico: Desafio & Solução -->
-              <div class="space-y-3 rounded-xl border border-space-border/60 bg-space-base/60 p-4 mb-4 font-mono text-xs text-muted-gray leading-relaxed">
-                <div>
-                  <span class="font-bold text-bebop-amber block text-[11px] uppercase tracking-wider mb-1">
-                    ⚡ DESAFIO TÉCNICO:
-                  </span>
-                  <p class="text-[11px] sm:text-xs text-paper-white/80">{project.challenge}</p>
-                </div>
-                <div>
-                  <span class="font-bold text-acid-green block text-[11px] uppercase tracking-wider mb-1">
-                    🛠️ SOLUÇÃO ARQUITETURAL:
-                  </span>
-                  <p class="text-[11px] sm:text-xs text-paper-white/80">{project.solution}</p>
-                </div>
-              </div>
-
-              <!-- Métrica / Impacto -->
-              <div class="mb-5 flex items-start gap-2 rounded-lg border border-bebop-red/30 bg-bebop-red/10 px-3 py-2 font-mono text-[11px] sm:text-xs text-paper-white">
-                <span class="text-bebop-red font-black shrink-0">METRIC //</span>
-                <span>{project.metric}</span>
-              </div>
-            </div>
-
-            <div class="relative z-10">
-              <!-- Stack Badges -->
-              <div class="mb-5 flex flex-wrap gap-1.5 sm:gap-2 font-mono text-[10px] sm:text-xs">
-                {project.stack.map((tech) => (
-                  <span class="rounded border border-space-border bg-space-surface-2/60 px-2.5 py-1 text-paper-white font-medium">
-                    {tech}
-                  </span>
-                ))}
-              </div>
-
-              <!-- Links de Ação -->
-              <div class="flex flex-wrap items-center gap-3 pt-3 border-t border-space-border/60">
-                {project.links.map((link) => (
-                  <a
-                    href={link.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label={link.ariaLabel}
-                    class="inline-flex items-center gap-1.5 rounded-full border-2 border-bebop-red bg-space-surface-2 px-3.5 py-1.5 font-mono text-xs font-bold text-paper-white shadow-comic-xs transition-all duration-150 hover:-translate-y-0.5 hover:bg-bebop-red hover:text-paper-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-bebop-red"
+              <div class="relative z-10 p-6 sm:p-8">
+                <div class:list={["mb-4 flex flex-wrap items-center justify-between gap-2 pb-3 font-mono text-xs font-black uppercase", track.v.head, track.v.meta]}>
+                  <span>[ {project.reelNumber} ] // {project.category}</span>
+                  <span
+                    data-badge-indicator
+                    class:list={["rounded-none px-2.5 py-0.5 text-[10px] sm:text-xs font-black", track.v.badge]}
                   >
-                    <span>{link.label}</span>
-                  </a>
-                ))}
-              </div>
-            </div>
-          </article>
-        ))}
-      </div>
-
-      <!-- Trilho 2 Inclinado com Parallax Oposto (Cases 3 & 4) -->
-      <div
-        data-reel-track="2"
-        class="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 rotate-1 transition-transform duration-500 hover:rotate-0"
-      >
-        {track2Cases.map((project) => (
-          <article
-            id={`case-${project.id}`}
-            data-reel-card
-            class="group relative flex flex-col justify-between overflow-hidden rounded-2xl border-4 border-acid-green bg-space-surface-1 p-6 sm:p-8 shadow-[0_8px_0_rgba(46,254,12,0.3)] transition-all duration-200 hover:-translate-y-1.5 hover:shadow-[0_12px_24px_rgba(46,254,12,0.35)]"
-          >
-            <!-- CRT Scanline & Distortion Sweep Overlay -->
-            <div
-              data-card-distortion
-              class="pointer-events-none absolute inset-0 z-0 opacity-0 transition-opacity duration-200 group-hover:opacity-100 overflow-hidden"
-              aria-hidden="true"
-            >
-              <!-- Linhas de varredura CRT analógicas -->
-              <div class="absolute inset-0 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.4)_50%)] bg-[length:100%_4px] opacity-40" />
-              <!-- Feixe catódico / Shimmer de distorção suave -->
-              <div class="distortion-scanline absolute inset-x-0 -top-full h-full bg-gradient-to-b from-transparent via-acid-green/[0.08] to-transparent will-change-transform" />
-            </div>
-
-            <div class="relative z-10">
-              <div class="mb-3 flex flex-wrap items-center justify-between gap-2 font-mono text-xs text-muted-gray">
-                <span class="text-acid-green font-bold">{project.reelNumber} // {project.category}</span>
-                <span
-                  data-badge-indicator
-                  class="rounded-full border border-space-border/60 bg-space-surface-2 px-3 py-0.5 text-paper-white font-bold text-[10px] sm:text-xs transition-all duration-200 group-hover:border-bebop-amber group-hover:bg-bebop-amber group-hover:text-space-base group-hover:shadow-[0_0_12px_rgba(235,166,2,0.7)] group-hover:scale-105"
-                >
-                  {project.badge}
-                </span>
-              </div>
-
-              <h3 class="font-display text-2xl sm:text-3xl font-black text-paper-white leading-tight">
-                {project.title}
-              </h3>
-              <p class="font-mono text-xs text-bebop-amber font-semibold mb-3">
-                {project.subtitle}
-              </p>
-
-              <p class="font-body text-sm sm:text-base text-paper-white/90 leading-relaxed mb-4">
-                {project.description}
-              </p>
-
-              <!-- Bloco Técnico: Desafio & Solução -->
-              <div class="space-y-3 rounded-xl border border-space-border/60 bg-space-base/60 p-4 mb-4 font-mono text-xs text-muted-gray leading-relaxed">
-                <div>
-                  <span class="font-bold text-bebop-amber block text-[11px] uppercase tracking-wider mb-1">
-                    ⚡ DESAFIO TÉCNICO:
+                    {project.badge}
                   </span>
-                  <p class="text-[11px] sm:text-xs text-paper-white/80">{project.challenge}</p>
                 </div>
-                <div>
-                  <span class="font-bold text-acid-green block text-[11px] uppercase tracking-wider mb-1">
-                    🛠️ SOLUÇÃO ARQUITETURAL:
-                  </span>
-                  <p class="text-[11px] sm:text-xs text-paper-white/80">{project.solution}</p>
+
+                <h3 class:list={["font-display text-2xl sm:text-3xl font-black uppercase leading-tight tracking-tight", track.v.title]}>
+                  {project.title}
+                </h3>
+                <p class:list={["font-mono text-xs font-bold uppercase mb-3", track.v.subtitle]}>
+                  {project.subtitle}
+                </p>
+                <p class:list={["font-body text-sm sm:text-base leading-relaxed mb-5", track.v.body]}>
+                  {project.description}
+                </p>
+
+                <div class:list={["space-y-4 p-4 mb-5 font-mono text-xs leading-relaxed", track.v.block]}>
+                  <div>
+                    <span class:list={["block font-black text-[11px] uppercase tracking-widest mb-1", track.v.label1]}>
+                      // DESAFIO TÉCNICO
+                    </span>
+                    <p class="text-[11px] sm:text-xs">{project.challenge}</p>
+                  </div>
+                  <div>
+                    <span class:list={["block font-black text-[11px] uppercase tracking-widest mb-1", track.v.label2]}>
+                      :: SOLUÇÃO ARQUITETURAL
+                    </span>
+                    <p class="text-[11px] sm:text-xs">{project.solution}</p>
+                  </div>
+                </div>
+
+                <div class:list={["mb-5 flex items-start gap-2 px-3 py-2 font-mono text-[11px] sm:text-xs font-bold", track.v.metric]}>
+                  <span class="font-black shrink-0">[ METRIC ]</span>
+                  <span>{project.metric}</span>
+                </div>
+
+                <div class="mb-5 flex flex-wrap gap-2 font-mono text-[10px] sm:text-xs uppercase">
+                  {project.stack.map((tech) => (
+                    <span class:list={["rounded-none px-2.5 py-1 font-bold", track.v.stack]}>{tech}</span>
+                  ))}
+                </div>
+
+                <div class:list={["flex flex-wrap items-center gap-3 pt-4", track.v.links]}>
+                  {project.links.map((link) => (
+                    <a
+                      href={link.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={link.ariaLabel}
+                      class:list={["inline-flex items-center gap-2 rounded-none px-3.5 py-1.5 font-mono text-xs font-black uppercase transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-black", track.v.link]}
+                    >
+                      <span>{link.label}</span>
+                      <span aria-hidden="true">↗</span>
+                    </a>
+                  ))}
                 </div>
               </div>
-
-              <!-- Métrica / Impacto -->
-              <div class="mb-5 flex items-start gap-2 rounded-lg border border-acid-green/30 bg-acid-green/10 px-3 py-2 font-mono text-[11px] sm:text-xs text-paper-white">
-                <span class="text-acid-green font-black shrink-0">METRIC //</span>
-                <span>{project.metric}</span>
-              </div>
-            </div>
-
-            <div class="relative z-10">
-              <!-- Stack Badges -->
-              <div class="mb-5 flex flex-wrap gap-1.5 sm:gap-2 font-mono text-[10px] sm:text-xs">
-                {project.stack.map((tech) => (
-                  <span class="rounded border border-space-border bg-space-surface-2/60 px-2.5 py-1 text-paper-white font-medium">
-                    {tech}
-                  </span>
-                ))}
-              </div>
-
-              <!-- Links de Ação -->
-              <div class="flex flex-wrap items-center gap-3 pt-3 border-t border-space-border/60">
-                {project.links.map((link) => (
-                  <a
-                    href={link.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label={link.ariaLabel}
-                    class="inline-flex items-center gap-1.5 rounded-full border-2 border-acid-green bg-space-surface-2 px-3.5 py-1.5 font-mono text-xs font-bold text-paper-white shadow-comic-xs transition-all duration-150 hover:-translate-y-0.5 hover:bg-acid-green hover:text-space-base focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-acid-green"
-                  >
-                    <span>{link.label}</span>
-                  </a>
-                ))}
-              </div>
-            </div>
-          </article>
-        ))}
-      </div>
+            </article>
+          ))}
+        </div>
+      ))}
     </div>
   </div>
 </section>

@@ -52,13 +52,13 @@ export const PROJECT_CASES: ProjectCase[] = [
     shadowColor: 'rgba(254,0,0,0.4)',
     links: [
       {
-        label: 'ENGINE REPO ↗',
+        label: 'ENGINE REPO',
         url: 'https://github.com/BrunoAndradeDinis/auraStream',
         type: 'github',
         ariaLabel: 'Acessar repositório da AuraStream Engine no GitHub (abre em nova aba)',
       },
       {
-        label: 'CONTROL PLANE ↗',
+        label: 'CONTROL PLANE',
         url: 'https://github.com/BrunoAndradeDinis/painel-stream',
         type: 'github',
         ariaLabel: 'Acessar repositório do Painel de Controle no GitHub (abre em nova aba)',
@@ -86,7 +86,7 @@ export const PROJECT_CASES: ProjectCase[] = [
     shadowColor: 'rgba(254,0,0,0.4)',
     links: [
       {
-        label: 'GITHUB REPO ↗',
+        label: 'GITHUB REPO',
         url: 'https://github.com/BrunoAndradeDinis/quake-log-backend-node',
         type: 'github',
         ariaLabel: 'Acessar repositório da Quake Log Parser API no GitHub (abre em nova aba)',
@@ -114,13 +114,13 @@ export const PROJECT_CASES: ProjectCase[] = [
     shadowColor: 'rgba(46,254,12,0.3)',
     links: [
       {
-        label: 'LIVE DEMO ↗',
+        label: 'LIVE DEMO',
         url: 'https://jokenpo-three-psi.vercel.app',
         type: 'demo',
         ariaLabel: 'Jogar online na Arena Franky (abre em nova aba)',
       },
       {
-        label: 'GITHUB REPO ↗',
+        label: 'GITHUB REPO',
         url: 'https://github.com/BrunoAndradeDinis/jokenpo',
         type: 'github',
         ariaLabel: 'Acessar repositório do Jokenpo no GitHub (abre em nova aba)',
@@ -148,13 +148,13 @@ export const PROJECT_CASES: ProjectCase[] = [
     shadowColor: 'rgba(46,254,12,0.3)',
     links: [
       {
-        label: 'LIVE DEMO ↗',
+        label: 'LIVE DEMO',
         url: 'https://the-warriors-gamma.vercel.app',
         type: 'demo',
         ariaLabel: 'Visitar demo online de The Warriors (abre em nova aba)',
       },
       {
-        label: 'GITHUB REPO ↗',
+        label: 'GITHUB REPO',
         url: 'https://github.com/BrunoAndradeDinis/TheWarriors',
         type: 'github',
         ariaLabel: 'Acessar repositório de The Warriors no GitHub (abre em nova aba)',
