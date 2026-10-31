@@ -38,6 +38,12 @@ scripts/*.png
 # Agents
 .agents/
 .claude/
+.agents/skills
+.claude/skills
 
 # Skills Lock
 skills-lock.json
+
+
+# scripts
+scripts/
