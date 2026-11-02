@@ -236,6 +236,20 @@ test('T8: ComicHero uses canonical PROFILE email and LinkedIn and zero wrong har
   assert.equal(heroSrc.includes('linkedin.com/in/brunoandradedinis'), false);
 });
 
+test('T9: SelectedWorks.astro binds bilingual data-case-* and data-i18n attributes in Red/Black/White', () => {
+  const worksSrc = fs.readFileSync(
+    path.resolve('src/components/SelectedWorks.astro'),
+    'utf8'
+  );
+  assert.ok(worksSrc.includes('data-case-title'));
+  assert.ok(worksSrc.includes('data-case-description'));
+  assert.ok(worksSrc.includes('data-case-challenge'));
+  assert.ok(worksSrc.includes('data-case-solution'));
+  assert.ok(worksSrc.includes('data-case-metric'));
+  assert.ok(worksSrc.includes('data-i18n="works.title"'));
+});
+
+
 
 
 

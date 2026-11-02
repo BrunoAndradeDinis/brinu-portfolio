@@ -1,48 +1,43 @@
 ---
-/**
- * SelectedWorks.astro
- * Seção de Projetos Selecionados & Bounty Archive.
- * Linguagem Neo-Brutalista: vermelho absoluto, preto puro, linhas sólidas,
- * cantos retos e tipografia crua. Cartões como fichas de arquivo impressas.
- */
-import { PROJECT_CASES } from "../data/cases";
+import { getLocalizedCases } from "../data/cases";
+import { ptBrDict } from "../i18n/dictionaries";
 
-const track1Cases = PROJECT_CASES.filter((c) => c.track === 1);
-const track2Cases = PROJECT_CASES.filter((c) => c.track === 2);
+const cases = getLocalizedCases("pt-br");
+const track1Cases = cases.filter((c) => c.track === 1);
+const track2Cases = cases.filter((c) => c.track === 2);
 
-// Classes completas (necessário para o scanner do Tailwind)
 const variants = {
   red: {
-    card: "bg-bebop-red text-black border-4 border-black shadow-[8px_8px_0_#000] hover:-translate-x-1 hover:-translate-y-1 hover:shadow-[12px_12px_0_#000]",
-    head: "border-b-4 border-black",
-    meta: "text-black",
-    badge: "bg-black text-bebop-amber",
-    title: "text-black",
-    subtitle: "text-black/80",
-    body: "text-black",
-    block: "border-2 border-black bg-black text-paper-white",
-    label1: "text-bebop-amber",
-    label2: "text-acid-green",
-    metric: "bg-bebop-amber text-black border-2 border-black",
-    stack: "border-2 border-black text-black",
-    links: "border-t-4 border-black",
-    link: "border-2 border-black bg-black text-paper-white hover:bg-paper-white hover:text-black",
+    card: "bg-bebop-red text-space-base border-4 border-space-base shadow-[8px_8px_0_var(--color-space-base)] hover:-translate-x-1 hover:-translate-y-1 hover:shadow-[12px_12px_0_var(--color-space-base)]",
+    head: "border-b-4 border-space-base",
+    meta: "text-space-base",
+    badge: "bg-space-base text-paper-white",
+    title: "text-space-base",
+    subtitle: "text-space-base/85",
+    body: "text-space-base",
+    block: "border-2 border-space-base bg-space-base text-paper-white",
+    label1: "text-bebop-red",
+    label2: "text-paper-white",
+    metric: "bg-paper-white text-space-base border-2 border-space-base",
+    stack: "border-2 border-space-base bg-paper-white/90 text-space-base",
+    links: "border-t-4 border-space-base",
+    link: "border-2 border-space-base bg-space-base text-paper-white hover:bg-paper-white hover:text-space-base",
   },
   black: {
-    card: "bg-black text-paper-white border-4 border-black shadow-[8px_8px_0_#000] hover:-translate-x-1 hover:-translate-y-1 hover:shadow-[12px_12px_0_#000]",
+    card: "bg-space-base text-paper-white border-4 border-paper-white shadow-[8px_8px_0_var(--color-space-base)] hover:-translate-x-1 hover:-translate-y-1 hover:shadow-[12px_12px_0_var(--color-space-base)]",
     head: "border-b-4 border-bebop-red",
     meta: "text-bebop-red",
-    badge: "bg-bebop-red text-black",
-    title: "text-bebop-red",
-    subtitle: "text-bebop-amber",
+    badge: "bg-bebop-red text-paper-white",
+    title: "text-paper-white",
+    subtitle: "text-bebop-red",
     body: "text-paper-white",
-    block: "border-2 border-bebop-red bg-black text-paper-white",
-    label1: "text-bebop-amber",
-    label2: "text-acid-green",
-    metric: "bg-bebop-red text-black border-2 border-bebop-red",
-    stack: "border-2 border-bebop-red text-bebop-red",
+    block: "border-2 border-paper-white bg-space-surface-1 text-paper-white",
+    label1: "text-bebop-red",
+    label2: "text-paper-white",
+    metric: "bg-bebop-red text-paper-white border-2 border-paper-white",
+    stack: "border-2 border-paper-white text-paper-white",
     links: "border-t-4 border-bebop-red",
-    link: "border-2 border-bebop-red bg-bebop-red text-black hover:bg-bebop-amber hover:border-bebop-amber",
+    link: "border-2 border-paper-white bg-bebop-red text-paper-white hover:bg-paper-white hover:text-space-base",
   },
 } as const;
 
@@ -54,78 +49,64 @@ const tracks = [
 
 <section
   id="works"
-  class="relative border-t-4 border-black bg-bebop-red px-4 py-12 sm:px-8 sm:py-16 md:px-12 md:py-20 text-black select-none overflow-hidden"
-  aria-label="Bounty Archive: Projetos Autorais de Bruno Dinis"
+  class="relative border-t-4 border-space-base bg-bebop-red px-4 py-12 sm:px-8 sm:py-16 md:px-12 md:py-20 text-space-base select-none overflow-hidden"
+  aria-label={ptBrDict.works.sectionAria}
+  data-i18n="works.sectionAria"
+  data-i18n-attr="aria-label"
 >
-  <!-- Fita técnica preta (jump cut) -->
   <div
     id="tank-jump-cut-strip"
     data-tank-strip
-    class="relative -mx-4 sm:-mx-8 md:-mx-12 -mt-12 sm:-mt-16 md:-mt-20 mb-12 sm:mb-16 md:mb-20 overflow-hidden border-b-4 border-black bg-black py-3 sm:py-4"
+    class="relative -mx-4 sm:-mx-8 md:-mx-12 -mt-12 sm:-mt-16 md:-mt-20 mb-12 sm:mb-16 md:mb-20 overflow-hidden border-b-4 border-space-base bg-space-base py-3 sm:py-4"
   >
-    <div class="flex w-full items-center justify-between gap-2 overflow-hidden px-2" aria-hidden="true">
-      {Array.from({ length: 28 }).map(() => (
-        <span class="inline-block h-2 sm:h-2.5 w-3.5 sm:w-5 shrink-0 bg-bebop-red" />
-      ))}
-    </div>
-
-    <div class="mx-auto flex w-full max-w-[140rem] flex-wrap items-center justify-between gap-3 px-4 sm:px-8 py-2.5 sm:py-3.5">
+    <div class="mx-auto flex w-full max-w-[140rem] flex-wrap items-center justify-between gap-3 px-4 sm:px-8 py-1.5">
       <div class="flex items-center gap-3">
         <span
           data-jump-cut-badge
-          class="inline-flex items-center border-2 border-bebop-red bg-bebop-red px-2.5 py-1 font-display text-[11px] sm:text-xs md:text-sm font-black uppercase tracking-wider text-black"
+          data-i18n="works.jumpCutBadge"
+          class="inline-flex items-center border-2 border-paper-white bg-bebop-red px-2.5 py-1 font-display text-[11px] sm:text-xs md:text-sm font-black uppercase tracking-wider text-paper-white -skew-x-6"
         >
-          3, 2, 1 LET'S JAM
+          {ptBrDict.works.jumpCutBadge}
         </span>
-        <span class="font-mono text-[10px] sm:text-xs tracking-widest text-bebop-amber uppercase font-bold">
-          // CUT: 02 :: BOUNTY REEL ARCHIVE
+        <span
+          class="font-mono text-[10px] sm:text-xs tracking-widest text-paper-white uppercase font-bold"
+          data-i18n="works.jumpCutSub"
+        >
+          {ptBrDict.works.jumpCutSub}
         </span>
       </div>
       <div class="flex items-center gap-3 font-mono text-[9px] sm:text-xs tracking-wider text-paper-white uppercase">
-        <span class="border-2 border-acid-green px-2.5 py-0.5 font-bold text-acid-green">[ SESSION #01 ]</span>
+        <span class="border-2 border-paper-white px-2.5 py-0.5 font-bold text-paper-white" data-i18n="works.sessionTag">
+          {ptBrDict.works.sessionTag}
+        </span>
       </div>
-    </div>
-
-    <div class="flex w-full items-center justify-between gap-2 overflow-hidden px-2" aria-hidden="true">
-      {Array.from({ length: 28 }).map(() => (
-        <span class="inline-block h-2 sm:h-2.5 w-3.5 sm:w-5 shrink-0 bg-bebop-red" />
-      ))}
     </div>
   </div>
 
-  <!-- Cabeçalho editorial -->
   <div class="mx-auto mb-12 sm:mb-16 max-w-[140rem]">
-    <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 pb-4 border-b-4 border-black">
+    <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 pb-4 border-b-4 border-space-base">
       <div>
-        <span class="mb-2 block font-mono text-xs sm:text-sm font-bold tracking-widest text-black uppercase">
-          [ ACT I // SELECTED WORKS :: BOUNTY ARCHIVE ]
+        <span class="mb-2 block font-mono text-xs sm:text-sm font-bold tracking-widest text-space-base uppercase" data-i18n="works.actTag">
+          {ptBrDict.works.actTag}
         </span>
         <h2
           data-bounty-title
-          class="font-display text-[clamp(2.2rem,6vw,5rem)] font-black tracking-tight text-black leading-none uppercase"
+          data-i18n="works.title"
+          class="font-display text-[clamp(2.2rem,6vw,5rem)] font-black tracking-tight text-space-base leading-none uppercase"
         >
-          BOUNTY ARCHIVE
+          {ptBrDict.works.title}
         </h2>
       </div>
-      <div class="flex flex-col sm:items-end text-left sm:text-right font-mono text-xs text-black uppercase">
-        <span class="font-black">SELECTED WORKS // 4 CASES</span>
-        <span class="text-[10px] sm:text-xs tracking-wider">
-          CLOUD INFRASTRUCTURE :: DISTRIBUTED SYSTEMS :: CREATIVE FRONTEND
+      <div class="flex flex-col sm:items-end text-left sm:text-right font-mono text-xs text-space-base uppercase">
+        <span class="font-black" data-i18n="works.countLabel">{ptBrDict.works.countLabel}</span>
+        <span class="text-[10px] sm:text-xs tracking-wider" data-i18n="works.domainLabel">
+          {ptBrDict.works.domainLabel}
         </span>
       </div>
     </div>
   </div>
 
-  <!-- Grid de arquivo técnico -->
   <div data-technical-grid class="relative mx-auto max-w-[140rem]">
-    <div
-      class="mb-8 flex items-center justify-between border-b-2 border-black pb-3 font-mono text-[9px] sm:text-xs font-bold text-black uppercase"
-      aria-hidden="true"
-    >
-      <span>:: GRID: 2-COL TECHNICAL ARCHIVE</span>
-      <span>COORD: 35.6895 // SECTOR: WORKS</span>
-    </div>
-
     <div class="flex flex-col gap-10 sm:gap-12">
       {tracks.map((track) => (
         <div data-reel-track={track.id} class="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-10">
@@ -133,52 +114,68 @@ const tracks = [
             <article
               id={`case-${project.id}`}
               data-reel-card
-              class:list={["group relative flex flex-col justify-between rounded-none transition-all duration-150", track.v.card]}
+              class:list={["group relative flex flex-col justify-between transition-all duration-150", track.v.card]}
             >
               <div class="relative z-10 p-6 sm:p-8">
                 <div class:list={["mb-4 flex flex-wrap items-center justify-between gap-2 pb-3 font-mono text-xs font-black uppercase", track.v.head, track.v.meta]}>
-                  <span>[ {project.reelNumber} ] // {project.category}</span>
+                  <span data-case-reel>[ {project.reelNumber} ] // {project.category}</span>
                   <span
                     data-badge-indicator
-                    class:list={["rounded-none px-2.5 py-0.5 text-[10px] sm:text-xs font-black", track.v.badge]}
+                    data-case-badge
+                    class:list={["px-2.5 py-0.5 text-[10px] sm:text-xs font-black", track.v.badge]}
                   >
                     {project.badge}
                   </span>
                 </div>
 
-                <h3 class:list={["font-display text-2xl sm:text-3xl font-black uppercase leading-tight tracking-tight", track.v.title]}>
+                <h3
+                  data-case-title
+                  class:list={["font-display text-2xl sm:text-3xl font-black uppercase leading-tight tracking-tight", track.v.title]}
+                >
                   {project.title}
                 </h3>
-                <p class:list={["font-mono text-xs font-bold uppercase mb-3", track.v.subtitle]}>
+                <p
+                  data-case-subtitle
+                  class:list={["font-mono text-xs font-bold uppercase mb-3", track.v.subtitle]}
+                >
                   {project.subtitle}
                 </p>
-                <p class:list={["font-body text-sm sm:text-base leading-relaxed mb-5", track.v.body]}>
+                <p
+                  data-case-description
+                  class:list={["font-body text-sm sm:text-base leading-relaxed mb-5", track.v.body]}
+                >
                   {project.description}
                 </p>
 
                 <div class:list={["space-y-4 p-4 mb-5 font-mono text-xs leading-relaxed", track.v.block]}>
                   <div>
-                    <span class:list={["block font-black text-[11px] uppercase tracking-widest mb-1", track.v.label1]}>
-                      // DESAFIO TÉCNICO
+                    <span
+                      data-i18n="works.challengeLabel"
+                      class:list={["block font-black text-[11px] uppercase tracking-widest mb-1", track.v.label1]}
+                    >
+                      {ptBrDict.works.challengeLabel}
                     </span>
-                    <p class="text-[11px] sm:text-xs">{project.challenge}</p>
+                    <p data-case-challenge class="text-[11px] sm:text-xs">{project.challenge}</p>
                   </div>
                   <div>
-                    <span class:list={["block font-black text-[11px] uppercase tracking-widest mb-1", track.v.label2]}>
-                      :: SOLUÇÃO ARQUITETURAL
+                    <span
+                      data-i18n="works.solutionLabel"
+                      class:list={["block font-black text-[11px] uppercase tracking-widest mb-1", track.v.label2]}
+                    >
+                      {ptBrDict.works.solutionLabel}
                     </span>
-                    <p class="text-[11px] sm:text-xs">{project.solution}</p>
+                    <p data-case-solution class="text-[11px] sm:text-xs">{project.solution}</p>
                   </div>
                 </div>
 
                 <div class:list={["mb-5 flex items-start gap-2 px-3 py-2 font-mono text-[11px] sm:text-xs font-bold", track.v.metric]}>
-                  <span class="font-black shrink-0">[ METRIC ]</span>
-                  <span>{project.metric}</span>
+                  <span class="font-black shrink-0" data-i18n="works.metricLabel">{ptBrDict.works.metricLabel}</span>
+                  <span data-case-metric>{project.metric}</span>
                 </div>
 
                 <div class="mb-5 flex flex-wrap gap-2 font-mono text-[10px] sm:text-xs uppercase">
                   {project.stack.map((tech) => (
-                    <span class:list={["rounded-none px-2.5 py-1 font-bold", track.v.stack]}>{tech}</span>
+                    <span data-case-stack-item class:list={["px-2.5 py-1 font-bold", track.v.stack]}>{tech}</span>
                   ))}
                 </div>
 
@@ -189,9 +186,10 @@ const tracks = [
                       target="_blank"
                       rel="noopener noreferrer"
                       aria-label={link.ariaLabel}
-                      class:list={["inline-flex items-center gap-2 rounded-none px-3.5 py-1.5 font-mono text-xs font-black uppercase transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-black", track.v.link]}
+                      data-case-link
+                      class:list={["inline-flex items-center gap-2 px-3.5 py-1.5 font-mono text-xs font-black uppercase transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-space-base", track.v.link]}
                     >
-                      <span>{link.label}</span>
+                      <span data-case-link-label>{link.label}</span>
                       <span aria-hidden="true">↗</span>
                     </a>
                   ))}
@@ -217,14 +215,11 @@ const tracks = [
     isWorksInitialized = true;
 
     const worksSection = document.getElementById("works");
-    const track1 = document.querySelector('[data-reel-track="1"]');
-    const track2 = document.querySelector('[data-reel-track="2"]');
     const cards = document.querySelectorAll("[data-reel-card]");
     const jumpCutBadge = document.querySelector("[data-jump-cut-badge]");
     const tankStrip = document.querySelector("[data-tank-strip]");
 
     if (worksSection && cards.length > 0) {
-      // Efeito de corte seco Tank! no banner analógico
       if (tankStrip && jumpCutBadge) {
         gsap.fromTo(
           jumpCutBadge,
@@ -244,7 +239,6 @@ const tracks = [
         );
       }
 
-      // Revelação em cascata dos cards com ScrollTrigger
       gsap.fromTo(
         cards,
         { y: 35, opacity: 0 },
@@ -262,33 +256,6 @@ const tracks = [
           force3D: true,
         }
       );
-
-      // Parallax sutil oposto nas tiras de película
-      if (track1 && track2) {
-        gsap.to(track1, {
-          scrollTrigger: {
-            trigger: worksSection,
-            start: "top bottom",
-            end: "bottom top",
-            scrub: 1.2,
-          },
-          x: -25,
-          ease: "none",
-          force3D: true,
-        });
-
-        gsap.to(track2, {
-          scrollTrigger: {
-            trigger: worksSection,
-            start: "top bottom",
-            end: "bottom top",
-            scrub: 1.2,
-          },
-          x: 25,
-          ease: "none",
-          force3D: true,
-        });
-      }
     }
   }
 
@@ -302,25 +269,3 @@ const tracks = [
     setupSelectedWorksScroll();
   });
 </script>
-
-<style>
-  @keyframes scanline-sweep {
-    0% {
-      transform: translateY(-100%);
-    }
-    100% {
-      transform: translateY(200%);
-    }
-  }
-
-  .group:hover .distortion-scanline {
-    animation: scanline-sweep 1.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .distortion-scanline {
-      animation: none !important;
-      display: none !important;
-    }
-  }
-</style>
