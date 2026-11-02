@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 728" fill="none">
+  <rect width="1120" height="728" fill="#080808"/>
+  <!-- Halftone & Grid Pattern -->
+  <g opacity="0.22" stroke="#30B5BB" stroke-width="1">
+    <line x1="0" y1="120" x2="1120" y2="120"/>
+    <line x1="0" y1="240" x2="1120" y2="240"/>
+    <line x1="0" y1="360" x2="1120" y2="360"/>
+    <line x1="0" y1="480" x2="1120" y2="480"/>
+    <line x1="0" y1="600" x2="1120" y2="600"/>
+    <line x1="224" y1="0" x2="224" y2="728"/>
+    <line x1="448" y1="0" x2="448" y2="728"/>
+    <line x1="672" y1="0" x2="672" y2="728"/>
+    <line x1="896" y1="0" x2="896" y2="728"/>
+  </g>
+  <!-- Dramatic Diagonal Slash -->
+  <polygon points="620,0 1120,0 1120,728 420,728" fill="#FE0000"/>
+  <polygon points="600,0 635,0 435,728 400,728" fill="#FBFAF4"/>
+  <!-- Broadcast Waveform Visual -->
+  <g transform="translate(80, 180)">
+    <rect x="0" y="0" width="440" height="280" fill="#11111E" stroke="#FBFAF4" stroke-width="8"/>
+    <rect x="16" y="16" width="408" height="44" fill="#30B5BB"/>
+    <text x="32" y="46" fill="#080808" font-family="monospace" font-weight="900" font-size="24">REEL 01 // AURASTREAM 24/7</text>
+    <!-- Equalizer Bars -->
+    <g fill="#2EFE0C" transform="translate(36, 95)">
+      <rect x="0" y="60" width="22" height="90"/>
+      <rect x="36" y="20" width="22" height="130"/>
+      <rect x="72" y="45" width="22" height="105"/>
+      <rect x="108" y="5" width="22" height="145"/>
+      <rect x="144" y="35" width="22" height="115"/>
+      <rect x="180" y="10" width="22" height="140"/>
+      <rect x="216" y="50" width="22" height="100"/>
+      <rect x="252" y="15" width="22" height="135"/>
+      <rect x="288" y="40" width="22" height="110"/>
+      <rect x="324" y="25" width="22" height="125"/>
+    </g>
+  </g>
+  <!-- Typography Overlay -->
+  <text x="80" y="575" fill="#FBFAF4" font-family="sans-serif" font-weight="900" font-size="76" letter-spacing="-2">AURASTREAM</text>
+  <text x="80" y="640" fill="#EBA602" font-family="monospace" font-weight="700" font-size="28">FFMPEG + XVFB + S3 CLOUD ENGINE</text>
+  <!-- Right Badge -->
+  <g transform="translate(700, 220) rotate(-6)">
+    <rect x="0" y="0" width="330" height="130" fill="#080808" stroke="#FBFAF4" stroke-width="6"/>
+    <text x="28" y="62" fill="#2EFE0C" font-family="monospace" font-weight="900" font-size="34">ON AIR 24/7</text>
+    <text x="28" y="104" fill="#FBFAF4" font-family="monospace" font-weight="700" font-size="22">ZERO BUFFER DROP</text>
+  </g>
+</svg>
+

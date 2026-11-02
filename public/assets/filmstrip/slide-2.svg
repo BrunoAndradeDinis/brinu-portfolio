@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 728" fill="none">
+  <rect width="1120" height="728" fill="#EBA602"/>
+  <!-- Noir Silhouette Blocks -->
+  <polygon points="0,0 520,0 380,728 0,728" fill="#080808"/>
+  <rect x="60" y="70" width="990" height="588" stroke="#080808" stroke-width="10" fill="none"/>
+  <!-- Terminal Telemetry Panel -->
+  <g transform="translate(110, 120)">
+    <rect x="0" y="0" width="540" height="330" fill="#080808" stroke="#FBFAF4" stroke-width="6"/>
+    <circle cx="34" cy="34" r="10" fill="#FE0000"/>
+    <circle cx="66" cy="34" r="10" fill="#EBA602"/>
+    <circle cx="98" cy="34" r="10" fill="#2EFE0C"/>
+    <text x="34" y="100" fill="#2EFE0C" font-family="monospace" font-weight="700" font-size="22">$ parse --stream qgames.log</text>
+    <text x="34" y="145" fill="#FBFAF4" font-family="monospace" font-weight="700" font-size="20">[INIT_GAME] match_id=0492</text>
+    <text x="34" y="185" fill="#30B5BB" font-family="monospace" font-weight="700" font-size="20">[KILL] Isgalamido -&gt; MOD_RAILGUN</text>
+    <text x="34" y="225" fill="#FE0000" font-family="monospace" font-weight="700" font-size="20">[WORLD] &lt;world&gt; fragged Zeh (-1)</text>
+    <text x="34" y="275" fill="#EBA602" font-family="monospace" font-weight="900" font-size="24">JEST COVERAGE: 100.0%</text>
+  </g>
+  <text x="110" y="555" fill="#FBFAF4" font-family="sans-serif" font-weight="900" font-size="68">QUAKE PARSER</text>
+  <text x="730" y="555" fill="#080808" font-family="sans-serif" font-weight="900" font-size="68">API</text>
+  <text x="110" y="615" fill="#2EFE0C" font-family="monospace" font-weight="700" font-size="26">CONCURRENT LOG TELEMETRY // DOCKER + TS</text>
+</svg>
+

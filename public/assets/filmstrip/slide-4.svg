@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 728" fill="none">
+  <rect width="1120" height="728" fill="#080808"/>
+  <rect x="0" y="0" width="1120" height="240" fill="#FE0000"/>
+  <!-- Subway Map Noir Lines -->
+  <path d="M 80 120 L 420 120 L 560 360 L 1040 360" stroke="#FBFAF4" stroke-width="16" fill="none"/>
+  <path d="M 80 480 L 360 480 L 520 280 L 1040 280" stroke="#EBA602" stroke-width="12" fill="none"/>
+  <circle cx="420" cy="120" r="22" fill="#080808" stroke="#FBFAF4" stroke-width="8"/>
+  <circle cx="560" cy="360" r="22" fill="#FE0000" stroke="#FBFAF4" stroke-width="8"/>
+  <circle cx="820" cy="360" r="22" fill="#2EFE0C" stroke="#080808" stroke-width="8"/>
+  <!-- Cult Typography Box -->
+  <g transform="translate(80, 460)">
+    <rect x="0" y="0" width="960" height="200" fill="#11111E" stroke="#FE0000" stroke-width="8"/>
+    <text x="40" y="105" fill="#FE0000" font-family="sans-serif" font-weight="900" font-size="82" letter-spacing="2">THE WARRIORS</text>
+    <text x="44" y="162" fill="#FBFAF4" font-family="monospace" font-weight="700" font-size="26">CONEY ISLAND NIGHT TRAIN // EDITORIAL NOIR &amp; GULP</text>
+  </g>
+</svg>
+

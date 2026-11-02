@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 728" fill="none">
+  <rect width="1120" height="728" fill="#11111E"/>
+  <!-- Manga Speedlines -->
+  <g stroke="#2EFE0C" stroke-width="3" opacity="0.35">
+    <line x1="560" y1="364" x2="0" y2="0"/>
+    <line x1="560" y1="364" x2="300" y2="0"/>
+    <line x1="560" y1="364" x2="800" y2="0"/>
+    <line x1="560" y1="364" x2="1120" y2="100"/>
+    <line x1="560" y1="364" x2="1120" y2="500"/>
+    <line x1="560" y1="364" x2="900" y2="728"/>
+    <line x1="560" y1="364" x2="200" y2="728"/>
+    <line x1="560" y1="364" x2="0" y2="520"/>
+  </g>
+  <!-- Center Cyber Star / State Machine Node -->
+  <g transform="translate(560, 320)">
+    <polygon points="0,-190 55,-55 190,-55 85,30 125,170 0,85 -125,170 -85,30 -190,-55 -55,-55" fill="#30B5BB" stroke="#FBFAF4" stroke-width="10"/>
+    <circle cx="0" cy="0" r="65" fill="#080808" stroke="#2EFE0C" stroke-width="6"/>
+    <text x="-48" y="12" fill="#2EFE0C" font-family="monospace" font-weight="900" font-size="32">SUPER</text>
+  </g>
+  <rect x="70" y="510" width="980" height="150" fill="#080808" stroke="#2EFE0C" stroke-width="6"/>
+  <text x="105" y="590" fill="#FBFAF4" font-family="sans-serif" font-weight="900" font-size="68">ARENA FRANKY</text>
+  <text x="105" y="638" fill="#2EFE0C" font-family="monospace" font-weight="700" font-size="26">GAMIFIED STATE MACHINE // INP &lt; 50MS // SUPER!!</text>
+</svg>
+
