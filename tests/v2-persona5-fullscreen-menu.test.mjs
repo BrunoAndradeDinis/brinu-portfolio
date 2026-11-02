@@ -1,0 +1,288 @@
+import { test, before, after } from 'node:test';
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
+import http from 'node:http';
+import { chromium } from 'playwright';
+import { ptBrDict, enDict } from '../src/i18n/dictionaries.ts';
+
+const MIME_TYPES = {
+  '.html': 'text/html; charset=utf-8',
+  '.js': 'application/javascript; charset=utf-8',
+  '.mjs': 'application/javascript; charset=utf-8',
+  '.css': 'text/css; charset=utf-8',
+  '.json': 'application/json; charset=utf-8',
+  '.svg': 'image/svg+xml',
+  '.jpg': 'image/jpeg',
+  '.jpeg': 'image/jpeg',
+  '.png': 'image/png',
+  '.webp': 'image/webp',
+  '.ico': 'image/x-icon',
+};
+
+let server;
+let baseUrl = '';
+let browser;
+
+async function dismissIntroIfPresent(page) {
+  await page.evaluate(() => {
+    const el = document.getElementById('intro-preloader');
+    if (el) {
+      el.click();
+      el.remove();
+    }
+  });
+  await page.waitForFunction(
+    () => !document.querySelector('astro-island[component-url*="CockpitMenu"][ssr]')
+  );
+}
+
+before(async () => {
+  const distDir = path.resolve('dist');
+  server = http.createServer((req, res) => {
+    const reqUrl = new URL(req.url || '/', 'http://127.0.0.1');
+    let pathname = decodeURIComponent(reqUrl.pathname);
+    if (pathname.endsWith('/')) {
+      pathname += 'index.html';
+    } else if (!path.extname(pathname)) {
+      pathname += '/index.html';
+    }
+    const filePath = path.join(distDir, pathname);
+    if (!filePath.startsWith(distDir) || !fs.existsSync(filePath)) {
+      res.writeHead(404);
+      res.end('Not found');
+      return;
+    }
+    const ext = path.extname(filePath).toLowerCase();
+    res.writeHead(200, {
+      'Content-Type': MIME_TYPES[ext] || 'application/octet-stream',
+    });
+    fs.createReadStream(filePath).pipe(res);
+  });
+
+  await new Promise((resolve) => {
+    server.listen(0, '127.0.0.1', () => {
+      const addr = server.address();
+      baseUrl = `http://127.0.0.1:${addr.port}`;
+      resolve();
+    });
+  });
+
+  const launchOptions = {
+    headless: true,
+    args: ['--no-sandbox', '--disable-setuid-sandbox'],
+  };
+  if (fs.existsSync('/usr/bin/google-chrome')) {
+    launchOptions.executablePath = '/usr/bin/google-chrome';
+  }
+  browser = await chromium.launch(launchOptions);
+});
+
+after(async () => {
+  if (browser) await browser.close();
+  if (server) await new Promise((resolve) => server.close(resolve));
+});
+
+test('C1: cockpit menu overlay occupies full screen 100vw by 100dvh with z-index 9990', async () => {
+  const context = await browser.newContext();
+  const page = await context.newPage();
+  await page.goto(`${baseUrl}/`, { waitUntil: 'networkidle' });
+  await dismissIntroIfPresent(page);
+
+  await page.click('#cockpit-trigger-btn');
+  await page.waitForSelector('#cockpit-menu-overlay:not(.hidden)');
+
+  const metrics = await page.evaluate(() => {
+    const el = document.getElementById('cockpit-menu-overlay');
+    if (!el) return null;
+    const style = window.getComputedStyle(el);
+    const rect = el.getBoundingClientRect();
+    return {
+      position: style.position,
+      zIndex: style.zIndex,
+      width: rect.width,
+      height: rect.height,
+      windowWidth: window.innerWidth,
+      windowHeight: window.innerHeight,
+      hasRedSlash: Boolean(el.querySelector('[data-slash-red]')),
+    };
+  });
+
+  assert.ok(metrics, 'Expected #cockpit-menu-overlay in DOM');
+  assert.equal(metrics.position, 'fixed');
+  assert.equal(metrics.zIndex, '9990');
+  assert.equal(metrics.width, metrics.windowWidth);
+  assert.ok(metrics.height >= metrics.windowHeight);
+  assert.equal(metrics.hasRedSlash, true);
+
+  await context.close();
+});
+
+test('C2: top controls comic-nav-logo and cockpit-trigger-btn remain visible at z-index 9999', async () => {
+  const context = await browser.newContext();
+  const page = await context.newPage();
+  await page.goto(`${baseUrl}/`, { waitUntil: 'networkidle' });
+  await dismissIntroIfPresent(page);
+
+  await page.click('#cockpit-trigger-btn');
+  await page.waitForSelector('#cockpit-menu-overlay:not(.hidden)');
+
+  const headerInfo = await page.evaluate(() => {
+    const header = document.getElementById('comic-nav-header');
+    const logo = document.getElementById('comic-nav-logo');
+    const trigger = document.getElementById('cockpit-trigger-btn');
+    if (!header || !logo || !trigger) return null;
+    const headerStyle = window.getComputedStyle(header);
+    return {
+      headerZIndex: headerStyle.zIndex,
+      headerPosition: headerStyle.position,
+      triggerAriaExpanded: trigger.getAttribute('aria-expanded'),
+      headerCockpitOpen: header.dataset.cockpitOpen,
+    };
+  });
+
+  assert.ok(headerInfo, 'Expected header elements');
+  assert.equal(headerInfo.headerZIndex, '9999');
+  assert.equal(headerInfo.headerPosition, 'sticky');
+  assert.equal(headerInfo.triggerAriaExpanded, 'true');
+  assert.equal(headerInfo.headerCockpitOpen, 'true');
+
+  await context.close();
+});
+
+test('C3: clicking burger trigger or logo while open closes the menu', async () => {
+  const context = await browser.newContext();
+  const page = await context.newPage();
+  await page.goto(`${baseUrl}/`, { waitUntil: 'networkidle' });
+  await dismissIntroIfPresent(page);
+
+  // 1. Open with burger button
+  await page.click('#cockpit-trigger-btn');
+  await page.waitForSelector('#cockpit-menu-overlay:not(.hidden)');
+
+  // 2. Click burger button to close
+  await page.click('#cockpit-trigger-btn');
+  await page.waitForSelector('#cockpit-menu-overlay', { state: 'hidden' });
+
+  // 3. Open with burger button again
+  await page.click('#cockpit-trigger-btn');
+  await page.waitForSelector('#cockpit-menu-overlay:not(.hidden)');
+
+  // 4. Click logo to close
+  await page.click('#comic-nav-logo');
+  await page.waitForSelector('#cockpit-menu-overlay', { state: 'hidden' });
+
+  // 5. Open and test Escape key
+  await page.click('#cockpit-trigger-btn');
+  await page.waitForSelector('#cockpit-menu-overlay:not(.hidden)');
+  await page.keyboard.press('Escape');
+  await page.waitForSelector('#cockpit-menu-overlay', { state: 'hidden' });
+
+  await context.close();
+});
+
+test('C4: menu executes kinetic transitions and respects prefers-reduced-motion', async () => {
+  const menuSrc = fs.readFileSync(
+    path.resolve('src/components/CockpitMenu.tsx'),
+    'utf8'
+  );
+  assert.ok(menuSrc.includes("import { gsap } from 'gsap'"));
+  assert.ok(menuSrc.includes('gsap.timeline'));
+  assert.ok(menuSrc.includes('prefers-reduced-motion'));
+
+  // Test reduced-motion context
+  const context = await browser.newContext({
+    reducedMotion: 'reduce',
+  });
+  const page = await context.newPage();
+  await page.goto(`${baseUrl}/`, { waitUntil: 'networkidle' });
+  await dismissIntroIfPresent(page);
+
+  await page.click('#cockpit-trigger-btn');
+  await page.waitForSelector('#cockpit-menu-overlay:not(.hidden)');
+
+  await page.click('#cockpit-trigger-btn');
+  await page.waitForSelector('#cockpit-menu-overlay', { state: 'hidden' });
+
+  await context.close();
+});
+
+test('C5: all 6 navigation blades render with index codes and active blade tracking', async () => {
+  const context = await browser.newContext();
+  const page = await context.newPage();
+  await page.goto(`${baseUrl}/`, { waitUntil: 'networkidle' });
+  await dismissIntroIfPresent(page);
+
+  await page.click('#cockpit-trigger-btn');
+  await page.waitForSelector('#cockpit-menu-overlay:not(.hidden)');
+
+  const blades = await page.$$eval(
+    '#cockpit-menu-overlay a[data-cockpit-link]',
+    (els) =>
+      els.map((el) => ({
+        id: el.getAttribute('data-cockpit-link'),
+        active: el.getAttribute('data-active-blade'),
+        ariaCurrent: el.getAttribute('aria-current'),
+        text: el.innerText.trim(),
+      }))
+  );
+
+  assert.equal(blades.length, 6);
+  assert.deepEqual(
+    blades.map((b) => b.id),
+    ['hero', 'works', 'about', 'lab', 'contact', 'whoami']
+  );
+
+  const heroBlade = blades.find((b) => b.id === 'hero');
+  assert.equal(heroBlade.active, 'true');
+  assert.equal(heroBlade.ariaCurrent, 'true');
+
+  const worksBlade = blades.find((b) => b.id === 'works');
+  assert.equal(worksBlade.active, 'false');
+  assert.equal(worksBlade.ariaCurrent, null);
+
+  await context.close();
+});
+
+test('C6: zero horizontal overflow while fullscreen menu is open across viewports and locales', async () => {
+  const viewports = [
+    { width: 320, height: 640 },
+    { width: 375, height: 667 },
+    { width: 768, height: 1024 },
+    { width: 1440, height: 900 },
+  ];
+  const locales = ['pt-br', 'en'];
+
+  const context = await browser.newContext();
+  const page = await context.newPage();
+
+  for (const locale of locales) {
+    await page.addInitScript((loc) => {
+      window.localStorage.setItem('brinu_locale', loc);
+    }, locale);
+
+    for (const vp of viewports) {
+      await page.setViewportSize(vp);
+      await page.goto(`${baseUrl}/`, { waitUntil: 'networkidle' });
+      await dismissIntroIfPresent(page);
+
+      await page.click('#cockpit-trigger-btn');
+      await page.waitForSelector('#cockpit-menu-overlay:not(.hidden)');
+
+      const metrics = await page.evaluate(() => ({
+        scrollWidth: document.documentElement.scrollWidth,
+        clientWidth: document.documentElement.clientWidth,
+      }));
+
+      assert.ok(
+        metrics.scrollWidth <= metrics.clientWidth,
+        `Horizontal overflow (${locale}) at ${vp.width}px: scrollWidth=${metrics.scrollWidth} > clientWidth=${metrics.clientWidth}`
+      );
+
+      await page.click('#cockpit-trigger-btn');
+      await page.waitForSelector('#cockpit-menu-overlay', { state: 'hidden' });
+    }
+  }
+
+  await context.close();
+});

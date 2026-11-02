@@ -44,9 +44,14 @@ export function syncCockpitTriggerDom(isOpen: boolean): void {
   const bar1 = document.getElementById('menu-bar-1');
   const bar2 = document.getElementById('menu-bar-2');
   const bar3 = document.getElementById('menu-bar-3');
+  const overlay = document.getElementById('cockpit-menu-overlay');
 
   if (cockpitBtn) {
     cockpitBtn.setAttribute('aria-expanded', String(isOpen));
+  }
+
+  if (overlay) {
+    overlay.setAttribute('aria-hidden', String(!isOpen));
   }
 
   if (bar1 && bar2 && bar3) {
@@ -82,9 +87,10 @@ export const CockpitMenu: React.FC = () => {
   const closeMenu = useCallback(() => {
     if (isClosingRef.current) return;
 
+    syncCockpitTriggerDom(false);
+
     if (isReducedMotion()) {
       setIsOpen(false);
-      syncCockpitTriggerDom(false);
       if (typeof document !== 'undefined') {
         document.body.classList.remove('lenis-stopped');
       }
@@ -103,7 +109,6 @@ export const CockpitMenu: React.FC = () => {
       onComplete: () => {
         setIsOpen(false);
         isClosingRef.current = false;
-        syncCockpitTriggerDom(false);
         if (typeof document !== 'undefined') {
           document.body.classList.remove('lenis-stopped');
         }
