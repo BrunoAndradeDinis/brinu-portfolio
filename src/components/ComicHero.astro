@@ -6,7 +6,7 @@
  */
 ---
 
-<!-- Fita Ticker Tape Contínua de Abertura (GPU-Accelerated 60 FPS) -->
+<!-- Fita Ticker Tape Contínua de Abertura -->
 <div
   class="group flex h-[4.125rem] w-full items-center overflow-hidden border-t-3 border-b-6 border-space-base bg-bebop-red select-none box-border cursor-default"
   aria-hidden="true"
@@ -15,10 +15,10 @@
     class="inline-flex shrink-0 items-center whitespace-nowrap animate-marquee font-display text-base sm:text-xl lg:text-2xl tracking-wider text-space-base transition-colors duration-300 group-hover:text-paper-white group-hover:[animation-play-state:paused] leading-none will-change-transform"
   >
     <span class="inline-block shrink-0 whitespace-nowrap pr-12 sm:pr-16">
-      • ARCHITECTING RESILIENT DISTRIBUTED SYSTEMS • CREATIVE TECHNOLOGIST • MAGALU CLOUD • PAI DA HELENA • NOIVO • 60 FPS • SEE YOU SPACE COWBOY •
+      • ARCHITECTING RESILIENT DISTRIBUTED SYSTEMS • CREATIVE TECHNOLOGIST • PAI DA HELENA • NOIVO • SEE YOU SPACE COWBOY •
     </span>
     <span class="inline-block shrink-0 whitespace-nowrap pr-12 sm:pr-16">
-      • ARCHITECTING RESILIENT DISTRIBUTED SYSTEMS • CREATIVE TECHNOLOGIST • MAGALU CLOUD • PAI DA HELENA • NOIVO • 60 FPS • SEE YOU SPACE COWBOY •
+      • ARCHITECTING RESILIENT DISTRIBUTED SYSTEMS • CREATIVE TECHNOLOGIST • PAI DA HELENA • NOIVO • SEE YOU SPACE COWBOY •
     </span>
   </div>
 </div>
@@ -84,7 +84,7 @@
           </div>
         </div>
 
-        <!-- Moldura de Quadrinhos & Celuloide 35mm -->
+        <!-- Moldura de Quadrinhos -->
         <div
           class="relative h-[clamp(3.2rem,13vw,4.5rem)] w-[clamp(3.2rem,13vw,4.5rem)] sm:h-[clamp(5.5rem,12vw,7.5rem)] sm:w-[clamp(5.5rem,12vw,7.5rem)] md:h-[clamp(8rem,13vw,11.5rem)] md:w-[clamp(8rem,13vw,11.5rem)] lg:h-[clamp(11.5rem,14vw,15.5rem)] lg:w-[clamp(11.5rem,14vw,15.5rem)] overflow-hidden rounded-xl sm:rounded-2xl border-2 sm:border-4 md:border-[0.45rem] lg:border-[0.5rem] border-space-base bg-paper-white shadow-[0_3px_0_var(--color-space-base)] sm:shadow-[0_5px_0_var(--color-space-base)] md:shadow-[0_7px_0_var(--color-space-base)] lg:shadow-[0_10px_0_var(--color-space-base)]"
         >
@@ -93,15 +93,6 @@
             alt="Retrato estilo HQ noir de Bruno Dinis"
             class="h-full w-full object-cover contrast-125 saturate-110 transition-transform duration-500 ease-out group-hover:scale-110"
           />
-
-          <!-- Tag de Fotograma Celuloide 35mm estilo Cowboy Bebop -->
-          <div
-            class="pointer-events-none absolute top-1 sm:top-1.5 left-1.5 sm:left-2 flex items-center gap-1 font-mono text-[7px] sm:text-[9px] font-bold tracking-widest text-paper-white uppercase bg-space-base/85 px-1 py-0.5 rounded shadow-sm select-none"
-            aria-hidden="true"
-          >
-            <span class="inline-block h-1.5 w-1.5 rounded-full bg-bebop-red animate-pulse"></span>
-            <span>35MM</span>
-          </div>
 
           <!-- Vinheta Celuloide e Textura Halftone Subtil -->
           <div
@@ -146,7 +137,7 @@
         class="flex flex-col items-start text-left max-w-full sm:max-w-[48%] lg:max-w-md shrink-0"
       >
         <p
-          class="mb-2 sm:mb-4 font-display text-xs sm:text-base md:text-lg lg:text-2xl font-black leading-snug tracking-tight text-space-base"
+          class="mb-2 sm:mb-4 font-body text-xs sm:text-base md:text-lg lg:text-2xl font-black leading-snug tracking-tight text-space-base uppercase"
         >
           FOR TOO LONG<br />
           BORING CODE<br />
@@ -175,7 +166,7 @@
         class="flex flex-col items-start sm:items-end text-left sm:text-right max-w-full sm:max-w-[50%] lg:max-w-md shrink-0"
       >
         <p
-          class="mb-2 sm:mb-4 font-display text-xs sm:text-base md:text-lg lg:text-2xl font-black leading-snug tracking-tight text-space-base text-left sm:text-right"
+          class="mb-2 sm:mb-4 font-body text-xs sm:text-base md:text-lg lg:text-2xl font-black leading-snug tracking-tight text-space-base text-left sm:text-right uppercase"
         >
           TURNING COMPLEX<br />
           ARCHITECTURES INTO<br />
@@ -232,9 +223,9 @@
     const phrases = [
       "Pai da Helena & Noivo Apaixonado",
       "É uma cilada, Brinu!",
-      "Software Engineer @ Magalu Cloud",
+      "Software Engineer & Creative Technologist",
       "See you space cowboy...",
-      "Alta performance a 60 FPS",
+      "Arquitetura Limpa & Sistemas Distribuídos",
     ];
     let phraseIndex = 0;
     let dismissTimer: ReturnType<typeof setTimeout> | null = null;
