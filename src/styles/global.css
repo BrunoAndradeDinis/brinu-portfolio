@@ -313,11 +313,13 @@ h3 {
   transition: transform 0.28s cubic-bezier(0.85, 0, 0.15, 1);
 }
 
-#p5-wipe-overlay.p5-wipe-active {
+#p5-wipe-overlay.p5-wipe-active,
+#p5-wipe-overlay.is-wiping {
   opacity: 1;
 }
 
-#p5-wipe-overlay.p5-wipe-active .p5-wipe-blade-red {
+#p5-wipe-overlay.p5-wipe-active .p5-wipe-blade-red,
+#p5-wipe-overlay.is-wiping .p5-wipe-blade-red {
   transform: translate3d(120%, 0, 0) skewX(-16deg);
 }
 

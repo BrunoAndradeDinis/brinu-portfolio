@@ -209,5 +209,22 @@ test('T6b: CockpitMenu.tsx wires cockpit:open event, Escape key handler, and lan
   assert.ok(source.includes('id="cockpit-audio-toggle"'));
 });
 
+test('T7: BaseLayout and ComicNav mount CockpitMenu, p5-wipe-overlay, and data-lang-toggle', () => {
+  const layoutSrc = fs.readFileSync(
+    path.resolve('src/layouts/BaseLayout.astro'),
+    'utf8'
+  );
+  const navSrc = fs.readFileSync(
+    path.resolve('src/components/ComicNav.astro'),
+    'utf8'
+  );
+  assert.ok(layoutSrc.includes('<CockpitMenu client:load />'));
+  assert.ok(layoutSrc.includes('id="p5-wipe-overlay"'));
+  assert.ok(layoutSrc.includes('initI18nBindings()'));
+  assert.ok(navSrc.includes('id="nav-lang-toggle-btn"'));
+  assert.ok(navSrc.includes('data-lang-toggle'));
+});
+
+
 
 

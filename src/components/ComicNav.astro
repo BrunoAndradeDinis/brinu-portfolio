@@ -1,29 +1,25 @@
 ---
-/**
- * ComicNav.astro
- * Barra de navegação superior estilo manga brutalista inspirado em mew.xyz.
- * Estilizada integralmente via Tailwind CSS v4 & Bebop Design Tokens.
- * Layout relative (fluxo natural com a página) conforme especificação do projeto.
- */
+import { ptBrDict } from "../i18n/dictionaries";
 ---
 
 <header
-  class="relative z-hud flex h-[7rem] w-full items-center justify-between border-b-[3.5px] border-space-base bg-bebop-red px-4 sm:px-8 md:px-10 lg:px-20 select-none box-border"
+  class="relative z-hud flex h-[7rem] w-full items-center justify-between border-b-4 border-space-base bg-bebop-red px-4 sm:px-8 md:px-10 lg:px-20 select-none box-border"
 >
-  <!-- Brand / Avatar Micro-Badge & Nome Editorial -->
   <a
     id="comic-nav-logo"
     data-brinu-logo
     href="/"
-    class="group flex items-center gap-3 sm:gap-5 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-space-base rounded-full cursor-pointer"
-    aria-label="Ir para o topo da página — Bruno Dinis (Brinu)"
+    class="group flex items-center gap-3 sm:gap-5 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-space-base cursor-pointer"
+    aria-label={ptBrDict.nav.topAria}
+    data-i18n="nav.topAria"
+    data-i18n-attr="aria-label"
   >
     <div
-      class="flex h-12 w-12 sm:h-16 sm:w-16 shrink-0 items-center justify-center overflow-hidden rounded-full border-4 sm:border-[0.35rem] border-space-base bg-paper-white shadow-[0_3px_0_var(--color-space-base)] transition-transform duration-200 group-hover:scale-105 group-hover:-rotate-3"
+      class="flex h-12 w-12 sm:h-16 sm:w-16 shrink-0 items-center justify-center overflow-hidden border-3 sm:border-4 border-space-base bg-paper-white shadow-[3px_3px_0_var(--color-space-base)] transition-transform duration-200 group-hover:scale-105 group-hover:-rotate-3"
     >
       <img
         src="/assets/brinu-avatar.jpg"
-        alt="Micro-badge de Bruno Dinis (Brinu)"
+        alt="Bruno Dinis (Brinu)"
         class="h-full w-full object-cover contrast-125"
       />
     </div>
@@ -35,19 +31,19 @@
     </span>
   </a>
 
-  <!-- Ações de Navegação Editorial -->
   <nav
-    class="flex items-center gap-2.5 sm:gap-4"
+    class="flex items-center gap-2 sm:gap-3.5"
     aria-label="Navegação Principal"
   >
-    <!-- Botão Pílula Selected Works -->
     <a
       href="#works"
-      class="group inline-flex h-10 sm:h-14 items-center gap-1.5 sm:gap-2.5 rounded-full border-3 sm:border-4 border-space-base bg-contrast-pink px-3.5 sm:px-8 font-display text-xs sm:text-base lg:text-lg font-black text-space-base shadow-[0_3px_0_var(--color-space-base)] transition-all duration-150 hover:-translate-y-0.5 hover:bg-paper-white hover:shadow-[0_4px_0_var(--color-space-base)] active:translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-space-base leading-none"
-      aria-label="Ir para a seção de projetos selecionados (Selected Works)"
+      class="group inline-flex h-10 sm:h-12 items-center gap-1.5 sm:gap-2 border-3 sm:border-4 border-space-base bg-paper-white px-3 sm:px-6 font-display text-xs sm:text-base font-black text-space-base shadow-[4px_4px_0_var(--color-space-base)] transition-all duration-150 hover:-translate-y-0.5 hover:bg-space-base hover:text-paper-white active:translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-space-base leading-none"
+      aria-label={ptBrDict.nav.worksAria}
+      data-i18n="nav.worksAria"
+      data-i18n-attr="aria-label"
     >
-      <span class="hidden xs:inline sm:inline">SELECTED WORKS</span>
-      <span class="inline xs:hidden sm:hidden">WORKS</span>
+      <span class="hidden sm:inline" data-i18n="nav.worksCta">{ptBrDict.nav.worksCta}</span>
+      <span class="inline sm:hidden" data-i18n="nav.worksCtaShort">{ptBrDict.nav.worksCtaShort}</span>
       <svg
         aria-hidden="true"
         class="size-3 sm:size-3.5 transition-transform duration-200 group-hover:translate-y-0.5"
@@ -60,29 +56,43 @@
       </svg>
     </a>
 
-    <!-- Botão Circular Verde Ácido com Ícone Estilizado de Quadrinhos -->
+    <button
+      type="button"
+      id="nav-lang-toggle-btn"
+      data-lang-toggle
+      data-active-locale="pt-br"
+      class="inline-flex h-10 sm:h-12 items-center justify-center border-3 sm:border-4 border-space-base bg-space-base px-2.5 sm:px-4 font-mono text-xs sm:text-sm font-black uppercase tracking-wider text-paper-white shadow-[4px_4px_0_var(--color-paper-white)] transition-all duration-150 hover:-translate-y-0.5 hover:bg-paper-white hover:text-space-base cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-space-base"
+      aria-label={ptBrDict.nav.langToggleAria}
+      data-i18n="nav.langToggleAria"
+      data-i18n-attr="aria-label"
+    >
+      <span data-lang-toggle-label>PT-BR</span>
+    </button>
+
     <button
       type="button"
       id="cockpit-trigger-btn"
-      class="group relative flex h-10 w-10 sm:h-14 sm:w-14 shrink-0 items-center justify-center rounded-full border-3 sm:border-4 border-space-base bg-acid-green shadow-[0_3px_0_var(--color-space-base)] transition-all duration-200 hover:-translate-y-0.5 hover:scale-105 hover:shadow-[0_5px_0_var(--color-space-base)] active:translate-y-0.5 cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-space-base"
-      aria-label="Abrir Menu Cockpit"
+      class="group relative flex h-10 w-10 sm:h-12 sm:w-12 shrink-0 items-center justify-center border-3 sm:border-4 border-space-base bg-paper-white shadow-[4px_4px_0_var(--color-space-base)] transition-all duration-200 hover:-translate-y-0.5 hover:scale-105 active:translate-y-0.5 cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-space-base"
+      aria-label={ptBrDict.nav.menuTriggerAria}
+      data-i18n="nav.menuTriggerAria"
+      data-i18n-attr="aria-label"
       aria-expanded="false"
     >
       <span
-        class="relative flex flex-col justify-center gap-1 sm:gap-1.5 w-4 sm:w-6 h-4 sm:h-6"
+        class="relative flex flex-col justify-center gap-1 sm:gap-1.5 w-4 sm:w-5 h-4 sm:h-5"
         aria-hidden="true"
       >
         <span
           id="menu-bar-1"
-          class="block h-[2.5px] sm:h-[3.5px] w-full rounded-sm bg-space-base transition-all duration-200 origin-center"
+          class="block h-[2.5px] sm:h-[3px] w-full bg-space-base transition-all duration-200 origin-center"
         ></span>
         <span
           id="menu-bar-2"
-          class="block h-[2.5px] sm:h-[3.5px] w-3/4 self-end rounded-sm bg-space-base transition-all duration-200"
+          class="block h-[2.5px] sm:h-[3px] w-3/4 self-end bg-bebop-red transition-all duration-200"
         ></span>
         <span
           id="menu-bar-3"
-          class="block h-[2.5px] sm:h-[3.5px] w-full rounded-sm bg-space-base transition-all duration-200 origin-center"
+          class="block h-[2.5px] sm:h-[3px] w-full bg-space-base transition-all duration-200 origin-center"
         ></span>
       </span>
     </button>
@@ -96,14 +106,14 @@
     const bar2 = document.getElementById("menu-bar-2");
     const bar3 = document.getElementById("menu-bar-3");
 
-    if (!cockpitBtn) return;
+    if (!cockpitBtn || cockpitBtn.dataset.bound === "true") return;
+    cockpitBtn.dataset.bound = "true";
 
     cockpitBtn.addEventListener("click", () => {
       const isExpanded = cockpitBtn.getAttribute("aria-expanded") === "true";
       const nextState = !isExpanded;
       cockpitBtn.setAttribute("aria-expanded", String(nextState));
 
-      // Transição tátil das barras estilizadas de quadrinhos
       if (bar1 && bar2 && bar3) {
         if (nextState) {
           bar1.classList.add("rotate-45", "translate-y-[6.5px]", "sm:translate-y-[8.5px]");
@@ -126,7 +136,8 @@
 
   function setupCiladaTripleClick() {
     const logo = document.getElementById("comic-nav-logo");
-    if (!logo) return;
+    if (!logo || logo.dataset.bound === "true") return;
+    logo.dataset.bound = "true";
 
     let clickCount = 0;
     let timer: ReturnType<typeof setTimeout> | null = null;

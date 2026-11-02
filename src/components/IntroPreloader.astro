@@ -1,11 +1,5 @@
 ---
-/**
- * IntroPreloader.astro
- * Transição de abertura inspirada no mew.xyz e na abertura clássica (Tank!) de Cowboy Bebop.
- * Exibe o nome colossal "BRINU" como máscara com imagens passando por dentro dos glifos,
- * finalizando com uma transição de saída deslizante para cima (curtain slide-up).
- * 100% livre de valores literais chumbados (AD-6).
- */
+import { ptBrDict } from "../i18n/dictionaries";
 ---
 
 <div
@@ -103,9 +97,9 @@
     </svg>
 
     <div class="intro-preloader__caption">
-      <span class="caption-tag font-mono">[ 1996 // SCENE 01 ]</span>
-      <span class="caption-prompt font-mono"
-        >CLIQUE OU PRESSIONE QUALQUER TECLA PARA PULAR</span
+      <span class="caption-tag font-mono" data-i18n="preloader.sceneTag">{ptBrDict.preloader.sceneTag}</span>
+      <span class="caption-prompt font-mono" data-i18n="preloader.skipPrompt"
+        >{ptBrDict.preloader.skipPrompt}</span
       >
     </div>
   </div>

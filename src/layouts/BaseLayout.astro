@@ -1,15 +1,11 @@
 ---
-/**
- * BaseLayout.astro
- * Root HTML shell for the Bebop Brutalist Portfolio.
- * Centralizes design tokens, global styles, Google Fonts typography, Intro Preloader, and CRT overlay.
- */
 import "../styles/tokens.css";
 import "../styles/global.css";
-// import CrtOverlay from '../components/CrtOverlay.astro';
 import IntroPreloader from "../components/IntroPreloader.astro";
+import CockpitMenu from "../components/CockpitMenu";
 import RightClickGuard from "../components/RightClickGuard";
 import CiladaAlert from "../components/CiladaAlert";
+import { ptBrDict } from "../i18n/dictionaries";
 
 interface Props {
   title?: string;
@@ -17,8 +13,8 @@ interface Props {
 }
 
 const {
-  title = "Bruno Dinis // Brinu — Software Engineer & Creative Technologist",
-  description = "Portfólio de engenharia de software e experiências digitais de Bruno de Andrade Dinis (Brinu). Foco em TypeScript, React, Astro e arquitetura de alta performance.",
+  title = ptBrDict.meta.title,
+  description = ptBrDict.meta.description,
 } = Astro.props;
 ---
 
@@ -30,7 +26,6 @@ const {
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="generator" content={Astro.generator} />
 
-    <!-- Google Fonts Preconnect & Load (Archivo, Syne, Permanent Marker, Space Mono) -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -46,41 +41,41 @@ const {
     <meta name="description" content={description} />
   </head>
   <body>
-    <!-- Abertura Cinemática com Transição de Cortina "BRINU" -->
     <IntroPreloader />
+
+    <div id="p5-wipe-overlay" aria-hidden="true">
+      <div class="p5-wipe-blade-red"></div>
+    </div>
 
     <div id="app-root">
       <slot />
     </div>
 
-    <!-- Intercepção Divertida do Botão Direito (Guia para F12 / DevTools) -->
+    <CockpitMenu client:load />
     <RightClickGuard client:load />
-
-    <!-- Sequência de Emergência: É uma cilada, Brinu! -->
     <CiladaAlert client:load />
 
-    <!-- Retro CRT Scanline & Phosphor Overlay (Sutil e Atmosférico) -->
-    {/*<CrtOverlay />*/}
-
-    <!-- Coordenador de Movimento Unificado (Lenis + GSAP ScrollTrigger) & Áudio Nativo -->
     <script>
       import { initMotionCoordinator } from "../utils/motion";
       import { audioSynth } from "../utils/audio";
       import { initTelemetry } from "../utils/telemetry";
+      import { initI18nBindings } from "../i18n/index";
 
-      if (typeof window !== "undefined") {
-        (window as unknown as { bebopAudio: typeof audioSynth }).bebopAudio = audioSynth;
-        initTelemetry();
+      function bootstrapRuntime() {
+        if (typeof window !== "undefined") {
+          (window as unknown as { bebopAudio: typeof audioSynth }).bebopAudio = audioSynth;
+          initTelemetry();
+          initI18nBindings();
+        }
+        initMotionCoordinator();
       }
 
       if (document.readyState === "loading") {
-        document.addEventListener("DOMContentLoaded", () => {
-          initMotionCoordinator();
-        });
+        document.addEventListener("DOMContentLoaded", bootstrapRuntime);
       } else {
-        initMotionCoordinator();
+        bootstrapRuntime();
       }
+      document.addEventListener("astro:page-load", bootstrapRuntime);
     </script>
   </body>
 </html>
-
