@@ -1,5 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
 import { PROFILE } from '../src/data/profile.ts';
 import {
   PROJECT_CASES,
@@ -165,4 +167,21 @@ test('T4b: resolveTranslationKey falls back to keyPath for unknown dot-paths and
   assert.equal(resolveTranslationKey('en', 'nav.worksCta'), ptBrDict.nav.worksCta !== enDict.nav.worksCta ? enDict.nav.worksCta : 'WORKS');
   assert.equal(resolveTranslationKey('pt-br', 'nav.worksCta'), ptBrDict.nav.worksCta);
 });
+
+test('C8: orphaned components StoryboardReel.astro and CrtOverlay.astro do not exist', () => {
+  const storyboardPath = path.resolve('src/components/StoryboardReel.astro');
+  const crtOverlayPath = path.resolve('src/components/CrtOverlay.astro');
+  assert.equal(fs.existsSync(storyboardPath), false);
+  assert.equal(fs.existsSync(crtOverlayPath), false);
+});
+
+test('C9: tokens.css enforces Persona 5 Red/Black/White triad with zero #11111E or #1A1A2E', () => {
+  const tokensCss = fs.readFileSync(path.resolve('src/styles/tokens.css'), 'utf8');
+  assert.ok(tokensCss.includes('--color-bebop-red: #FE0000'));
+  assert.ok(tokensCss.includes('--color-space-base: #080808'));
+  assert.ok(tokensCss.includes('--color-paper-white: #FBFAF4'));
+  assert.equal(tokensCss.toUpperCase().includes('#11111E'), false);
+  assert.equal(tokensCss.toUpperCase().includes('#1A1A2E'), false);
+});
+
 

@@ -1,49 +1,41 @@
-/**
- * Bebop Brutalist Design System — Tailwind CSS v4 Theme Tokens & CSS Custom Properties
- * Invariant AD-6: All styles, colors, dimensions, and shadows are strictly driven by these tokens.
- * Zero hardcoded colors or literal styles allowed.
- */
 @import "tailwindcss";
 
 @theme {
-  /* Colors */
   --color-space-base: #080808;
-  --color-space-surface-1: #11111E;
-  --color-space-surface-2: #1A1A2E;
-  --color-space-border: #2A2A44;
+  --color-space-surface-1: #0D0D0D;
+  --color-space-surface-2: #121212;
+  --color-space-border: #FE0000;
 
   --color-bebop-red: #FE0000;
-  --color-bebop-amber: #EBA602;
-  --color-acid-green: #2EFE0C;
-  --color-contrast-pink: #F5B8D4;
+  --color-bebop-amber: #FE0000;
+  --color-acid-green: #FBFAF4;
+  --color-contrast-pink: #FBFAF4;
   --color-paper-white: #FBFAF4;
-  --color-muted-gray: #8A8A9E;
-  --color-crt-cyan: #30B5BB;
-  --color-alarm-red: #FF1A1A;
+  --color-muted-gray: #C7C6BF;
+  --color-crt-cyan: #FE0000;
+  --color-alarm-red: #FE0000;
 
-  /* Typography Stacks */
   --font-display: 'Heavitas', 'Syne', 'Cabinet Grotesk', sans-serif;
   --font-spray: 'spray', 'Permanent Marker', cursive;
   --font-mono: 'Space Mono', 'JetBrains Mono', monospace;
   --font-body: 'Archivo', 'Helvetica Neue', sans-serif;
 
-  /* Brutalist Comic Manga Shadows & Glows */
   --shadow-comic-xs: 0 2px 0 #080808;
   --shadow-comic-sm: 0 3px 0 #080808;
   --shadow-comic-md: 0 5px 0 #080808;
   --shadow-comic-lg: 0 8px 0 #080808;
   --shadow-comic-xl: 0 12px 0 #080808;
-  --shadow-glow-red: 0 8px 0 rgba(254, 0, 0, 0.4);
-  --shadow-glow-green: 0 8px 0 rgba(46, 254, 12, 0.3);
+  --shadow-p5-red: 6px 6px 0 #FE0000;
+  --shadow-p5-white: 6px 6px 0 #FBFAF4;
+  --shadow-p5-black: 6px 6px 0 #080808;
+  --shadow-glow-red: 0 8px 0 rgba(254, 0, 0, 0.45);
+  --shadow-glow-green: 0 8px 0 rgba(251, 250, 244, 0.25);
 
-  /* Layout Dimensions */
   --spacing-comic-nav: 7rem;
   --spacing-hero-ticker: 4.125rem;
 
-  /* Corner Radii */
   --radius-pill: 2rem;
 
-  /* Elevation & Stacking Contexts */
   --z-base: 0;
   --z-filmstrip: 1;
   --z-stage: 2;
@@ -52,7 +44,6 @@
   --z-overlay: 100;
   --z-modal: 9999;
 
-  /* Animations */
   --animate-marquee: marquee 70s linear infinite;
   --animate-filmstrip: filmstripPan 6s linear infinite;
 
@@ -78,39 +69,35 @@
 }
 
 :root {
-  /* Colors */
   --color-space-base: #080808;
-  --color-space-surface-1: #11111E;
-  --color-space-surface-2: #1A1A2E;
-  --color-space-border: #2A2A44;
+  --color-space-surface-1: #0D0D0D;
+  --color-space-surface-2: #121212;
+  --color-space-border: #FE0000;
 
   --color-space-base-rgb: 8, 8, 8;
   --color-bebop-red-rgb: 254, 0, 0;
-  --color-acid-green-rgb: 46, 254, 12;
+  --color-acid-green-rgb: 251, 250, 244;
   --color-paper-white-rgb: 251, 250, 244;
 
   --color-bebop-red: #FE0000;
-  --color-bebop-amber: #EBA602;
-  --color-acid-green: #2EFE0C;
-  --color-contrast-pink: #F5B8D4;
+  --color-bebop-amber: #FE0000;
+  --color-acid-green: #FBFAF4;
+  --color-contrast-pink: #FBFAF4;
   --color-paper-white: #FBFAF4;
-  --color-muted-gray: #8A8A9E;
-  --color-crt-cyan: #30B5BB;
-  --color-alarm-red: #FF1A1A;
+  --color-muted-gray: #C7C6BF;
+  --color-crt-cyan: #FE0000;
+  --color-alarm-red: #FE0000;
 
-  /* Typography */
   --font-display: 'Heavitas', 'Syne', 'Cabinet Grotesk', sans-serif;
   --font-spray: 'spray', 'Permanent Marker', cursive;
   --font-mono: 'Space Mono', 'JetBrains Mono', monospace;
   --font-body: 'Archivo', 'Helvetica Neue', sans-serif;
 
-  /* Borders */
   --border-comic-thick: 0.7rem;
   --border-comic-heavy: 0.5rem;
   --border-comic-medium: 0.35rem;
   --border-technical-thin: 1px;
 
-  /* Radii */
   --radius-none: 0px;
   --radius-sm: 0.4rem;
   --radius-md: 1.0rem;
@@ -118,14 +105,15 @@
   --radius-pill: 2.0rem;
   --radius-full: 9999px;
 
-  /* Shadows */
   --shadow-comic-xs: 0 2px 0 var(--color-space-base);
   --shadow-comic-sm: 0 3px 0 var(--color-space-base);
   --shadow-comic-md: 0 5px 0 var(--color-space-base);
   --shadow-comic-lg: 0 8px 0 var(--color-space-base);
   --shadow-comic-xl: 0 12px 0 var(--color-space-base);
+  --shadow-p5-red: 6px 6px 0 var(--color-bebop-red);
+  --shadow-p5-white: 6px 6px 0 var(--color-paper-white);
+  --shadow-p5-black: 6px 6px 0 var(--color-space-base);
 
-  /* Spacing */
   --space-1: 0.25rem;
   --space-2: 0.5rem;
   --space-3: 0.75rem;
@@ -137,17 +125,14 @@
   --space-24: 6rem;
   --space-32: 8rem;
 
-  /* Timing */
   --transition-fast: 0.15s cubic-bezier(0.23, 1, 0.32, 1);
   --transition-spring: 0.25s cubic-bezier(1, 0.26, 0, 1);
   --transition-smooth: 0.5s cubic-bezier(0.19, 1, 0.22, 1);
   --transition-curtain: 0.85s cubic-bezier(0.85, 0, 0.15, 1);
 
-  /* Dimensions */
   --height-comic-nav: 7rem;
   --height-hero-ticker: 4.125rem;
 
-  /* Elevation */
   --z-base: 0;
   --z-filmstrip: 1;
   --z-stage: 2;

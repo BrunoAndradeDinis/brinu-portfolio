@@ -279,7 +279,50 @@ h3 {
 }
 
 /* ==========================================================================
-   6. LENIS SMOOTH SCROLL INTEGRATION
+   6. PERSONA 5 BRUTALIST GEOMETRY & DIAGONAL WIPE
+   ========================================================================== */
+
+.p5-angle-card {
+  clip-path: polygon(0 0, 100% 0, 98.5% 100%, 1.5% 98.5%);
+}
+
+.p5-blade {
+  clip-path: polygon(2% 0, 100% 0, 98% 100%, 0 100%);
+}
+
+.p5-slash-header {
+  clip-path: polygon(0 0, 100% 6%, 98% 100%, 2% 94%);
+}
+
+#p5-wipe-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9998;
+  pointer-events: none;
+  opacity: 0;
+  overflow: hidden;
+}
+
+#p5-wipe-overlay .p5-wipe-blade-red {
+  position: absolute;
+  inset: -25%;
+  background-color: var(--color-bebop-red);
+  border-top: 8px solid var(--color-paper-white);
+  border-bottom: 8px solid var(--color-space-base);
+  transform: translate3d(-120%, 0, 0) skewX(-16deg);
+  transition: transform 0.28s cubic-bezier(0.85, 0, 0.15, 1);
+}
+
+#p5-wipe-overlay.p5-wipe-active {
+  opacity: 1;
+}
+
+#p5-wipe-overlay.p5-wipe-active .p5-wipe-blade-red {
+  transform: translate3d(120%, 0, 0) skewX(-16deg);
+}
+
+/* ==========================================================================
+   7. LENIS SMOOTH SCROLL INTEGRATION
    ========================================================================== */
 
 html.lenis,
