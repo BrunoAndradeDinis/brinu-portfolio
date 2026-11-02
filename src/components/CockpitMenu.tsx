@@ -186,103 +186,118 @@ export const CockpitMenu: React.FC = () => {
       aria-modal="true"
       aria-hidden={!isOpen}
       aria-label={t.menu.dialogAria}
-      className={
-        isOpen
-          ? 'fixed inset-0 z-[9995] flex items-center justify-center bg-space-base/95 backdrop-blur-sm p-4 sm:p-8 overflow-y-auto'
-          : 'hidden'
-      }
+      className={`fixed inset-0 w-screen h-screen min-h-dvh z-[9990] overflow-y-auto overflow-x-hidden bg-space-base text-paper-white select-none ${
+        isOpen ? 'block' : 'hidden'
+      }`}
       onClick={(e) => {
         if (e.target === e.currentTarget) {
           closeMenu();
         }
       }}
     >
-      <div className="relative w-full max-w-4xl border-4 border-paper-white bg-space-base p-5 sm:p-8 md:p-10 shadow-[10px_10px_0_var(--color-bebop-red)]">
-        {/* Diagonal Red Ribbon Accent */}
+      {/* Persona 5 Angular Dynamic Slashes Background */}
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden z-0">
         <div
-          aria-hidden="true"
-          className="pointer-events-none absolute -top-3 right-6 bg-bebop-red px-4 py-1 font-mono text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] text-paper-white border-2 border-paper-white -skew-x-12"
-        >
-          {t.menu.headerTag}
-        </div>
+          data-slash-red
+          className="absolute -top-1/4 -bottom-1/4 -left-1/4 w-[85vw] sm:w-[65vw] lg:w-[55vw] bg-bebop-red transform -skew-x-12 origin-top shadow-[20px_0_0_var(--color-paper-white)]"
+        />
+        <div
+          data-slash-accent
+          className="hidden sm:block absolute -top-1/4 -bottom-1/4 left-[55vw] lg:left-[45vw] w-[18vw] bg-space-surface-1/60 transform -skew-x-12 border-l-4 border-r-4 border-paper-white/20"
+        />
+        <div
+          data-slash-stripe
+          className="hidden lg:block absolute -top-1/4 -bottom-1/4 left-[60vw] w-[6vw] bg-paper-white transform -skew-x-12 opacity-95 shadow-[12px_0_0_var(--color-bebop-red)]"
+        />
+      </div>
 
-        {/* Header Row */}
-        <div className="flex flex-wrap items-center justify-between gap-4 border-b-4 border-bebop-red pb-4 mb-6">
-          <div>
-            <h2 className="font-display text-2xl sm:text-4xl font-black uppercase tracking-tight text-paper-white">
-              {t.menu.title}
-            </h2>
-            <p className="font-mono text-xs text-muted-gray mt-1">
-              {t.menu.baseLabel} // {PROFILE.email}
-            </p>
+      {/* Fullscreen Content Container */}
+      <div className="relative z-10 w-full min-h-full flex flex-col justify-between pt-28 sm:pt-32 pb-8 px-4 sm:px-8 md:px-12 lg:px-20 max-w-7xl mx-auto">
+        <div>
+          {/* Header Row */}
+          <div className="relative flex flex-wrap items-end justify-between gap-4 border-b-4 border-paper-white pb-5 mb-8">
+            <div className="relative">
+              <div
+                aria-hidden="true"
+                className="inline-block bg-space-base px-3 py-1 font-mono text-[10px] sm:text-xs font-black uppercase tracking-[0.25em] text-paper-white border-2 border-paper-white -skew-x-12 mb-2"
+              >
+                {t.menu.headerTag}
+              </div>
+              <h2 className="font-display text-3xl sm:text-5xl lg:text-6xl font-black uppercase tracking-tight text-paper-white leading-none">
+                {t.menu.title}
+              </h2>
+              <p className="font-mono text-xs sm:text-sm text-paper-white/80 mt-2 font-bold tracking-wider">
+                {t.menu.baseLabel} // {PROFILE.email} // {PROFILE.location.label}
+              </p>
+            </div>
+
+            <button
+              ref={closeBtnRef}
+              type="button"
+              id="cockpit-close-btn"
+              onClick={closeMenu}
+              className="border-3 sm:border-4 border-paper-white bg-bebop-red px-5 py-2.5 font-mono text-xs sm:text-sm font-black uppercase tracking-widest text-paper-white shadow-[4px_4px_0_var(--color-paper-white)] transition-all duration-150 hover:-translate-y-0.5 hover:bg-paper-white hover:text-space-base cursor-pointer -skew-x-6"
+            >
+              [ESC] {t.menu.closeLabel}
+            </button>
           </div>
 
-          <button
-            ref={closeBtnRef}
-            type="button"
-            id="cockpit-close-btn"
-            onClick={closeMenu}
-            className="border-3 border-paper-white bg-bebop-red px-4 py-2 font-mono text-xs sm:text-sm font-black uppercase tracking-widest text-paper-white shadow-[4px_4px_0_var(--color-paper-white)] transition-transform duration-150 hover:-translate-y-0.5 hover:bg-paper-white hover:text-space-base cursor-pointer"
-          >
-            {t.menu.closeLabel}
-          </button>
+          {/* Oversized Persona 5 Navigation Blades */}
+          <nav aria-label={t.menu.title} className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mb-10">
+            {COCKPIT_NAV_ITEMS.map((item, idx) => {
+              const label = t.menu.navItems[item.labelKey];
+              const isEven = idx % 2 === 0;
+              const isActive = activeBladeId === item.id;
+              return (
+                <a
+                  key={item.id}
+                  href={item.href}
+                  data-cockpit-link={item.id}
+                  data-active-blade={isActive ? 'true' : 'false'}
+                  aria-current={
+                    isActive
+                      ? item.href === '/whoami'
+                        ? 'page'
+                        : 'true'
+                      : undefined
+                  }
+                  onClick={() => {
+                    setActiveBladeId(item.id);
+                    audioSynth.playKeypressBeep(740, 0.025, 0.06);
+                    closeMenu();
+                  }}
+                  className={`group relative flex items-center justify-between border-4 border-paper-white px-5 sm:px-7 py-4 sm:py-5 font-display text-lg sm:text-2xl font-black uppercase tracking-wider transition-all duration-150 -skew-x-6 sm:-skew-x-12 ${
+                    isActive
+                      ? 'bg-bebop-red text-paper-white shadow-[8px_8px_0_var(--color-paper-white)] scale-[1.01]'
+                      : isEven
+                        ? 'bg-space-base text-paper-white hover:bg-bebop-red hover:text-paper-white shadow-[6px_6px_0_var(--color-bebop-red)]'
+                        : 'bg-paper-white text-space-base hover:bg-bebop-red hover:text-paper-white shadow-[6px_6px_0_var(--color-bebop-red)]'
+                  } hover:-translate-y-1`}
+                >
+                  <span className="truncate pr-3 skew-x-6 sm:skew-x-12">{label}</span>
+                  <span className="font-mono text-xs sm:text-sm font-bold px-2.5 py-1 border-2 border-current shrink-0 skew-x-6 sm:skew-x-12">
+                    {item.code}
+                  </span>
+                </a>
+              );
+            })}
+          </nav>
         </div>
 
-        {/* Skewed Persona 5 Navigation Blades */}
-        <nav aria-label={t.menu.title} className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 mb-8">
-          {COCKPIT_NAV_ITEMS.map((item, idx) => {
-            const label = t.menu.navItems[item.labelKey];
-            const isEven = idx % 2 === 0;
-            const isActive = activeBladeId === item.id;
-            return (
-              <a
-                key={item.id}
-                href={item.href}
-                data-cockpit-link={item.id}
-                data-active-blade={isActive ? 'true' : 'false'}
-                aria-current={
-                  isActive
-                    ? item.href === '/whoami'
-                      ? 'page'
-                      : 'true'
-                    : undefined
-                }
-                onClick={() => {
-                  setActiveBladeId(item.id);
-                  audioSynth.playKeypressBeep(740, 0.025, 0.06);
-                  closeMenu();
-                }}
-                className={`group relative flex items-center justify-between border-3 border-paper-white px-4 py-3.5 font-display text-sm sm:text-base font-black uppercase tracking-wider transition-all duration-150 ${
-                  isActive
-                    ? 'bg-bebop-red text-paper-white shadow-[4px_4px_0_var(--color-paper-white)]'
-                    : isEven
-                      ? 'bg-space-surface-1 text-paper-white hover:bg-bebop-red hover:text-paper-white shadow-[4px_4px_0_var(--color-bebop-red)]'
-                      : 'bg-paper-white text-space-base hover:bg-bebop-red hover:text-paper-white shadow-[4px_4px_0_var(--color-bebop-red)]'
-                } hover:-translate-y-0.5`}
-              >
-                <span className="truncate pr-2">{label}</span>
-                <span className="font-mono text-xs font-bold px-2 py-0.5 border border-current shrink-0">
-                  {item.code}
-                </span>
-              </a>
-            );
-          })}
-        </nav>
-
         {/* System Controls: Language Switch & Audio Synth */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 border-t-2 border-paper-white/30 pt-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-t-4 border-paper-white pt-6">
           {/* Language Switcher Box */}
-          <div className="flex items-center justify-between border-2 border-paper-white bg-space-surface-1 px-4 py-3">
-            <span className="font-mono text-xs font-bold uppercase tracking-widest text-paper-white">
+          <div className="flex items-center justify-between border-3 border-paper-white bg-space-surface-1 px-5 py-3.5 shadow-[4px_4px_0_var(--color-bebop-red)]">
+            <span className="font-mono text-xs sm:text-sm font-bold uppercase tracking-widest text-paper-white">
               {t.menu.languageLabel}
             </span>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2.5">
               <button
                 type="button"
                 data-cockpit-lang="pt-br"
                 aria-pressed={locale === 'pt-br'}
                 onClick={() => setLocale('pt-br')}
-                className={`px-3 py-1 font-mono text-xs font-black uppercase border-2 cursor-pointer transition-colors ${
+                className={`px-3.5 py-1.5 font-mono text-xs font-black uppercase border-2 cursor-pointer transition-colors ${
                   locale === 'pt-br'
                     ? 'border-paper-white bg-bebop-red text-paper-white'
                     : 'border-paper-white/40 bg-space-base text-muted-gray hover:text-paper-white'
@@ -295,7 +310,7 @@ export const CockpitMenu: React.FC = () => {
                 data-cockpit-lang="en"
                 aria-pressed={locale === 'en'}
                 onClick={() => setLocale('en')}
-                className={`px-3 py-1 font-mono text-xs font-black uppercase border-2 cursor-pointer transition-colors ${
+                className={`px-3.5 py-1.5 font-mono text-xs font-black uppercase border-2 cursor-pointer transition-colors ${
                   locale === 'en'
                     ? 'border-paper-white bg-bebop-red text-paper-white'
                     : 'border-paper-white/40 bg-space-base text-muted-gray hover:text-paper-white'
@@ -307,8 +322,8 @@ export const CockpitMenu: React.FC = () => {
           </div>
 
           {/* Audio Synthesizer Control */}
-          <div className="flex items-center justify-between border-2 border-paper-white bg-space-surface-1 px-4 py-3">
-            <span className="font-mono text-xs font-bold uppercase tracking-widest text-paper-white">
+          <div className="flex items-center justify-between border-3 border-paper-white bg-space-surface-1 px-5 py-3.5 shadow-[4px_4px_0_var(--color-bebop-red)]">
+            <span className="font-mono text-xs sm:text-sm font-bold uppercase tracking-widest text-paper-white">
               {t.menu.audioLabel}
             </span>
             <button
@@ -316,23 +331,15 @@ export const CockpitMenu: React.FC = () => {
               id="cockpit-audio-toggle"
               aria-pressed={!isMuted}
               onClick={handleToggleAudio}
-              className={`px-3 py-1 font-mono text-xs font-black uppercase border-2 cursor-pointer transition-colors ${
+              className={`px-3.5 py-1.5 font-mono text-xs font-black uppercase border-2 cursor-pointer transition-colors ${
                 !isMuted
-                  ? 'border-paper-white bg-bebop-red text-paper-white'
-                  : 'border-paper-white bg-space-base text-paper-white hover:bg-paper-white hover:text-space-base'
+                  ? 'border-paper-white bg-bebop-red text-paper-white animate-pulse'
+                  : 'border-paper-white/40 bg-space-base text-muted-gray hover:text-paper-white'
               }`}
             >
-              {isMuted ? t.menu.audioMuted : t.menu.audioOn}
+              {!isMuted ? 'ONLINE' : 'MUTED'}
             </button>
           </div>
-        </div>
-
-        {/* Footer Escape Hint */}
-        <div className="mt-5 flex items-center justify-between font-mono text-[11px] text-muted-gray">
-          <span>{t.menu.escHint}</span>
-          <span className="text-bebop-red font-bold uppercase tracking-widest">
-            {PROFILE.location.label}
-          </span>
         </div>
       </div>
     </div>
