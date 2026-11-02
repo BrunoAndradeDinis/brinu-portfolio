@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { gsap } from 'gsap';
 import { useLocale } from '../i18n/index.ts';
 import { PROFILE } from '../data/profile.ts';
 import { audioSynth } from '../utils/audio.ts';
@@ -66,17 +67,75 @@ export const CockpitMenu: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
   const [activeBladeId, setActiveBladeId] = useState<string>('hero');
+  const overlayRef = useRef<HTMLDivElement | null>(null);
+  const slashesRef = useRef<HTMLDivElement | null>(null);
+  const bladesContainerRef = useRef<HTMLElement | null>(null);
+  const controlsRef = useRef<HTMLDivElement | null>(null);
   const closeBtnRef = useRef<HTMLButtonElement | null>(null);
+  const isClosingRef = useRef<boolean>(false);
 
-  const closeMenu = useCallback(() => {
-    setIsOpen(false);
-    syncCockpitTriggerDom(false);
-    if (typeof document !== 'undefined') {
-      document.body.classList.remove('lenis-stopped');
-    }
+  const isReducedMotion = useCallback((): boolean => {
+    if (typeof window === 'undefined') return false;
+    return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   }, []);
 
+  const closeMenu = useCallback(() => {
+    if (isClosingRef.current) return;
+
+    if (isReducedMotion()) {
+      setIsOpen(false);
+      syncCockpitTriggerDom(false);
+      if (typeof document !== 'undefined') {
+        document.body.classList.remove('lenis-stopped');
+      }
+      return;
+    }
+
+    isClosingRef.current = true;
+    const blades = bladesContainerRef.current
+      ? Array.from(bladesContainerRef.current.children)
+      : [];
+    const slashes = slashesRef.current
+      ? Array.from(slashesRef.current.children)
+      : [];
+
+    const tl = gsap.timeline({
+      onComplete: () => {
+        setIsOpen(false);
+        isClosingRef.current = false;
+        syncCockpitTriggerDom(false);
+        if (typeof document !== 'undefined') {
+          document.body.classList.remove('lenis-stopped');
+        }
+      },
+    });
+
+    if (blades.length > 0) {
+      tl.to(blades, {
+        x: 40,
+        opacity: 0,
+        duration: 0.16,
+        ease: 'power3.in',
+        stagger: 0.02,
+      });
+    }
+
+    if (slashes.length > 0) {
+      tl.to(
+        slashes,
+        {
+          xPercent: 100,
+          duration: 0.22,
+          ease: 'power3.in',
+          stagger: 0.02,
+        },
+        '-=0.08'
+      );
+    }
+  }, [isReducedMotion]);
+
   const openMenu = useCallback(() => {
+    isClosingRef.current = false;
     setIsOpen(true);
     syncCockpitTriggerDom(true);
     audioSynth.playKnobClick(960, 0.08);
@@ -166,10 +225,63 @@ export const CockpitMenu: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    if (isOpen) {
-      closeBtnRef.current?.focus();
+    if (!isOpen) return;
+    closeBtnRef.current?.focus();
+
+    if (isReducedMotion()) return;
+
+    const blades = bladesContainerRef.current
+      ? Array.from(bladesContainerRef.current.children)
+      : [];
+    const slashes = slashesRef.current
+      ? Array.from(slashesRef.current.children)
+      : [];
+
+    const tl = gsap.timeline();
+    if (slashes.length > 0) {
+      tl.fromTo(
+        slashes,
+        { xPercent: -100, skewX: -22, opacity: 0.8 },
+        {
+          xPercent: 0,
+          skewX: -12,
+          opacity: 1,
+          duration: 0.36,
+          ease: 'power4.out',
+          stagger: 0.04,
+        }
+      );
     }
-  }, [isOpen]);
+
+    if (blades.length > 0) {
+      tl.fromTo(
+        blades,
+        { x: -50, opacity: 0, skewX: -18 },
+        {
+          x: 0,
+          opacity: 1,
+          skewX: -12,
+          duration: 0.34,
+          ease: 'back.out(1.2)',
+          stagger: 0.04,
+        },
+        '-=0.2'
+      );
+    }
+
+    if (controlsRef.current) {
+      tl.fromTo(
+        controlsRef.current,
+        { y: 20, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.24, ease: 'power2.out' },
+        '-=0.15'
+      );
+    }
+
+    return () => {
+      tl.kill();
+    };
+  }, [isOpen, isReducedMotion]);
 
   const handleToggleAudio = () => {
     const nextMuted = audioSynth.toggleMute();
@@ -181,6 +293,7 @@ export const CockpitMenu: React.FC = () => {
 
   return (
     <div
+      ref={overlayRef}
       id="cockpit-menu-overlay"
       role="dialog"
       aria-modal="true"
@@ -196,7 +309,7 @@ export const CockpitMenu: React.FC = () => {
       }}
     >
       {/* Persona 5 Angular Dynamic Slashes Background */}
-      <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden z-0">
+      <div ref={slashesRef} aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden z-0">
         <div
           data-slash-red
           className="absolute -top-1/4 -bottom-1/4 -left-1/4 w-[85vw] sm:w-[65vw] lg:w-[55vw] bg-bebop-red transform -skew-x-12 origin-top shadow-[20px_0_0_var(--color-paper-white)]"
@@ -243,7 +356,7 @@ export const CockpitMenu: React.FC = () => {
           </div>
 
           {/* Oversized Persona 5 Navigation Blades */}
-          <nav aria-label={t.menu.title} className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mb-10">
+          <nav ref={bladesContainerRef} aria-label={t.menu.title} className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mb-10">
             {COCKPIT_NAV_ITEMS.map((item, idx) => {
               const label = t.menu.navItems[item.labelKey];
               const isEven = idx % 2 === 0;
@@ -285,7 +398,7 @@ export const CockpitMenu: React.FC = () => {
         </div>
 
         {/* System Controls: Language Switch & Audio Synth */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-t-4 border-paper-white pt-6">
+        <div ref={controlsRef} className="grid grid-cols-1 md:grid-cols-2 gap-4 border-t-4 border-paper-white pt-6">
           {/* Language Switcher Box */}
           <div className="flex items-center justify-between border-3 border-paper-white bg-space-surface-1 px-5 py-3.5 shadow-[4px_4px_0_var(--color-bebop-red)]">
             <span className="font-mono text-xs sm:text-sm font-bold uppercase tracking-widest text-paper-white">
