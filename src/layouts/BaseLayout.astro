@@ -6,16 +6,21 @@ import CockpitMenu from "../components/CockpitMenu";
 import RightClickGuard from "../components/RightClickGuard";
 import CiladaAlert from "../components/CiladaAlert";
 import { ptBrDict } from "../i18n/dictionaries";
+import { PROFILE, buildPersonJsonLd } from "../data/profile";
 
 interface Props {
   title?: string;
   description?: string;
+  ogImage?: string;
 }
 
 const {
   title = ptBrDict.meta.title,
   description = ptBrDict.meta.description,
+  ogImage = "/assets/brinu-avatar.jpg",
 } = Astro.props;
+
+const personJsonLd = JSON.stringify(buildPersonJsonLd());
 ---
 
 <!doctype html>
@@ -39,8 +44,37 @@ const {
 
     <title>{title}</title>
     <meta name="description" content={description} />
+    <meta name="author" content={PROFILE.fullName} />
+    <meta name="theme-color" content="#FE0000" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:locale" content="pt_BR" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
+
+    <script
+      is:inline
+      type="application/ld+json"
+      id="profile-jsonld"
+      set:html={personJsonLd}
+    />
   </head>
   <body>
+    <a
+      id="skip-to-content-link"
+      href="#main-content"
+      data-i18n="a11y.skipToContent"
+      class="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[9999] focus:border-4 focus:border-paper-white focus:bg-bebop-red focus:px-5 focus:py-3 focus:font-mono focus:text-xs focus:font-black focus:uppercase focus:tracking-widest focus:text-paper-white focus:shadow-[6px_6px_0_var(--color-space-base)] focus:outline-none"
+    >
+      {ptBrDict.a11y.skipToContent}
+    </a>
+
     <IntroPreloader />
 
     <div id="p5-wipe-overlay" aria-hidden="true">
