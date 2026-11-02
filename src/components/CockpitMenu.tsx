@@ -44,9 +44,14 @@ export function syncCockpitTriggerDom(isOpen: boolean): void {
   const bar2 = document.getElementById('menu-bar-2');
   const bar3 = document.getElementById('menu-bar-3');
   const overlay = document.getElementById('cockpit-menu-overlay');
+  const header = document.getElementById('comic-nav-header');
 
   if (cockpitBtn) {
     cockpitBtn.setAttribute('aria-expanded', String(isOpen));
+  }
+
+  if (header) {
+    header.dataset.cockpitOpen = String(isOpen);
   }
 
   if (overlay) {

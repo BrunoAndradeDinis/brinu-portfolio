@@ -5,13 +5,14 @@ import { ptBrDict } from "../i18n/dictionaries";
 <header
   id="comic-nav-header"
   data-cockpit-open="false"
+  data-scrolled="false"
   class="sticky top-0 z-[9999] flex h-[5.5rem] sm:h-[6.5rem] md:h-[7rem] w-full items-center justify-between border-b-4 border-space-base bg-bebop-red px-4 sm:px-6 md:px-8 lg:px-16 select-none box-border transition-colors duration-200"
 >
   <a
     id="comic-nav-logo"
     data-brinu-logo
     href="/"
-    class="group flex items-center gap-2.5 sm:gap-3.5 md:gap-4 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-space-base cursor-pointer shrink-0"
+    class="group flex items-center gap-2.5 sm:gap-3.5 md:gap-4 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-space-base cursor-pointer shrink-0 pointer-events-auto"
     aria-label={ptBrDict.nav.topAria}
     data-i18n="nav.topAria"
     data-i18n-attr="aria-label"
@@ -26,10 +27,12 @@ import { ptBrDict } from "../i18n/dictionaries";
       />
     </div>
     <span
-      class="font-display text-base sm:text-xl lg:text-3xl font-black tracking-tight text-space-base leading-none transition-opacity duration-150 group-hover:opacity-90"
+      class="hidden sm:inline-flex items-center border-2 sm:border-3 border-space-base bg-paper-white px-2.5 sm:px-3 py-1 font-display text-xs sm:text-sm md:text-base font-black tracking-tight text-space-base shadow-[3px_3px_0_var(--color-space-base)] -skew-x-6 transition-all duration-150 group-hover:bg-space-base group-hover:text-paper-white group-hover:border-paper-white"
     >
-      <span class="hidden lg:inline">BRUNO DINIS // BRINU</span>
-      <span class="inline lg:hidden">BRINU</span>
+      <span class="skew-x-6">
+        <span class="hidden lg:inline">BRUNO DINIS // BRINU</span>
+        <span class="inline lg:hidden">BRINU</span>
+      </span>
     </span>
   </a>
 
@@ -39,7 +42,7 @@ import { ptBrDict } from "../i18n/dictionaries";
   >
     <a
       href="#works"
-      class="group hidden sm:inline-flex h-10 md:h-12 items-center gap-1.5 md:gap-2 border-3 sm:border-4 border-space-base bg-paper-white px-3 md:px-5 font-display text-xs md:text-sm font-black text-space-base shadow-[3px_3px_0_var(--color-space-base)] transition-all duration-150 hover:-translate-y-0.5 hover:bg-space-base hover:text-paper-white active:translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-space-base leading-none"
+      class="nav-secondary-item group hidden sm:inline-flex h-10 md:h-12 items-center gap-1.5 md:gap-2 border-3 sm:border-4 border-space-base bg-paper-white px-3 md:px-5 font-display text-xs md:text-sm font-black text-space-base shadow-[3px_3px_0_var(--color-space-base)] transition-all duration-150 hover:-translate-y-0.5 hover:bg-space-base hover:text-paper-white active:translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-space-base leading-none"
       aria-label={ptBrDict.nav.worksAria}
       data-i18n="nav.worksAria"
       data-i18n-attr="aria-label"
@@ -63,7 +66,7 @@ import { ptBrDict } from "../i18n/dictionaries";
       id="nav-lang-toggle-btn"
       data-lang-toggle
       data-active-locale="pt-br"
-      class="inline-flex h-10 md:h-12 items-center justify-center border-3 sm:border-4 border-space-base bg-space-base px-2.5 md:px-3.5 font-mono text-xs md:text-sm font-black uppercase tracking-wider text-paper-white shadow-[3px_3px_0_var(--color-paper-white)] transition-all duration-150 hover:-translate-y-0.5 hover:bg-paper-white hover:text-space-base cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-space-base"
+      class="nav-secondary-item inline-flex h-10 md:h-12 items-center justify-center border-3 sm:border-4 border-space-base bg-space-base px-2.5 md:px-3.5 font-mono text-xs md:text-sm font-black uppercase tracking-wider text-paper-white shadow-[3px_3px_0_var(--color-paper-white)] transition-all duration-150 hover:-translate-y-0.5 hover:bg-paper-white hover:text-space-base cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-space-base"
       aria-label={ptBrDict.nav.langToggleAria}
       data-i18n="nav.langToggleAria"
       data-i18n-attr="aria-label"
@@ -74,7 +77,7 @@ import { ptBrDict } from "../i18n/dictionaries";
     <button
       type="button"
       id="cockpit-trigger-btn"
-      class="group relative flex h-10 w-10 md:h-12 md:w-12 shrink-0 items-center justify-center border-3 sm:border-4 border-space-base bg-paper-white shadow-[3px_3px_0_var(--color-space-base)] transition-all duration-200 hover:-translate-y-0.5 hover:scale-105 active:translate-y-0.5 cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-space-base"
+      class="group relative flex h-10 w-10 md:h-12 md:w-12 shrink-0 items-center justify-center border-3 sm:border-4 border-space-base bg-paper-white shadow-[3px_3px_0_var(--color-space-base)] transition-all duration-200 hover:-translate-y-0.5 hover:scale-105 active:translate-y-0.5 cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-space-base pointer-events-auto"
       aria-label={ptBrDict.nav.menuTriggerAria}
       data-i18n="nav.menuTriggerAria"
       data-i18n-attr="aria-label"
@@ -148,6 +151,18 @@ import { ptBrDict } from "../i18n/dictionaries";
         updateBars(detail.isOpen);
       }
     });
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && cockpitBtn.getAttribute("aria-expanded") === "true") {
+        updateBars(false);
+        const overlay = document.getElementById("cockpit-menu-overlay");
+        if (overlay) overlay.setAttribute("aria-hidden", "true");
+        window.dispatchEvent(
+          new CustomEvent("cockpit:open", { detail: { isOpen: false } })
+        );
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
   }
 
   function setupCiladaTripleClick() {
@@ -188,9 +203,26 @@ import { ptBrDict } from "../i18n/dictionaries";
     });
   }
 
+  function setupScrollWatcher() {
+    const header = document.getElementById("comic-nav-header");
+    if (!header) return;
+
+    const onScroll = () => {
+      const isScrolled = window.scrollY > 20;
+      const nextVal = String(isScrolled);
+      if (header.dataset.scrolled !== nextVal) {
+        header.dataset.scrolled = nextVal;
+      }
+    };
+
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+  }
+
   function initNav() {
     setupCockpitTrigger();
     setupCiladaTripleClick();
+    setupScrollWatcher();
   }
 
   if (document.readyState === "loading") {
@@ -200,3 +232,32 @@ import { ptBrDict } from "../i18n/dictionaries";
   }
   document.addEventListener("astro:page-load", initNav);
 </script>
+
+<style>
+  #comic-nav-header {
+    transition: background-color 250ms ease, border-color 250ms ease;
+  }
+
+  #comic-nav-header[data-scrolled="true"],
+  #comic-nav-header[data-cockpit-open="true"] {
+    background-color: transparent !important;
+    border-bottom-color: transparent !important;
+    pointer-events: none;
+  }
+
+  #comic-nav-header[data-scrolled="true"] .nav-secondary-item,
+  #comic-nav-header[data-cockpit-open="true"] .nav-secondary-item {
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(-4px) scale(0.95);
+  }
+
+  #comic-nav-header .nav-secondary-item {
+    transition: opacity 200ms ease, transform 200ms ease;
+  }
+
+  #comic-nav-header #comic-nav-logo,
+  #comic-nav-header #cockpit-trigger-btn {
+    pointer-events: auto;
+  }
+</style>
