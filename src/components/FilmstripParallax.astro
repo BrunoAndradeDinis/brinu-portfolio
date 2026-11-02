@@ -123,12 +123,11 @@ function splitWords(text: string): string[] {
   <!-- Container de Overflow para o Filmstrip Rotacionado -->
   <div class="overflow-hidden pt-14 pb-16 sm:pt-24 sm:pb-24">
     <!-- Wrapper com rotação de 2.5 graus e scale de 1.2 -->
-    <div film="true" data-film-wrapper class="relative z-[2] rotate-[2.5deg] scale-[1.2] origin-center">
+    <div data-film-wrapper class="relative z-[2] rotate-[2.5deg] scale-[1.2] origin-center">
       <!-- Container com recuo inicial de 100vw para começar fora da tela à direita -->
       <div class="flex pl-[100vw]">
         <!-- Elemento Parallax com as variáveis de controle CSS (--x e --progress) -->
         <div
-          ref="parallax"
           data-filmstrip-parallax
           class="parallax relative flex items-stretch"
           style="--x: 0px; --progress: 0;"
