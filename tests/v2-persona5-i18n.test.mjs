@@ -6,6 +6,34 @@ import {
   getLocalizedCases,
   getLocalizedSkillCategories,
 } from '../src/data/cases.ts';
+import { DICTIONARIES, ptBrDict, enDict } from '../src/i18n/dictionaries.ts';
+
+function collectKeys(obj, prefix = '') {
+  const keys = [];
+  for (const [k, v] of Object.entries(obj)) {
+    const path = prefix ? `${prefix}.${k}` : k;
+    if (v && typeof v === 'object' && !Array.isArray(v)) {
+      keys.push(...collectKeys(v, path));
+    } else {
+      keys.push(path);
+    }
+  }
+  return keys.sort();
+}
+
+function collectValues(obj) {
+  const values = [];
+  for (const v of Object.values(obj)) {
+    if (v && typeof v === 'object' && !Array.isArray(v)) {
+      values.push(...collectValues(v));
+    } else if (Array.isArray(v)) {
+      values.push(...v);
+    } else {
+      values.push(v);
+    }
+  }
+  return values;
+}
 
 test('C1: profile.ts exports canonical Franca / SP and official contact metadata', () => {
   assert.equal(PROFILE.fullName, 'Bruno de Andrade Dinis');
@@ -48,4 +76,25 @@ test('T2: getLocalizedCases and getLocalizedSkillCategories provide matching pt-
     enSkills.map((s) => s.id)
   );
   assert.notEqual(ptSkills[0].subtitle, enSkills[0].subtitle);
+});
+
+test('C4: pt-br and en dictionaries have 100% key parity and non-empty translations', () => {
+  const ptKeys = collectKeys(ptBrDict);
+  const enKeys = collectKeys(enDict);
+
+  assert.deepEqual(ptKeys, enKeys);
+  assert.ok(ptKeys.length > 60);
+
+  for (const val of collectValues(ptBrDict)) {
+    assert.equal(typeof val, 'string');
+    assert.ok(val.trim().length > 0);
+  }
+  for (const val of collectValues(enDict)) {
+    assert.equal(typeof val, 'string');
+    assert.ok(val.trim().length > 0);
+  }
+
+  assert.ok(DICTIONARIES['pt-br'].footer.engineeredIn.includes('FRANCA / SP'));
+  assert.ok(DICTIONARIES.en.footer.engineeredIn.includes('FRANCA / SP'));
+  assert.ok(!JSON.stringify(DICTIONARIES).toLowerCase().includes('campinas'));
 });
