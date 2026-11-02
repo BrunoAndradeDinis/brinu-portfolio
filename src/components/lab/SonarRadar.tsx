@@ -40,7 +40,7 @@ const INITIAL_TARGETS: RadarTarget[] = [
     angleDeg: 215,
     distance: 0.78,
     color: '#EBA602', // Bebop Amber
-    metrics: '60 FPS Canvas • Sound FX',
+    metrics: 'Interactive Canvas • Sound FX',
     lastPingTime: 0,
   },
   {
@@ -54,13 +54,13 @@ const INITIAL_TARGETS: RadarTarget[] = [
     lastPingTime: 0,
   },
   {
-    id: 'magalu',
-    name: 'Magalu Cloud',
-    category: 'CORE INFRASTRUCTURE',
+    id: 'painel-stream',
+    name: 'Painel-Stream Control',
+    category: 'TELEMETRY & S3 STORAGE',
     angleDeg: 342,
     distance: 0.35,
     color: '#FE0000', // Bebop Red
-    metrics: 'Distributed Cloud Architecture',
+    metrics: 'Magalu Cloud S3 • Next.js 16',
     lastPingTime: 0,
   },
 ];
@@ -100,7 +100,7 @@ export const SonarRadar: React.FC = () => {
     }
   };
 
-  // Loop principal de renderização Canvas 2D a 60 FPS
+  // Loop principal de renderização Canvas 2D
   const renderRadar = useCallback((time: number) => {
     const canvas = canvasRef.current;
     if (!canvas) return;

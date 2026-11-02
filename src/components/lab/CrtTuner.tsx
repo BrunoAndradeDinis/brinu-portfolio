@@ -252,7 +252,7 @@ export const CrtTuner: React.FC = () => {
               {/* Rodapé da Tela */}
               <div className="flex items-center justify-between text-[10px] text-muted-gray pt-2 border-t border-space-border/40">
                 <span>BEBOP BROADCAST NET // 1996</span>
-                <span>SYNC: 60 FPS • ANALOG TUBE</span>
+                <span>SYNC: ANALOG TUBE</span>
               </div>
             </div>
           </div>

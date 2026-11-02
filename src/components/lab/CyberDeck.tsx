@@ -12,7 +12,7 @@ export class QuantumStreamPipeline {
   }
 
   public synthesizeFrame(deltaMs: number): FramePacket {
-    // 60 FPS deterministic low-latency audio/visual telemetry
+    // Deterministic low-latency audio/visual telemetry
     const frequency = 440.0 * Math.pow(2, (deltaMs % 12) / 12);
     return {
       status: "NOMINAL",
@@ -249,7 +249,7 @@ export const CyberDeck: React.FC = () => {
     const resizeObserver = new ResizeObserver(handleResize);
     resizeObserver.observe(container);
 
-    // 7. Loop de Renderização a 60 FPS com Amortecimento e Gravidade Zero
+    // 7. Loop de Renderização com Amortecimento e Gravidade Zero
     const startTime = performance.now();
 
     const animate = () => {
@@ -519,7 +519,7 @@ export const CyberDeck: React.FC = () => {
           {/* Dica de Teclado e Acessibilidade */}
           <div className="flex items-center justify-between text-xs font-mono text-muted-gray border-t border-space-border/40 pt-3">
             <span>KEYBOARD: [ARROWS] ROTATE • [SPACE] EJECT</span>
-            <span className="text-acid-green font-bold">60 FPS REALTIME</span>
+            <span className="text-acid-green font-bold">REALTIME TELEMETRY</span>
           </div>
         </div>
       </div>

@@ -102,12 +102,12 @@ export const PROJECT_CASES: ProjectCase[] = [
     subtitle: 'Frontend Gamificado & Máquina de Estados',
     status: 'Concluído / Online',
     description:
-      'Arena retrô com lógica orientada a eventos, animações táteis a 60 FPS e experiência imersiva de jogo inspirada em One Piece.',
+      'Arena retrô com lógica orientada a eventos, animações táteis fluidas e experiência imersiva de jogo inspirada em One Piece.',
     challenge:
       'Construir fluxo de jogo responsivo e intuitivo com lógica de máquina de estados simples e placar reativo em tempo real com temática One Piece.',
     solution:
       'Gerenciamento de estado declarativo com feedback visual e sonoro imediato em cada rodada com arquitetura modular em Next.js 14.',
-    metric: 'Aplicação com alta retenção de uso e resposta imediata (INP < 50ms a 60 FPS).',
+    metric: 'Aplicação com alta retenção de uso e resposta imediata (INP < 50ms).',
     stack: ['Next.js 14', 'TypeScript', 'Tailwind CSS', 'React Hooks', 'State Machine'],
     track: 2,
     borderColor: 'acid-green',

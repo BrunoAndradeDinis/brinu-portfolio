@@ -41,13 +41,13 @@ export function printBebopReceipt(): void {
 ------------------------------------------------------------
 OPERADOR: Bruno de Andrade Dinis ("Brinu")
 STATUS:   Pai da Helena | Noivo apaixonado
-BASE:     Magalu Cloud (Software Engineer - Cloud & Front)
+BASE:     Campinas / SP (Software Engineer - Cloud & Front)
 MISSAO:   Construir interfaces lendarias & arquitetura veloz
 ------------------------------------------------------------
 ITEM  DESCRICAO                            VALOR / STATUS
 01    GitHub Telemetry (76 repos)          [OK - @BrunoAndradeDinis]
 02    LinkedIn Profile                     [OK - /in/bruno-de-andrade-dinis]
-03    Engine AuraStream (Compute + S3)     [ONLINE 24/7]
+03    Engine AuraStream (Magalu Cloud S3)  [ONLINE 24/7]
 04    Quake Log Parser (Docker + Jest)     [COVERAGE 100%]
 05    Creative Lab Modules                 [3 PROTOTYPES ACTIVE]
 ------------------------------------------------------------
@@ -101,7 +101,7 @@ export function initTelemetry(): void {
         console.table([
           {
             Projeto: 'AuraStream',
-            Stack: 'Next.js 16 + FFmpeg + S3',
+            Stack: 'Next.js 16 + FFmpeg + Magalu Cloud (VM & S3)',
             URL: 'https://github.com/BrunoAndradeDinis/auraStream',
           },
           {
@@ -118,11 +118,6 @@ export function initTelemetry(): void {
             Projeto: 'The Warriors',
             Stack: 'SCSS + Gulp',
             URL: 'https://the-warriors-gamma.vercel.app',
-          },
-          {
-            Projeto: 'Magalu Cloud',
-            Stack: 'Distributed Cloud Architecture',
-            URL: 'https://magalu.cloud',
           },
         ]);
         return '[PROJETOS] Tabela de projetos carregada acima.';
