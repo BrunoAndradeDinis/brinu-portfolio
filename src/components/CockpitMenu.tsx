@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { gsap } from 'gsap';
 import { useLocale } from '../i18n/index.ts';
-import { PROFILE } from '../data/profile.ts';
 import { audioSynth } from '../utils/audio.ts';
 
 export interface CockpitNavItem {
@@ -76,7 +75,6 @@ export const CockpitMenu: React.FC = () => {
   const slashesRef = useRef<HTMLDivElement | null>(null);
   const bladesContainerRef = useRef<HTMLElement | null>(null);
   const controlsRef = useRef<HTMLDivElement | null>(null);
-  const closeBtnRef = useRef<HTMLButtonElement | null>(null);
   const isClosingRef = useRef<boolean>(false);
 
   const isReducedMotion = useCallback((): boolean => {
@@ -231,7 +229,10 @@ export const CockpitMenu: React.FC = () => {
 
   useEffect(() => {
     if (!isOpen) return;
-    closeBtnRef.current?.focus();
+    const activeLink =
+      bladesContainerRef.current?.querySelector<HTMLAnchorElement>('a[data-active-blade="true"]') ||
+      bladesContainerRef.current?.querySelector<HTMLAnchorElement>('a');
+    activeLink?.focus();
 
     if (isReducedMotion()) return;
 
@@ -333,31 +334,10 @@ export const CockpitMenu: React.FC = () => {
       <div className="relative z-10 w-full min-h-full flex flex-col justify-between pt-28 sm:pt-32 pb-8 px-4 sm:px-8 md:px-12 lg:px-20 max-w-7xl mx-auto">
         <div>
           {/* Header Row */}
-          <div className="relative flex flex-wrap items-end justify-between gap-4 border-b-4 border-paper-white pb-5 mb-8">
-            <div className="relative">
-              <div
-                aria-hidden="true"
-                className="inline-block bg-space-base px-3 py-1 font-mono text-[10px] sm:text-xs font-black uppercase tracking-[0.25em] text-paper-white border-2 border-paper-white -skew-x-12 mb-2"
-              >
-                {t.menu.headerTag}
-              </div>
-              <h2 className="font-display text-3xl sm:text-5xl lg:text-6xl font-black uppercase tracking-tight text-paper-white leading-none">
-                {t.menu.title}
-              </h2>
-              <p className="font-mono text-xs sm:text-sm text-paper-white/80 mt-2 font-bold tracking-wider">
-                {t.menu.baseLabel} // {PROFILE.email} // {PROFILE.location.label}
-              </p>
-            </div>
-
-            <button
-              ref={closeBtnRef}
-              type="button"
-              id="cockpit-close-btn"
-              onClick={closeMenu}
-              className="border-3 sm:border-4 border-paper-white bg-bebop-red px-5 py-2.5 font-mono text-xs sm:text-sm font-black uppercase tracking-widest text-paper-white shadow-[4px_4px_0_var(--color-paper-white)] transition-all duration-150 hover:-translate-y-0.5 hover:bg-paper-white hover:text-space-base cursor-pointer -skew-x-6"
-            >
-              [ESC] {t.menu.closeLabel}
-            </button>
+          <div className="relative border-b-4 border-paper-white pb-5 mb-8">
+            <h2 className="font-display text-3xl sm:text-5xl lg:text-6xl font-black uppercase tracking-tight text-paper-white leading-none">
+              {t.menu.title}
+            </h2>
           </div>
 
           {/* Oversized Persona 5 Navigation Blades */}

@@ -6,7 +6,6 @@
  * Zero código chumbado. Estilos centralizados e desacoplados por componente e domínio.
  */
 import BaseLayout from "../layouts/BaseLayout.astro";
-import ComicNav from "../components/ComicNav.astro";
 import ComicHero from "../components/ComicHero.astro";
 import FilmstripParallax from "../components/FilmstripParallax.astro";
 import SelectedWorks from "../components/SelectedWorks.astro";
@@ -17,9 +16,6 @@ import BebopFooter from "../components/BebopFooter.astro";
 ---
 
 <BaseLayout title="Brinu - Software Engineer & Creative Technologist">
-  <!-- Top Bar Editorial Manga / mew.xyz -->
-  <ComicNav />
-
   <main id="main-content" tabindex="-1" class="flex min-h-screen flex-col overflow-x-hidden bg-bebop-red text-space-base focus:outline-none">
     <!-- Hero Monumental Carmesim & Tipografia Colossal "BRINU" -->
     <ComicHero />

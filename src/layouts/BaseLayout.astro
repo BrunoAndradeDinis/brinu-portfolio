@@ -2,6 +2,7 @@
 import "../styles/tokens.css";
 import "../styles/global.css";
 import IntroPreloader from "../components/IntroPreloader.astro";
+import ComicNav from "../components/ComicNav.astro";
 import CockpitMenu from "../components/CockpitMenu";
 import RightClickGuard from "../components/RightClickGuard";
 import CiladaAlert from "../components/CiladaAlert";
@@ -80,6 +81,8 @@ const personJsonLd = JSON.stringify(buildPersonJsonLd());
     <div id="p5-wipe-overlay" aria-hidden="true">
       <div class="p5-wipe-blade-red"></div>
     </div>
+
+    <ComicNav />
 
     <div id="app-root">
       <slot />
