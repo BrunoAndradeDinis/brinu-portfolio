@@ -1,8 +1,9 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import * as THREE from 'three';
 import { audioSynth } from '../../utils/audio';
+import { useLocale } from '../../i18n/index';
 
-const CARTRIDGE_CODE_SNIPPET = `// BEBOP ZERO-G CORE PIPELINE v4.2
+const CARTRIDGE_CODE_SNIPPET = `// PHANTOM ZERO-G CORE PIPELINE v4.2
 export class QuantumStreamPipeline {
   private readonly buffer: Float32Array;
   private readonly sampleRate = 48000;
@@ -12,25 +13,23 @@ export class QuantumStreamPipeline {
   }
 
   public synthesizeFrame(deltaMs: number): FramePacket {
-    // Deterministic low-latency audio/visual telemetry
     const frequency = 440.0 * Math.pow(2, (deltaMs % 12) / 12);
     return {
       status: "NOMINAL",
       dpr: Math.min(window.devicePixelRatio || 1, 2),
       vramAllocated: "34.2 MB",
-      renderEngine: "WebGL 2.0 / Bebop Three.js Core",
+      renderEngine: "WebGL 2.0 / Three.js Core",
       telemetryHz: frequency.toFixed(1) + " Hz"
     };
   }
 }`;
 
 export const CyberDeck: React.FC = () => {
+  const { dict: t } = useLocale();
   const mountRef = useRef<HTMLDivElement>(null);
   const [isEjected, setIsEjected] = useState<boolean>(false);
-  const [isHovered, setIsHovered] = useState<boolean>(false);
   const [isMuted, setIsMuted] = useState<boolean>(true);
 
-  // Refs de controle do Three.js
   const sceneRef = useRef<THREE.Scene | null>(null);
   const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
@@ -39,14 +38,15 @@ export const CyberDeck: React.FC = () => {
   const ledLightRef = useRef<THREE.PointLight | null>(null);
   const animFrameRef = useRef<number>(0);
 
-  // Inércia e estado do ponteiro
   const isDraggingRef = useRef<boolean>(false);
   const prevPointerRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
-  const angularVelocityRef = useRef<{ x: number; y: number }>({ x: 0.005, y: 0.01 });
+  const angularVelocityRef = useRef<{ x: number; y: number }>({
+    x: 0.005,
+    y: 0.01,
+  });
   const targetEjectProgressRef = useRef<number>(0);
   const currentEjectProgressRef = useRef<number>(0);
 
-  // Sincroniza estado de áudio global
   useEffect(() => {
     setIsMuted(audioSynth.isMuted());
     const handleMute = (e: Event) => {
@@ -61,7 +61,6 @@ export const CyberDeck: React.FC = () => {
     };
   }, []);
 
-  // Alterna o estado mecânico de ejeção
   const handleToggleEject = useCallback(() => {
     const nextEjected = !isEjected;
     setIsEjected(nextEjected);
@@ -72,7 +71,7 @@ export const CyberDeck: React.FC = () => {
         audioSynth.playKeypressBeep(720, 0.08, 0.2);
         setTimeout(() => audioSynth.playAlarm8Bit(2), 90);
       } else {
-        audioSynth.playKnobClick(0.25);
+        audioSynth.playKnobClick(900, 0.12);
         setTimeout(() => audioSynth.playSonarBlip(660, 0.04, 0.15), 60);
       }
     }
@@ -82,22 +81,26 @@ export const CyberDeck: React.FC = () => {
     const container = mountRef.current;
     if (!container) return;
 
-    // 1. Criação da Cena e Câmera
+    let renderer: THREE.WebGLRenderer | null = null;
+    try {
+      renderer = new THREE.WebGLRenderer({
+        alpha: true,
+        antialias: true,
+        powerPreference: 'high-performance',
+      });
+    } catch {
+      return;
+    }
+
     const scene = new THREE.Scene();
     sceneRef.current = scene;
 
-    const width = container.clientWidth || 400;
-    const height = container.clientHeight || 400;
+    const width = container.clientWidth || 360;
+    const height = container.clientHeight || 360;
     const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 100);
     camera.position.set(0, 0, 7.8);
     cameraRef.current = camera;
 
-    // 2. Criação do Renderer com DPR estritamente limitado (Regra AD-3)
-    const renderer = new THREE.WebGLRenderer({
-      alpha: true,
-      antialias: true,
-      powerPreference: 'high-performance',
-    });
     renderer.setSize(width, height);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
     renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -105,43 +108,39 @@ export const CyberDeck: React.FC = () => {
     container.appendChild(renderer.domElement);
     rendererRef.current = renderer;
 
-    // 3. Iluminação Espacial Dramática
-    const ambientLight = new THREE.AmbientLight(0x1a1a2e, 1.4);
+    const ambientLight = new THREE.AmbientLight(0xfbfaf4, 1.1);
     scene.add(ambientLight);
 
-    const keyLight = new THREE.DirectionalLight(0xfff5e6, 2.2);
+    const keyLight = new THREE.DirectionalLight(0xfbfaf4, 2.2);
     keyLight.position.set(4, 5, 5);
     scene.add(keyLight);
 
-    const rimAmberLight = new THREE.PointLight(0xeba602, 3.0, 15);
-    rimAmberLight.position.set(-4, -2, -3);
-    scene.add(rimAmberLight);
+    const rimRedLight = new THREE.PointLight(0xfe0000, 3.2, 15);
+    rimRedLight.position.set(-4, -2, -3);
+    scene.add(rimRedLight);
 
-    const ledPointLight = new THREE.PointLight(0x2efe0c, 1.5, 4);
+    const ledPointLight = new THREE.PointLight(0xfbfaf4, 1.5, 4);
     ledPointLight.position.set(0.9, 1.6, 0.45);
     scene.add(ledPointLight);
     ledLightRef.current = ledPointLight;
 
-    // 4. Construção da Malha do Cartucho Cyber Deck (Low-Poly Bebop Brutalist)
     const cartridgeGroup = new THREE.Group();
     cartridgeGroupRef.current = cartridgeGroup;
 
-    // Corpo Principal do Cartucho
     const bodyGeometry = new THREE.BoxGeometry(2.8, 3.8, 0.55);
     const bodyMaterial = new THREE.MeshStandardMaterial({
-      color: 0x11111e,
+      color: 0x080808,
       roughness: 0.35,
       metalness: 0.7,
     });
     const bodyMesh = new THREE.Mesh(bodyGeometry, bodyMaterial);
     cartridgeGroup.add(bodyMesh);
 
-    // Ranhuras de Aderência Mecânica (Grip Ridges)
     const ridgeGeometry = new THREE.BoxGeometry(2.2, 0.08, 0.06);
     const ridgeMaterial = new THREE.MeshStandardMaterial({
-      color: 0x222238,
-      roughness: 0.5,
-      metalness: 0.8,
+      color: 0xfe0000,
+      roughness: 0.4,
+      metalness: 0.6,
     });
     for (let i = 0; i < 4; i++) {
       const ridge = new THREE.Mesh(ridgeGeometry, ridgeMaterial);
@@ -149,42 +148,41 @@ export const CyberDeck: React.FC = () => {
       cartridgeGroup.add(ridge);
     }
 
-    // Pinos de Conexão Dourados/Âmbar na Base (Golden Edge Connectors)
     const pinGeometry = new THREE.BoxGeometry(2.1, 0.35, 0.15);
     const pinMaterial = new THREE.MeshStandardMaterial({
-      color: 0xeba602,
+      color: 0xfbfaf4,
       roughness: 0.2,
-      metalness: 0.95,
-      emissive: 0xeba602,
-      emissiveIntensity: 0.15,
+      metalness: 0.9,
+      emissive: 0xfbfaf4,
+      emissiveIntensity: 0.12,
     });
     const pinMesh = new THREE.Mesh(pinGeometry, pinMaterial);
     pinMesh.position.set(0, -1.95, 0);
     cartridgeGroup.add(pinMesh);
 
-    // Placa de Rótulo Holográfico Frontal (Label Plate)
     const labelGeometry = new THREE.PlaneGeometry(2.2, 1.6);
     const labelMaterial = new THREE.MeshStandardMaterial({
-      color: 0x1a1a2e,
+      color: 0xfe0000,
       roughness: 0.4,
-      metalness: 0.5,
+      metalness: 0.3,
     });
     const labelMesh = new THREE.Mesh(labelGeometry, labelMaterial);
     labelMesh.position.set(0, -0.2, 0.285);
     cartridgeGroup.add(labelMesh);
 
-    // Borda Ciano Estilizada da Placa
     const borderGeometry = new THREE.EdgesGeometry(labelGeometry);
-    const borderMaterial = new THREE.LineBasicMaterial({ color: 0x30b5bb, linewidth: 2 });
+    const borderMaterial = new THREE.LineBasicMaterial({
+      color: 0xfbfaf4,
+      linewidth: 2,
+    });
     const borderMesh = new THREE.LineSegments(borderGeometry, borderMaterial);
     borderMesh.position.set(0, -0.2, 0.287);
     cartridgeGroup.add(borderMesh);
 
-    // LED de Status de Atividade (Verde quando inserido, Vermelho quando ejetado)
     const ledGeometry = new THREE.SphereGeometry(0.09, 16, 16);
     const ledMaterial = new THREE.MeshStandardMaterial({
-      color: 0x2efe0c,
-      emissive: 0x2efe0c,
+      color: 0xfbfaf4,
+      emissive: 0xfbfaf4,
       emissiveIntensity: 1.8,
       roughness: 0.1,
     });
@@ -195,7 +193,6 @@ export const CyberDeck: React.FC = () => {
 
     scene.add(cartridgeGroup);
 
-    // 5. Handlers de Interação do Ponteiro (Arrasto e Inércia)
     const handlePointerDown = (e: MouseEvent | TouchEvent) => {
       isDraggingRef.current = true;
       const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
@@ -236,11 +233,10 @@ export const CyberDeck: React.FC = () => {
     window.addEventListener('touchmove', handlePointerMove, { passive: true });
     window.addEventListener('touchend', handlePointerUp);
 
-    // 6. Resize Observer
     const handleResize = () => {
       if (!container || !cameraRef.current || !rendererRef.current) return;
-      const newWidth = container.clientWidth;
-      const newHeight = container.clientHeight;
+      const newWidth = container.clientWidth || 360;
+      const newHeight = container.clientHeight || 360;
       cameraRef.current.aspect = newWidth / newHeight;
       cameraRef.current.updateProjectionMatrix();
       rendererRef.current.setSize(newWidth, newHeight);
@@ -249,19 +245,17 @@ export const CyberDeck: React.FC = () => {
     const resizeObserver = new ResizeObserver(handleResize);
     resizeObserver.observe(container);
 
-    // 7. Loop de Renderização com Amortecimento e Gravidade Zero
     const startTime = performance.now();
 
     const animate = () => {
       const elapsedTime = (performance.now() - startTime) / 1000;
 
-      // Transição suave de ejeção mecânica (Ejection Animation Lerp)
       const targetProgress = targetEjectProgressRef.current;
-      currentEjectProgressRef.current += (targetProgress - currentEjectProgressRef.current) * 0.08;
+      currentEjectProgressRef.current +=
+        (targetProgress - currentEjectProgressRef.current) * 0.08;
       const ejectProg = currentEjectProgressRef.current;
 
       if (cartridgeGroupRef.current) {
-        // Amortecimento inercial em gravidade zero
         if (!isDraggingRef.current) {
           cartridgeGroupRef.current.rotation.y += angularVelocityRef.current.y;
           cartridgeGroupRef.current.rotation.x += angularVelocityRef.current.x;
@@ -269,38 +263,37 @@ export const CyberDeck: React.FC = () => {
           angularVelocityRef.current.x *= 0.94;
           angularVelocityRef.current.y *= 0.94;
 
-          // Se a velocidade diminuir muito, mantém leve rotação idle contínua
           if (Math.abs(angularVelocityRef.current.y) < 0.002) {
             cartridgeGroupRef.current.rotation.y += 0.004;
           }
         }
 
-        // Flutuação procedural senoidal em gravidade zero (Zero-G Float)
         const floatOffset = Math.sin(elapsedTime * 1.6) * 0.12;
         const tiltOffset = Math.cos(elapsedTime * 1.1) * 0.05;
 
-        // Efeito da ejeção: deslocamento para cima e para fora com rotação acentuada
         cartridgeGroupRef.current.position.y = floatOffset + ejectProg * 1.2;
         cartridgeGroupRef.current.position.z = ejectProg * 0.8;
         cartridgeGroupRef.current.rotation.z = tiltOffset - ejectProg * 0.25;
       }
 
-      // Atualiza cor do LED conforme estado
       if (ledMeshRef.current && ledLightRef.current) {
         const isCurrentlyEjected = ejectProg > 0.5;
-        const colorHex = isCurrentlyEjected ? 0xfe0000 : 0x2efe0c;
-        (ledMeshRef.current.material as THREE.MeshStandardMaterial).color.setHex(colorHex);
-        (ledMeshRef.current.material as THREE.MeshStandardMaterial).emissive.setHex(colorHex);
+        const colorHex = isCurrentlyEjected ? 0xfe0000 : 0xfbfaf4;
+        (ledMeshRef.current.material as THREE.MeshStandardMaterial).color.setHex(
+          colorHex
+        );
+        (
+          ledMeshRef.current.material as THREE.MeshStandardMaterial
+        ).emissive.setHex(colorHex);
         ledLightRef.current.color.setHex(colorHex);
       }
 
-      renderer.render(scene, camera);
+      renderer?.render(scene, camera);
       animFrameRef.current = requestAnimationFrame(animate);
     };
 
     animFrameRef.current = requestAnimationFrame(animate);
 
-    // 8. Desmontagem e Limpeza Rigorosa de Memória WebGL (Regras AD-1 e AD-3)
     return () => {
       cancelAnimationFrame(animFrameRef.current);
       resizeObserver.disconnect();
@@ -313,7 +306,6 @@ export const CyberDeck: React.FC = () => {
       window.removeEventListener('touchmove', handlePointerMove);
       window.removeEventListener('touchend', handlePointerUp);
 
-      // Descarte de geometrias e materiais
       scene.traverse((obj) => {
         if (obj instanceof THREE.Mesh || obj instanceof THREE.LineSegments) {
           if (obj.geometry) obj.geometry.dispose();
@@ -325,15 +317,14 @@ export const CyberDeck: React.FC = () => {
         }
       });
 
-      renderer.dispose();
-      renderer.forceContextLoss();
-      if (container.contains(renderer.domElement)) {
+      renderer?.dispose();
+      renderer?.forceContextLoss();
+      if (renderer && container.contains(renderer.domElement)) {
         container.removeChild(renderer.domElement);
       }
     };
   }, []);
 
-  // Controles de teclado para rotação acessível e ejeção
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === ' ' || e.key === 'Enter') {
       e.preventDefault();
@@ -354,26 +345,20 @@ export const CyberDeck: React.FC = () => {
       data-cyber-deck
       tabIndex={0}
       onKeyDown={handleKeyDown}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-      aria-label="Experimento 3: Zero-G Cyber Deck com cartucho 3D interativo"
-      className={`relative rounded-3xl border-4 bg-space-surface-1/90 p-6 sm:p-8 md:p-10 shadow-comic-lg text-paper-white focus:outline-none focus:ring-2 focus:ring-bebop-amber transition-colors duration-200 ${
-        isHovered ? 'border-space-border' : 'border-space-base'
-      }`}
+      aria-label={t.lab.deck.title}
+      className="relative border-4 border-paper-white bg-space-surface-1 p-6 sm:p-8 md:p-10 shadow-[8px_8px_0_var(--color-bebop-red)] text-paper-white focus:outline-none focus:ring-2 focus:ring-bebop-red"
     >
-      {/* Cabeçalho do Experimento */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-6 mb-8 border-b border-space-border/60 gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-6 mb-8 border-b-2 border-bebop-red gap-4">
         <div>
-          <span className="font-mono text-xs font-bold uppercase tracking-widest text-bebop-amber">
-            // EXPERIMENT 03 • ZERO-G CYBER DECK
+          <span className="font-mono text-xs font-bold uppercase tracking-widest text-bebop-red">
+            {t.lab.deck.tag}
           </span>
           <h3 className="mt-1 font-display text-2xl sm:text-3xl font-black text-paper-white uppercase">
-            3D DATA CASSETTE & MECHANICAL EJECT
+            {t.lab.deck.title}
           </h3>
         </div>
 
-        {/* Status de Acoplamento do Cartucho e Áudio */}
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <button
             type="button"
             data-deck-audio-toggle
@@ -385,141 +370,104 @@ export const CyberDeck: React.FC = () => {
                 audioSynth.playKeypressBeep(720, 0.08, 0.2);
               }
             }}
-            aria-label="Alternar áudio do cyber deck"
-            className={`px-3 py-1.5 rounded-lg border font-mono text-xs font-bold uppercase tracking-wider flex items-center gap-2 transition-all duration-200 shadow-comic-xs ${
+            aria-label={t.lab.deck.title}
+            className={`px-3 py-1.5 border-2 font-mono text-xs font-bold uppercase tracking-wider flex items-center gap-2 transition-all duration-150 cursor-pointer ${
               !isMuted
-                ? 'bg-acid-green/15 text-acid-green border-acid-green shadow-comic-sm'
-                : 'bg-space-surface-2 border-space-border text-muted-gray hover:text-paper-white'
+                ? 'bg-bebop-red text-paper-white border-paper-white shadow-[3px_3px_0_var(--color-paper-white)]'
+                : 'bg-space-base border-paper-white text-paper-white hover:bg-paper-white hover:text-space-base'
             }`}
           >
-            {!isMuted ? (
-              <svg className="size-3.5 shrink-0" aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M15.536 8.464a5 5 0 010 7.072M18.364 5.636a9 9 0 010 12.728M11 5L6 9H2v6h4l5 4V5z" />
-              </svg>
-            ) : (
-              <svg className="size-3.5 shrink-0" aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M5.586 15H2v-6h3.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
-                <path stroke-linecap="round" stroke-linejoin="round" d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
-              </svg>
-            )}
-            <span>{!isMuted ? 'DECK AUDIO: ON' : 'DECK AUDIO: MUTED'}</span>
+            <span>{!isMuted ? t.lab.deck.audioOn : t.lab.deck.audioMuted}</span>
           </button>
 
           <div
             data-cartridge-status
-            className={`px-3 py-1.5 rounded-lg border font-mono text-xs font-bold uppercase tracking-wider flex items-center gap-2 transition-all duration-200 shadow-comic-xs ${
+            className={`px-3 py-1.5 border-2 font-mono text-xs font-bold uppercase tracking-wider flex items-center gap-2 transition-all duration-150 ${
               !isEjected
-                ? 'bg-acid-green/15 text-acid-green border-acid-green'
-                : 'bg-bebop-red/15 text-bebop-red border-bebop-red animate-pulse'
+                ? 'bg-space-base text-paper-white border-paper-white'
+                : 'bg-bebop-red text-paper-white border-paper-white animate-pulse'
             }`}
           >
-            <span className={`w-2 h-2 rounded-full ${!isEjected ? 'bg-acid-green' : 'bg-bebop-red'}`} />
-            <span>{!isEjected ? 'CARTRIDGE: DOCKED' : 'CARTRIDGE: EJECTED'}</span>
+            <span className="w-2 h-2 bg-current" />
+            <span>{!isEjected ? t.lab.deck.docked : t.lab.deck.ejected}</span>
           </div>
         </div>
       </div>
 
-      {/* Grid Principal: Viewport 3D Three.js e Painel de Operações / Drawer */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-        {/* Coluna do Canvas 3D */}
         <div className="lg:col-span-6 flex flex-col items-center">
-          <div className="relative w-full max-w-[24rem] aspect-square rounded-2xl border-4 border-space-base bg-space-surface-2/70 shadow-comic-md overflow-hidden cursor-grab active:cursor-grabbing flex items-center justify-center">
-            {/* Viewport Three.js */}
+          <div className="relative w-full max-w-[24rem] aspect-square border-4 border-paper-white bg-space-base shadow-[6px_6px_0_var(--color-bebop-red)] overflow-hidden cursor-grab active:cursor-grabbing flex items-center justify-center">
             <div
               ref={mountRef}
               data-deck-canvas-container
               className="w-full h-full"
               role="img"
-              aria-label="Modelo 3D do cartucho de dados espacial em gravidade zero"
+              aria-label={t.lab.deck.title}
             />
 
-            {/* Dica de Interação Flutuante */}
-            <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between pointer-events-none text-[10px] font-mono text-muted-gray bg-space-base/80 px-2.5 py-1 rounded border border-space-border/50">
-              <span>DRAG TO ROTATE 360°</span>
-              <span className="text-acid-green">INERTIAL DAMPING</span>
+            <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between pointer-events-none text-[10px] font-mono text-paper-white bg-space-base/90 px-2.5 py-1 border border-paper-white/40">
+              <span>{t.lab.deck.dragHint}</span>
+              <span className="text-bebop-red font-bold">{t.lab.deck.dampingLabel}</span>
             </div>
           </div>
 
-          {/* Botão Físico Brutalista de Ejeção Mecânica */}
           <div className="mt-6 w-full max-w-[24rem]">
             <button
               type="button"
               data-deck-eject-btn
               onClick={handleToggleEject}
-              className={`w-full py-3.5 px-6 rounded-xl border-2 font-mono font-black text-sm tracking-widest uppercase transition-all duration-200 shadow-comic-md active:translate-x-0.5 active:translate-y-0.5 flex items-center justify-center gap-3 ${
+              className={`w-full py-3.5 px-6 border-2 border-paper-white font-mono font-black text-xs sm:text-sm tracking-widest uppercase transition-all duration-150 shadow-[4px_4px_0_var(--color-paper-white)] flex items-center justify-center gap-3 cursor-pointer ${
                 !isEjected
-                  ? 'bg-bebop-red text-paper-white border-space-base hover:bg-bebop-red/90'
-                  : 'bg-acid-green text-space-base border-space-base hover:bg-acid-green/90'
+                  ? 'bg-bebop-red text-paper-white hover:bg-paper-white hover:text-space-base'
+                  : 'bg-paper-white text-space-base hover:bg-bebop-red hover:text-paper-white'
               }`}
             >
               <span>{!isEjected ? '⏏' : '⬇'}</span>
-              <span>
-                {!isEjected ? 'EJECT DATA CARTRIDGE // DESBLOQUEAR LOGS' : 'REINSERT CARTRIDGE // TRAVAR'}
-              </span>
+              <span>{!isEjected ? t.lab.deck.ejectBtn : t.lab.deck.reinsertBtn}</span>
             </button>
           </div>
         </div>
 
-        {/* Coluna de Telemetria e Gaveta de Código Ejetado (Ejected Logs Drawer) */}
         <div className="lg:col-span-6 flex flex-col justify-between space-y-6">
-          {/* Gaveta de Logs Técnicos Decodificados */}
           <div
             data-deck-drawer
-            className={`rounded-2xl border-2 transition-all duration-300 p-5 font-mono shadow-comic-sm ${
-              isEjected
-                ? 'border-acid-green bg-space-surface-2/95 shadow-comic-md'
-                : 'border-space-border/80 bg-space-surface-2/60 opacity-80'
-            }`}
+            className="border-2 border-paper-white bg-space-base p-5 font-mono shadow-[4px_4px_0_var(--color-bebop-red)]"
           >
-            <div className="flex items-center justify-between pb-3 border-b border-space-border/60 text-xs">
-              <span className="text-bebop-amber font-bold tracking-wider uppercase">
-                {isEjected ? 'MEMORY BANK DECRYPTED //' : 'RESTRICTED CARTRIDGE MEMORY //'}
+            <div className="flex items-center justify-between pb-3 border-b border-paper-white/30 text-xs">
+              <span className="text-bebop-red font-bold tracking-wider uppercase">
+                {isEjected ? t.lab.deck.decryptedHeader : t.lab.deck.lockedHeader}
               </span>
               <span
                 className={`font-bold text-[11px] ${
-                  isEjected ? 'text-acid-green' : 'text-muted-gray'
+                  isEjected ? 'text-paper-white' : 'text-muted-gray'
                 }`}
               >
-                {isEjected ? 'DUMP: ACTIVE' : 'LOCKED'}
+                {isEjected ? t.lab.deck.dumpActive : t.lab.deck.dumpLocked}
               </span>
             </div>
 
             <div className="mt-4">
               <div className="text-[10px] text-muted-gray uppercase mb-2 flex items-center justify-between">
-                <span>MODULE: BEBOP_STREAM_PIPELINE.TS</span>
-                <span>SECTOR: 0x7F4A</span>
+                <span>MODULE: PHANTOM_STREAM_PIPELINE.TS</span>
+                <span className="text-bebop-red font-bold">SECTOR: 0x7F4A</span>
               </div>
 
-              {/* Bloco de Código Brutalista */}
               <pre
                 data-code-block
-                className="rounded-lg border border-space-border bg-space-base/90 p-3.5 text-[11px] leading-relaxed text-paper-white overflow-x-auto font-mono max-h-56 scrollbar-thin scrollbar-thumb-space-border"
+                className="border border-paper-white/40 bg-space-surface-1 p-3.5 text-[11px] leading-relaxed text-paper-white overflow-x-auto font-mono max-h-56"
               >
-                <code>{isEjected ? CARTRIDGE_CODE_SNIPPET : '// [ACESSO BLOQUEADO]\n// EJETE O CARTUCHO PARA DECODIFICAR OS LOGS TÉCNICOS DA ARQUITETURA.'}</code>
+                <code>
+                  {isEjected
+                    ? CARTRIDGE_CODE_SNIPPET
+                    : t.lab.deck.lockedCodeComment}
+                </code>
               </pre>
-
-              {/* Métricas de Hardware do Deck */}
-              <div className="grid grid-cols-3 gap-2 text-xs pt-3 mt-3 border-t border-space-border/50">
-                <div className="rounded border border-space-border/60 bg-space-base/60 p-2 text-center">
-                  <span className="text-[9px] text-muted-gray uppercase block">VRAM ALLOC</span>
-                  <span className="font-bold text-crt-cyan">34.2 MB</span>
-                </div>
-                <div className="rounded border border-space-border/60 bg-space-base/60 p-2 text-center">
-                  <span className="text-[9px] text-muted-gray uppercase block">DAMPING</span>
-                  <span className="font-bold text-acid-green">0.94 ZERO-G</span>
-                </div>
-                <div className="rounded border border-space-border/60 bg-space-base/60 p-2 text-center">
-                  <span className="text-[9px] text-muted-gray uppercase block">ENGINE</span>
-                  <span className="font-bold text-bebop-amber">THREE.JS</span>
-                </div>
-              </div>
             </div>
           </div>
 
-          {/* Dica de Teclado e Acessibilidade */}
-          <div className="flex items-center justify-between text-xs font-mono text-muted-gray border-t border-space-border/40 pt-3">
-            <span>KEYBOARD: [ARROWS] ROTATE • [SPACE] EJECT</span>
-            <span className="text-acid-green font-bold">REALTIME TELEMETRY</span>
+          <div className="flex items-center justify-between text-xs font-mono text-muted-gray border-t border-paper-white/30 pt-3">
+            <span>{t.lab.deck.keyboardHint}</span>
+            <span className="text-bebop-red font-bold">WEBGL 2.0</span>
           </div>
         </div>
       </div>

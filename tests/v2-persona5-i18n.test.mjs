@@ -267,6 +267,31 @@ test('C12: About.astro and SkillsGrid.astro form a unified Persona 5 Confidant D
   assert.equal(aboutSrc.includes('PHILOSOPHY //'), false);
 });
 
+test('T11: CreativeLab and lab islands use useLocale() and remove redundant hardware telemetry boxes', () => {
+  const labAstro = fs.readFileSync(
+    path.resolve('src/components/CreativeLab.astro'),
+    'utf8'
+  );
+  const tunerSrc = fs.readFileSync(
+    path.resolve('src/components/lab/CrtTuner.tsx'),
+    'utf8'
+  );
+  const sonarSrc = fs.readFileSync(
+    path.resolve('src/components/lab/SonarRadar.tsx'),
+    'utf8'
+  );
+  const deckSrc = fs.readFileSync(
+    path.resolve('src/components/lab/CyberDeck.tsx'),
+    'utf8'
+  );
+
+  assert.equal(labAstro.includes('GRAPHICS SUBSYSTEM'), false);
+  assert.ok(tunerSrc.includes('useLocale()'));
+  assert.ok(sonarSrc.includes('useLocale()'));
+  assert.ok(deckSrc.includes('useLocale()'));
+});
+
+
 
 
 
