@@ -4,7 +4,6 @@ import fs from 'node:fs';
 import path from 'node:path';
 import http from 'node:http';
 import { chromium } from 'playwright';
-import { ptBrDict, enDict } from '../src/i18n/dictionaries.ts';
 
 const MIME_TYPES = {
   '.html': 'text/html; charset=utf-8',
@@ -182,29 +181,91 @@ test('C3: clicking burger trigger or logo while open closes the menu', async () 
 });
 
 test('C4: menu executes kinetic transitions and respects prefers-reduced-motion', async () => {
-  const menuSrc = fs.readFileSync(
-    path.resolve('src/components/CockpitMenu.tsx'),
-    'utf8'
-  );
-  assert.ok(menuSrc.includes("import { gsap } from 'gsap'"));
-  assert.ok(menuSrc.includes('gsap.timeline'));
-  assert.ok(menuSrc.includes('prefers-reduced-motion'));
+  // 1. Standard motion context: verify dynamic GSAP animation execution
+  const stdContext = await browser.newContext({
+    reducedMotion: 'no-preference',
+  });
+  const stdPage = await stdContext.newPage();
+  await stdPage.goto(`${baseUrl}/`, { waitUntil: 'networkidle' });
+  await dismissIntroIfPresent(stdPage);
 
-  // Test reduced-motion context
-  const context = await browser.newContext({
+  await stdPage.click('#cockpit-trigger-btn');
+  await stdPage.waitForSelector('#cockpit-menu-overlay:not(.hidden)');
+  // Wait for entrance timeline (~800ms total stagger duration) to finish
+  await stdPage.waitForTimeout(850);
+
+  const kineticStyles = await stdPage.evaluate(() => {
+    const redSlash = document.querySelector(
+      '#cockpit-menu-overlay [data-slash-red]'
+    );
+    const blades = Array.from(
+      document.querySelectorAll('#cockpit-menu-overlay a[data-cockpit-link]')
+    );
+    return {
+      slashStyle: redSlash?.getAttribute('style') || '',
+      blades: blades.map((b) => ({
+        inlineStyle: b.getAttribute('style') || '',
+        opacity: window.getComputedStyle(b).opacity,
+        transform: window.getComputedStyle(b).transform,
+      })),
+    };
+  });
+
+  assert.ok(
+    kineticStyles.slashStyle.includes('transform'),
+    'Backdrop red slash received dynamic GSAP transform style'
+  );
+  assert.equal(kineticStyles.blades.length, 6);
+  for (const blade of kineticStyles.blades) {
+    assert.ok(
+      blade.inlineStyle.includes('transform') || blade.transform !== 'none',
+      'Blade received kinetic transform styling'
+    );
+    assert.equal(blade.opacity, '1', 'Blade animated to full opacity');
+  }
+
+  // Verify graceful exit timeline execution
+  const closeStart = Date.now();
+  await stdPage.click('#cockpit-trigger-btn');
+  await stdPage.waitForSelector('#cockpit-menu-overlay', { state: 'hidden' });
+  const closeDuration = Date.now() - closeStart;
+  assert.ok(
+    closeDuration >= 150,
+    `Close animation took ${closeDuration}ms, confirming graceful exit transition`
+  );
+
+  await stdContext.close();
+
+  // 2. Reduced motion context: verify tweens are bypassed immediately
+  const redContext = await browser.newContext({
     reducedMotion: 'reduce',
   });
-  const page = await context.newPage();
-  await page.goto(`${baseUrl}/`, { waitUntil: 'networkidle' });
-  await dismissIntroIfPresent(page);
+  const redPage = await redContext.newPage();
+  await redPage.goto(`${baseUrl}/`, { waitUntil: 'networkidle' });
+  await dismissIntroIfPresent(redPage);
 
-  await page.click('#cockpit-trigger-btn');
-  await page.waitForSelector('#cockpit-menu-overlay:not(.hidden)');
+  await redPage.click('#cockpit-trigger-btn');
+  await redPage.waitForSelector('#cockpit-menu-overlay:not(.hidden)');
 
-  await page.click('#cockpit-trigger-btn');
-  await page.waitForSelector('#cockpit-menu-overlay', { state: 'hidden' });
+  const redSlashStyle = await redPage.$eval(
+    '#cockpit-menu-overlay [data-slash-red]',
+    (el) => el.getAttribute('style') || ''
+  );
+  assert.ok(
+    !redSlashStyle.includes('transform'),
+    'GSAP timeline bypassed when prefers-reduced-motion is active'
+  );
 
-  await context.close();
+  const redCloseStart = Date.now();
+  await redPage.click('#cockpit-trigger-btn');
+  await redPage.waitForSelector('#cockpit-menu-overlay', { state: 'hidden' });
+  const redCloseDuration = Date.now() - redCloseStart;
+  assert.ok(
+    redCloseDuration < 150,
+    `Reduced-motion close was immediate without timeline delay (${redCloseDuration}ms)`
+  );
+
+  await redContext.close();
 });
 
 test('C5: all 6 navigation blades render with index codes and active blade tracking', async () => {
@@ -216,30 +277,81 @@ test('C5: all 6 navigation blades render with index codes and active blade track
   await page.click('#cockpit-trigger-btn');
   await page.waitForSelector('#cockpit-menu-overlay:not(.hidden)');
 
-  const blades = await page.$$eval(
+  const expectedBladesPt = [
+    { id: 'hero', code: '00', label: '01 // INÍCIO & MANIFESTO' },
+    { id: 'works', code: '01', label: '02 // ARQUIVO DE PROJETOS' },
+    { id: 'about', code: '02', label: '03 // DOSSIÊ CONFIDANT & SKILLS' },
+    { id: 'lab', code: '03', label: '04 // CREATIVE LAB' },
+    { id: 'contact', code: '04', label: '05 // ENVIAR PROPOSTA' },
+    { id: 'whoami', code: '05', label: '06 // TERMINAL /WHOAMI' },
+  ];
+
+  const bladesPt = await page.$$eval(
     '#cockpit-menu-overlay a[data-cockpit-link]',
     (els) =>
-      els.map((el) => ({
-        id: el.getAttribute('data-cockpit-link'),
-        active: el.getAttribute('data-active-blade'),
-        ariaCurrent: el.getAttribute('aria-current'),
-        text: el.innerText.trim(),
-      }))
+      els.map((el) => {
+        const labelSpan = el.querySelector('span.truncate');
+        const codeSpan = el.querySelector('span.font-mono');
+        return {
+          id: el.getAttribute('data-cockpit-link'),
+          code: codeSpan?.textContent?.trim() || '',
+          label: labelSpan?.textContent?.trim() || '',
+          active: el.getAttribute('data-active-blade'),
+          ariaCurrent: el.getAttribute('aria-current'),
+        };
+      })
   );
 
-  assert.equal(blades.length, 6);
-  assert.deepEqual(
-    blades.map((b) => b.id),
-    ['hero', 'works', 'about', 'lab', 'contact', 'whoami']
-  );
+  assert.equal(bladesPt.length, 6, 'Exactly 6 navigation blades rendered');
+  for (let i = 0; i < expectedBladesPt.length; i++) {
+    const exp = expectedBladesPt[i];
+    const actual = bladesPt[i];
+    assert.equal(actual.id, exp.id, `Blade ${i} has expected id ${exp.id}`);
+    assert.equal(actual.code, exp.code, `Blade ${exp.id} has index code ${exp.code}`);
+    assert.equal(actual.label, exp.label, `Blade ${exp.id} has localized label '${exp.label}'`);
+  }
 
-  const heroBlade = blades.find((b) => b.id === 'hero');
+  const heroBlade = bladesPt.find((b) => b.id === 'hero');
   assert.equal(heroBlade.active, 'true');
   assert.equal(heroBlade.ariaCurrent, 'true');
 
-  const worksBlade = blades.find((b) => b.id === 'works');
+  const worksBlade = bladesPt.find((b) => b.id === 'works');
   assert.equal(worksBlade.active, 'false');
   assert.equal(worksBlade.ariaCurrent, null);
+
+  await page.click('button[data-cockpit-lang="en"]');
+  await page.waitForTimeout(100);
+
+  const expectedBladesEn = [
+    { id: 'hero', code: '00', label: '01 // HOME & MANIFESTO' },
+    { id: 'works', code: '01', label: '02 // BOUNTY ARCHIVE (WORKS)' },
+    { id: 'about', code: '02', label: '03 // CONFIDANT DOSSIER & SKILLS' },
+    { id: 'lab', code: '03', label: '04 // CREATIVE LAB' },
+    { id: 'contact', code: '04', label: '05 // TRANSMIT A BOUNTY' },
+    { id: 'whoami', code: '05', label: '06 // TERMINAL /WHOAMI' },
+  ];
+
+  const bladesEn = await page.$$eval(
+    '#cockpit-menu-overlay a[data-cockpit-link]',
+    (els) =>
+      els.map((el) => {
+        const labelSpan = el.querySelector('span.truncate');
+        const codeSpan = el.querySelector('span.font-mono');
+        return {
+          id: el.getAttribute('data-cockpit-link'),
+          code: codeSpan?.textContent?.trim() || '',
+          label: labelSpan?.textContent?.trim() || '',
+        };
+      })
+  );
+
+  for (let i = 0; i < expectedBladesEn.length; i++) {
+    const exp = expectedBladesEn[i];
+    const actual = bladesEn[i];
+    assert.equal(actual.id, exp.id, `[EN] Blade ${i} has expected id ${exp.id}`);
+    assert.equal(actual.code, exp.code, `[EN] Blade ${exp.id} has index code ${exp.code}`);
+    assert.equal(actual.label, exp.label, `[EN] Blade ${exp.id} has localized label '${exp.label}'`);
+  }
 
   await context.close();
 });
