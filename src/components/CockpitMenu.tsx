@@ -19,6 +19,24 @@ export const COCKPIT_NAV_ITEMS: readonly CockpitNavItem[] = [
   { id: 'whoami', code: '05', labelKey: 'whoami', href: '/whoami' },
 ] as const;
 
+const HOME_SECTION_IDS = ['hero', 'works', 'about', 'lab', 'contact'] as const;
+
+export function resolveActiveBladeId(
+  pathname: string,
+  visibleSectionId?: string
+): string {
+  if (typeof pathname === 'string' && pathname.includes('/whoami')) {
+    return 'whoami';
+  }
+  if (
+    visibleSectionId &&
+    (HOME_SECTION_IDS as readonly string[]).includes(visibleSectionId)
+  ) {
+    return visibleSectionId;
+  }
+  return 'hero';
+}
+
 export function syncCockpitTriggerDom(isOpen: boolean): void {
   if (typeof document === 'undefined') return;
   const cockpitBtn = document.getElementById('cockpit-trigger-btn');
@@ -47,6 +65,7 @@ export const CockpitMenu: React.FC = () => {
   const { locale, dict: t, setLocale } = useLocale();
   const [isOpen, setIsOpen] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
+  const [activeBladeId, setActiveBladeId] = useState<string>('hero');
   const closeBtnRef = useRef<HTMLButtonElement | null>(null);
 
   const closeMenu = useCallback(() => {
@@ -110,6 +129,41 @@ export const CockpitMenu: React.FC = () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
   }, [isOpen, openMenu, closeMenu]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const pathname = window.location.pathname;
+    if (pathname.includes('/whoami')) {
+      setActiveBladeId('whoami');
+      return;
+    }
+
+    const hashId = window.location.hash.replace('#', '');
+    setActiveBladeId(resolveActiveBladeId(pathname, hashId));
+
+    if (!('IntersectionObserver' in window)) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting && entry.target.id) {
+            setActiveBladeId(resolveActiveBladeId(window.location.pathname, entry.target.id));
+          }
+        }
+      },
+      { rootMargin: '-30% 0px -55% 0px', threshold: 0.05 }
+    );
+
+    for (const secId of HOME_SECTION_IDS) {
+      const el = document.getElementById(secId);
+      if (el) observer.observe(el);
+    }
+
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
 
   useEffect(() => {
     if (isOpen) {
@@ -179,20 +233,32 @@ export const CockpitMenu: React.FC = () => {
           {COCKPIT_NAV_ITEMS.map((item, idx) => {
             const label = t.menu.navItems[item.labelKey];
             const isEven = idx % 2 === 0;
+            const isActive = activeBladeId === item.id;
             return (
               <a
                 key={item.id}
                 href={item.href}
                 data-cockpit-link={item.id}
+                data-active-blade={isActive ? 'true' : 'false'}
+                aria-current={
+                  isActive
+                    ? item.href === '/whoami'
+                      ? 'page'
+                      : 'true'
+                    : undefined
+                }
                 onClick={() => {
+                  setActiveBladeId(item.id);
                   audioSynth.playKeypressBeep(740, 0.025, 0.06);
                   closeMenu();
                 }}
                 className={`group relative flex items-center justify-between border-3 border-paper-white px-4 py-3.5 font-display text-sm sm:text-base font-black uppercase tracking-wider transition-all duration-150 ${
-                  isEven
-                    ? 'bg-space-surface-1 text-paper-white hover:bg-bebop-red hover:text-paper-white'
-                    : 'bg-paper-white text-space-base hover:bg-bebop-red hover:text-paper-white'
-                } shadow-[4px_4px_0_var(--color-bebop-red)] hover:-translate-y-0.5`}
+                  isActive
+                    ? 'bg-bebop-red text-paper-white shadow-[4px_4px_0_var(--color-paper-white)]'
+                    : isEven
+                      ? 'bg-space-surface-1 text-paper-white hover:bg-bebop-red hover:text-paper-white shadow-[4px_4px_0_var(--color-bebop-red)]'
+                      : 'bg-paper-white text-space-base hover:bg-bebop-red hover:text-paper-white shadow-[4px_4px_0_var(--color-bebop-red)]'
+                } hover:-translate-y-0.5`}
               >
                 <span className="truncate pr-2">{label}</span>
                 <span className="font-mono text-xs font-bold px-2 py-0.5 border border-current shrink-0">

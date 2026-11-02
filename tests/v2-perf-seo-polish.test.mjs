@@ -148,6 +148,55 @@ test('C2: all built JS chunks in dist/_astro/ are under 500 kB with zero chunk w
   }
 });
 
+test('C3: CyberDeck renders 3D canvas and toggles cartridge telemetry drawer without errors', async () => {
+  const context = await browser.newContext();
+  const page = await context.newPage();
+  const pageErrors = [];
+  page.on('pageerror', (err) => pageErrors.push(err.message));
+
+  await page.goto(`${baseUrl}/`, { waitUntil: 'networkidle' });
+  await dismissIntroIfPresent(page);
+
+  await page.locator('#lab-cyber-deck').scrollIntoViewIfNeeded();
+  await page.waitForSelector('astro-island[component-url*="CyberDeck"]:not([ssr])', {
+    timeout: 10000,
+  });
+  await page.waitForSelector('[data-cyber-deck]');
+
+  assert.equal(await page.locator('[data-cyber-deck]').count(), 1);
+
+  const ejectBtn = page.locator('[data-deck-eject-btn]');
+  await ejectBtn.click();
+
+  await page.waitForFunction(
+    (expected) => {
+      const el = document.querySelector('[data-cartridge-status]');
+      return el && el.textContent.includes(expected);
+    },
+    ptBrDict.lab.deck.ejected,
+    { timeout: 5000 }
+  );
+
+  const statusText = await page.locator('[data-cartridge-status]').innerText();
+  assert.ok(
+    statusText.includes(ptBrDict.lab.deck.ejected),
+    `Expected statusText to include ${ptBrDict.lab.deck.ejected}, got ${statusText}`
+  );
+
+  await ejectBtn.click();
+  await page.waitForFunction(
+    (expected) => {
+      const el = document.querySelector('[data-cartridge-status]');
+      return el && el.textContent.includes(expected);
+    },
+    ptBrDict.lab.deck.docked,
+    { timeout: 5000 }
+  );
+
+  assert.equal(pageErrors.length, 0, `Page errors encountered: ${pageErrors.join(', ')}`);
+  await context.close();
+});
+
 test('T2a: buildPersonJsonLd exports canonical Schema.org Person with Franca / SP and official links', () => {
   const jsonLd = buildPersonJsonLd();
   assert.equal(jsonLd['@context'], 'https://schema.org');
@@ -330,6 +379,87 @@ test('C7: #skip-to-content-link is first focusable element targeting #main-conte
   await page.goto(`${baseUrl}/whoami`, { waitUntil: 'networkidle' });
   assert.equal(await page.locator('#skip-to-content-link').count(), 1);
   assert.equal(await page.locator('main#main-content').count(), 1);
+
+  await context.close();
+});
+
+test('C8: CockpitMenu marks active section or /whoami blade with data-active-blade=true and aria-current', async () => {
+  const menuSrc = fs.readFileSync(
+    path.resolve('src/components/CockpitMenu.tsx'),
+    'utf8'
+  );
+  assert.ok(menuSrc.includes('export function resolveActiveBladeId'));
+  assert.ok(menuSrc.includes('data-active-blade'));
+  assert.ok(menuSrc.includes('aria-current'));
+
+  const context = await browser.newContext();
+  const page = await context.newPage();
+  await page.goto(`${baseUrl}/`, { waitUntil: 'networkidle' });
+  await dismissIntroIfPresent(page);
+
+  // Open CockpitMenu on /
+  await page.click('#cockpit-trigger-btn');
+  await page.waitForSelector('#cockpit-menu-overlay:not(.hidden)');
+
+  const heroBlade = page.locator('#cockpit-menu-overlay a[data-cockpit-link="hero"]');
+  assert.equal(await heroBlade.getAttribute('data-active-blade'), 'true');
+  assert.equal(await heroBlade.getAttribute('aria-current'), 'true');
+
+  const worksBlade = page.locator('#cockpit-menu-overlay a[data-cockpit-link="works"]');
+  assert.equal(await worksBlade.getAttribute('data-active-blade'), 'false');
+  assert.equal(await worksBlade.getAttribute('aria-current'), null);
+
+  // Now go to /whoami
+  await page.goto(`${baseUrl}/whoami`, { waitUntil: 'networkidle' });
+  await page.evaluate(() => {
+    window.dispatchEvent(
+      new CustomEvent('cockpit:open', { detail: { isOpen: true } })
+    );
+  });
+  await page.waitForSelector('#cockpit-menu-overlay:not(.hidden)');
+
+  const whoamiBlade = page.locator('#cockpit-menu-overlay a[data-cockpit-link="whoami"]');
+  assert.equal(await whoamiBlade.getAttribute('data-active-blade'), 'true');
+  assert.equal(await whoamiBlade.getAttribute('aria-current'), 'page');
+
+  await context.close();
+});
+
+test('C9: zero horizontal overflow across 320px, 375px, 768px, and 1440px in pt-br and en', async () => {
+  const viewports = [
+    { width: 320, height: 640 },
+    { width: 375, height: 667 },
+    { width: 768, height: 1024 },
+    { width: 1440, height: 900 },
+  ];
+  const routes = ['/', '/whoami'];
+  const locales = ['pt-br', 'en'];
+
+  const context = await browser.newContext();
+  const page = await context.newPage();
+
+  for (const route of routes) {
+    for (const locale of locales) {
+      await page.addInitScript((loc) => {
+        window.localStorage.setItem('brinu_locale', loc);
+      }, locale);
+
+      for (const vp of viewports) {
+        await page.setViewportSize(vp);
+        await page.goto(`${baseUrl}${route}`, { waitUntil: 'networkidle' });
+
+        const metrics = await page.evaluate(() => ({
+          scrollWidth: document.documentElement.scrollWidth,
+          clientWidth: document.documentElement.clientWidth,
+        }));
+
+        assert.ok(
+          metrics.scrollWidth <= metrics.clientWidth,
+          `Horizontal overflow on ${route} (${locale}) at ${vp.width}px: scrollWidth=${metrics.scrollWidth} > clientWidth=${metrics.clientWidth}`
+        );
+      }
+    }
+  }
 
   await context.close();
 });
