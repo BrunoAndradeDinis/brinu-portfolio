@@ -1,147 +1,86 @@
 ---
-/**
- * SkillsGrid.astro
- * Matriz de Habilidades em Grid de Vinhetas de HQ.
- * Dividida em 4 categorias: Core Engineering, Cloud & Infra, Creative UI e Resiliency & QA.
- * 100% Bebop Design Tokens + Tailwind CSS v4.
- */
+import { getLocalizedSkillCategories } from "../data/cases";
+import { ptBrDict } from "../i18n/dictionaries";
 
-interface SkillCategory {
-  id: string;
-  tag: string;
-  title: string;
-  subtitle: string;
-  accent: 'amber' | 'green' | 'red' | 'cyan';
-  skills: string[];
-}
-
-const categories: SkillCategory[] = [
-  {
-    id: "core",
-    tag: "VIGNETTE 01 // CORE",
-    title: "Core Engineering",
-    subtitle: "High-throughput concurrent backends & APIs",
-    accent: "amber",
-    skills: [
-      "Go (Golang)",
-      "Node.js & TypeScript",
-      "Concurrent Systems",
-      "REST & GraphQL APIs",
-      "Event-Driven Architecture",
-      "High-Throughput I/O"
-    ]
-  },
-  {
-    id: "cloud",
-    tag: "VIGNETTE 02 // CLOUD & STREAMING",
-    title: "Cloud & Media Streaming",
-    subtitle: "Resilient infrastructure & 24/7 video pipelines",
-    accent: "green",
-    skills: [
-      "Magalu Cloud (VM & S3)",
-      "Docker & Kubernetes",
-      "FFmpeg & HLS Video",
-      "Linux Kernel & Networking",
-      "CI/CD Automation",
-      "Distributed Caching"
-    ]
-  },
-  {
-    id: "creative",
-    tag: "VIGNETTE 03 // CREATIVE TECH",
-    title: "Creative Technologist",
-    subtitle: "Tactile brutalism & expressive cinematic interfaces",
-    accent: "cyan",
-    skills: [
-      "Astro 5 & Next.js",
-      "GSAP Motion Coordinator",
-      "Tailwind CSS v4 & Tokens",
-      "Analogue Web Audio API",
-      "Responsive Interactive UX",
-      "Manga Brutalist UI"
-    ]
-  },
-  {
-    id: "quality",
-    tag: "VIGNETTE 04 // QUALITY & RELIABILITY",
-    title: "Quality & Observability",
-    subtitle: "Automated verification & uncompromising resiliency",
-    accent: "red",
-    skills: [
-      "Playwright E2E Suites",
-      "Unit & Integration Tests",
-      "Core Web Vitals (<1.2s LCP)",
-      "WCAG AA Accessibility",
-      "Telemetry & Logs",
-      "Zero-Downtime Deploy"
-    ]
-  }
-];
+const categories = getLocalizedSkillCategories("pt-br");
 ---
 
-<div class="mt-14 sm:mt-16 pt-12 border-t border-space-border/60" data-skills-matrix>
-  <!-- Cabeçalho Editorial da Matriz de Skills -->
+<div class="mt-14 sm:mt-16 pt-12 border-t-4 border-bebop-red" data-skills-matrix>
   <div class="mb-8 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
     <div>
-      <span class="font-mono text-xs font-bold uppercase tracking-widest text-bebop-amber">
-        // TECHNICAL RADAR • SPECIFICATION MATRIX
+      <span
+        class="font-mono text-xs font-bold uppercase tracking-widest text-bebop-red"
+        data-i18n="about.skillsTag"
+      >
+        {ptBrDict.about.skillsTag}
       </span>
-      <h3 class="mt-1 font-display text-2xl sm:text-3xl md:text-4xl font-black text-paper-white uppercase tracking-tight">
-        SKILL MATRIX // VINHETAS DE HQ
+      <h3
+        class="mt-1 font-display text-2xl sm:text-3xl md:text-4xl font-black text-paper-white uppercase tracking-tight"
+        data-i18n="about.skillsTitle"
+      >
+        {ptBrDict.about.skillsTitle}
       </h3>
     </div>
-    <div class="font-mono text-xs text-muted-gray">
-      <span class="text-acid-green font-bold">4 DOMAINS</span> • <span class="text-paper-white">24 VERIFIED CAPABILITIES</span>
+    <div
+      class="font-mono text-xs font-bold text-paper-white border-2 border-paper-white bg-bebop-red px-3 py-1 -skew-x-6 self-start sm:self-end"
+      data-i18n="about.skillsCount"
+    >
+      {ptBrDict.about.skillsCount}
     </div>
   </div>
 
-  <!-- Grid de 4 Vinhetas de Quadrinhos Brutalistas -->
   <div class="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
-    {categories.map((cat) => (
-      <div
-        data-skill-vignette={cat.id}
-        class="group relative flex flex-col justify-between rounded-2xl sm:rounded-3xl border-2 sm:border-[0.25rem] border-space-border/80 bg-space-surface-1/40 p-5 sm:p-7 backdrop-blur-xs shadow-comic-sm transition-all duration-300 hover:border-space-border hover:bg-space-surface-1/70 hover:shadow-comic-md hover:-translate-y-1"
-      >
-        <!-- Topo da Vinheta com Etiqueta Estilizada -->
-        <div>
-          <div class="flex items-center justify-between pb-3 mb-4 border-b border-space-border/50">
-            <span
-              class:list={[
-                "font-mono text-[10px] sm:text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded border",
-                cat.accent === 'amber' && "bg-bebop-amber/15 text-bebop-amber border-bebop-amber/40",
-                cat.accent === 'green' && "bg-acid-green/15 text-acid-green border-acid-green/40",
-                cat.accent === 'cyan' && "bg-crt-cyan/15 text-crt-cyan border-crt-cyan/40",
-                cat.accent === 'red' && "bg-bebop-red/15 text-contrast-pink border-bebop-red/40"
-              ]}
+    {categories.map((cat, idx) => {
+      const isRedHeader = idx % 2 === 0;
+      return (
+        <div
+          data-skill-vignette={cat.id}
+          class="group relative flex flex-col justify-between border-4 border-paper-white bg-space-surface-1 p-5 sm:p-7 shadow-[6px_6px_0_var(--color-bebop-red)] transition-transform duration-200 hover:-translate-y-1"
+        >
+          <div>
+            <div class="flex items-center justify-between pb-3 mb-4 border-b-2 border-bebop-red">
+              <span
+                class:list={[
+                  "font-mono text-[10px] sm:text-xs font-black uppercase tracking-wider px-2.5 py-0.5 border-2",
+                  isRedHeader
+                    ? "bg-bebop-red text-paper-white border-paper-white"
+                    : "bg-paper-white text-space-base border-paper-white",
+                ]}
+              >
+                {cat.arcana}
+              </span>
+              <span class="font-mono text-[10px] font-black text-bebop-red uppercase tracking-widest">
+                {cat.rank}
+              </span>
+            </div>
+
+            <h4
+              data-skill-title
+              class="font-display text-xl sm:text-2xl font-black text-paper-white uppercase leading-tight"
             >
-              {cat.tag}
-            </span>
-            <span class="font-mono text-[10px] text-muted-gray uppercase">
-              STATUS: MASTERED
-            </span>
+              {cat.title}
+            </h4>
+            <p
+              data-skill-subtitle
+              class="mt-1 font-mono text-xs text-muted-gray leading-normal"
+            >
+              {cat.subtitle}
+            </p>
           </div>
 
-          <h4 class="font-display text-xl sm:text-2xl font-black text-paper-white uppercase leading-tight">
-            {cat.title}
-          </h4>
-          <p class="mt-1 font-mono text-xs text-muted-gray leading-normal">
-            {cat.subtitle}
-          </p>
+          <div class="mt-6 flex flex-wrap gap-2 sm:gap-2.5">
+            {cat.skills.map((skill) => (
+              <span
+                data-skill-badge
+                class="inline-flex items-center border-2 border-paper-white bg-space-base px-3 py-1.5 font-mono text-xs font-bold text-paper-white shadow-[3px_3px_0_var(--color-bebop-red)] transition-colors duration-150 hover:bg-bebop-red hover:text-paper-white cursor-default select-none"
+              >
+                <span class="mr-1.5 text-bebop-red group-hover:text-paper-white text-[10px]">■</span>
+                <span data-skill-badge-text>{skill}</span>
+              </span>
+            ))}
+          </div>
         </div>
-
-        <!-- Lista de Badges Táteis com Microinteração de Hover -->
-        <div class="mt-6 flex flex-wrap gap-2 sm:gap-2.5">
-          {cat.skills.map((skill) => (
-            <span
-              data-skill-badge
-              class="inline-flex items-center rounded-lg sm:rounded-xl border border-space-border/80 bg-space-surface-2/80 px-3 py-1.5 font-mono text-xs font-semibold text-paper-white shadow-comic-xs transition-all duration-200 hover:-translate-y-0.5 hover:border-acid-green hover:text-acid-green hover:shadow-comic-sm hover:bg-space-surface-2 cursor-default select-none"
-            >
-              <span class="mr-1.5 text-muted-gray group-hover:text-acid-green transition-colors text-[10px]">●</span>
-              {skill}
-            </span>
-          ))}
-        </div>
-      </div>
-    ))}
+      );
+    })}
   </div>
 </div>

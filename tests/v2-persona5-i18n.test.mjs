@@ -249,6 +249,25 @@ test('T9: SelectedWorks.astro binds bilingual data-case-* and data-i18n attribut
   assert.ok(worksSrc.includes('data-i18n="works.title"'));
 });
 
+test('C12: About.astro and SkillsGrid.astro form a unified Persona 5 Confidant Dossier without duplicate receipt clutter', () => {
+  const aboutSrc = fs.readFileSync(
+    path.resolve('src/components/About.astro'),
+    'utf8'
+  );
+  const skillsSrc = fs.readFileSync(
+    path.resolve('src/components/SkillsGrid.astro'),
+    'utf8'
+  );
+  assert.ok(aboutSrc.includes('<SkillsGrid />'));
+  assert.ok(aboutSrc.includes('PROFILE.location.label'));
+  assert.ok(aboutSrc.includes('data-i18n="about.bioP1"'));
+  assert.ok(skillsSrc.includes('data-skill-vignette'));
+  assert.ok(skillsSrc.includes('data-skill-title'));
+  assert.ok(skillsSrc.includes('data-skill-badge-text'));
+  assert.equal(aboutSrc.includes('PHILOSOPHY //'), false);
+});
+
+
 
 
 
