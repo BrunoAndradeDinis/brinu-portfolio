@@ -1,5 +1,22 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-import * as THREE from 'three';
+import {
+  Scene,
+  PerspectiveCamera,
+  WebGLRenderer,
+  Group,
+  Mesh,
+  PointLight,
+  AmbientLight,
+  DirectionalLight,
+  BoxGeometry,
+  PlaneGeometry,
+  SphereGeometry,
+  EdgesGeometry,
+  MeshStandardMaterial,
+  LineBasicMaterial,
+  LineSegments,
+  SRGBColorSpace,
+} from 'three';
 import { audioSynth } from '../../utils/audio';
 import { useLocale } from '../../i18n/index';
 
@@ -30,12 +47,12 @@ export const CyberDeck: React.FC = () => {
   const [isEjected, setIsEjected] = useState<boolean>(false);
   const [isMuted, setIsMuted] = useState<boolean>(true);
 
-  const sceneRef = useRef<THREE.Scene | null>(null);
-  const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
-  const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
-  const cartridgeGroupRef = useRef<THREE.Group | null>(null);
-  const ledMeshRef = useRef<THREE.Mesh | null>(null);
-  const ledLightRef = useRef<THREE.PointLight | null>(null);
+  const sceneRef = useRef<Scene | null>(null);
+  const cameraRef = useRef<PerspectiveCamera | null>(null);
+  const rendererRef = useRef<WebGLRenderer | null>(null);
+  const cartridgeGroupRef = useRef<Group | null>(null);
+  const ledMeshRef = useRef<Mesh | null>(null);
+  const ledLightRef = useRef<PointLight | null>(null);
   const animFrameRef = useRef<number>(0);
 
   const isDraggingRef = useRef<boolean>(false);
@@ -81,9 +98,9 @@ export const CyberDeck: React.FC = () => {
     const container = mountRef.current;
     if (!container) return;
 
-    let renderer: THREE.WebGLRenderer | null = null;
+    let renderer: WebGLRenderer | null = null;
     try {
-      renderer = new THREE.WebGLRenderer({
+      renderer = new WebGLRenderer({
         alpha: true,
         antialias: true,
         powerPreference: 'high-performance',
@@ -92,101 +109,101 @@ export const CyberDeck: React.FC = () => {
       return;
     }
 
-    const scene = new THREE.Scene();
+    const scene = new Scene();
     sceneRef.current = scene;
 
     const width = container.clientWidth || 360;
     const height = container.clientHeight || 360;
-    const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 100);
+    const camera = new PerspectiveCamera(45, width / height, 0.1, 100);
     camera.position.set(0, 0, 7.8);
     cameraRef.current = camera;
 
     renderer.setSize(width, height);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
-    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.outputColorSpace = SRGBColorSpace;
     container.innerHTML = '';
     container.appendChild(renderer.domElement);
     rendererRef.current = renderer;
 
-    const ambientLight = new THREE.AmbientLight(0xfbfaf4, 1.1);
+    const ambientLight = new AmbientLight(0xfbfaf4, 1.1);
     scene.add(ambientLight);
 
-    const keyLight = new THREE.DirectionalLight(0xfbfaf4, 2.2);
+    const keyLight = new DirectionalLight(0xfbfaf4, 2.2);
     keyLight.position.set(4, 5, 5);
     scene.add(keyLight);
 
-    const rimRedLight = new THREE.PointLight(0xfe0000, 3.2, 15);
+    const rimRedLight = new PointLight(0xfe0000, 3.2, 15);
     rimRedLight.position.set(-4, -2, -3);
     scene.add(rimRedLight);
 
-    const ledPointLight = new THREE.PointLight(0xfbfaf4, 1.5, 4);
+    const ledPointLight = new PointLight(0xfbfaf4, 1.5, 4);
     ledPointLight.position.set(0.9, 1.6, 0.45);
     scene.add(ledPointLight);
     ledLightRef.current = ledPointLight;
 
-    const cartridgeGroup = new THREE.Group();
+    const cartridgeGroup = new Group();
     cartridgeGroupRef.current = cartridgeGroup;
 
-    const bodyGeometry = new THREE.BoxGeometry(2.8, 3.8, 0.55);
-    const bodyMaterial = new THREE.MeshStandardMaterial({
+    const bodyGeometry = new BoxGeometry(2.8, 3.8, 0.55);
+    const bodyMaterial = new MeshStandardMaterial({
       color: 0x080808,
       roughness: 0.35,
       metalness: 0.7,
     });
-    const bodyMesh = new THREE.Mesh(bodyGeometry, bodyMaterial);
+    const bodyMesh = new Mesh(bodyGeometry, bodyMaterial);
     cartridgeGroup.add(bodyMesh);
 
-    const ridgeGeometry = new THREE.BoxGeometry(2.2, 0.08, 0.06);
-    const ridgeMaterial = new THREE.MeshStandardMaterial({
+    const ridgeGeometry = new BoxGeometry(2.2, 0.08, 0.06);
+    const ridgeMaterial = new MeshStandardMaterial({
       color: 0xfe0000,
       roughness: 0.4,
       metalness: 0.6,
     });
     for (let i = 0; i < 4; i++) {
-      const ridge = new THREE.Mesh(ridgeGeometry, ridgeMaterial);
+      const ridge = new Mesh(ridgeGeometry, ridgeMaterial);
       ridge.position.set(0, 1.1 + i * 0.18, 0.28);
       cartridgeGroup.add(ridge);
     }
 
-    const pinGeometry = new THREE.BoxGeometry(2.1, 0.35, 0.15);
-    const pinMaterial = new THREE.MeshStandardMaterial({
+    const pinGeometry = new BoxGeometry(2.1, 0.35, 0.15);
+    const pinMaterial = new MeshStandardMaterial({
       color: 0xfbfaf4,
       roughness: 0.2,
       metalness: 0.9,
       emissive: 0xfbfaf4,
       emissiveIntensity: 0.12,
     });
-    const pinMesh = new THREE.Mesh(pinGeometry, pinMaterial);
+    const pinMesh = new Mesh(pinGeometry, pinMaterial);
     pinMesh.position.set(0, -1.95, 0);
     cartridgeGroup.add(pinMesh);
 
-    const labelGeometry = new THREE.PlaneGeometry(2.2, 1.6);
-    const labelMaterial = new THREE.MeshStandardMaterial({
+    const labelGeometry = new PlaneGeometry(2.2, 1.6);
+    const labelMaterial = new MeshStandardMaterial({
       color: 0xfe0000,
       roughness: 0.4,
       metalness: 0.3,
     });
-    const labelMesh = new THREE.Mesh(labelGeometry, labelMaterial);
+    const labelMesh = new Mesh(labelGeometry, labelMaterial);
     labelMesh.position.set(0, -0.2, 0.285);
     cartridgeGroup.add(labelMesh);
 
-    const borderGeometry = new THREE.EdgesGeometry(labelGeometry);
-    const borderMaterial = new THREE.LineBasicMaterial({
+    const borderGeometry = new EdgesGeometry(labelGeometry);
+    const borderMaterial = new LineBasicMaterial({
       color: 0xfbfaf4,
       linewidth: 2,
     });
-    const borderMesh = new THREE.LineSegments(borderGeometry, borderMaterial);
+    const borderMesh = new LineSegments(borderGeometry, borderMaterial);
     borderMesh.position.set(0, -0.2, 0.287);
     cartridgeGroup.add(borderMesh);
 
-    const ledGeometry = new THREE.SphereGeometry(0.09, 16, 16);
-    const ledMaterial = new THREE.MeshStandardMaterial({
+    const ledGeometry = new SphereGeometry(0.09, 16, 16);
+    const ledMaterial = new MeshStandardMaterial({
       color: 0xfbfaf4,
       emissive: 0xfbfaf4,
       emissiveIntensity: 1.8,
       roughness: 0.1,
     });
-    const ledMesh = new THREE.Mesh(ledGeometry, ledMaterial);
+    const ledMesh = new Mesh(ledGeometry, ledMaterial);
     ledMesh.position.set(0.9, 1.55, 0.29);
     cartridgeGroup.add(ledMesh);
     ledMeshRef.current = ledMesh;
@@ -279,11 +296,11 @@ export const CyberDeck: React.FC = () => {
       if (ledMeshRef.current && ledLightRef.current) {
         const isCurrentlyEjected = ejectProg > 0.5;
         const colorHex = isCurrentlyEjected ? 0xfe0000 : 0xfbfaf4;
-        (ledMeshRef.current.material as THREE.MeshStandardMaterial).color.setHex(
+        (ledMeshRef.current.material as MeshStandardMaterial).color.setHex(
           colorHex
         );
         (
-          ledMeshRef.current.material as THREE.MeshStandardMaterial
+          ledMeshRef.current.material as MeshStandardMaterial
         ).emissive.setHex(colorHex);
         ledLightRef.current.color.setHex(colorHex);
       }
@@ -307,7 +324,7 @@ export const CyberDeck: React.FC = () => {
       window.removeEventListener('touchend', handlePointerUp);
 
       scene.traverse((obj) => {
-        if (obj instanceof THREE.Mesh || obj instanceof THREE.LineSegments) {
+        if (obj instanceof Mesh || obj instanceof LineSegments) {
           if (obj.geometry) obj.geometry.dispose();
           if (Array.isArray(obj.material)) {
             obj.material.forEach((m) => m.dispose());
