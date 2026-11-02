@@ -1,5 +1,5 @@
 ---
-import { ptBrDict } from "../i18n/dictionaries";
+import { ptBrDict, enDict } from "../i18n/dictionaries";
 
 interface FilmSlide {
   id: string;
@@ -9,6 +9,11 @@ interface FilmSlide {
   bgColor: string;
   imgSrc: string;
   alt: string;
+}
+
+interface NarrativeToken {
+  text: string;
+  graffiti?: string;
 }
 
 const FILM_SLIDES: FilmSlide[] = [
@@ -67,6 +72,39 @@ const FILM_SLIDES: FilmSlide[] = [
     alt: "Storyboard Frame 06: Space Cowboy Creative Technologist e Helena's Dad",
   },
 ];
+
+const NARRATIVE_CONFIG: Record<string, NarrativeToken[][]> = {
+  "pt-br": [
+    [{ text: ptBrDict.filmstrip.p1 }],
+    [{ text: ptBrDict.filmstrip.p2 }],
+    [
+      { text: ptBrDict.filmstrip.p3Part1 },
+      { text: ptBrDict.filmstrip.p3Highlight1, graffiti: ptBrDict.filmstrip.p3Highlight1 },
+      { text: ptBrDict.filmstrip.p3Part2 },
+      { text: ptBrDict.filmstrip.p3Highlight2, graffiti: ptBrDict.filmstrip.p3Highlight2 },
+      { text: ptBrDict.filmstrip.p3Part3 },
+      { text: ptBrDict.filmstrip.p3Highlight3, graffiti: ptBrDict.filmstrip.p3Highlight3 },
+      { text: ptBrDict.filmstrip.p3Part4 },
+    ],
+  ],
+  en: [
+    [{ text: enDict.filmstrip.p1 }],
+    [{ text: enDict.filmstrip.p2 }],
+    [
+      { text: enDict.filmstrip.p3Part1 },
+      { text: enDict.filmstrip.p3Highlight1, graffiti: enDict.filmstrip.p3Highlight1 },
+      { text: enDict.filmstrip.p3Part2 },
+      { text: enDict.filmstrip.p3Highlight2, graffiti: enDict.filmstrip.p3Highlight2 },
+      { text: enDict.filmstrip.p3Part3 },
+      { text: enDict.filmstrip.p3Highlight3, graffiti: enDict.filmstrip.p3Highlight3 },
+      { text: enDict.filmstrip.p3Part4 },
+    ],
+  ],
+};
+
+function splitWords(text: string): string[] {
+  return text.trim().split(/\s+/).filter(Boolean);
+}
 ---
 
 <section
@@ -164,23 +202,50 @@ const FILM_SLIDES: FilmSlide[] = [
     <div class="site-max --s mx-auto flex max-w-[90rem] flex-col items-center">
       <div
         data-motto-text
-        class="motto__text title-m w-full max-w-[82rem] text-center font-body text-[clamp(1.35rem,3.4vw,3.25rem)] font-black leading-[1.12] tracking-tight text-space-base uppercase space-y-8 sm:space-y-12"
+        class="motto__text title-m w-full max-w-[82rem] text-center font-body text-[clamp(1.5rem,3.6vw,3.5rem)] font-black leading-[1.08] tracking-tight text-space-base uppercase"
       >
-        <p data-i18n="filmstrip.p1" class="border-l-4 border-space-base pl-4 text-left sm:text-center sm:border-l-0 sm:pl-0">
-          {ptBrDict.filmstrip.p1}
-        </p>
-        <p data-i18n="filmstrip.p2">
-          {ptBrDict.filmstrip.p2}
-        </p>
-        <p>
-          <span data-i18n="filmstrip.p3Part1">{ptBrDict.filmstrip.p3Part1}</span>
-          <span class="inline-block border-2 border-space-base bg-space-base px-2.5 py-0.5 text-paper-white -skew-x-6 shadow-[4px_4px_0_var(--color-paper-white)]" data-i18n="filmstrip.p3Highlight1">{ptBrDict.filmstrip.p3Highlight1}</span>
-          <span data-i18n="filmstrip.p3Part2">{ptBrDict.filmstrip.p3Part2}</span>
-          <span class="inline-block border-2 border-space-base bg-paper-white px-2.5 py-0.5 text-space-base skew-x-3 shadow-[4px_4px_0_var(--color-space-base)]" data-i18n="filmstrip.p3Highlight2">{ptBrDict.filmstrip.p3Highlight2}</span>
-          <span data-i18n="filmstrip.p3Part3">{ptBrDict.filmstrip.p3Part3}</span>
-          <span class="inline-block border-2 border-space-base bg-space-base px-2.5 py-0.5 text-bebop-red -skew-x-6 shadow-[4px_4px_0_var(--color-paper-white)]" data-i18n="filmstrip.p3Highlight3">{ptBrDict.filmstrip.p3Highlight3}</span>
-          <span data-i18n="filmstrip.p3Part4">{ptBrDict.filmstrip.p3Part4}</span>
-        </p>
+        {NARRATIVE_CONFIG["pt-br"].map((paragraphTokens) => (
+          <p>
+            {paragraphTokens.map((token) => {
+              const words = splitWords(token.text);
+              if (token.graffiti) {
+                return (
+                  <>
+                    <span data-text={token.graffiti} class="motto__g inline-block">
+                      {words.map((word, wIdx) => (
+                        <>
+                          <span class="motto__word" style="position:relative;display:inline-block;">
+                            {Array.from(word).map((ch) => (
+                              <span
+                                class="char char-flip"
+                                data-char-flip
+                                style="position: relative; display: inline-block; transform: rotateX(90deg);"
+                              >{ch}</span>
+                            ))}
+                          </span>
+                          {wIdx < words.length - 1 ? " " : ""}
+                        </>
+                      ))}
+                    </span>{" "}
+                  </>
+                );
+              }
+              return words.map((word) => (
+                <>
+                  <span class="motto__word" style="position:relative;display:inline-block;">
+                    {Array.from(word).map((ch) => (
+                      <span
+                        class="char char-flip"
+                        data-char-flip
+                        style="position: relative; display: inline-block; transform: rotateX(90deg);"
+                      >{ch}</span>
+                    ))}
+                  </span>{" "}
+                </>
+              ));
+            })}
+          </p>
+        ))}
       </div>
     </div>
   </div>
@@ -188,6 +253,64 @@ const FILM_SLIDES: FilmSlide[] = [
 
 <script>
   import { gsap, ScrollTrigger } from "../utils/motion";
+  import { LOCALE_CHANGE_EVENT, type Locale, getLocale } from "../i18n";
+  import { ptBrDict, enDict } from "../i18n/dictionaries";
+
+  interface NarrativeToken {
+    text: string;
+    graffiti?: string;
+  }
+
+  const NARRATIVE_CONFIG: Record<string, NarrativeToken[][]> = {
+    "pt-br": [
+      [{ text: ptBrDict.filmstrip.p1 }],
+      [{ text: ptBrDict.filmstrip.p2 }],
+      [
+        { text: ptBrDict.filmstrip.p3Part1 },
+        { text: ptBrDict.filmstrip.p3Highlight1, graffiti: ptBrDict.filmstrip.p3Highlight1 },
+        { text: ptBrDict.filmstrip.p3Part2 },
+        { text: ptBrDict.filmstrip.p3Highlight2, graffiti: ptBrDict.filmstrip.p3Highlight2 },
+        { text: ptBrDict.filmstrip.p3Part3 },
+        { text: ptBrDict.filmstrip.p3Highlight3, graffiti: ptBrDict.filmstrip.p3Highlight3 },
+        { text: ptBrDict.filmstrip.p3Part4 },
+      ],
+    ],
+    en: [
+      [{ text: enDict.filmstrip.p1 }],
+      [{ text: enDict.filmstrip.p2 }],
+      [
+        { text: enDict.filmstrip.p3Part1 },
+        { text: enDict.filmstrip.p3Highlight1, graffiti: enDict.filmstrip.p3Highlight1 },
+        { text: enDict.filmstrip.p3Part2 },
+        { text: enDict.filmstrip.p3Highlight2, graffiti: enDict.filmstrip.p3Highlight2 },
+        { text: enDict.filmstrip.p3Part3 },
+        { text: enDict.filmstrip.p3Highlight3, graffiti: enDict.filmstrip.p3Highlight3 },
+        { text: enDict.filmstrip.p3Part4 },
+      ],
+    ],
+  };
+
+  function buildMottoHTML(tokensByParagraph: NarrativeToken[][]): string {
+    return tokensByParagraph.map((tokens) => {
+      const paragraphContent = tokens.map((token) => {
+        const words = token.text.trim().split(/\s+/).filter(Boolean);
+        const wordsHtml = words.map((word, wIdx) => {
+          const charsHtml = Array.from(word).map((ch) =>
+            `<span class="char char-flip" data-char-flip style="position: relative; display: inline-block; transform: rotateX(90deg);">${ch}</span>`
+          ).join("");
+          const space = wIdx < words.length - 1 ? " " : "";
+          return `<span class="motto__word" style="position:relative;display:inline-block;">${charsHtml}</span>${space}`;
+        }).join("");
+
+        if (token.graffiti) {
+          return `<span data-text="${token.graffiti}" class="motto__g inline-block">${wordsHtml}</span> `;
+        }
+        return `${wordsHtml} `;
+      }).join("");
+
+      return `<p>${paragraphContent}</p>`;
+    }).join("");
+  }
 
   let cleanupFilmstrip: (() => void) | null = null;
 
@@ -228,6 +351,11 @@ const FILM_SLIDES: FilmSlide[] = [
     if (prefersReducedMotion) {
       parallaxEl.style.setProperty("--progress", "0.25");
       mottoSection.classList.add("is-active");
+      const chars = Array.from(mottoText.querySelectorAll<HTMLElement>(".char-flip"));
+      chars.forEach((ch) => {
+        ch.style.transform = "rotateX(0deg)";
+        ch.style.opacity = "1";
+      });
       return;
     }
 
@@ -247,26 +375,78 @@ const FILM_SLIDES: FilmSlide[] = [
       }
     );
 
-    const paragraphs = Array.from(mottoText.querySelectorAll<HTMLElement>("p"));
-    const textTween = gsap.fromTo(
-      paragraphs,
-      {
-        y: 28,
-        opacity: 0.25,
-      },
-      {
-        y: 0,
-        opacity: 1,
-        stagger: 0.12,
-        ease: "power2.out",
-        scrollTrigger: {
-          trigger: mottoText,
-          start: "top 85%",
-          end: "bottom 40%",
-          scrub: 0.3,
-        },
+    let textTween: gsap.core.Tween | null = null;
+
+    const setupTextTween = () => {
+      if (textTween) {
+        textTween.scrollTrigger?.kill();
+        textTween.kill();
+        textTween = null;
       }
-    );
+
+      const chars = Array.from(mottoText.querySelectorAll<HTMLElement>(".char-flip"));
+      const graffitiSpans = Array.from(mottoText.querySelectorAll<HTMLElement>(".motto__g"));
+
+      textTween = gsap.fromTo(
+        chars,
+        {
+          rotateX: 90,
+        },
+        {
+          rotateX: 0,
+          duration: 0.03,
+          stagger: 0.03,
+          ease: "none",
+          scrollTrigger: {
+            trigger: mottoText,
+            start: "top 82%",
+            end: "bottom 35%",
+            scrub: 0.25,
+            onUpdate: (self) => {
+              graffitiSpans.forEach((g) => {
+                const gChars = g.querySelectorAll<HTMLElement>(".char-flip");
+                const lastChar = gChars[gChars.length - 1];
+                const rotX = lastChar ? Number(gsap.getProperty(lastChar, "rotateX")) : 90;
+                const isDone = lastChar && (rotX <= 15 || !lastChar.style.transform.includes("90deg"));
+                g.classList.toggle("is-revealed", Boolean(isDone));
+              });
+              if (self.progress >= 0.95) {
+                mottoSection.classList.add("is-active");
+              } else {
+                mottoSection.classList.remove("is-active");
+              }
+            },
+            onLeave: () => {
+              mottoSection.classList.add("is-active");
+              graffitiSpans.forEach((g) => g.classList.add("is-revealed"));
+            },
+          },
+        }
+      );
+    };
+
+    setupTextTween();
+
+    const onLocaleChange = (e: Event) => {
+      const custom = e as CustomEvent<{ locale: Locale }>;
+      const nextLocale = custom.detail?.locale || getLocale();
+      const tokens = NARRATIVE_CONFIG[nextLocale] || NARRATIVE_CONFIG["pt-br"];
+      mottoText.innerHTML = buildMottoHTML(tokens);
+
+      if (prefersReducedMotion) {
+        const chars = Array.from(mottoText.querySelectorAll<HTMLElement>(".char-flip"));
+        chars.forEach((ch) => {
+          ch.style.transform = "rotateX(0deg)";
+          ch.style.opacity = "1";
+        });
+        return;
+      }
+
+      setupTextTween();
+      ScrollTrigger.refresh();
+    };
+
+    window.addEventListener(LOCALE_CHANGE_EVENT, onLocaleChange);
 
     const onResize = () => {
       updateParallaxBounds();
@@ -277,11 +457,14 @@ const FILM_SLIDES: FilmSlide[] = [
 
     cleanupFilmstrip = () => {
       window.removeEventListener("resize", onResize);
+      window.removeEventListener(LOCALE_CHANGE_EVENT, onLocaleChange);
       ScrollTrigger.removeEventListener("refreshInit", updateParallaxBounds);
       parallaxTween.scrollTrigger?.kill();
       parallaxTween.kill();
-      textTween.scrollTrigger?.kill();
-      textTween.kill();
+      if (textTween) {
+        textTween.scrollTrigger?.kill();
+        textTween.kill();
+      }
     };
   }
 
@@ -299,5 +482,54 @@ const FILM_SLIDES: FilmSlide[] = [
     --progress: 0;
     transform: translateX(calc(var(--progress) * var(--x)));
     will-change: transform;
+  }
+
+  .radius-fix {
+    border-radius: 0.75rem;
+  }
+
+  .motto__text {
+    perspective: 1000px;
+  }
+
+  .motto__text > :not(:last-child) {
+    margin-bottom: 2.5rem;
+  }
+
+  @media (min-width: 640px) {
+    .motto__text > :not(:last-child) {
+      margin-bottom: 4rem;
+    }
+  }
+
+  .char-flip {
+    transform-origin: 50% 50%;
+    backface-visibility: hidden;
+  }
+
+  .motto__g {
+    position: relative;
+  }
+
+  .motto__g::after {
+    color: var(--color-paper-white);
+    content: attr(data-text);
+    font-family: var(--font-spray);
+    font-size: 1.125em;
+    left: 50%;
+    opacity: 0;
+    pointer-events: none;
+    position: absolute;
+    top: 0px;
+    white-space: nowrap;
+    transform: translateX(-50%) rotate(-1.5deg);
+    text-shadow: 0 3px 0 var(--color-space-base);
+    transition: opacity 0.3s ease;
+    z-index: 2;
+  }
+
+  .motto__g.is-revealed::after,
+  .motto.is-active .motto__g::after {
+    opacity: 1;
   }
 </style>
