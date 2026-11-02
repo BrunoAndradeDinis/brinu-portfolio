@@ -28,6 +28,7 @@ body {
   background-color: var(--color-space-base);
   color: var(--color-paper-white);
   font-family: var(--font-body);
+  font-weight: 500;
   line-height: 1.5;
 }
 
@@ -40,31 +41,46 @@ body {
    2. TYPOGRAPHY CLASSES
    ========================================================================== */
 
-.font-display {
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+}
+
+:where(.font-display) {
   font-family: var(--font-display);
   font-weight: 900;
   text-transform: uppercase;
 }
 
-.font-spray {
+:where(.font-spray) {
   font-family: var(--font-spray);
   font-weight: 400;
   line-height: 1.0;
   text-transform: uppercase;
 }
 
-.font-mono {
+:where(.font-mono) {
   font-family: var(--font-mono);
-  font-weight: 400;
+  font-weight: 500;
   line-height: 1.5;
   letter-spacing: 0.04em;
 }
 
-.font-body {
+:where(.font-body) {
   font-family: var(--font-body);
-  font-weight: 400;
+  font-weight: 500;
   line-height: 1.5;
   letter-spacing: -0.01em;
+}
+
+.font-body.font-black {
+  font-weight: 900;
+  font-variation-settings: "wdth" 112;
+}
+
+.font-body.font-bold {
+  font-weight: 700;
 }
 
 /* ==========================================================================

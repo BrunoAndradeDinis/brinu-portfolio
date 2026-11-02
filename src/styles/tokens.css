@@ -25,7 +25,7 @@
   --font-display: 'Heavitas', 'Syne', 'Cabinet Grotesk', sans-serif;
   --font-spray: 'spray', 'Permanent Marker', cursive;
   --font-mono: 'Space Mono', 'JetBrains Mono', monospace;
-  --font-body: 'Inter', 'Helvetica Neue', sans-serif;
+  --font-body: 'Archivo', 'Helvetica Neue', sans-serif;
 
   /* Brutalist Comic Manga Shadows & Glows */
   --shadow-comic-xs: 0 2px 0 #080808;
@@ -102,7 +102,7 @@
   --font-display: 'Heavitas', 'Syne', 'Cabinet Grotesk', sans-serif;
   --font-spray: 'spray', 'Permanent Marker', cursive;
   --font-mono: 'Space Mono', 'JetBrains Mono', monospace;
-  --font-body: 'Inter', 'Helvetica Neue', sans-serif;
+  --font-body: 'Archivo', 'Helvetica Neue', sans-serif;
 
   /* Borders */
   --border-comic-thick: 0.7rem;
