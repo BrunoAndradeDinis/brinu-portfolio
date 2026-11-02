@@ -184,4 +184,30 @@ test('C9: tokens.css enforces Persona 5 Red/Black/White triad with zero #11111E 
   assert.equal(tokensCss.toUpperCase().includes('#1A1A2E'), false);
 });
 
+test('T6a: CockpitMenu defines all 6 canonical Persona 5 navigation blades and syncCockpitTriggerDom', () => {
+  const source = fs.readFileSync(
+    path.resolve('src/components/CockpitMenu.tsx'),
+    'utf8'
+  );
+  for (const href of ['#hero', '#works', '#about', '#lab', '#contact', '/whoami']) {
+    assert.ok(source.includes(`href: '${href}'`), `Missing blade href ${href}`);
+  }
+  assert.ok(source.includes('export function syncCockpitTriggerDom(isOpen: boolean)'));
+  assert.ok(source.includes("cockpitBtn.setAttribute('aria-expanded', String(isOpen))"));
+});
+
+test('T6b: CockpitMenu.tsx wires cockpit:open event, Escape key handler, and language/audio controls', () => {
+  const source = fs.readFileSync(
+    path.resolve('src/components/CockpitMenu.tsx'),
+    'utf8'
+  );
+  assert.ok(source.includes("addEventListener('cockpit:open'"));
+  assert.ok(source.includes("e.key === 'Escape'"));
+  assert.ok(source.includes('id="cockpit-menu-overlay"'));
+  assert.ok(source.includes('data-cockpit-lang="pt-br"'));
+  assert.ok(source.includes('data-cockpit-lang="en"'));
+  assert.ok(source.includes('id="cockpit-audio-toggle"'));
+});
+
+
 
