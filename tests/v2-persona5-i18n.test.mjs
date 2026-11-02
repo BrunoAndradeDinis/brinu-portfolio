@@ -348,7 +348,9 @@ test('C6: language toggle switches pt-br and en, persists to localStorage, and u
     .textContent();
   assert.ok(submitBtnTextEn && submitBtnTextEn.includes(enDict.dispatch.submitCta));
 
-  // Toggle back to pt-br
+  // Toggle back to pt-br (scroll back to top so secondary nav controls are visible)
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await page.waitForTimeout(200);
   await page.click('#nav-lang-toggle-btn');
   assert.equal(await page.getAttribute('html', 'lang'), 'pt-BR');
   assert.equal(

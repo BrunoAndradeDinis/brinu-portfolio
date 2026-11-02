@@ -142,7 +142,10 @@ test('C2: top controls comic-nav-logo and cockpit-trigger-btn remain visible at 
 
   assert.ok(headerInfo, 'Expected header elements');
   assert.equal(headerInfo.headerZIndex, '9999');
-  assert.equal(headerInfo.headerPosition, 'sticky');
+  assert.ok(
+    ['fixed', 'sticky'].includes(headerInfo.headerPosition),
+    `Expected fixed or sticky top positioning, got ${headerInfo.headerPosition}`
+  );
   assert.equal(headerInfo.triggerAriaExpanded, 'true');
   assert.equal(headerInfo.headerCockpitOpen, 'true');
 

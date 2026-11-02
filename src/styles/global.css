@@ -341,8 +341,22 @@ html.lenis.lenis-smooth {
 }
 
 html.lenis-stopped,
-body.lenis-stopped {
-  overflow: hidden;
+body.lenis-stopped,
+html.cockpit-menu-open,
+body.cockpit-menu-open {
+  overflow: hidden !important;
+  scrollbar-gutter: auto !important;
+}
+
+#cockpit-menu-overlay {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+#cockpit-menu-overlay::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
 }
 
 .lenis.lenis-smooth iframe {

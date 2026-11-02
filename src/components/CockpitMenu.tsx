@@ -95,7 +95,8 @@ export const CockpitMenu: React.FC = () => {
     if (isReducedMotion()) {
       setIsOpen(false);
       if (typeof document !== 'undefined') {
-        document.body.classList.remove('lenis-stopped');
+        document.documentElement.classList.remove('lenis-stopped', 'cockpit-menu-open');
+        document.body.classList.remove('lenis-stopped', 'cockpit-menu-open');
       }
       return;
     }
@@ -113,7 +114,8 @@ export const CockpitMenu: React.FC = () => {
         setIsOpen(false);
         isClosingRef.current = false;
         if (typeof document !== 'undefined') {
-          document.body.classList.remove('lenis-stopped');
+          document.documentElement.classList.remove('lenis-stopped', 'cockpit-menu-open');
+          document.body.classList.remove('lenis-stopped', 'cockpit-menu-open');
         }
       },
     });
@@ -148,7 +150,8 @@ export const CockpitMenu: React.FC = () => {
     syncCockpitTriggerDom(true);
     audioSynth.playKnobClick(960, 0.08);
     if (typeof document !== 'undefined') {
-      document.body.classList.add('lenis-stopped');
+      document.documentElement.classList.add('lenis-stopped', 'cockpit-menu-open');
+      document.body.classList.add('lenis-stopped', 'cockpit-menu-open');
     }
   }, []);
 
@@ -310,7 +313,7 @@ export const CockpitMenu: React.FC = () => {
       aria-modal="true"
       aria-hidden={!isOpen}
       aria-label={t.menu.dialogAria}
-      className={`fixed inset-0 w-screen h-screen min-h-dvh z-[9990] overflow-y-auto overflow-x-hidden bg-space-base text-paper-white select-none ${
+      className={`fixed inset-0 w-screen h-screen min-h-dvh max-h-screen z-[9990] overflow-y-auto overflow-x-hidden bg-space-base text-paper-white select-none ${
         isOpen ? 'block' : 'hidden'
       }`}
       onClick={(e) => {
@@ -336,7 +339,7 @@ export const CockpitMenu: React.FC = () => {
       </div>
 
       {/* Fullscreen Content Container */}
-      <div className="relative z-10 w-full min-h-full flex flex-col justify-between pt-28 sm:pt-32 pb-8 px-4 sm:px-8 md:px-12 lg:px-20 max-w-7xl mx-auto">
+      <div className="relative z-10 w-full min-h-full box-border flex flex-col justify-between pt-20 sm:pt-24 md:pt-28 pb-6 sm:pb-8 px-4 sm:px-8 md:px-12 lg:px-20 max-w-7xl mx-auto">
         <div>
           {/* Header Row */}
           <div className="relative border-b-4 border-paper-white pb-5 mb-8">
