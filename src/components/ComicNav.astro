@@ -3,7 +3,9 @@ import { ptBrDict } from "../i18n/dictionaries";
 ---
 
 <header
-  class="relative z-hud flex h-[7rem] w-full items-center justify-between border-b-4 border-space-base bg-bebop-red px-4 sm:px-8 md:px-10 lg:px-20 select-none box-border"
+  id="comic-nav-header"
+  data-cockpit-open="false"
+  class="sticky top-0 z-[9999] flex h-[7rem] w-full items-center justify-between border-b-4 border-space-base bg-bebop-red px-4 sm:px-8 md:px-10 lg:px-20 select-none box-border transition-colors duration-200"
 >
   <a
     id="comic-nav-logo"
@@ -105,17 +107,18 @@ import { ptBrDict } from "../i18n/dictionaries";
     const bar1 = document.getElementById("menu-bar-1");
     const bar2 = document.getElementById("menu-bar-2");
     const bar3 = document.getElementById("menu-bar-3");
+    const header = document.getElementById("comic-nav-header");
 
     if (!cockpitBtn || cockpitBtn.dataset.bound === "true") return;
     cockpitBtn.dataset.bound = "true";
 
-    cockpitBtn.addEventListener("click", () => {
-      const isExpanded = cockpitBtn.getAttribute("aria-expanded") === "true";
-      const nextState = !isExpanded;
-      cockpitBtn.setAttribute("aria-expanded", String(nextState));
-
+    const updateBars = (isOpen: boolean) => {
+      cockpitBtn.setAttribute("aria-expanded", String(isOpen));
+      if (header) {
+        header.dataset.cockpitOpen = String(isOpen);
+      }
       if (bar1 && bar2 && bar3) {
-        if (nextState) {
+        if (isOpen) {
           bar1.classList.add("rotate-45", "translate-y-[6.5px]", "sm:translate-y-[8.5px]");
           bar2.classList.add("opacity-0", "scale-x-0");
           bar3.classList.add("-rotate-45", "-translate-y-[6.5px]", "sm:-translate-y-[8.5px]");
@@ -125,6 +128,12 @@ import { ptBrDict } from "../i18n/dictionaries";
           bar3.classList.remove("-rotate-45", "-translate-y-[6.5px]", "sm:-translate-y-[8.5px]");
         }
       }
+    };
+
+    cockpitBtn.addEventListener("click", () => {
+      const isExpanded = cockpitBtn.getAttribute("aria-expanded") === "true";
+      const nextState = !isExpanded;
+      updateBars(nextState);
 
       window.dispatchEvent(
         new CustomEvent("cockpit:open", {
@@ -132,10 +141,18 @@ import { ptBrDict } from "../i18n/dictionaries";
         })
       );
     });
+
+    window.addEventListener("cockpit:open", (e: Event) => {
+      const detail = (e as CustomEvent<{ isOpen?: boolean }>).detail;
+      if (typeof detail?.isOpen === "boolean") {
+        updateBars(detail.isOpen);
+      }
+    });
   }
 
   function setupCiladaTripleClick() {
     const logo = document.getElementById("comic-nav-logo");
+    const cockpitBtn = document.getElementById("cockpit-trigger-btn");
     if (!logo || logo.dataset.bound === "true") return;
     logo.dataset.bound = "true";
 
@@ -144,6 +161,16 @@ import { ptBrDict } from "../i18n/dictionaries";
 
     logo.addEventListener("click", (e) => {
       e.preventDefault();
+
+      const isMenuOpen = cockpitBtn?.getAttribute("aria-expanded") === "true";
+      if (isMenuOpen) {
+        window.dispatchEvent(
+          new CustomEvent("cockpit:open", {
+            detail: { isOpen: false },
+          })
+        );
+      }
+
       clickCount++;
       if (timer) clearTimeout(timer);
 
