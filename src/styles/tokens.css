@@ -43,6 +43,7 @@
   --z-hud: 50;
   --z-overlay: 100;
   --z-modal: 9999;
+  --z-curtain: 100000;
 
   --animate-marquee: marquee 70s linear infinite;
   --animate-filmstrip: filmstripPan 6s linear infinite;
@@ -140,4 +141,5 @@
   --z-hud: 50;
   --z-overlay: 100;
   --z-modal: 9999;
+  --z-curtain: 100000;
 }

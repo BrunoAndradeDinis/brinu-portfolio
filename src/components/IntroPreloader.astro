@@ -109,7 +109,7 @@ import { ptBrDict } from "../i18n/dictionaries";
   .intro-preloader {
     position: fixed;
     inset: 0;
-    z-index: var(--z-modal);
+    z-index: var(--z-curtain, 100000);
     background-color: var(--color-space-base);
     display: flex;
     align-items: center;
