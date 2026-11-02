@@ -1,112 +1,131 @@
 ---
-/**
- * Contact.astro
- * ATO 5: BOUNTY BOARD CONTACT & TRANSMISSION
- * Chamada magnética para novos contratos e projetos de alto impacto.
- * 100% Bebop Design Tokens + Tailwind CSS v4.
- */
-import BountyDispatch from './BountyDispatch';
+import BountyDispatch from "./BountyDispatch";
+import { PROFILE } from "../data/profile";
+import { ptBrDict } from "../i18n/dictionaries";
 ---
 
 <section
   id="contact"
-  class="relative border-t-[0.7rem] border-space-base bg-space-surface-1 px-4 py-16 sm:px-8 sm:py-24 md:px-12 md:py-32 text-paper-white select-none overflow-hidden"
-  aria-label="Contato e Envio de Propostas — Bounty Board"
+  class="relative border-t-4 border-paper-white bg-space-base px-4 py-16 sm:px-8 sm:py-24 md:px-12 md:py-32 text-paper-white select-none overflow-hidden"
+  aria-label={ptBrDict.contact.sectionAria}
+  data-i18n="contact.sectionAria"
+  data-i18n-attr="aria-label"
 >
-  <!-- Faixa Editorial Superior -->
   <div class="mx-auto max-w-[140rem]">
-    <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 pb-6 border-b border-space-border/60">
+    <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 pb-6 border-b-4 border-bebop-red">
       <div>
-        <span class="mb-2 block font-mono text-xs sm:text-sm tracking-widest text-bebop-amber uppercase">
-          [ ACT V // BOUNTY BOARD • DISPATCH & TRANSMISSION ]
+        <span
+          class="mb-2 block font-mono text-xs sm:text-sm font-bold tracking-widest text-bebop-red uppercase"
+          data-i18n="contact.actTag"
+        >
+          {ptBrDict.contact.actTag}
         </span>
         <h2
           data-contact-title
+          data-i18n="contact.title"
           class="font-display text-[clamp(2.4rem,7vw,6.5rem)] font-black tracking-tight text-paper-white leading-none uppercase"
         >
-          TRANSMIT A BOUNTY
+          {ptBrDict.contact.title}
         </h2>
       </div>
 
       <div class="flex items-center gap-2.5 font-mono text-xs">
-        <span class="w-3 h-3 rounded-full bg-acid-green animate-ping" />
-        <span class="font-bold text-acid-green tracking-wider uppercase">
-          AVAILABLE FOR HIGH-IMPACT CONTRACTS
+        <span class="w-3 h-3 bg-bebop-red animate-ping" />
+        <span
+          class="font-bold text-paper-white bg-bebop-red px-2.5 py-0.5 border border-paper-white tracking-wider uppercase -skew-x-6"
+          data-i18n="contact.availableBadge"
+        >
+          {ptBrDict.contact.availableBadge}
         </span>
       </div>
     </div>
 
-    <!-- Grid Principal de Contato -->
     <div class="mt-12 sm:mt-16 grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
-      <!-- Coluna da Esquerda: Chamada Editorial e Botão Magnético de E-mail -->
       <div class="lg:col-span-7 space-y-8">
         <div class="space-y-4">
-          <p class="font-sans text-base sm:text-lg md:text-xl text-paper-white leading-relaxed">
-            Tem um desafio de engenharia complexo, quer construir uma interface imersiva ou precisa de uma arquitetura de computação distribuída robusta?
+          <p
+            class="font-sans text-base sm:text-lg md:text-xl text-paper-white leading-relaxed"
+            data-i18n="contact.leadText"
+          >
+            {ptBrDict.contact.leadText}
           </p>
-          <p class="font-mono text-xs sm:text-sm text-muted-gray leading-relaxed">
-            Construo software com precisão cirúrgica, código limpo inegociável e alta fidelidade arquitetural. Disponível para projetos desafiadores e soluções escaláveis.
+          <p
+            class="font-mono text-xs sm:text-sm text-muted-gray leading-relaxed"
+            data-i18n="contact.subText"
+          >
+            {ptBrDict.contact.subText}
           </p>
         </div>
 
-        <!-- Botão Magnético Primário de Ação -->
         <div class="pt-2">
           <a
-            href="mailto:bruno.a.dinis96@gmail.com?subject=[Bounty%20Contract]%20Proposta%20de%20Projeto%20//%20Bruno%20Dinis&body=Ol%C3%A1%20Bruno,%0A%0AGostaria%20de%20conversar%20sobre%20uma%20oportunidade%20de%20projeto%20/%20contrato.%0A%0ADetalhes:%0A-"
+            href={`mailto:${PROFILE.email}?subject=${encodeURIComponent("[Bounty Contract] Proposta de Projeto // Bruno Dinis")}`}
             data-primary-contact-btn
-            class="group inline-flex flex-col sm:flex-row sm:items-center justify-between gap-4 w-full p-6 sm:p-8 rounded-2xl border-4 border-space-base bg-bebop-red text-paper-white shadow-comic-lg hover:bg-paper-white hover:text-space-base hover:border-space-base transition-all duration-200 active:translate-x-1 active:translate-y-1"
+            class="group inline-flex flex-col sm:flex-row sm:items-center justify-between gap-4 w-full p-6 sm:p-8 border-4 border-paper-white bg-bebop-red text-paper-white shadow-[8px_8px_0_var(--color-paper-white)] hover:bg-paper-white hover:text-space-base transition-all duration-150 active:translate-x-1 active:translate-y-1"
           >
             <div class="space-y-1">
-              <span class="font-mono text-xs font-bold tracking-widest text-bebop-amber group-hover:text-space-base/80 uppercase block">
-                // DIRECT FREQUENCY COMM
+              <span
+                class="font-mono text-xs font-bold tracking-widest text-paper-white group-hover:text-bebop-red uppercase block"
+                data-i18n="contact.directTag"
+              >
+                {ptBrDict.contact.directTag}
               </span>
-              <span class="font-display text-2xl sm:text-3xl font-black uppercase tracking-tight block">
-                TRANSMITIR PROPOSTA DIRETA
+              <span
+                class="font-display text-2xl sm:text-3xl font-black uppercase tracking-tight block"
+                data-i18n="contact.directCta"
+              >
+                {ptBrDict.contact.directCta}
               </span>
-              <span class="font-mono text-xs text-paper-white/80 group-hover:text-space-base block">
-                bruno.a.dinis96@gmail.com
+              <span class="font-mono text-xs text-paper-white/90 group-hover:text-space-base block">
+                {PROFILE.email}
               </span>
             </div>
 
-            <div class="flex items-center gap-2 self-end sm:self-center font-mono text-sm font-bold bg-space-base text-paper-white group-hover:bg-space-base group-hover:text-acid-green px-4 py-2 rounded-xl border border-space-border shadow-comic-xs transition-colors">
-              <span>DISPATCH</span>
-              <svg class="size-4 shrink-0 text-bebop-amber group-hover:text-acid-green transition-colors" aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <div class="flex items-center gap-2 self-end sm:self-center font-mono text-sm font-bold bg-space-base text-paper-white px-4 py-2 border-2 border-paper-white transition-colors">
+              <span data-i18n="contact.dispatchPill">{ptBrDict.contact.dispatchPill}</span>
+              <svg class="size-4 shrink-0 text-bebop-red" aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
               </svg>
             </div>
           </a>
         </div>
 
-        <!-- Canais de Conexão Rápidos -->
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4 font-mono text-xs">
           <a
-            href="https://github.com/BrunoAndradeDinis"
+            href={PROFILE.github.url}
             target="_blank"
             rel="noopener noreferrer"
-            class="p-4 rounded-xl border-2 border-space-border/80 bg-space-surface-2/80 hover:border-acid-green hover:text-acid-green transition-all shadow-comic-xs block"
+            class="p-4 border-2 border-paper-white bg-space-surface-1 hover:bg-bebop-red hover:text-paper-white transition-all shadow-[4px_4px_0_var(--color-bebop-red)] block"
           >
-            <span class="text-[10px] text-muted-gray uppercase block mb-1">CODE BASE //</span>
-            <span class="font-bold block">GitHub @BrunoAndradeDinis</span>
+            <span class="text-[10px] text-muted-gray uppercase block mb-1" data-i18n="contact.codeBaseLabel">
+              {ptBrDict.contact.codeBaseLabel}
+            </span>
+            <span class="font-bold block break-words">GitHub {PROFILE.github.handle}</span>
           </a>
 
           <a
-            href="https://www.linkedin.com/in/bruno-de-andrade-dinis"
+            href={PROFILE.linkedin.url}
             target="_blank"
             rel="noopener noreferrer"
-            class="p-4 rounded-xl border-2 border-space-border/80 bg-space-surface-2/80 hover:border-crt-cyan hover:text-crt-cyan transition-all shadow-comic-xs block"
+            class="p-4 border-2 border-paper-white bg-space-surface-1 hover:bg-bebop-red hover:text-paper-white transition-all shadow-[4px_4px_0_var(--color-bebop-red)] block"
           >
-            <span class="text-[10px] text-muted-gray uppercase block mb-1">CAREER LOG //</span>
-            <span class="font-bold block">LinkedIn /in/bruno-de-andrade-dinis</span>
+            <span class="text-[10px] text-muted-gray uppercase block mb-1" data-i18n="contact.careerLogLabel">
+              {ptBrDict.contact.careerLogLabel}
+            </span>
+            <span class="font-bold block break-words">LinkedIn {PROFILE.linkedin.handle}</span>
           </a>
 
-          <div class="p-4 rounded-xl border-2 border-space-border/80 bg-space-surface-2/80 shadow-comic-xs">
-            <span class="text-[10px] text-muted-gray uppercase block mb-1">STATION BASE //</span>
-            <span class="font-bold text-bebop-amber block">Campinas / SP • Remote</span>
+          <div class="p-4 border-2 border-paper-white bg-space-surface-1 shadow-[4px_4px_0_var(--color-bebop-red)]">
+            <span class="text-[10px] text-muted-gray uppercase block mb-1" data-i18n="contact.stationBaseLabel">
+              {ptBrDict.contact.stationBaseLabel}
+            </span>
+            <span class="font-bold text-bebop-red block" data-i18n="contact.stationBaseValue">
+              {ptBrDict.contact.stationBaseValue}
+            </span>
           </div>
         </div>
       </div>
 
-      <!-- Coluna da Direita: Mini-Terminal Bounty Dispatch -->
       <div id="bounty-dispatch-container" class="lg:col-span-5">
         <BountyDispatch client:visible />
       </div>

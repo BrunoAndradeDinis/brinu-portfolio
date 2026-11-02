@@ -69,6 +69,11 @@ export const CockpitMenu: React.FC = () => {
   useEffect(() => {
     setIsMuted(audioSynth.isMuted());
 
+    const initialTrigger = document.getElementById('cockpit-trigger-btn');
+    if (initialTrigger?.getAttribute('aria-expanded') === 'true') {
+      openMenu();
+    }
+
     const handleCockpitEvent = (e: Event) => {
       const detail = (e as CustomEvent<{ isOpen?: boolean }>).detail;
       const next = typeof detail?.isOpen === 'boolean' ? detail.isOpen : !isOpen;
@@ -120,15 +125,18 @@ export const CockpitMenu: React.FC = () => {
     }
   };
 
-  if (!isOpen) return null;
-
   return (
     <div
       id="cockpit-menu-overlay"
       role="dialog"
       aria-modal="true"
+      aria-hidden={!isOpen}
       aria-label={t.menu.dialogAria}
-      className="fixed inset-0 z-[9995] flex items-center justify-center bg-space-base/95 backdrop-blur-sm p-4 sm:p-8 overflow-y-auto"
+      className={
+        isOpen
+          ? 'fixed inset-0 z-[9995] flex items-center justify-center bg-space-base/95 backdrop-blur-sm p-4 sm:p-8 overflow-y-auto'
+          : 'hidden'
+      }
       onClick={(e) => {
         if (e.target === e.currentTarget) {
           closeMenu();

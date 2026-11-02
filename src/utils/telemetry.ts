@@ -1,31 +1,27 @@
-/**
- * telemetry.ts
- * Utilitário de telemetria e recepção DevTools para o Bebop Brutalist Portfolio.
- * Emite o cupom fiscal ASCII retrô #1996 e registra getters globais mágicos no window (Regra AD-5).
- */
+import { PROFILE } from '../data/profile';
 
 export function printBebopReceipt(): void {
   if (typeof console === 'undefined') return;
 
   const headerStyle = [
-    'color: #2EFE0C',
-    'background: #080808',
+    'color: #FBFAF4',
+    'background: #FE0000',
     'font-family: monospace',
     'font-size: 13px',
     'font-weight: bold',
     'padding: 8px 12px',
-    'border: 2px solid #2EFE0C',
-    'border-radius: 4px',
+    'border: 2px solid #FBFAF4',
     'line-height: 1.4',
   ].join(';');
 
   const receiptStyle = [
-    'color: #EBA602',
-    'background: #11111E',
+    'color: #FBFAF4',
+    'background: #080808',
     'font-family: monospace',
     'font-size: 11px',
     'line-height: 1.4',
     'padding: 10px',
+    'border: 1px solid #FE0000',
   ].join(';');
 
   console.log(
@@ -37,27 +33,28 @@ export function printBebopReceipt(): void {
 
   console.log(
     `%c============================================================
-              [RECEIPT] BEBOP TRANSIT & BOUNTY RECEIPT #1996
+              [RECEIPT] PHANTOM & BEBOP BOUNTY RECEIPT #1996
 ------------------------------------------------------------
-OPERADOR: Bruno de Andrade Dinis ("Brinu")
-STATUS:   Pai da Helena | Noivo apaixonado
-BASE:     Campinas / SP (Software Engineer - Cloud & Front)
-MISSAO:   Construir interfaces lendarias & arquitetura veloz
+OPERADOR: ${PROFILE.fullName} ("${PROFILE.handle}")
+STATUS:   ${PROFILE.family['pt-br']}
+BASE:     ${PROFILE.location.remoteLabel['pt-br']}
+EMAIL:    ${PROFILE.email}
+LINKEDIN: ${PROFILE.linkedin.handle}
 ------------------------------------------------------------
 ITEM  DESCRICAO                            VALOR / STATUS
-01    GitHub Telemetry (76 repos)          [OK - @BrunoAndradeDinis]
-02    LinkedIn Profile                     [OK - /in/bruno-de-andrade-dinis]
+01    GitHub Telemetry                     [OK - ${PROFILE.github.handle}]
+02    LinkedIn Profile                     [OK - ${PROFILE.linkedin.handle}]
 03    Engine AuraStream (Magalu Cloud S3)  [ONLINE 24/7]
 04    Quake Log Parser (Docker + Jest)     [COVERAGE 100%]
 05    Creative Lab Modules                 [3 PROTOTYPES ACTIVE]
 ------------------------------------------------------------
-TOTAL: 100% CLEAN CODE, HARDCORE PERFORMANCE & PASSION
+TOTAL: 100% CLEAN CODE, SOLID ARCHITECTURE & PASSION
 ============================================================
-COMANDOS EXECUTAVEIS NO CONSOLE (Digite direto no prompt):
-  > whoami    -> Acessa a pagina/terminal secreta da nave
+COMANDOS EXECUTAVEIS NO CONSOLE:
+  > whoami    -> Acessa o terminal interativo /whoami
   > cilada    -> [ALERTA] Dispara o alarme de emergencia!
   > status    -> Reemite este cupom fiscal
-  > projects  -> Links diretos para os repositorios
+  > projects  -> Lista os projetos em tabela
   > contact   -> Inicia contato direto via email
 ============================================================`,
     receiptStyle
@@ -67,10 +64,8 @@ COMANDOS EXECUTAVEIS NO CONSOLE (Digite direto no prompt):
 export function initTelemetry(): void {
   if (typeof window === 'undefined') return;
 
-  // Imprime o cupom fiscal no primeiro carregamento
   printBebopReceipt();
 
-  // Registra getters nativos no objeto window (Regra AD-5: sem necessidade de parênteses)
   try {
     Object.defineProperty(window, 'whoami', {
       get: () => {
@@ -127,8 +122,7 @@ export function initTelemetry(): void {
 
     Object.defineProperty(window, 'contact', {
       get: () => {
-        window.location.href =
-          'mailto:bruno.a.dinis96@gmail.com?subject=[Projeto/Proposta]%20Contato%20via%20Console';
+        window.location.href = `mailto:${PROFILE.email}?subject=[Projeto/Proposta]%20Contato%20via%20Console`;
         return '[CONTATO] Abrindo cliente de email...';
       },
       configurable: true,

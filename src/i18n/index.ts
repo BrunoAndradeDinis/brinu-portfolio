@@ -118,14 +118,19 @@ export function applyDomTranslations(locale: Locale): void {
       : dict.meta.description;
   }
 
-  // Update all [data-i18n] text elements
+  // Update all [data-i18n] elements (text or attribute via data-i18n-attr)
   const textNodes = document.querySelectorAll<HTMLElement>('[data-i18n]');
   textNodes.forEach((el) => {
     const key = el.getAttribute('data-i18n');
     if (!key) return;
     const translated = resolveTranslationKey(validLocale, key);
     if (translated !== key) {
-      el.textContent = translated;
+      const targetAttr = el.getAttribute('data-i18n-attr');
+      if (targetAttr) {
+        el.setAttribute(targetAttr, translated);
+      } else {
+        el.textContent = translated;
+      }
     }
   });
 
