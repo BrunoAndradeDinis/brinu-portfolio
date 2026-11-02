@@ -1,12 +1,8 @@
 ---
-/**
- * ComicHero.astro
- * Hero Section Carmesim Monumental (#FE0000) com Tipografia Colossal "BRINU" em Preto Sólido.
- * Estilizada integralmente via Tailwind CSS v4 & Bebop Design Tokens.
- */
+import { PROFILE } from "../data/profile";
+import { ptBrDict } from "../i18n/dictionaries";
 ---
 
-<!-- Fita Ticker Tape Contínua de Abertura -->
 <div
   class="group flex h-[4.125rem] w-full items-center overflow-hidden border-t-3 border-b-6 border-space-base bg-bebop-red select-none box-border cursor-default"
   aria-hidden="true"
@@ -14,16 +10,15 @@
   <div
     class="inline-flex shrink-0 items-center whitespace-nowrap animate-marquee font-display text-base sm:text-xl lg:text-2xl tracking-wider text-space-base transition-colors duration-300 group-hover:text-paper-white group-hover:[animation-play-state:paused] leading-none will-change-transform"
   >
-    <span class="inline-block shrink-0 whitespace-nowrap pr-12 sm:pr-16">
-      • ARCHITECTING RESILIENT DISTRIBUTED SYSTEMS • CREATIVE TECHNOLOGIST • PAI DA HELENA • NOIVO • SEE YOU SPACE COWBOY •
+    <span class="inline-block shrink-0 whitespace-nowrap pr-12 sm:pr-16" data-i18n="hero.ticker">
+      {ptBrDict.hero.ticker}
     </span>
-    <span class="inline-block shrink-0 whitespace-nowrap pr-12 sm:pr-16">
-      • ARCHITECTING RESILIENT DISTRIBUTED SYSTEMS • CREATIVE TECHNOLOGIST • PAI DA HELENA • NOIVO • SEE YOU SPACE COWBOY •
+    <span class="inline-block shrink-0 whitespace-nowrap pr-12 sm:pr-16" data-i18n="hero.ticker">
+      {ptBrDict.hero.ticker}
     </span>
   </div>
 </div>
 
-<!-- Hero Monumental Carmesim com Tipografia Preta Colossal -->
 <section
   class="relative flex min-h-[calc(100vh-7rem-4.125rem)] flex-col bg-bebop-red px-4 py-4 sm:px-8 sm:py-7 md:px-10 md:py-8 lg:px-20 lg:py-10"
   id="hero"
@@ -31,7 +26,6 @@
   <div
     class="mx-auto flex w-full max-w-[160rem] flex-1 flex-col justify-between"
   >
-    <!-- Palco Tipográfico Centralizado com Letras Monumentais e Avatar Centralizado -->
     <div
       class="relative my-auto flex w-full items-center justify-center py-6 sm:py-8 md:py-10 lg:py-16"
     >
@@ -51,87 +45,80 @@
         <span class="inline-block shrink-0 leading-[0.85]" aria-hidden="true" data-hero-letter="U">U</span>
       </h1>
 
-      <!-- Posicionador Centralizado Absoluto (Isola -translate-x/y de interferências de GSAP) -->
       <div
         class="absolute left-1/2 top-1/2 z-10 -translate-x-1/2 -translate-y-1/2 pointer-events-auto"
       >
-        <!-- Personagem / Avatar Noir Centralizado Sobreposto ao Glifo Central 'I' -->
         <div
           id="hero-avatar-badge"
           data-hero-avatar
           role="button"
           tabindex="0"
-          aria-label="Avatar oficial de Bruno Dinis recortado em celuloide com carimbo Helena's Dad. Clique para interagir."
+          aria-label={ptBrDict.hero.avatarAria}
+          data-i18n="hero.avatarAria"
+          data-i18n-attr="aria-label"
           aria-haspopup="true"
           aria-expanded="false"
           class="group flex flex-col items-center cursor-pointer select-none transition-transform duration-300 ease-out hover:scale-105 active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-space-base"
         >
-        <!-- Balão Comic Falante de Microinteração Tátil -->
-        <div
-          id="avatar-comic-bubble"
-          class="pointer-events-none absolute -top-9 sm:-top-12 md:-top-16 left-1/2 -translate-x-1/2 opacity-0 scale-75 transition-all duration-300 ease-out z-20"
-          role="status"
-          aria-live="polite"
-        >
           <div
-            class="relative rounded-md border-2 border-space-base bg-paper-white px-2.5 py-1 sm:px-3.5 sm:py-1.5 font-display text-[9px] sm:text-xs md:text-sm font-black uppercase tracking-tight text-space-base shadow-[0_3px_0_var(--color-space-base)] sm:shadow-[0_4px_0_var(--color-space-base)] whitespace-nowrap"
+            id="avatar-comic-bubble"
+            class="pointer-events-none absolute -top-9 sm:-top-12 md:-top-16 left-1/2 -translate-x-1/2 opacity-0 scale-75 transition-all duration-300 ease-out z-20"
+            role="status"
+            aria-live="polite"
           >
-            <span id="avatar-comic-text">Pai da Helena &amp; Noivo Apaixonado</span>
             <div
-              class="absolute -bottom-1.5 sm:-bottom-2 left-1/2 -translate-x-1/2 w-0 h-0 border-l-[6px] sm:border-l-[8px] border-l-transparent border-r-[6px] sm:border-r-[8px] border-r-transparent border-t-[6px] sm:border-t-[8px] border-t-space-base"
+              class="relative border-2 border-space-base bg-paper-white px-2.5 py-1 sm:px-3.5 sm:py-1.5 font-display text-[9px] sm:text-xs md:text-sm font-black uppercase tracking-tight text-space-base shadow-[0_3px_0_var(--color-space-base)] sm:shadow-[0_4px_0_var(--color-space-base)] whitespace-nowrap"
+            >
+              <span id="avatar-comic-text" data-i18n="hero.bubbleDefault">{ptBrDict.hero.bubbleDefault}</span>
+              <div
+                class="absolute -bottom-1.5 sm:-bottom-2 left-1/2 -translate-x-1/2 w-0 h-0 border-l-[6px] sm:border-l-[8px] border-l-transparent border-r-[6px] sm:border-r-[8px] border-r-transparent border-t-[6px] sm:border-t-[8px] border-t-space-base"
+                aria-hidden="true"
+              ></div>
+            </div>
+          </div>
+
+          <div
+            class="relative h-[clamp(3.2rem,13vw,4.5rem)] w-[clamp(3.2rem,13vw,4.5rem)] sm:h-[clamp(5.5rem,12vw,7.5rem)] sm:w-[clamp(5.5rem,12vw,7.5rem)] md:h-[clamp(8rem,13vw,11.5rem)] md:w-[clamp(8rem,13vw,11.5rem)] lg:h-[clamp(11.5rem,14vw,15.5rem)] lg:w-[clamp(11.5rem,14vw,15.5rem)] overflow-hidden border-3 sm:border-4 md:border-[0.45rem] lg:border-[0.5rem] border-space-base bg-paper-white shadow-[0_3px_0_var(--color-space-base)] sm:shadow-[0_5px_0_var(--color-space-base)] md:shadow-[0_7px_0_var(--color-space-base)] lg:shadow-[0_10px_0_var(--color-space-base)]"
+          >
+            <img
+              src="/assets/brinu-avatar.jpg"
+              alt="Retrato estilo HQ noir de Bruno Dinis"
+              class="h-full w-full object-cover contrast-125 saturate-110 transition-transform duration-500 ease-out group-hover:scale-110"
+            />
+            <div
+              class="pointer-events-none absolute inset-0 bg-gradient-to-t from-space-base/30 via-transparent to-transparent mix-blend-multiply"
+              aria-hidden="true"
+            ></div>
+            <div
+              class="pointer-events-none absolute inset-0 bg-[radial-gradient(#080808_1px,transparent_1px)] [background-size:6px_6px] opacity-10 mix-blend-overlay"
               aria-hidden="true"
             ></div>
           </div>
-        </div>
 
-        <!-- Moldura de Quadrinhos -->
-        <div
-          class="relative h-[clamp(3.2rem,13vw,4.5rem)] w-[clamp(3.2rem,13vw,4.5rem)] sm:h-[clamp(5.5rem,12vw,7.5rem)] sm:w-[clamp(5.5rem,12vw,7.5rem)] md:h-[clamp(8rem,13vw,11.5rem)] md:w-[clamp(8rem,13vw,11.5rem)] lg:h-[clamp(11.5rem,14vw,15.5rem)] lg:w-[clamp(11.5rem,14vw,15.5rem)] overflow-hidden rounded-xl sm:rounded-2xl border-2 sm:border-4 md:border-[0.45rem] lg:border-[0.5rem] border-space-base bg-paper-white shadow-[0_3px_0_var(--color-space-base)] sm:shadow-[0_5px_0_var(--color-space-base)] md:shadow-[0_7px_0_var(--color-space-base)] lg:shadow-[0_10px_0_var(--color-space-base)]"
-        >
-          <img
-            src="/assets/brinu-avatar.jpg"
-            alt="Retrato estilo HQ noir de Bruno Dinis"
-            class="h-full w-full object-cover contrast-125 saturate-110 transition-transform duration-500 ease-out group-hover:scale-110"
-          />
-
-          <!-- Vinheta Celuloide e Textura Halftone Subtil -->
           <div
-            class="pointer-events-none absolute inset-0 bg-gradient-to-t from-space-base/30 via-transparent to-transparent mix-blend-multiply"
-            aria-hidden="true"
-          ></div>
-          <div
-            class="pointer-events-none absolute inset-0 bg-[radial-gradient(#080808_1px,transparent_1px)] [background-size:6px_6px] opacity-10 mix-blend-overlay"
-            aria-hidden="true"
-          ></div>
-        </div>
-
-        <!-- Carimbo de Estêncil "HELENA'S DAD" -->
-        <div
-          class="relative z-10 -mt-1.5 sm:-mt-2.5 md:-mt-3.5 transition-transform duration-300 ease-out group-hover:scale-105"
-        >
-          <span
-            id="hero-stamp-badge"
-            class="inline-flex items-center gap-1.5 -rotate-3 rounded sm:rounded-md border-[1.5px] sm:border-2 md:border-[0.25rem] border-space-base bg-bebop-amber px-2 sm:px-3 md:px-4 py-0.5 sm:py-1 font-spray text-[10px] sm:text-xs md:text-sm lg:text-base font-bold whitespace-nowrap text-space-base shadow-[0_2px_0_var(--color-space-base)] sm:shadow-[0_3px_0_var(--color-space-base)] md:shadow-[0_4px_0_var(--color-space-base)] transition-all duration-200 group-hover:bg-acid-green group-hover:shadow-[0_4px_0_var(--color-space-base)]"
+            class="relative z-10 -mt-1.5 sm:-mt-2.5 md:-mt-3.5 transition-transform duration-300 ease-out group-hover:scale-105"
           >
-            <span class="tracking-wider">HELENA'S DAD</span>
-            <svg
-              class="size-3 sm:size-3.5 md:size-4 shrink-0 fill-bebop-red stroke-space-base stroke-2 transition-transform duration-300 group-hover:scale-125"
-              aria-hidden="true"
-              viewBox="0 0 24 24"
+            <span
+              id="hero-stamp-badge"
+              class="inline-flex items-center gap-1.5 -rotate-3 border-2 md:border-[0.25rem] border-space-base bg-paper-white px-2 sm:px-3 md:px-4 py-0.5 sm:py-1 font-spray text-[10px] sm:text-xs md:text-sm lg:text-base font-bold whitespace-nowrap text-space-base shadow-[0_3px_0_var(--color-space-base)] transition-all duration-200 group-hover:bg-space-base group-hover:text-paper-white"
             >
-              <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
-            </svg>
-          </span>
+              <span class="tracking-wider" data-i18n="hero.stamp">{ptBrDict.hero.stamp}</span>
+              <svg
+                class="size-3 sm:size-3.5 md:size-4 shrink-0 fill-bebop-red stroke-space-base stroke-2 transition-transform duration-300 group-hover:scale-125"
+                aria-hidden="true"
+                viewBox="0 0 24 24"
+              >
+                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+              </svg>
+            </span>
+          </div>
         </div>
       </div>
     </div>
-  </div>
 
-    <!-- Textos de Canto Estilo Editorial de Quadrinhos (Quarta Imagem) -->
     <div
       class="mt-4 sm:mt-8 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-5 sm:gap-6 md:gap-8 pt-2 sm:pt-4"
     >
-      <!-- Canto Inferior Esquerdo: Manifesto "BORING CODE" & Âncora de Ação -->
       <div
         data-hero-manifesto="left"
         class="flex flex-col items-start text-left max-w-full sm:max-w-[48%] lg:max-w-md shrink-0"
@@ -139,28 +126,29 @@
         <p
           class="mb-2 sm:mb-4 font-body text-xs sm:text-base md:text-lg lg:text-2xl font-black leading-snug tracking-tight text-space-base uppercase"
         >
-          FOR TOO LONG<br />
-          BORING CODE<br />
-          HAS RULED THE WEB
+          <span data-i18n="hero.manifestoLeftLine1">{ptBrDict.hero.manifestoLeftLine1}</span><br />
+          <span data-i18n="hero.manifestoLeftLine2">{ptBrDict.hero.manifestoLeftLine2}</span><br />
+          <span data-i18n="hero.manifestoLeftLine3">{ptBrDict.hero.manifestoLeftLine3}</span>
         </p>
         <a
           href="#works"
-          class="group/craft inline-flex items-center gap-1.5 sm:gap-2.5 font-mono text-[11px] sm:text-xs md:text-xs lg:text-sm tracking-wider text-space-base transition-opacity hover:opacity-85 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-space-base rounded-full"
-          aria-label="Explorar projetos selecionados: The Craft Has Begun"
+          class="group/craft inline-flex items-center gap-1.5 sm:gap-2.5 font-mono text-[11px] sm:text-xs md:text-xs lg:text-sm tracking-wider text-space-base transition-opacity hover:opacity-85 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-space-base"
+          aria-label={ptBrDict.hero.craftAria}
+          data-i18n="hero.craftAria"
+          data-i18n-attr="aria-label"
         >
           <span
-            class="inline-flex h-5 w-5 sm:h-6 sm:w-6 items-center justify-center rounded-full bg-space-base text-paper-white transition-transform duration-200 group-hover/craft:translate-y-0.5"
+            class="inline-flex h-5 w-5 sm:h-6 sm:w-6 items-center justify-center bg-space-base text-paper-white transition-transform duration-200 group-hover/craft:translate-y-0.5"
             aria-hidden="true"
           >
             <svg class="size-3 sm:size-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
               <path stroke-linecap="round" stroke-linejoin="round" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
             </svg>
           </span>
-          <span class="font-black">THE CRAFT HAS BEGUN</span>
+          <span class="font-black" data-i18n="hero.craftCta">{ptBrDict.hero.craftCta}</span>
         </a>
       </div>
 
-      <!-- Canto Inferior Direito: Manifesto "CINEMATIC ART" & Pílulas Sociais Táteis -->
       <div
         data-hero-manifesto="right"
         class="flex flex-col items-start sm:items-end text-left sm:text-right max-w-full sm:max-w-[50%] lg:max-w-md shrink-0"
@@ -168,37 +156,39 @@
         <p
           class="mb-2 sm:mb-4 font-body text-xs sm:text-base md:text-lg lg:text-2xl font-black leading-snug tracking-tight text-space-base text-left sm:text-right uppercase"
         >
-          TURNING COMPLEX<br />
-          ARCHITECTURES INTO<br />
-          CINEMATIC ART
+          <span data-i18n="hero.manifestoRightLine1">{ptBrDict.hero.manifestoRightLine1}</span><br />
+          <span data-i18n="hero.manifestoRightLine2">{ptBrDict.hero.manifestoRightLine2}</span><br />
+          <span data-i18n="hero.manifestoRightLine3">{ptBrDict.hero.manifestoRightLine3}</span>
         </p>
         <div
           class="flex flex-wrap justify-start sm:justify-end gap-1.5 sm:gap-2 lg:gap-2.5"
           role="list"
-          aria-label="Canais de Contato e Perfis Sociais"
+          aria-label={ptBrDict.hero.socialAria}
+          data-i18n="hero.socialAria"
+          data-i18n-attr="aria-label"
         >
           <a
-            href="https://github.com/BrunoAndradeDinis"
+            href={PROFILE.github.url}
             target="_blank"
             rel="noopener noreferrer"
-            class="inline-block rounded-full bg-space-base px-2.5 py-1 sm:px-3 sm:py-1 md:px-3.5 md:py-1.5 lg:px-4 lg:py-1.5 font-mono text-[10px] sm:text-xs md:text-xs lg:text-sm font-bold text-paper-white transition-all duration-150 hover:-translate-y-0.5 hover:bg-paper-white hover:text-space-base shadow-[0_2px_0_var(--color-space-base)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-space-base"
-            aria-label="Perfil do GitHub de Bruno Dinis (abre em nova aba)"
+            class="inline-block border-2 border-space-base bg-space-base px-2.5 py-1 sm:px-3.5 sm:py-1.5 font-mono text-[10px] sm:text-xs lg:text-sm font-bold text-paper-white transition-all duration-150 hover:-translate-y-0.5 hover:bg-paper-white hover:text-space-base shadow-[3px_3px_0_var(--color-space-base)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-space-base"
+            aria-label={`GitHub (${PROFILE.github.handle})`}
           >
             GITHUB
           </a>
           <a
-            href="https://linkedin.com/in/brunoandradedinis"
+            href={PROFILE.linkedin.url}
             target="_blank"
             rel="noopener noreferrer"
-            class="inline-block rounded-full bg-space-base px-2.5 py-1 sm:px-3 sm:py-1 md:px-3.5 md:py-1.5 lg:px-4 lg:py-1.5 font-mono text-[10px] sm:text-xs md:text-xs lg:text-sm font-bold text-paper-white transition-all duration-150 hover:-translate-y-0.5 hover:bg-paper-white hover:text-space-base shadow-[0_2px_0_var(--color-space-base)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-space-base"
-            aria-label="Perfil do LinkedIn de Bruno Dinis (abre em nova aba)"
+            class="inline-block border-2 border-space-base bg-space-base px-2.5 py-1 sm:px-3.5 sm:py-1.5 font-mono text-[10px] sm:text-xs lg:text-sm font-bold text-paper-white transition-all duration-150 hover:-translate-y-0.5 hover:bg-paper-white hover:text-space-base shadow-[3px_3px_0_var(--color-space-base)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-space-base"
+            aria-label={`LinkedIn (${PROFILE.linkedin.handle})`}
           >
             LINKEDIN
           </a>
           <a
-            href="mailto:bruno.andrade.dinis@gmail.com"
-            class="inline-block rounded-full bg-space-base px-2.5 py-1 sm:px-3 sm:py-1 md:px-3.5 md:py-1.5 lg:px-4 lg:py-1.5 font-mono text-[10px] sm:text-xs md:text-xs lg:text-sm font-bold text-paper-white transition-all duration-150 hover:-translate-y-0.5 hover:bg-paper-white hover:text-space-base shadow-[0_2px_0_var(--color-space-base)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-space-base"
-            aria-label="Enviar e-mail para bruno.andrade.dinis@gmail.com"
+            href={`mailto:${PROFILE.email}`}
+            class="inline-block border-2 border-space-base bg-space-base px-2.5 py-1 sm:px-3.5 sm:py-1.5 font-mono text-[10px] sm:text-xs lg:text-sm font-bold text-paper-white transition-all duration-150 hover:-translate-y-0.5 hover:bg-paper-white hover:text-space-base shadow-[3px_3px_0_var(--color-space-base)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-space-base"
+            aria-label={`E-mail (${PROFILE.email})`}
           >
             E-MAIL
           </a>
@@ -210,36 +200,29 @@
 
 <script>
   import { gsap } from "../utils/motion";
+  import { getDictionary, getLocale } from "../i18n/index";
 
-  // Microinterações Táteis: Avatar Comic & Carimbo de Estêncil Helena's Dad
   function setupAvatarMicrointeraction() {
     const avatarBadge = document.getElementById("hero-avatar-badge");
     const comicBubble = document.getElementById("avatar-comic-bubble");
     const comicText = document.getElementById("avatar-comic-text");
     const stampBadge = document.getElementById("hero-stamp-badge");
 
-    if (!avatarBadge || !comicBubble || !comicText) return;
+    if (!avatarBadge || !comicBubble || !comicText || avatarBadge.dataset.bound === "true") return;
+    avatarBadge.dataset.bound = "true";
 
-    const phrases = [
-      "Pai da Helena & Noivo Apaixonado",
-      "É uma cilada, Brinu!",
-      "Software Engineer & Creative Technologist",
-      "See you space cowboy...",
-      "Arquitetura Limpa & Sistemas Distribuídos",
-    ];
     let phraseIndex = 0;
     let dismissTimer: ReturnType<typeof setTimeout> | null = null;
 
     const triggerComicPop = () => {
+      const phrases = getDictionary(getLocale()).hero.phrases;
       phraseIndex = (phraseIndex + 1) % phrases.length;
       comicText.textContent = phrases[phraseIndex];
       avatarBadge.setAttribute("aria-expanded", "true");
 
-      // Animação de pop do balão de quadrinhos
       comicBubble.classList.remove("opacity-0", "scale-75");
       comicBubble.classList.add("opacity-100", "scale-100");
 
-      // Vibração tátil no carimbo de estêncil
       if (stampBadge) {
         stampBadge.classList.add("scale-110", "rotate-2");
         setTimeout(() => {
@@ -264,7 +247,6 @@
     });
   }
 
-  // Transições Cinemáticas de Cortes Secos (Abertura Tank! de Cowboy Bebop)
   function setupHeroScrollTransitions() {
     const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (prefersReducedMotion) return;
@@ -281,8 +263,6 @@
     const manifestoLeft = heroSection.querySelector('[data-hero-manifesto="left"]');
     const manifestoRight = heroSection.querySelector('[data-hero-manifesto="right"]');
 
-    // Timeline de saída cinemática inspirada na abertura Tank! de Cowboy Bebop
-    // Cortes secos e micro-parallax rítmico sem quebra de layout nem overflow
     const heroExitTl = gsap.timeline({
       scrollTrigger: {
         trigger: heroSection,
@@ -376,7 +356,6 @@
     setupHeroScrollTransitions();
   }
 
-  // Registra no carregamento inicial e em transições Astro
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", initComicHero);
   } else {

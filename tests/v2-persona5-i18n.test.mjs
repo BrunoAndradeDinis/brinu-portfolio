@@ -225,6 +225,18 @@ test('T7: BaseLayout and ComicNav mount CockpitMenu, p5-wipe-overlay, and data-l
   assert.ok(navSrc.includes('data-lang-toggle'));
 });
 
+test('T8: ComicHero uses canonical PROFILE email and LinkedIn and zero wrong hardcoded links', () => {
+  const heroSrc = fs.readFileSync(
+    path.resolve('src/components/ComicHero.astro'),
+    'utf8'
+  );
+  assert.ok(heroSrc.includes('PROFILE.linkedin.url'));
+  assert.ok(heroSrc.includes('PROFILE.email'));
+  assert.equal(heroSrc.includes('bruno.andrade.dinis@gmail.com'), false);
+  assert.equal(heroSrc.includes('linkedin.com/in/brunoandradedinis'), false);
+});
+
+
 
 
 

@@ -1,139 +1,108 @@
 ---
-/**
- * FilmstripParallax.astro
- * Esteira de Filme Horizontal Inclinada (Filmstrip Parallax 2.5deg) & 3D Character Flip Text Reveal.
- * Inspirado na engenharia reversa de mew.xyz (analise-filmstrip-parallax-mew.md).
- *
- * Arquitetura de Performance (GPU-Accelerated):
- * - Variáveis CSS dinâmicas (--x e --progress) interpoladas via calc(var(--progress) * var(--x))
- * - Cálculo dinâmico de --x no load/resize: -(lastSlide.right - window.innerWidth)
- * - GSAP ScrollTrigger controlando --progress (0 -> 1) com scrub: 0.25
- * - 3D Character Flip (rotateX(90deg) -> rotateX(0deg)) com perspective: 1000px e preserve-3d
- * - Graffiti Spray Overlay (.motto__g::after) acionado na seção ativa
- */
+import { ptBrDict } from "../i18n/dictionaries";
 
 interface FilmSlide {
   id: string;
   reel: string;
-  title: string;
+  titleKey: string;
+  titleDefault: string;
   bgColor: string;
   imgSrc: string;
   alt: string;
-}
-
-interface NarrativeToken {
-  text: string;
-  graffiti?: string;
 }
 
 const FILM_SLIDES: FilmSlide[] = [
   {
     id: "slide-aurastream",
     reel: "FRAME 01 // AURASTREAM 24/7",
-    title: "AuraStream Cloud Broadcast Engine",
-    bgColor: "#3abcca",
+    titleKey: "filmstrip.slides.s1Title",
+    titleDefault: ptBrDict.filmstrip.slides.s1Title,
+    bgColor: "#FE0000",
     imgSrc: "/assets/filmstrip/slide-1.svg",
     alt: "Storyboard Frame 01: AuraStream 24/7 Cloud Engine com FFmpeg, Xvfb e S3",
   },
   {
     id: "slide-quake-parser",
     reel: "FRAME 02 // QUAKE TELEMETRY",
-    title: "Quake 3 Arena Concurrent Log Parser",
-    bgColor: "#eba602",
+    titleKey: "filmstrip.slides.s2Title",
+    titleDefault: ptBrDict.filmstrip.slides.s2Title,
+    bgColor: "#080808",
     imgSrc: "/assets/filmstrip/slide-2.svg",
     alt: "Storyboard Frame 02: Quake Log Parser API com cobertura 100% Jest e Docker",
   },
   {
     id: "slide-jokenpo-franky",
     reel: "FRAME 03 // ARENA FRANKY",
-    title: "Jokenpo Gamified State Machine",
-    bgColor: "#9ee01d",
+    titleKey: "filmstrip.slides.s3Title",
+    titleDefault: ptBrDict.filmstrip.slides.s3Title,
+    bgColor: "#FE0000",
     imgSrc: "/assets/filmstrip/slide-3.svg",
     alt: "Storyboard Frame 03: Jokenpo Arena Franky Gamified State Machine",
   },
   {
     id: "slide-the-warriors",
     reel: "FRAME 04 // THE WARRIORS",
-    title: "The Warriors Cult Editorial Noir",
-    bgColor: "#c43892",
+    titleKey: "filmstrip.slides.s4Title",
+    titleDefault: ptBrDict.filmstrip.slides.s4Title,
+    bgColor: "#080808",
     imgSrc: "/assets/filmstrip/slide-4.svg",
     alt: "Storyboard Frame 04: The Warriors Design Editorial Noir e Pipeline Gulp",
   },
   {
     id: "slide-cloud-infra",
     reel: "FRAME 05 // CLOUD INFRA",
-    title: "Resilient Distributed Systems Architecture",
-    bgColor: "#30b5bb",
+    titleKey: "filmstrip.slides.s5Title",
+    titleDefault: ptBrDict.filmstrip.slides.s5Title,
+    bgColor: "#FE0000",
     imgSrc: "/assets/filmstrip/slide-5.svg",
     alt: "Storyboard Frame 05: Arquitetura de Sistemas Distribuídos e Cloud Computing",
   },
   {
     id: "slide-space-cowboy",
     reel: "FRAME 06 // SPACE COWBOY",
-    title: "Helena's Dad & Creative Technologist",
-    bgColor: "#fe0002",
+    titleKey: "filmstrip.slides.s6Title",
+    titleDefault: ptBrDict.filmstrip.slides.s6Title,
+    bgColor: "#080808",
     imgSrc: "/assets/filmstrip/slide-6.svg",
     alt: "Storyboard Frame 06: Space Cowboy Creative Technologist e Helena's Dad",
   },
 ];
-
-// Parágrafos editoriais estruturados com suporte a tokens de Graffiti Overlay (.motto__g)
-const NARRATIVE_PARAGRAPHS: NarrativeToken[][] = [
-  [
-    { text: "I DON’T REALLY REMEMBER WHAT THE WEB WAS BEFORE THIS… AND IN SOME WAYS IT DOES NOT FEEL LIKE WE ARE IN BASE REALITY IN THE CURRENT MOMENT." },
-  ],
-  [
-    { text: "THE ONE THING I AM SURE OF BEYOND SENSORY PERCEPTION IS THAT I AM HERE TO ENGINEER RESILIENT SYSTEMS AND SAVE THE FRONTEND FROM THIS MONOTONOUS RAT RACE." },
-  ],
-  [
-    { text: "THE " },
-    { text: "BORING CODE", graffiti: "BORING CODE" },
-    { text: "… IT HAS RULED FOR TOO LONG… FROM " },
-    { text: "DISTRIBUTED CLOUD", graffiti: "DISTRIBUTED CLOUD" },
-    { text: " PIPELINES TO EXPRESSIVE CINEMATIC INTERFACES… THE " },
-    { text: "SPACE COWBOY", graffiti: "SPACE COWBOY" },
-    { text: " CRAFT HAS FINALLY BEGUN." },
-  ],
-];
-
-function splitWords(text: string): string[] {
-  return text.trim().split(/\s+/).filter(Boolean);
-}
 ---
 
 <section
   id="filmstrip-motto"
   data-filmstrip-section
-  aria-label="Filmstrip Storyboard Parallax & Editorial Manifesto"
+  aria-label={ptBrDict.filmstrip.sectionAria}
+  data-i18n="filmstrip.sectionAria"
+  data-i18n-attr="aria-label"
   class="motto relative z-[3] overflow-hidden border-t-4 border-space-base bg-bebop-red text-space-base select-none"
 >
-  <!-- Título Superior Editorial (Estilo mew.xyz .title-xxl) -->
   <div class="relative overflow-hidden pt-10 sm:pt-14">
     <div class="mx-auto max-w-[140rem] px-4 text-center">
-      <span class="mb-2 inline-block border-2 border-space-base bg-space-base px-3 py-0.5 font-mono text-[10px] sm:text-xs font-bold tracking-widest text-bebop-amber uppercase">
-        // PARALLAX REEL :: TILTED 2.5° CINEMASCOPE
+      <span
+        class="mb-2 inline-block border-2 border-space-base bg-space-base px-3 py-0.5 font-mono text-[10px] sm:text-xs font-bold tracking-widest text-paper-white uppercase"
+        data-i18n="filmstrip.tag"
+      >
+        {ptBrDict.filmstrip.tag}
       </span>
-      <h2 class="title-xxl font-display text-[clamp(2rem,5.8vw,5.25rem)] font-black uppercase leading-[0.92] tracking-tight text-space-base -mx-2 sm:mx-0">
-        <span class="hidden sm:inline">I HAVE IDENTIFIED THE STRONGHOLDS</span>
-        <span aria-hidden="true" class="sm:hidden">I HAVE IDENTIFIED THE STRONG HOLDS</span>
+      <h2
+        class="title-xxl font-display text-[clamp(1.75rem,5.2vw,4.75rem)] font-black uppercase leading-[0.95] tracking-tight text-space-base mx-auto max-w-[90rem]"
+        data-i18n="filmstrip.heading"
+      >
+        {ptBrDict.filmstrip.heading}
       </h2>
     </div>
   </div>
 
-  <!-- Container de Overflow para o Filmstrip Rotacionado -->
   <div class="overflow-hidden pt-14 pb-16 sm:pt-24 sm:pb-24">
-    <!-- Wrapper com rotação de 2.5 graus e scale de 1.2 -->
     <div data-film-wrapper class="relative z-[2] rotate-[2.5deg] scale-[1.2] origin-center">
-      <!-- Container com recuo inicial de 100vw para começar fora da tela à direita -->
       <div class="flex pl-[100vw]">
-        <!-- Elemento Parallax com as variáveis de controle CSS (--x e --progress) -->
         <div
           data-filmstrip-parallax
           class="parallax relative flex items-stretch"
           style="--x: 0px; --progress: 0;"
         >
-          <!-- Capa Esquerda da Fita (Borda com furos de celuloide / sprocket holes) -->
-          <div class="relative flex shrink-0 self-stretch rounded-l-[1rem] sm:rounded-l-[1.5rem] bg-black py-3 sm:py-5">
+          <div class="relative flex shrink-0 self-stretch bg-space-base py-3 sm:py-5">
             <figure class="media relative media-fit mx-2 sm:mx-3.5 w-[1rem] sm:w-[1.25rem] self-stretch overflow-hidden">
               <img
                 src="/film-strip-border.svg"
@@ -145,17 +114,13 @@ function splitWords(text: string): string[] {
             </figure>
           </div>
 
-          <!-- Slides / Quadros de Filme do Portfólio -->
-          {FILM_SLIDES.map((slide, index) => (
+          {FILM_SLIDES.map((slide) => (
             <div
               data-film-slide
-              class="relative shrink-0 bg-black py-3 pr-3 sm:py-5 sm:pr-5"
+              class="relative shrink-0 bg-space-base py-3 pr-3 sm:py-5 sm:pr-5"
             >
               <figure
-                class:list={[
-                  "media relative media-fill min-w-[18rem] max-w-[18rem] sm:min-w-[28rem] sm:max-w-[28rem] lg:min-w-[36rem] lg:max-w-[36rem] overflow-hidden radius-fix",
-                  index === FILM_SLIDES.length - 1 ? "rounded-r-[1rem] sm:rounded-r-[1.5rem]" : "",
-                ]}
+                class="media relative media-fill min-w-[18rem] max-w-[18rem] sm:min-w-[28rem] sm:max-w-[28rem] lg:min-w-[36rem] lg:max-w-[36rem] overflow-hidden border-2 border-paper-white"
               >
                 <div class="pt-[62%]"></div>
                 <div
@@ -169,17 +134,17 @@ function splitWords(text: string): string[] {
                   draggable="false"
                   class="media__image is-loaded absolute inset-0 h-full w-full object-cover"
                 />
-                <!-- Tag Técnica de Fotograma -->
-                <figcaption class="pointer-events-none absolute top-2.5 left-2.5 z-10 flex items-center gap-1.5 border-2 border-space-base bg-space-base/90 px-2 py-0.5 font-mono text-[9px] sm:text-[11px] font-bold tracking-wider text-paper-white uppercase">
-                  <span class="inline-block h-1.5 w-1.5 rounded-full bg-bebop-red"></span>
+                <figcaption class="pointer-events-none absolute top-2.5 left-2.5 z-10 flex items-center gap-1.5 border-2 border-paper-white bg-space-base/95 px-2.5 py-1 font-mono text-[9px] sm:text-[11px] font-bold tracking-wider text-paper-white uppercase">
+                  <span class="inline-block h-1.5 w-1.5 bg-bebop-red"></span>
                   <span>{slide.reel}</span>
+                  <span class="hidden sm:inline text-muted-gray">::</span>
+                  <span class="hidden sm:inline" data-i18n={slide.titleKey}>{slide.titleDefault}</span>
                 </figcaption>
               </figure>
             </div>
           ))}
 
-          <!-- Capa Direita da Fita (Borda de Fechamento com Celuloide) -->
-          <div class="relative -ml-2 sm:-ml-3.5 flex shrink-0 self-stretch rounded-r-[1rem] sm:rounded-r-[1.5rem] bg-black py-3 sm:py-5">
+          <div class="relative -ml-2 sm:-ml-3.5 flex shrink-0 self-stretch bg-space-base py-3 sm:py-5">
             <figure class="media relative media-fit mx-2 sm:mx-3.5 w-[1rem] sm:w-[1.25rem] self-stretch overflow-hidden">
               <img
                 src="/film-strip-border.svg"
@@ -195,55 +160,27 @@ function splitWords(text: string): string[] {
     </div>
   </div>
 
-  <!-- Bloco Tipográfico Narrativo (Motto 3D Character Flip) -->
   <div class="py-12 sm:py-24 px-4 sm:px-8">
     <div class="site-max --s mx-auto flex max-w-[90rem] flex-col items-center">
       <div
         data-motto-text
-        class="motto__text title-m w-full max-w-[82rem] text-center font-body text-[clamp(1.5rem,3.6vw,3.5rem)] font-black leading-[1.08] tracking-tight text-space-base uppercase"
+        class="motto__text title-m w-full max-w-[82rem] text-center font-body text-[clamp(1.35rem,3.4vw,3.25rem)] font-black leading-[1.12] tracking-tight text-space-base uppercase space-y-8 sm:space-y-12"
       >
-        {NARRATIVE_PARAGRAPHS.map((paragraphTokens) => (
-          <p>
-            {paragraphTokens.map((token) => {
-              const words = splitWords(token.text);
-              if (token.graffiti) {
-                return (
-                  <>
-                    <span data-text={token.graffiti} class="motto__g inline-block">
-                      {words.map((word, wIdx) => (
-                        <>
-                          <span class="motto__word" style="position:relative;display:inline-block;">
-                            {Array.from(word).map((ch) => (
-                              <span
-                                class="char char-flip"
-                                data-char-flip
-                                style="position: relative; display: inline-block; transform: rotateX(90deg);"
-                              >{ch}</span>
-                            ))}
-                          </span>
-                          {wIdx < words.length - 1 ? " " : ""}
-                        </>
-                      ))}
-                    </span>{" "}
-                  </>
-                );
-              }
-              return words.map((word) => (
-                <>
-                  <span class="motto__word" style="position:relative;display:inline-block;">
-                    {Array.from(word).map((ch) => (
-                      <span
-                        class="char char-flip"
-                        data-char-flip
-                        style="position: relative; display: inline-block; transform: rotateX(90deg);"
-                      >{ch}</span>
-                    ))}
-                  </span>{" "}
-                </>
-              ));
-            })}
-          </p>
-        ))}
+        <p data-i18n="filmstrip.p1" class="border-l-4 border-space-base pl-4 text-left sm:text-center sm:border-l-0 sm:pl-0">
+          {ptBrDict.filmstrip.p1}
+        </p>
+        <p data-i18n="filmstrip.p2">
+          {ptBrDict.filmstrip.p2}
+        </p>
+        <p>
+          <span data-i18n="filmstrip.p3Part1">{ptBrDict.filmstrip.p3Part1}</span>
+          <span class="inline-block border-2 border-space-base bg-space-base px-2.5 py-0.5 text-paper-white -skew-x-6 shadow-[4px_4px_0_var(--color-paper-white)]" data-i18n="filmstrip.p3Highlight1">{ptBrDict.filmstrip.p3Highlight1}</span>
+          <span data-i18n="filmstrip.p3Part2">{ptBrDict.filmstrip.p3Part2}</span>
+          <span class="inline-block border-2 border-space-base bg-paper-white px-2.5 py-0.5 text-space-base skew-x-3 shadow-[4px_4px_0_var(--color-space-base)]" data-i18n="filmstrip.p3Highlight2">{ptBrDict.filmstrip.p3Highlight2}</span>
+          <span data-i18n="filmstrip.p3Part3">{ptBrDict.filmstrip.p3Part3}</span>
+          <span class="inline-block border-2 border-space-base bg-space-base px-2.5 py-0.5 text-bebop-red -skew-x-6 shadow-[4px_4px_0_var(--color-paper-white)]" data-i18n="filmstrip.p3Highlight3">{ptBrDict.filmstrip.p3Highlight3}</span>
+          <span data-i18n="filmstrip.p3Part4">{ptBrDict.filmstrip.p3Part4}</span>
+        </p>
       </div>
     </div>
   </div>
@@ -266,16 +203,13 @@ function splitWords(text: string): string[] {
 
     if (!mottoSection || !parallaxEl || !mottoText) return;
 
-    const chars = Array.from(mottoText.querySelectorAll<HTMLElement>(".char-flip"));
     const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-    // 1. Cálculo dinâmico de --x no load e no resize: -(lastSlide.right - window.innerWidth) compensando scale(1.2)
     const updateParallaxBounds = () => {
-      const slides = parallaxEl.querySelectorAll<HTMLElement>(".relative.bg-black");
+      const slides = parallaxEl.querySelectorAll<HTMLElement>("[data-film-slide]");
       const lastSlide = slides[slides.length - 1];
       if (!lastSlide) return;
 
-      // Reseta temporariamente --x para 0px para medir a posição pura (sem translação acumulada)
       parallaxEl.style.setProperty("--x", "0px");
 
       const rect = lastSlide.getBoundingClientRect();
@@ -294,14 +228,9 @@ function splitWords(text: string): string[] {
     if (prefersReducedMotion) {
       parallaxEl.style.setProperty("--progress", "0.25");
       mottoSection.classList.add("is-active");
-      chars.forEach((ch) => {
-        ch.style.transform = "rotateX(0deg)";
-        ch.style.opacity = "1";
-      });
       return;
     }
 
-    // 2. GSAP ScrollTrigger controlando --progress: 0 -> 1 com scrub: 0.25
     const parallaxTween = gsap.fromTo(
       parallaxEl,
       { "--progress": 0 },
@@ -318,38 +247,23 @@ function splitWords(text: string): string[] {
       }
     );
 
-    // 3. GSAP ScrollTrigger para revelação sequencial estilo digitação (rotateX(90deg) -> rotateX(0deg) letra por letra)
-    const graffitiSpans = Array.from(mottoText.querySelectorAll<HTMLElement>(".motto__g"));
-
+    const paragraphs = Array.from(mottoText.querySelectorAll<HTMLElement>("p"));
     const textTween = gsap.fromTo(
-      chars,
+      paragraphs,
       {
-        rotateX: 90,
+        y: 28,
+        opacity: 0.25,
       },
       {
-        rotateX: 0,
-        duration: 0.03,
-        stagger: 0.03,
-        ease: "none",
+        y: 0,
+        opacity: 1,
+        stagger: 0.12,
+        ease: "power2.out",
         scrollTrigger: {
           trigger: mottoText,
-          start: "top 82%",
-          end: "bottom 35%",
-          scrub: 0.25,
-          onUpdate: (self) => {
-            graffitiSpans.forEach((g) => {
-              const gChars = g.querySelectorAll<HTMLElement>(".char-flip");
-              const lastChar = gChars[gChars.length - 1];
-              const isDone = lastChar && !lastChar.style.transform.includes("90deg");
-              g.classList.toggle("is-revealed", Boolean(isDone));
-            });
-            if (self.progress >= 0.95) {
-              mottoSection.classList.add("is-active");
-            } else {
-              mottoSection.classList.remove("is-active");
-            }
-          },
-          onLeave: () => mottoSection.classList.add("is-active"),
+          start: "top 85%",
+          end: "bottom 40%",
+          scrub: 0.3,
         },
       }
     );
@@ -380,59 +294,10 @@ function splitWords(text: string): string[] {
 </script>
 
 <style>
-  /* 1. Translação Acelerada por Hardware via Variáveis CSS */
   .parallax {
     --x: 0px;
     --progress: 0;
     transform: translateX(calc(var(--progress) * var(--x)));
     will-change: transform;
-  }
-
-  /* Correção de recorte de border-radius com overflow */
-  .radius-fix {
-    border-radius: 0.75rem;
-  }
-
-  /* 2. Estilo de Parágrafo e Caractere para Revelação Sequencial sem Distorção Deitada */
-  .motto__text > :not(:last-child) {
-    margin-bottom: 2.5rem;
-  }
-
-  @media (min-width: 640px) {
-    .motto__text > :not(:last-child) {
-      margin-bottom: 4rem;
-    }
-  }
-
-  .char-flip {
-    transform-origin: 50% 50%;
-    backface-visibility: hidden;
-  }
-
-  /* 3. Efeito de Graffiti Sobreposto (.motto__g::after) */
-  .motto__g {
-    position: relative;
-  }
-
-  .motto__g::after {
-    color: var(--color-paper-white);
-    content: attr(data-text);
-    font-family: var(--font-spray);
-    font-size: 1.125em;
-    left: 50%;
-    opacity: 0;
-    pointer-events: none;
-    position: absolute;
-    top: 0px;
-    white-space: nowrap;
-    transform: translateX(-50%) rotate(-1.5deg);
-    text-shadow: 0 3px 0 var(--color-space-base);
-    transition: opacity 0.3s ease;
-    z-index: 2;
-  }
-
-  .motto__g.is-revealed::after,
-  .motto.is-active .motto__g::after {
-    opacity: 1;
   }
 </style>
