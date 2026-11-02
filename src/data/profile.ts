@@ -87,3 +87,39 @@ export const PROFILE = {
     url: 'https://www.linkedin.com/in/bruno-de-andrade-dinis',
   },
 } as const satisfies ProfileContract;
+
+export interface PersonJsonLdContract {
+  readonly '@context': 'https://schema.org';
+  readonly '@type': 'Person';
+  readonly name: string;
+  readonly alternateName: string;
+  readonly birthDate: string;
+  readonly jobTitle: string;
+  readonly email: string;
+  readonly address: {
+    readonly '@type': 'PostalAddress';
+    readonly addressLocality: 'Franca';
+    readonly addressRegion: 'SP';
+    readonly addressCountry: 'BR';
+  };
+  readonly sameAs: readonly string[];
+}
+
+export function buildPersonJsonLd(): PersonJsonLdContract {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'Person',
+    name: PROFILE.fullName,
+    alternateName: PROFILE.handle,
+    birthDate: String(PROFILE.birthYear),
+    jobTitle: PROFILE.role.en,
+    email: PROFILE.email,
+    address: {
+      '@type': 'PostalAddress',
+      addressLocality: PROFILE.location.city,
+      addressRegion: PROFILE.location.state,
+      addressCountry: 'BR',
+    },
+    sameAs: [PROFILE.github.url, PROFILE.linkedin.url],
+  };
+}

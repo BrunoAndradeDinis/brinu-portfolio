@@ -29,6 +29,10 @@ export function localeToHtmlLang(locale: Locale): 'pt-BR' | 'en' {
   return locale === 'en' ? 'en' : 'pt-BR';
 }
 
+export function localeToOgLocale(locale: Locale): 'pt_BR' | 'en_US' {
+  return sanitizeLocale(locale) === 'en' ? 'en_US' : 'pt_BR';
+}
+
 export function readStoredLocale(storage?: Pick<Storage, 'getItem'> | null): Locale {
   try {
     const targetStorage =
@@ -107,16 +111,32 @@ export function applyDomTranslations(locale: Locale): void {
     typeof window !== 'undefined' &&
     window.location.pathname.includes('/whoami');
 
-  document.title = isWhoamiRoute ? dict.meta.whoamiTitle : dict.meta.title;
+  const resolvedTitle = isWhoamiRoute ? dict.meta.whoamiTitle : dict.meta.title;
+  const resolvedDesc = isWhoamiRoute
+    ? dict.meta.whoamiDescription
+    : dict.meta.description;
+
+  document.title = resolvedTitle;
 
   const metaDesc = document.querySelector<HTMLMetaElement>(
     'meta[name="description"]'
   );
   if (metaDesc) {
-    metaDesc.content = isWhoamiRoute
-      ? dict.meta.whoamiDescription
-      : dict.meta.description;
+    metaDesc.content = resolvedDesc;
   }
+
+  const updateMetaContent = (selector: string, content: string) => {
+    const el = document.querySelector<HTMLMetaElement>(selector);
+    if (el) {
+      el.setAttribute('content', content);
+    }
+  };
+
+  updateMetaContent('meta[property="og:title"]', resolvedTitle);
+  updateMetaContent('meta[property="og:description"]', resolvedDesc);
+  updateMetaContent('meta[property="og:locale"]', localeToOgLocale(validLocale));
+  updateMetaContent('meta[name="twitter:title"]', resolvedTitle);
+  updateMetaContent('meta[name="twitter:description"]', resolvedDesc);
 
   // Update all [data-i18n] elements (text or attribute via data-i18n-attr)
   const textNodes = document.querySelectorAll<HTMLElement>('[data-i18n]');

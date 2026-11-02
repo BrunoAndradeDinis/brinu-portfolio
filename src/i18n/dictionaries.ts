@@ -3,6 +3,9 @@ import { PROFILE } from '../data/profile.ts';
 export type Locale = 'pt-br' | 'en';
 
 export interface TranslationSchema {
+  a11y: {
+    skipToContent: string;
+  };
   meta: {
     title: string;
     description: string;
@@ -269,6 +272,9 @@ export interface TranslationSchema {
 }
 
 export const ptBrDict: TranslationSchema = {
+  a11y: {
+    skipToContent: 'PULAR PARA O CONTEÚDO PRINCIPAL',
+  },
   meta: {
     title: 'Bruno Dinis // Brinu — Engenheiro de Software & Creative Technologist',
     description:
@@ -556,6 +562,9 @@ export const ptBrDict: TranslationSchema = {
 };
 
 export const enDict = {
+  a11y: {
+    skipToContent: 'SKIP TO MAIN CONTENT',
+  },
   meta: {
     title: 'Bruno Dinis // Brinu — Software Engineer & Creative Technologist',
     description:
