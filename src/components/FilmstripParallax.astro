@@ -11,6 +11,18 @@ interface FilmSlide {
   alt: string;
 }
 
+interface PassionSlide {
+  id: string;
+  reelKey: string;
+  reelDefault: string;
+  titleKey: string;
+  titleDefault: string;
+  bgColor: string;
+  imgSrc: string;
+  altKey: string;
+  altDefault: string;
+}
+
 interface NarrativeToken {
   text: string;
   badgeClass?: string;
@@ -71,6 +83,75 @@ const FILM_SLIDES: FilmSlide[] = [
     bgColor: "#080808",
     imgSrc: "/assets/filmstrip/slide-6.svg",
     alt: "Storyboard Frame 06: Space Cowboy Creative Technologist e Helena's Dad",
+  },
+];
+
+const PASSION_SLIDES: PassionSlide[] = [
+  {
+    id: "passion-medulla",
+    reelKey: "filmstrip.passionSlides.p1Reel",
+    reelDefault: ptBrDict.filmstrip.passionSlides.p1Reel,
+    titleKey: "filmstrip.passionSlides.p1Title",
+    titleDefault: ptBrDict.filmstrip.passionSlides.p1Title,
+    bgColor: "#FE0000",
+    imgSrc: "/assets/filmstrip/passion-1.svg",
+    altKey: "filmstrip.passionSlides.p1Alt",
+    altDefault: ptBrDict.filmstrip.passionSlides.p1Alt,
+  },
+  {
+    id: "passion-one-piece",
+    reelKey: "filmstrip.passionSlides.p2Reel",
+    reelDefault: ptBrDict.filmstrip.passionSlides.p2Reel,
+    titleKey: "filmstrip.passionSlides.p2Title",
+    titleDefault: ptBrDict.filmstrip.passionSlides.p2Title,
+    bgColor: "#080808",
+    imgSrc: "/assets/filmstrip/passion-2.svg",
+    altKey: "filmstrip.passionSlides.p2Alt",
+    altDefault: ptBrDict.filmstrip.passionSlides.p2Alt,
+  },
+  {
+    id: "passion-cowboy-bebop",
+    reelKey: "filmstrip.passionSlides.p3Reel",
+    reelDefault: ptBrDict.filmstrip.passionSlides.p3Reel,
+    titleKey: "filmstrip.passionSlides.p3Title",
+    titleDefault: ptBrDict.filmstrip.passionSlides.p3Title,
+    bgColor: "#FE0000",
+    imgSrc: "/assets/filmstrip/passion-3.svg",
+    altKey: "filmstrip.passionSlides.p3Alt",
+    altDefault: ptBrDict.filmstrip.passionSlides.p3Alt,
+  },
+  {
+    id: "passion-akira",
+    reelKey: "filmstrip.passionSlides.p4Reel",
+    reelDefault: ptBrDict.filmstrip.passionSlides.p4Reel,
+    titleKey: "filmstrip.passionSlides.p4Title",
+    titleDefault: ptBrDict.filmstrip.passionSlides.p4Title,
+    bgColor: "#080808",
+    imgSrc: "/assets/filmstrip/passion-4.svg",
+    altKey: "filmstrip.passionSlides.p4Alt",
+    altDefault: ptBrDict.filmstrip.passionSlides.p4Alt,
+  },
+  {
+    id: "passion-coffee",
+    reelKey: "filmstrip.passionSlides.p5Reel",
+    reelDefault: ptBrDict.filmstrip.passionSlides.p5Reel,
+    titleKey: "filmstrip.passionSlides.p5Title",
+    titleDefault: ptBrDict.filmstrip.passionSlides.p5Title,
+    bgColor: "#FE0000",
+    imgSrc: "/assets/filmstrip/passion-5.svg",
+    altKey: "filmstrip.passionSlides.p5Alt",
+    altDefault: ptBrDict.filmstrip.passionSlides.p5Alt,
+  },
+  {
+    id: "passion-street-food",
+    reelKey: "filmstrip.passionSlides.p6Reel",
+    reelDefault: ptBrDict.filmstrip.passionSlides.p6Reel,
+    titleKey: "filmstrip.passionSlides.p6Title",
+    titleDefault: ptBrDict.filmstrip.passionSlides.p6Title,
+    bgColor: "#080808",
+    imgSrc: "/assets/filmstrip/passion-6.svg",
+    altKey: "filmstrip.passionSlides.p6Alt",
+    altDefault: ptBrDict.filmstrip.passionSlides.p6Alt,
   },
 ];
 
@@ -276,6 +357,85 @@ function splitWords(text: string): string[] {
       </div>
     </div>
   </div>
+
+  <!-- Tag Divisora da Segunda Esteira (Arquivo de Paixões & Cultura) -->
+  <div class="relative overflow-hidden pt-4 pb-2 text-center">
+    <span
+      class="inline-block border-2 border-space-base bg-space-base px-3 py-0.5 font-mono text-[10px] sm:text-xs font-bold tracking-widest text-paper-white uppercase"
+      data-i18n="filmstrip.passionTag"
+    >
+      {ptBrDict.filmstrip.passionTag}
+    </span>
+  </div>
+
+  <!-- Container de Overflow para a Segunda Esteira de Filme (Inclinada -2.5deg, Direção Inversa) -->
+  <div class="overflow-hidden pt-10 pb-16 sm:pt-16 sm:pb-24">
+    <div data-film-wrapper-reverse class="relative z-[2] -rotate-[2.5deg] scale-[1.2] origin-center">
+      <div class="flex">
+        <div
+          data-filmstrip-parallax-reverse
+          class="parallax-reverse relative flex items-stretch"
+          style="--x-rev: 0px; --progress-rev: 0;"
+        >
+          <div class="relative flex shrink-0 self-stretch bg-space-base py-3 sm:py-5">
+            <figure class="media relative media-fit mx-2 sm:mx-3.5 w-[1rem] sm:w-[1.25rem] self-stretch overflow-hidden">
+              <img
+                src="/film-strip-border.svg"
+                alt=""
+                decoding="async"
+                draggable="false"
+                class="media__image is-loaded absolute inset-0 h-full w-full object-contain"
+              />
+            </figure>
+          </div>
+
+          {PASSION_SLIDES.map((slide) => (
+            <div
+              data-passion-slide
+              class="relative shrink-0 bg-space-base py-3 pr-3 sm:py-5 sm:pr-5"
+            >
+              <figure
+                class="media relative media-fill min-w-[18rem] max-w-[18rem] sm:min-w-[28rem] sm:max-w-[28rem] lg:min-w-[36rem] lg:max-w-[36rem] overflow-hidden border-2 border-paper-white"
+              >
+                <div class="pt-[62%]"></div>
+                <div
+                  class="absolute inset-0"
+                  style={`background-color: ${slide.bgColor};`}
+                ></div>
+                <img
+                  src={slide.imgSrc}
+                  alt={slide.altDefault}
+                  data-i18n={slide.altKey}
+                  data-i18n-attr="alt"
+                  decoding="async"
+                  draggable="false"
+                  class="media__image is-loaded absolute inset-0 h-full w-full object-cover"
+                />
+                <figcaption class="pointer-events-none absolute top-2.5 left-2.5 z-10 flex items-center gap-1.5 border-2 border-paper-white bg-space-base/95 px-2.5 py-1 font-mono text-[9px] sm:text-[11px] font-bold tracking-wider text-paper-white uppercase">
+                  <span class="inline-block h-1.5 w-1.5 bg-bebop-red"></span>
+                  <span data-i18n={slide.reelKey}>{slide.reelDefault}</span>
+                  <span class="hidden sm:inline text-muted-gray">::</span>
+                  <span class="hidden sm:inline" data-i18n={slide.titleKey}>{slide.titleDefault}</span>
+                </figcaption>
+              </figure>
+            </div>
+          ))}
+
+          <div class="relative -ml-2 sm:-ml-3.5 flex shrink-0 self-stretch bg-space-base py-3 sm:py-5">
+            <figure class="media relative media-fit mx-2 sm:mx-3.5 w-[1rem] sm:w-[1.25rem] self-stretch overflow-hidden">
+              <img
+                src="/film-strip-border.svg"
+                alt=""
+                decoding="async"
+                draggable="false"
+                class="media__image is-loaded absolute inset-0 h-full w-full object-contain"
+              />
+            </figure>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </section>
 
 <script>
@@ -374,34 +534,45 @@ function splitWords(text: string): string[] {
 
     const mottoSection = document.querySelector<HTMLElement>("[data-filmstrip-section]");
     const parallaxEl = document.querySelector<HTMLElement>("[data-filmstrip-parallax]");
+    const parallaxRevEl = document.querySelector<HTMLElement>("[data-filmstrip-parallax-reverse]");
     const mottoText = document.querySelector<HTMLElement>("[data-motto-text]");
 
-    if (!mottoSection || !parallaxEl || !mottoText) return;
+    if (!mottoSection || !parallaxEl || !parallaxRevEl || !mottoText) return;
 
     const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     const updateParallaxBounds = () => {
+      // Top reel
       const slides = parallaxEl.querySelectorAll<HTMLElement>("[data-film-slide]");
       const lastSlide = slides[slides.length - 1];
-      if (!lastSlide) return;
-
-      parallaxEl.style.setProperty("--x", "0px");
-
-      const rect = lastSlide.getBoundingClientRect();
-      const windowWidth = window.innerWidth;
-      const scaleFactor = lastSlide.offsetWidth > 0 ? rect.width / lastSlide.offsetWidth : 1;
-      const travelDistance = -(rect.right - windowWidth) / scaleFactor;
-
-      parallaxEl.style.setProperty("--x", `${travelDistance}px`);
-      requestAnimationFrame(() => {
+      if (lastSlide) {
+        parallaxEl.style.setProperty("--x", "0px");
+        const rect = lastSlide.getBoundingClientRect();
+        const windowWidth = window.innerWidth;
+        const scaleFactor = lastSlide.offsetWidth > 0 ? rect.width / lastSlide.offsetWidth : 1;
+        const travelDistance = -(rect.right - windowWidth) / scaleFactor;
         parallaxEl.style.setProperty("--x", `${travelDistance}px`);
-      });
+      }
+
+      // Bottom reel (reverse direction from left to right)
+      const passionSlides = parallaxRevEl.querySelectorAll<HTMLElement>("[data-passion-slide]");
+      const lastPassionSlide = passionSlides[passionSlides.length - 1];
+      const firstPassionSlide = passionSlides[0];
+      if (lastPassionSlide && firstPassionSlide) {
+        parallaxRevEl.style.setProperty("--x-rev", "0px");
+        const windowWidth = window.innerWidth;
+        const scaleFactor = firstPassionSlide.offsetWidth > 0 ? firstPassionSlide.getBoundingClientRect().width / firstPassionSlide.offsetWidth : 1;
+        const totalReelWidth = (lastPassionSlide.getBoundingClientRect().right - firstPassionSlide.getBoundingClientRect().left) / scaleFactor;
+        const travelDistanceRev = Math.max(windowWidth * 0.85, totalReelWidth - windowWidth * 0.25);
+        parallaxRevEl.style.setProperty("--x-rev", `${travelDistanceRev}px`);
+      }
     };
 
     updateParallaxBounds();
 
     if (prefersReducedMotion) {
       parallaxEl.style.setProperty("--progress", "0.25");
+      parallaxRevEl.style.setProperty("--progress-rev", "0.5");
       mottoSection.classList.add("is-active");
       const chars = Array.from(mottoText.querySelectorAll<HTMLElement>(".char-flip"));
       chars.forEach((ch) => {
@@ -421,6 +592,22 @@ function splitWords(text: string): string[] {
           trigger: parallaxEl,
           start: "top 85%",
           end: "bottom 15%",
+          scrub: 0.25,
+          invalidateOnRefresh: true,
+        },
+      }
+    );
+
+    const parallaxRevTween = gsap.fromTo(
+      parallaxRevEl,
+      { "--progress-rev": 0 },
+      {
+        "--progress-rev": 1,
+        ease: "none",
+        scrollTrigger: {
+          trigger: parallaxRevEl,
+          start: "top 90%",
+          end: "bottom 10%",
           scrub: 0.25,
           invalidateOnRefresh: true,
         },
@@ -519,6 +706,8 @@ function splitWords(text: string): string[] {
       ScrollTrigger.removeEventListener("refreshInit", updateParallaxBounds);
       parallaxTween.scrollTrigger?.kill();
       parallaxTween.kill();
+      parallaxRevTween.scrollTrigger?.kill();
+      parallaxRevTween.kill();
       if (textTrigger) {
         textTrigger.kill();
         textTrigger = null;
@@ -543,6 +732,13 @@ function splitWords(text: string): string[] {
     --x: 0px;
     --progress: 0;
     transform: translateX(calc(var(--progress) * var(--x)));
+    will-change: transform;
+  }
+
+  .parallax-reverse {
+    --x-rev: 0px;
+    --progress-rev: 0;
+    transform: translateX(calc((var(--progress-rev) - 1) * var(--x-rev)));
     will-change: transform;
   }
 
