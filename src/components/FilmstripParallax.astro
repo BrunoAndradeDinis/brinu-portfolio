@@ -13,7 +13,8 @@ interface FilmSlide {
 
 interface NarrativeToken {
   text: string;
-  graffiti?: string;
+  badgeClass?: string;
+  badgeInnerClass?: string;
 }
 
 const FILM_SLIDES: FilmSlide[] = [
@@ -79,11 +80,23 @@ const NARRATIVE_CONFIG: Record<string, NarrativeToken[][]> = {
     [{ text: ptBrDict.filmstrip.p2 }],
     [
       { text: ptBrDict.filmstrip.p3Part1 },
-      { text: ptBrDict.filmstrip.p3Highlight1, graffiti: ptBrDict.filmstrip.p3Highlight1 },
+      {
+        text: ptBrDict.filmstrip.p3Highlight1,
+        badgeClass: "inline-block border-2 sm:border-3 border-space-base bg-space-base px-2 sm:px-3 py-0.5 text-paper-white -skew-x-6 shadow-[3px_3px_0_var(--color-paper-white)] align-baseline my-1",
+        badgeInnerClass: "inline-block skew-x-6",
+      },
       { text: ptBrDict.filmstrip.p3Part2 },
-      { text: ptBrDict.filmstrip.p3Highlight2, graffiti: ptBrDict.filmstrip.p3Highlight2 },
+      {
+        text: ptBrDict.filmstrip.p3Highlight2,
+        badgeClass: "inline-block border-2 sm:border-3 border-space-base bg-paper-white px-2 sm:px-3 py-0.5 text-space-base skew-x-3 shadow-[3px_3px_0_var(--color-space-base)] align-baseline my-1",
+        badgeInnerClass: "inline-block -skew-x-3",
+      },
       { text: ptBrDict.filmstrip.p3Part3 },
-      { text: ptBrDict.filmstrip.p3Highlight3, graffiti: ptBrDict.filmstrip.p3Highlight3 },
+      {
+        text: ptBrDict.filmstrip.p3Highlight3,
+        badgeClass: "inline-block border-2 sm:border-3 border-space-base bg-space-base px-2 sm:px-3 py-0.5 text-bebop-red -skew-x-6 shadow-[3px_3px_0_var(--color-paper-white)] align-baseline my-1",
+        badgeInnerClass: "inline-block skew-x-6",
+      },
       { text: ptBrDict.filmstrip.p3Part4 },
     ],
   ],
@@ -92,11 +105,23 @@ const NARRATIVE_CONFIG: Record<string, NarrativeToken[][]> = {
     [{ text: enDict.filmstrip.p2 }],
     [
       { text: enDict.filmstrip.p3Part1 },
-      { text: enDict.filmstrip.p3Highlight1, graffiti: enDict.filmstrip.p3Highlight1 },
+      {
+        text: enDict.filmstrip.p3Highlight1,
+        badgeClass: "inline-block border-2 sm:border-3 border-space-base bg-space-base px-2 sm:px-3 py-0.5 text-paper-white -skew-x-6 shadow-[3px_3px_0_var(--color-paper-white)] align-baseline my-1",
+        badgeInnerClass: "inline-block skew-x-6",
+      },
       { text: enDict.filmstrip.p3Part2 },
-      { text: enDict.filmstrip.p3Highlight2, graffiti: enDict.filmstrip.p3Highlight2 },
+      {
+        text: enDict.filmstrip.p3Highlight2,
+        badgeClass: "inline-block border-2 sm:border-3 border-space-base bg-paper-white px-2 sm:px-3 py-0.5 text-space-base skew-x-3 shadow-[3px_3px_0_var(--color-space-base)] align-baseline my-1",
+        badgeInnerClass: "inline-block -skew-x-3",
+      },
       { text: enDict.filmstrip.p3Part3 },
-      { text: enDict.filmstrip.p3Highlight3, graffiti: enDict.filmstrip.p3Highlight3 },
+      {
+        text: enDict.filmstrip.p3Highlight3,
+        badgeClass: "inline-block border-2 sm:border-3 border-space-base bg-space-base px-2 sm:px-3 py-0.5 text-bebop-red -skew-x-6 shadow-[3px_3px_0_var(--color-paper-white)] align-baseline my-1",
+        badgeInnerClass: "inline-block skew-x-6",
+      },
       { text: enDict.filmstrip.p3Part4 },
     ],
   ],
@@ -208,24 +233,26 @@ function splitWords(text: string): string[] {
           <p>
             {paragraphTokens.map((token) => {
               const words = splitWords(token.text);
-              if (token.graffiti) {
+              if (token.badgeClass) {
                 return (
                   <>
-                    <span data-text={token.graffiti} class="motto__g inline-block">
-                      {words.map((word, wIdx) => (
-                        <>
-                          <span class="motto__word" style="position:relative;display:inline-block;">
-                            {Array.from(word).map((ch) => (
-                              <span
-                                class="char char-flip"
-                                data-char-flip
-                                style="position: relative; display: inline-block; transform: rotateX(90deg);"
-                              >{ch}</span>
-                            ))}
-                          </span>
-                          {wIdx < words.length - 1 ? " " : ""}
-                        </>
-                      ))}
+                    <span class={token.badgeClass}>
+                      <span class={token.badgeInnerClass || "inline-block"}>
+                        {words.map((word, wIdx) => (
+                          <>
+                            <span class="motto__word" style="position:relative;display:inline-block;">
+                              {Array.from(word).map((ch) => (
+                                <span
+                                  class="char char-flip"
+                                  data-char-flip
+                                  style="position: relative; display: inline-block; transform: rotateX(90deg);"
+                                >{ch}</span>
+                              ))}
+                            </span>
+                            {wIdx < words.length - 1 ? " " : ""}
+                          </>
+                        ))}
+                      </span>
                     </span>{" "}
                   </>
                 );
@@ -258,7 +285,8 @@ function splitWords(text: string): string[] {
 
   interface NarrativeToken {
     text: string;
-    graffiti?: string;
+    badgeClass?: string;
+    badgeInnerClass?: string;
   }
 
   const NARRATIVE_CONFIG: Record<string, NarrativeToken[][]> = {
@@ -267,11 +295,23 @@ function splitWords(text: string): string[] {
       [{ text: ptBrDict.filmstrip.p2 }],
       [
         { text: ptBrDict.filmstrip.p3Part1 },
-        { text: ptBrDict.filmstrip.p3Highlight1, graffiti: ptBrDict.filmstrip.p3Highlight1 },
+        {
+          text: ptBrDict.filmstrip.p3Highlight1,
+          badgeClass: "inline-block border-2 sm:border-3 border-space-base bg-space-base px-2 sm:px-3 py-0.5 text-paper-white -skew-x-6 shadow-[3px_3px_0_var(--color-paper-white)] align-baseline my-1",
+          badgeInnerClass: "inline-block skew-x-6",
+        },
         { text: ptBrDict.filmstrip.p3Part2 },
-        { text: ptBrDict.filmstrip.p3Highlight2, graffiti: ptBrDict.filmstrip.p3Highlight2 },
+        {
+          text: ptBrDict.filmstrip.p3Highlight2,
+          badgeClass: "inline-block border-2 sm:border-3 border-space-base bg-paper-white px-2 sm:px-3 py-0.5 text-space-base skew-x-3 shadow-[3px_3px_0_var(--color-space-base)] align-baseline my-1",
+          badgeInnerClass: "inline-block -skew-x-3",
+        },
         { text: ptBrDict.filmstrip.p3Part3 },
-        { text: ptBrDict.filmstrip.p3Highlight3, graffiti: ptBrDict.filmstrip.p3Highlight3 },
+        {
+          text: ptBrDict.filmstrip.p3Highlight3,
+          badgeClass: "inline-block border-2 sm:border-3 border-space-base bg-space-base px-2 sm:px-3 py-0.5 text-bebop-red -skew-x-6 shadow-[3px_3px_0_var(--color-paper-white)] align-baseline my-1",
+          badgeInnerClass: "inline-block skew-x-6",
+        },
         { text: ptBrDict.filmstrip.p3Part4 },
       ],
     ],
@@ -280,11 +320,23 @@ function splitWords(text: string): string[] {
       [{ text: enDict.filmstrip.p2 }],
       [
         { text: enDict.filmstrip.p3Part1 },
-        { text: enDict.filmstrip.p3Highlight1, graffiti: enDict.filmstrip.p3Highlight1 },
+        {
+          text: enDict.filmstrip.p3Highlight1,
+          badgeClass: "inline-block border-2 sm:border-3 border-space-base bg-space-base px-2 sm:px-3 py-0.5 text-paper-white -skew-x-6 shadow-[3px_3px_0_var(--color-paper-white)] align-baseline my-1",
+          badgeInnerClass: "inline-block skew-x-6",
+        },
         { text: enDict.filmstrip.p3Part2 },
-        { text: enDict.filmstrip.p3Highlight2, graffiti: enDict.filmstrip.p3Highlight2 },
+        {
+          text: enDict.filmstrip.p3Highlight2,
+          badgeClass: "inline-block border-2 sm:border-3 border-space-base bg-paper-white px-2 sm:px-3 py-0.5 text-space-base skew-x-3 shadow-[3px_3px_0_var(--color-space-base)] align-baseline my-1",
+          badgeInnerClass: "inline-block -skew-x-3",
+        },
         { text: enDict.filmstrip.p3Part3 },
-        { text: enDict.filmstrip.p3Highlight3, graffiti: enDict.filmstrip.p3Highlight3 },
+        {
+          text: enDict.filmstrip.p3Highlight3,
+          badgeClass: "inline-block border-2 sm:border-3 border-space-base bg-space-base px-2 sm:px-3 py-0.5 text-bebop-red -skew-x-6 shadow-[3px_3px_0_var(--color-paper-white)] align-baseline my-1",
+          badgeInnerClass: "inline-block skew-x-6",
+        },
         { text: enDict.filmstrip.p3Part4 },
       ],
     ],
@@ -302,8 +354,8 @@ function splitWords(text: string): string[] {
           return `<span class="motto__word" style="position:relative;display:inline-block;">${charsHtml}</span>${space}`;
         }).join("");
 
-        if (token.graffiti) {
-          return `<span data-text="${token.graffiti}" class="motto__g inline-block">${wordsHtml}</span> `;
+        if (token.badgeClass) {
+          return `<span class="${token.badgeClass}"><span class="${token.badgeInnerClass || 'inline-block'}">${wordsHtml}</span></span> `;
         }
         return `${wordsHtml} `;
       }).join("");
@@ -376,16 +428,20 @@ function splitWords(text: string): string[] {
     );
 
     let textTween: gsap.core.Tween | null = null;
+    let textTrigger: ScrollTrigger | null = null;
+    let maxProgress = 0;
 
     const setupTextTween = () => {
+      if (textTrigger) {
+        textTrigger.kill();
+        textTrigger = null;
+      }
       if (textTween) {
-        textTween.scrollTrigger?.kill();
         textTween.kill();
         textTween = null;
       }
 
       const chars = Array.from(mottoText.querySelectorAll<HTMLElement>(".char-flip"));
-      const graffitiSpans = Array.from(mottoText.querySelectorAll<HTMLElement>(".motto__g"));
 
       textTween = gsap.fromTo(
         chars,
@@ -397,32 +453,34 @@ function splitWords(text: string): string[] {
           duration: 0.03,
           stagger: 0.03,
           ease: "none",
-          scrollTrigger: {
-            trigger: mottoText,
-            start: "top 82%",
-            end: "bottom 35%",
-            scrub: 0.25,
-            onUpdate: (self) => {
-              graffitiSpans.forEach((g) => {
-                const gChars = g.querySelectorAll<HTMLElement>(".char-flip");
-                const lastChar = gChars[gChars.length - 1];
-                const rotX = lastChar ? Number(gsap.getProperty(lastChar, "rotateX")) : 90;
-                const isDone = lastChar && (rotX <= 15 || !lastChar.style.transform.includes("90deg"));
-                g.classList.toggle("is-revealed", Boolean(isDone));
-              });
-              if (self.progress >= 0.95) {
-                mottoSection.classList.add("is-active");
-              } else {
-                mottoSection.classList.remove("is-active");
-              }
-            },
-            onLeave: () => {
-              mottoSection.classList.add("is-active");
-              graffitiSpans.forEach((g) => g.classList.add("is-revealed"));
-            },
-          },
+          paused: true,
         }
       );
+
+      textTrigger = ScrollTrigger.create({
+        trigger: mottoText,
+        start: "top 82%",
+        end: "bottom 35%",
+        scrub: 0.25,
+        onUpdate: (self) => {
+          if (self.progress > maxProgress) {
+            maxProgress = self.progress;
+            textTween?.progress(maxProgress);
+          }
+          if (maxProgress >= 0.95) {
+            mottoSection.classList.add("is-active");
+          }
+        },
+        onLeave: () => {
+          maxProgress = 1;
+          textTween?.progress(1);
+          mottoSection.classList.add("is-active");
+        },
+      });
+
+      if (maxProgress > 0) {
+        textTween.progress(maxProgress);
+      }
     };
 
     setupTextTween();
@@ -461,9 +519,13 @@ function splitWords(text: string): string[] {
       ScrollTrigger.removeEventListener("refreshInit", updateParallaxBounds);
       parallaxTween.scrollTrigger?.kill();
       parallaxTween.kill();
+      if (textTrigger) {
+        textTrigger.kill();
+        textTrigger = null;
+      }
       if (textTween) {
-        textTween.scrollTrigger?.kill();
         textTween.kill();
+        textTween = null;
       }
     };
   }
@@ -505,31 +567,5 @@ function splitWords(text: string): string[] {
   .char-flip {
     transform-origin: 50% 50%;
     backface-visibility: hidden;
-  }
-
-  .motto__g {
-    position: relative;
-  }
-
-  .motto__g::after {
-    color: var(--color-paper-white);
-    content: attr(data-text);
-    font-family: var(--font-spray);
-    font-size: 1.125em;
-    left: 50%;
-    opacity: 0;
-    pointer-events: none;
-    position: absolute;
-    top: 0px;
-    white-space: nowrap;
-    transform: translateX(-50%) rotate(-1.5deg);
-    text-shadow: 0 3px 0 var(--color-space-base);
-    transition: opacity 0.3s ease;
-    z-index: 2;
-  }
-
-  .motto__g.is-revealed::after,
-  .motto.is-active .motto__g::after {
-    opacity: 1;
   }
 </style>

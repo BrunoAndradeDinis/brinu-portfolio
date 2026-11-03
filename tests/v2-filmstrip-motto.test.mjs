@@ -79,23 +79,23 @@ async function dismissIntroIfPresent(page) {
   });
 }
 
-test('F1: FilmstripParallax renders 3D character flip spans (.char-flip) and word wrappers (.motto__word)', async () => {
+test('F1: FilmstripParallax renders 3D character flip spans (.char-flip), word wrappers (.motto__word), and badges', async () => {
   const page = await browser.newPage();
   await page.goto(baseUrl, { waitUntil: 'domcontentloaded' });
   await dismissIntroIfPresent(page);
 
   const charCount = await page.locator('[data-motto-text] .char-flip').count();
   const wordCount = await page.locator('[data-motto-text] .motto__word').count();
-  const graffitiCount = await page.locator('[data-motto-text] .motto__g').count();
+  const badgeCount = await page.locator('[data-motto-text] [class*="skew-x"]').count();
 
   assert.ok(charCount > 100, `Expected >100 characters in motto, got ${charCount}`);
   assert.ok(wordCount > 20, `Expected >20 words in motto, got ${wordCount}`);
-  assert.equal(graffitiCount, 3, `Expected 3 graffiti highlights, got ${graffitiCount}`);
+  assert.ok(badgeCount >= 3, `Expected at least 3 badge containers, got ${badgeCount}`);
 
   await page.close();
 });
 
-test('F2: Scrolling to motto triggers 3D character flip animation and graffiti reveal', async () => {
+test('F2: Scrolling to motto triggers 3D character flip animation and scrolling up maintains revealed text', async () => {
   const page = await browser.newPage();
   await page.goto(baseUrl, { waitUntil: 'domcontentloaded' });
   await dismissIntroIfPresent(page);
@@ -109,7 +109,7 @@ test('F2: Scrolling to motto triggers 3D character flip animation and graffiti r
   });
   await page.waitForTimeout(600);
 
-  const isRevealed = await page.evaluate(() => {
+  const revealedState = await page.evaluate(() => {
     const section = document.querySelector('[data-filmstrip-section]');
     const firstChar = document.querySelector('[data-motto-text] .char-flip');
     const transform = firstChar ? window.getComputedStyle(firstChar).transform : '';
@@ -119,9 +119,25 @@ test('F2: Scrolling to motto triggers 3D character flip animation and graffiti r
     };
   });
 
-  assert.ok(isRevealed.hasSection);
-  // Transform should no longer be purely 90deg rotation or should be animated
-  assert.ok(isRevealed.transform !== '', 'Character should have computed transform matrix');
+  assert.ok(revealedState.hasSection);
+  assert.ok(revealedState.transform !== '', 'Character should have computed transform');
+
+  // Scroll back to top
+  await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
+  await page.waitForTimeout(400);
+
+  // Characters must maintain their revealed state (not revert to 90deg)
+  const scrolledUpState = await page.evaluate(() => {
+    const firstChar = document.querySelector('[data-motto-text] .char-flip');
+    const transform = firstChar ? window.getComputedStyle(firstChar).transform : '';
+    return transform;
+  });
+
+  assert.equal(
+    scrolledUpState,
+    revealedState.transform,
+    'Character transform must be preserved when scrolling back to top'
+  );
 
   await page.close();
 });
