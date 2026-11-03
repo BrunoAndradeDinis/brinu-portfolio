@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 728" fill="none">
+  <rect width="1120" height="728" fill="#080808"/>
+  <g opacity="0.2" stroke="#FE0000" stroke-width="1">
+    <line x1="0" y1="120" x2="1120" y2="120"/>
+    <line x1="0" y1="240" x2="1120" y2="240"/>
+    <line x1="0" y1="360" x2="1120" y2="360"/>
+    <line x1="0" y1="480" x2="1120" y2="480"/>
+    <line x1="0" y1="600" x2="1120" y2="600"/>
+    <line x1="224" y1="0" x2="224" y2="728"/>
+    <line x1="448" y1="0" x2="448" y2="728"/>
+    <line x1="672" y1="0" x2="672" y2="728"/>
+    <line x1="896" y1="0" x2="896" y2="728"/>
+  </g>
+  <!-- Inverted Diagonal Slash -->
+  <polygon points="500,0 1120,0 1120,728 320,728" fill="#FE0000"/>
+  <polygon points="480,0 515,0 335,728 300,728" fill="#FBFAF4"/>
+  <!-- Amp & Soundwave Visual -->
+  <g transform="translate(80, 160)">
+    <rect x="0" y="0" width="420" height="260" fill="#080808" stroke="#FBFAF4" stroke-width="6"/>
+    <rect x="16" y="16" width="388" height="40" fill="#FE0000"/>
+    <text x="28" y="44" fill="#FBFAF4" font-family="monospace" font-weight="900" font-size="20">REEL 01 // BANDA MEDULLA</text>
+    <!-- Waveform & Distortion -->
+    <path d="M 30 150 L 60 90 L 90 200 L 120 70 L 150 210 L 180 80 L 210 190 L 240 100 L 270 170 L 300 110 L 330 160 L 360 130 L 390 150" stroke="#FBFAF4" stroke-width="6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  <!-- Typography -->
+  <text x="80" y="540" fill="#FBFAF4" font-family="sans-serif" font-weight="900" font-size="72" letter-spacing="-2">MEDULLA</text>
+  <text x="80" y="605" fill="#FBFAF4" font-family="monospace" font-weight="700" font-size="28">KEOPS &amp; RAONY // ROCK ALTERNATIVO BR</text>
+  <text x="80" y="650" fill="#EBA602" font-family="monospace" font-weight="700" font-size="22">O CONCRETO, O ASFALTO, O FIM DO MUNDO</text>
+  <!-- Right Badge -->
+  <g transform="translate(680, 200) rotate(5)">
+    <rect x="0" y="0" width="360" height="130" fill="#080808" stroke="#FBFAF4" stroke-width="6"/>
+    <text x="30" y="58" fill="#FE0000" font-family="monospace" font-weight="900" font-size="32">DEIXA CLARO</text>
+    <text x="30" y="98" fill="#FBFAF4" font-family="monospace" font-weight="700" font-size="20">ENERGIA BRUTA // GUITARRA</text>
+  </g>
+</svg>

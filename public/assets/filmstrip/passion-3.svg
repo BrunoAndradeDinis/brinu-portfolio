@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 728" fill="none">
+  <rect width="1120" height="728" fill="#080808"/>
+  <g opacity="0.2" stroke="#FE0000" stroke-width="1">
+    <line x1="0" y1="120" x2="1120" y2="120"/>
+    <line x1="0" y1="240" x2="1120" y2="240"/>
+    <line x1="0" y1="360" x2="1120" y2="360"/>
+    <line x1="0" y1="480" x2="1120" y2="480"/>
+    <line x1="0" y1="600" x2="1120" y2="600"/>
+    <line x1="224" y1="0" x2="224" y2="728"/>
+    <line x1="448" y1="0" x2="448" y2="728"/>
+    <line x1="672" y1="0" x2="672" y2="728"/>
+    <line x1="896" y1="0" x2="896" y2="728"/>
+  </g>
+  <!-- Inverted Diagonal Slash -->
+  <polygon points="560,0 1120,0 1120,728 360,728" fill="#FE0000"/>
+  <polygon points="540,0 575,0 375,728 340,728" fill="#FBFAF4"/>
+  <!-- Space Cowboy Silhouette & Swordfish Graphic -->
+  <g transform="translate(80, 160)">
+    <rect x="0" y="0" width="420" height="260" fill="#080808" stroke="#FBFAF4" stroke-width="6"/>
+    <!-- Swordfish II Silhouette Geometry -->
+    <path d="M 60 160 L 160 130 L 260 120 L 360 150 L 320 165 L 240 160 L 210 200 L 180 160 L 100 170 Z" fill="#FE0000" stroke="#FBFAF4" stroke-width="4"/>
+    <circle cx="210" cy="140" r="16" fill="#EBA602"/>
+    <text x="28" y="44" fill="#FBFAF4" font-family="monospace" font-weight="900" font-size="20">REEL 03 // COWBOY BEBOP</text>
+  </g>
+  <!-- Typography -->
+  <text x="80" y="540" fill="#FBFAF4" font-family="sans-serif" font-weight="900" font-size="72" letter-spacing="-2">COWBOY BEBOP</text>
+  <text x="80" y="605" fill="#FBFAF4" font-family="monospace" font-weight="700" font-size="28">SHINICHIRO WATANABE &amp; YOKO KANNO</text>
+  <text x="80" y="650" fill="#EBA602" font-family="monospace" font-weight="700" font-size="22">SEE YOU SPACE COWBOY... EASY COME, EASY GO</text>
+  <!-- Right Badge -->
+  <g transform="translate(680, 210) rotate(4)">
+    <rect x="0" y="0" width="370" height="130" fill="#080808" stroke="#FBFAF4" stroke-width="6"/>
+    <text x="30" y="58" fill="#EBA602" font-family="monospace" font-weight="900" font-size="32">3, 2, 1 LET'S JAM</text>
+    <text x="30" y="98" fill="#FBFAF4" font-family="monospace" font-weight="700" font-size="20">TANK! // THE SEATBELTS</text>
+  </g>
+</svg>
