@@ -197,3 +197,49 @@ test('F4: Motto text has zero horizontal overflow across 320px, 375px, 768px, an
     await page.close();
   }
 });
+
+test('F5: Second opposing filmstrip renders with 6 passion slides and inverted tilt', async () => {
+  const page = await browser.newPage();
+  await page.goto(baseUrl, { waitUntil: 'domcontentloaded' });
+  await dismissIntroIfPresent(page);
+
+  const reverseWrapper = page.locator('[data-film-wrapper-reverse]');
+  await assert.doesNotReject(reverseWrapper.waitFor({ state: 'attached' }));
+
+  const passionSlideCount = await page.locator('[data-passion-slide]').count();
+  assert.equal(passionSlideCount, 6, `Expected 6 passion slides, got ${passionSlideCount}`);
+
+  const hasInvertedTilt = await reverseWrapper.evaluate((el) => {
+    return el.className.includes('-rotate-[2.5deg]');
+  });
+  assert.ok(hasInvertedTilt, 'Second filmstrip must have -rotate-[2.5deg] class');
+
+  await page.close();
+});
+
+test('F6: Scrolling translates opposing filmstrip in reverse direction', async () => {
+  const page = await browser.newPage();
+  await page.goto(baseUrl, { waitUntil: 'domcontentloaded' });
+  await dismissIntroIfPresent(page);
+
+  // Scroll down to the bottom filmstrip
+  await page.evaluate(() => {
+    const el = document.querySelector('[data-film-wrapper-reverse]');
+    if (el) {
+      el.scrollIntoView({ behavior: 'instant', block: 'center' });
+    }
+  });
+  await page.waitForTimeout(600);
+
+  const scrolledProgress = await page.evaluate(() => {
+    const el = document.querySelector('[data-filmstrip-parallax-reverse]');
+    return el ? parseFloat(el.style.getPropertyValue('--progress-rev') || '0') : 0;
+  });
+
+  assert.ok(
+    scrolledProgress > 0,
+    `Expected --progress-rev > 0 after scrolling, got ${scrolledProgress}`
+  );
+
+  await page.close();
+});
