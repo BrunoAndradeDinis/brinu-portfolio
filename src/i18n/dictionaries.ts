@@ -64,6 +64,7 @@ export interface TranslationSchema {
     sectionAria: string;
     tag: string;
     heading: string;
+    passionTag: string;
     slides: {
       s1Title: string;
       s2Title: string;
@@ -71,6 +72,26 @@ export interface TranslationSchema {
       s4Title: string;
       s5Title: string;
       s6Title: string;
+    };
+    passionSlides: {
+      p1Reel: string;
+      p1Title: string;
+      p1Alt: string;
+      p2Reel: string;
+      p2Title: string;
+      p2Alt: string;
+      p3Reel: string;
+      p3Title: string;
+      p3Alt: string;
+      p4Reel: string;
+      p4Title: string;
+      p4Alt: string;
+      p5Reel: string;
+      p5Title: string;
+      p5Alt: string;
+      p6Reel: string;
+      p6Title: string;
+      p6Alt: string;
     };
     p1: string;
     p2: string;
@@ -343,6 +364,7 @@ export const ptBrDict: TranslationSchema = {
     sectionAria: 'Esteira de Filme Parallax & Manifesto Editorial',
     tag: '// REEL PARALLAX :: CORTE BRUTALISTA 2.5°',
     heading: 'IDENTIFIQUEI AS FORTALEZAS DA MONOTONIA',
+    passionTag: '// REEL PARALLAX 02 :: ARQUIVO DE PAIXÕES & CULTURA -2.5°',
     slides: {
       s1Title: 'AuraStream 24/7 Cloud Broadcast Engine',
       s2Title: 'Quake 3 Arena Concurrent Log Parser',
@@ -350,6 +372,26 @@ export const ptBrDict: TranslationSchema = {
       s4Title: 'The Warriors Design Editorial Brutalista',
       s5Title: 'Arquitetura Resiliente de Sistemas Distribuídos',
       s6Title: 'Pai da Helena & Creative Technologist',
+    },
+    passionSlides: {
+      p1Reel: 'FRAME 01 // BANDA MEDULLA',
+      p1Title: 'Keops & Raony // Rock Alternativo BR',
+      p1Alt: 'Storyboard Paixão 01: Banda Medulla com Keops e Raony',
+      p2Reel: 'FRAME 02 // ONE PIECE',
+      p2Title: 'Eiichiro Oda // Monkey D. Luffy & Nakamas',
+      p2Alt: 'Storyboard Paixão 02: One Piece e Chapéus de Palha',
+      p3Reel: 'FRAME 03 // COWBOY BEBOP',
+      p3Title: 'Spike Spiegel // Shinichiro Watanabe & Yoko Kanno',
+      p3Alt: 'Storyboard Paixão 03: Cowboy Bebop Space Jazz Noir',
+      p4Reel: 'FRAME 04 // AKIRA 1988',
+      p4Title: 'Katsuhiro Otomo // Neo-Tokyo Cyberpunk',
+      p4Alt: 'Storyboard Paixão 04: Akira e Cyberpunk Neo-Tokyo',
+      p5Reel: 'FRAME 05 // CAFÉ ESPECIAL',
+      p5Title: 'V60 Drip // Extração, Moagem & Torra',
+      p5Alt: 'Storyboard Paixão 05: Ritual de Café Especial V60',
+      p6Reel: 'FRAME 06 // CULINÁRIA & STREET FOOD',
+      p6Title: 'Izakaya & Comfort Food // Culinária Afetiva',
+      p6Alt: 'Storyboard Paixão 06: Gastronomia Afetiva e Street Food',
     },
     p1: 'EU NÃO LEMBRO MAIS COMO A WEB ERA ANTES DISSO… E NÃO PARECE QUE ESTAMOS NA REALIDADE BASE NESTE EXATO MOMENTO.',
     p2: 'A ÚNICA CERTEZA ALÉM DA PERCEPÇÃO SENSORIAL É QUE ESTOU AQUI PARA ARQUITETAR SISTEMAS RESILIENTES E SALVAR O FRONTEND DESSA CORRIDA MONÓTONA.',
@@ -633,6 +675,7 @@ export const enDict = {
     sectionAria: 'Filmstrip Storyboard Parallax & Editorial Manifesto',
     tag: '// PARALLAX REEL :: 2.5° BRUTALIST CUT',
     heading: 'I HAVE IDENTIFIED THE STRONGHOLDS',
+    passionTag: '// REEL PARALLAX 02 :: PASSIONS & CULTURAL ARCHIVE -2.5°',
     slides: {
       s1Title: 'AuraStream 24/7 Cloud Broadcast Engine',
       s2Title: 'Quake 3 Arena Concurrent Log Parser',
@@ -640,6 +683,26 @@ export const enDict = {
       s4Title: 'The Warriors Cult Editorial Brutalism',
       s5Title: 'Resilient Distributed Systems Architecture',
       s6Title: "Helena's Dad & Creative Technologist",
+    },
+    passionSlides: {
+      p1Reel: 'FRAME 01 // MEDULLA BAND',
+      p1Title: 'Keops & Raony // Brazilian Alternative Rock',
+      p1Alt: 'Passion Storyboard Frame 01: Medulla Band with Keops and Raony',
+      p2Reel: 'FRAME 02 // ONE PIECE',
+      p2Title: 'Eiichiro Oda // Monkey D. Luffy & Nakamas',
+      p2Alt: 'Passion Storyboard Frame 02: One Piece and Straw Hat Pirates',
+      p3Reel: 'FRAME 03 // COWBOY BEBOP',
+      p3Title: 'Spike Spiegel // Shinichiro Watanabe & Yoko Kanno',
+      p3Alt: 'Passion Storyboard Frame 03: Cowboy Bebop Space Jazz Noir',
+      p4Reel: 'FRAME 04 // AKIRA 1988',
+      p4Title: 'Katsuhiro Otomo // Neo-Tokyo Cyberpunk',
+      p4Alt: 'Passion Storyboard Frame 04: Akira and Cyberpunk Neo-Tokyo',
+      p5Reel: 'FRAME 05 // SPECIALTY COFFEE',
+      p5Title: 'V60 Drip // Extraction, Grind & Roast',
+      p5Alt: 'Passion Storyboard Frame 05: Specialty Coffee V60 Ritual',
+      p6Reel: 'FRAME 06 // GASTRONOMY & STREET FOOD',
+      p6Title: 'Izakaya & Comfort Food // Soul Kitchen',
+      p6Alt: 'Passion Storyboard Frame 06: Soul Food and Street Kitchen',
     },
     p1: 'I DO NOT REALLY REMEMBER WHAT THE WEB WAS BEFORE THIS… AND IN SOME WAYS IT DOES NOT FEEL LIKE WE ARE IN BASE REALITY IN THE CURRENT MOMENT.',
     p2: 'THE ONE THING I AM SURE OF BEYOND SENSORY PERCEPTION IS THAT I AM HERE TO ENGINEER RESILIENT SYSTEMS AND SAVE THE FRONTEND FROM THIS MONOTONOUS RAT RACE.',
