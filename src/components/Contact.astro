@@ -2,41 +2,48 @@
 import BountyDispatch from "./BountyDispatch";
 import { PROFILE } from "../data/profile";
 import { ptBrDict } from "../i18n/dictionaries";
+import P5Title from "./p5/P5Title.astro";
+import P5Badge from "./p5/P5Badge.astro";
 ---
 
 <section
   id="contact"
-  class="relative border-t-4 border-paper-white bg-space-base px-4 py-16 sm:px-8 sm:py-24 md:px-12 md:py-32 text-paper-white select-none overflow-hidden"
+  class="relative bg-paper-white px-4 pb-16 sm:px-8 sm:pb-24 md:px-12 md:pb-32 text-space-base select-none overflow-hidden"
   aria-label={ptBrDict.contact.sectionAria}
   data-i18n="contact.sectionAria"
   data-i18n-attr="aria-label"
 >
+  <div
+    data-p5-section-cut="lab-to-contact"
+    aria-hidden="true"
+    class="p5-section-cut p5-section-cut--left -mx-4 sm:-mx-8 md:-mx-12 mb-12 sm:mb-16 bg-space-base"
+  ></div>
+
   <div class="mx-auto max-w-[140rem]">
-    <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 pb-6 border-b-4 border-bebop-red">
+    <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 pb-6 border-b-4 border-space-base">
       <div>
         <span
-          class="mb-2 block font-mono text-xs sm:text-sm font-bold tracking-widest text-bebop-red uppercase"
+          class="mb-2 block font-mono text-xs sm:text-sm font-bold tracking-widest text-space-base uppercase"
           data-i18n="contact.actTag"
         >
           {ptBrDict.contact.actTag}
         </span>
-        <h2
+        <P5Title
+          text={ptBrDict.contact.title}
           data-contact-title
           data-i18n="contact.title"
-          class="font-display text-[clamp(2.4rem,7vw,6.5rem)] font-black tracking-tight text-paper-white leading-none uppercase"
-        >
-          {ptBrDict.contact.title}
-        </h2>
+          class="font-display text-[clamp(2.4rem,7vw,6.5rem)] font-black tracking-tight text-space-base leading-none uppercase"
+        />
       </div>
 
       <div class="flex items-center gap-2.5 font-mono text-xs">
         <span class="w-3 h-3 bg-bebop-red animate-ping" />
-        <span
-          class="font-bold text-paper-white bg-bebop-red px-2.5 py-0.5 border border-paper-white tracking-wider uppercase -skew-x-6"
+        <P5Badge
+          class="font-bold text-space-base bg-bebop-red px-2.5 py-0.5 border-2 border-space-base tracking-wider uppercase"
           data-i18n="contact.availableBadge"
         >
           {ptBrDict.contact.availableBadge}
-        </span>
+        </P5Badge>
       </div>
     </div>
 
@@ -44,13 +51,13 @@ import { ptBrDict } from "../i18n/dictionaries";
       <div class="lg:col-span-7 space-y-8">
         <div class="space-y-4">
           <p
-            class="font-sans text-base sm:text-lg md:text-xl text-paper-white leading-relaxed"
+            class="font-sans text-base sm:text-lg md:text-xl text-space-base leading-relaxed font-semibold"
             data-i18n="contact.leadText"
           >
             {ptBrDict.contact.leadText}
           </p>
           <p
-            class="font-mono text-xs sm:text-sm text-muted-gray leading-relaxed"
+            class="font-mono text-xs sm:text-sm text-space-base leading-relaxed font-medium"
             data-i18n="contact.subText"
           >
             {ptBrDict.contact.subText}
@@ -61,22 +68,22 @@ import { ptBrDict } from "../i18n/dictionaries";
           <a
             href={`mailto:${PROFILE.email}?subject=${encodeURIComponent("[Bounty Contract] Proposta de Projeto // Bruno Dinis")}`}
             data-primary-contact-btn
-            class="group inline-flex flex-col sm:flex-row sm:items-center justify-between gap-4 w-full p-6 sm:p-8 border-4 border-paper-white bg-bebop-red text-paper-white shadow-[8px_8px_0_var(--color-paper-white)] hover:bg-paper-white hover:text-space-base transition-all duration-150 active:translate-x-1 active:translate-y-1"
+            class="group inline-flex flex-col sm:flex-row sm:items-center justify-between gap-4 w-full p-6 sm:p-8 border-4 border-space-base bg-bebop-red text-space-base shadow-[8px_8px_0_var(--color-space-base)] hover:bg-space-base hover:text-paper-white transition-all duration-150 active:translate-x-1 active:translate-y-1"
           >
             <div class="space-y-1">
               <span
-                class="font-mono text-xs font-bold tracking-widest text-paper-white group-hover:text-bebop-red uppercase block"
+                class="font-mono text-xs font-bold tracking-widest text-space-base group-hover:text-bebop-red uppercase block"
                 data-i18n="contact.directTag"
               >
                 {ptBrDict.contact.directTag}
               </span>
               <span
-                class="font-display text-2xl sm:text-3xl font-black uppercase tracking-tight block"
+                class="font-display text-2xl sm:text-3xl font-black uppercase tracking-tight block text-space-base group-hover:text-paper-white"
                 data-i18n="contact.directCta"
               >
                 {ptBrDict.contact.directCta}
               </span>
-              <span class="font-mono text-xs text-paper-white/90 group-hover:text-space-base block">
+              <span class="font-mono text-xs font-bold text-space-base group-hover:text-paper-white block">
                 {PROFILE.email}
               </span>
             </div>
@@ -95,9 +102,9 @@ import { ptBrDict } from "../i18n/dictionaries";
             href={PROFILE.github.url}
             target="_blank"
             rel="noopener noreferrer"
-            class="p-4 border-2 border-paper-white bg-space-surface-1 hover:bg-bebop-red hover:text-paper-white transition-all shadow-[4px_4px_0_var(--color-bebop-red)] block"
+            class="group p-4 border-2 border-space-base bg-space-base text-paper-white hover:bg-bebop-red hover:text-space-base transition-all shadow-[4px_4px_0_var(--color-bebop-red)] block"
           >
-            <span class="text-[10px] text-muted-gray uppercase block mb-1" data-i18n="contact.codeBaseLabel">
+            <span class="text-[10px] text-muted-gray group-hover:text-space-base uppercase block mb-1" data-i18n="contact.codeBaseLabel">
               {ptBrDict.contact.codeBaseLabel}
             </span>
             <span class="font-bold block break-words">GitHub {PROFILE.github.handle}</span>
@@ -107,15 +114,15 @@ import { ptBrDict } from "../i18n/dictionaries";
             href={PROFILE.linkedin.url}
             target="_blank"
             rel="noopener noreferrer"
-            class="p-4 border-2 border-paper-white bg-space-surface-1 hover:bg-bebop-red hover:text-paper-white transition-all shadow-[4px_4px_0_var(--color-bebop-red)] block"
+            class="group p-4 border-2 border-space-base bg-space-base text-paper-white hover:bg-bebop-red hover:text-space-base transition-all shadow-[4px_4px_0_var(--color-bebop-red)] block"
           >
-            <span class="text-[10px] text-muted-gray uppercase block mb-1" data-i18n="contact.careerLogLabel">
+            <span class="text-[10px] text-muted-gray group-hover:text-space-base uppercase block mb-1" data-i18n="contact.careerLogLabel">
               {ptBrDict.contact.careerLogLabel}
             </span>
             <span class="font-bold block break-words">LinkedIn {PROFILE.linkedin.handle}</span>
           </a>
 
-          <div class="p-4 border-2 border-paper-white bg-space-surface-1 shadow-[4px_4px_0_var(--color-bebop-red)]">
+          <div class="p-4 border-2 border-space-base bg-space-base text-paper-white shadow-[4px_4px_0_var(--color-bebop-red)]">
             <span class="text-[10px] text-muted-gray uppercase block mb-1" data-i18n="contact.stationBaseLabel">
               {ptBrDict.contact.stationBaseLabel}
             </span>

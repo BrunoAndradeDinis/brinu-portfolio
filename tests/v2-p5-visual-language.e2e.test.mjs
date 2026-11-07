@@ -369,3 +369,111 @@ test('C18: status and badge chips render through P5Badge', async () => {
   }
 });
 
+test('C9: #works and #contact have computed background color rgb(251, 250, 244)', async () => {
+  const { context, page } = await openHome('pt-br');
+  try {
+    const bgColors = await page.evaluate(() => {
+      const works = document.getElementById('works');
+      const contact = document.getElementById('contact');
+      return {
+        works: works ? window.getComputedStyle(works).backgroundColor : null,
+        contact: contact ? window.getComputedStyle(contact).backgroundColor : null,
+      };
+    });
+
+    assert.equal(bgColors.works, 'rgb(251, 250, 244)');
+    assert.equal(bgColors.contact, 'rgb(251, 250, 244)');
+  } finally {
+    await context.close();
+  }
+});
+
+test('C10: every text node under 24px in #works and #contact has contrast ratio at least 4.5:1', async () => {
+  const { context, page } = await openHome('pt-br');
+  try {
+    await page.locator('#contact').scrollIntoViewIfNeeded();
+    await page.waitForTimeout(300);
+
+    const violations = await page.evaluate(() => {
+      const parseRgba = (str) => {
+        const m = str.match(/rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)(?:\s*[,/]\s*([\d.]+))?\s*\)/);
+        if (!m) return null;
+        return {
+          r: Number(m[1]),
+          g: Number(m[2]),
+          b: Number(m[3]),
+          a: m[4] === undefined ? 1 : Number(m[4]),
+        };
+      };
+
+      const getEffectiveBg = (el) => {
+        let cur = el;
+        while (cur && cur instanceof Element) {
+          const bg = parseRgba(window.getComputedStyle(cur).backgroundColor);
+          if (bg && bg.a >= 0.95) return bg;
+          cur = cur.parentElement;
+        }
+        return { r: 251, g: 250, b: 244, a: 1 };
+      };
+
+      const relLum = ({ r, g, b }) => {
+        const ch = (v) => {
+          const n = v / 255;
+          return n <= 0.03928 ? n / 12.92 : Math.pow((n + 0.055) / 1.055, 2.4);
+        };
+        return 0.2126 * ch(r) + 0.7152 * ch(g) + 0.0722 * ch(b);
+      };
+
+      const contrast = (c1, c2) => {
+        const l1 = relLum(c1);
+        const l2 = relLum(c2);
+        return (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05);
+      };
+
+      const bad = [];
+      for (const rootSel of ['#works', '#contact']) {
+        const root = document.querySelector(rootSel);
+        if (!root) continue;
+        const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+        let node;
+        while ((node = walker.nextNode())) {
+          const text = (node.nodeValue || '').trim();
+          if (!text) continue;
+          const el = node.parentElement;
+          if (!el) continue;
+          const cs = window.getComputedStyle(el);
+          if (cs.display === 'none' || cs.visibility === 'hidden' || Number(cs.opacity) === 0) {
+            continue;
+          }
+          const fontSize = Number.parseFloat(cs.fontSize);
+          if (fontSize >= 24) continue;
+          const fg = parseRgba(cs.color);
+          const bg = getEffectiveBg(el);
+          if (!fg || !bg) continue;
+          const ratio = contrast(fg, bg);
+          if (ratio < 4.5) {
+            bad.push({
+              section: rootSel,
+              text: text.slice(0, 40),
+              fontSize,
+              fg: cs.color,
+              bg: `rgb(${bg.r}, ${bg.g}, ${bg.b})`,
+              ratio: Number(ratio.toFixed(2)),
+            });
+          }
+        }
+      }
+      return bad;
+    });
+
+    assert.deepEqual(
+      violations,
+      [],
+      `Expected all <24px text in #works and #contact to have contrast >= 4.5:1, found violations: ${JSON.stringify(violations)}`
+    );
+  } finally {
+    await context.close();
+  }
+});
+
+

@@ -70,7 +70,7 @@ export const BountyDispatch: React.FC = () => {
   return (
     <div
       data-bounty-dispatch
-      className="border-4 border-paper-white bg-space-surface-1 p-6 sm:p-8 font-mono shadow-[8px_8px_0_var(--color-bebop-red)] text-paper-white relative overflow-hidden"
+      className="border-4 border-space-base bg-space-base p-6 sm:p-8 font-mono shadow-[8px_8px_0_var(--color-bebop-red)] text-paper-white relative overflow-hidden"
     >
       <div className="flex items-center justify-between pb-4 mb-6 border-b-2 border-bebop-red">
         <div className="flex items-center gap-2.5">
@@ -183,15 +183,15 @@ export const BountyDispatch: React.FC = () => {
           <button
             type="submit"
             data-dispatch-submit-btn
-            className="w-full py-3.5 px-6 border-2 border-paper-white bg-bebop-red text-paper-white font-mono font-black text-xs sm:text-sm uppercase tracking-wider hover:bg-paper-white hover:text-space-base transition-all duration-150 shadow-[4px_4px_0_var(--color-paper-white)] flex items-center justify-center gap-2 cursor-pointer"
+            className="w-full py-3.5 px-6 border-2 border-paper-white bg-bebop-red text-space-base font-mono font-black text-xs sm:text-sm uppercase tracking-wider hover:bg-paper-white hover:text-space-base transition-all duration-150 shadow-[4px_4px_0_var(--color-paper-white)] flex items-center justify-center gap-2 cursor-pointer"
           >
             <span>{t.dispatch.submitCta}</span>
           </button>
         </form>
       ) : (
         <div data-dispatch-receipt className="space-y-6 animate-in fade-in duration-300">
-          <div className="flex items-center gap-3 p-3.5 bg-bebop-red border-2 border-paper-white text-paper-white">
-            <span className="w-2.5 h-2.5 bg-paper-white animate-ping" />
+          <div className="flex items-center gap-3 p-3.5 bg-bebop-red border-2 border-paper-white text-space-base">
+            <span className="w-2.5 h-2.5 bg-space-base animate-ping" />
             <span className="font-bold text-xs uppercase tracking-wider">
               {t.dispatch.receiptSuccess}
             </span>
@@ -223,7 +223,7 @@ export const BountyDispatch: React.FC = () => {
               )}&body=${encodeURIComponent(
                 `Codename: ${name}\nEmail: ${email}\n\nMensagem:\n${message}`
               )}`}
-              className="flex-1 py-3 px-4 border-2 border-paper-white bg-bebop-red text-paper-white text-center font-bold text-xs uppercase tracking-wider hover:bg-paper-white hover:text-space-base transition-all inline-flex items-center justify-center gap-2"
+              className="flex-1 py-3 px-4 border-2 border-paper-white bg-bebop-red text-space-base text-center font-bold text-xs uppercase tracking-wider hover:bg-paper-white hover:text-space-base transition-all inline-flex items-center justify-center gap-2"
             >
               <span>{t.dispatch.sendEmailCopy}</span>
             </a>
