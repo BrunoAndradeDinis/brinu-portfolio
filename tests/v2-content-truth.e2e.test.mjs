@@ -1,0 +1,165 @@
+import { test, before, after } from 'node:test';
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
+import http from 'node:http';
+import { chromium } from 'playwright';
+import { getLocalizedCases } from '../src/data/cases.ts';
+import { getLocalizedArchive } from '../src/data/archive.ts';
+
+const MIME_TYPES = {
+  '.html': 'text/html; charset=utf-8',
+  '.js': 'application/javascript; charset=utf-8',
+  '.mjs': 'application/javascript; charset=utf-8',
+  '.css': 'text/css; charset=utf-8',
+  '.json': 'application/json; charset=utf-8',
+  '.svg': 'image/svg+xml',
+  '.jpg': 'image/jpeg',
+  '.png': 'image/png',
+  '.webp': 'image/webp',
+  '.ico': 'image/x-icon',
+  '.woff2': 'font/woff2',
+};
+
+let server;
+let baseUrl = '';
+let browser;
+
+before(async () => {
+  const distDir = path.resolve('dist');
+  server = http.createServer((req, res) => {
+    const reqUrl = new URL(req.url || '/', 'http://127.0.0.1');
+    let pathname = decodeURIComponent(reqUrl.pathname);
+    if (pathname.endsWith('/')) pathname += 'index.html';
+    else if (!path.extname(pathname)) pathname += '/index.html';
+    const filePath = path.join(distDir, pathname);
+    if (!filePath.startsWith(distDir) || !fs.existsSync(filePath)) {
+      res.writeHead(404);
+      res.end('Not found');
+      return;
+    }
+    res.writeHead(200, { 'Content-Type': MIME_TYPES[path.extname(filePath).toLowerCase()] || 'application/octet-stream' });
+    fs.createReadStream(filePath).pipe(res);
+  });
+  await new Promise((resolve) => {
+    server.listen(0, '127.0.0.1', () => {
+      baseUrl = `http://127.0.0.1:${server.address().port}`;
+      resolve();
+    });
+  });
+  const launchOptions = { headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox'] };
+  if (fs.existsSync('/usr/bin/google-chrome')) launchOptions.executablePath = '/usr/bin/google-chrome';
+  browser = await chromium.launch(launchOptions);
+});
+
+after(async () => {
+  if (browser) await browser.close();
+  if (server) await new Promise((resolve) => server.close(resolve));
+});
+
+async function openHome(locale = 'pt-br') {
+  const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+  await context.route(/^https?:\/\/(?!127\.0\.0\.1)/, (route) =>
+    route.fulfill({ status: 200, contentType: 'text/html', body: '<html><body>stub</body></html>' })
+  );
+  await context.addInitScript((value) => {
+    try {
+      window.localStorage.setItem('brinu_locale', value);
+    } catch {}
+  }, locale);
+  const page = await context.newPage();
+  await page.goto(`${baseUrl}/?freeze`, { waitUntil: 'load' });
+  await page.evaluate(() => {
+    const el = document.getElementById('intro-preloader');
+    if (el) {
+      el.click();
+      el.remove();
+    }
+  });
+  return { context, page };
+}
+
+test('C6: works section lists the four main cases in order', async () => {
+  const { context, page } = await openHome();
+  try {
+    const ids = await page.locator('#works [data-reel-card]').evaluateAll((cards) => cards.map((c) => c.id));
+    assert.deepEqual(ids, ['case-magalu-cloud', 'case-uriana', 'case-efood', 'case-aurastream']);
+  } finally {
+    await context.close();
+  }
+});
+
+test('C15: case links open a new tab with noopener noreferrer', async () => {
+  const { context, page } = await openHome();
+  try {
+    const links = page.locator('#works [data-reel-card] a[data-case-link]');
+    const count = await links.count();
+    assert.ok(count >= 4);
+    for (let i = 0; i < count; i += 1) {
+      assert.equal(await links.nth(i).getAttribute('target'), '_blank');
+      const rel = (await links.nth(i).getAttribute('rel')) ?? '';
+      assert.ok(rel.includes('noopener') && rel.includes('noreferrer'), `rel was "${rel}"`);
+    }
+    const magaluLink = page.locator('#case-magalu-cloud a[data-case-link]').first();
+    await magaluLink.scrollIntoViewIfNeeded();
+    const [popup] = await Promise.all([context.waitForEvent('page'), magaluLink.click()]);
+    await popup.waitForLoadState('domcontentloaded');
+    assert.equal(popup.url(), 'https://magalu.cloud/');
+    assert.equal(await popup.evaluate(() => window.opener), null);
+  } finally {
+    await context.close();
+  }
+});
+
+test('C25: archive lists exactly the approved entries', async () => {
+  const { context, page } = await openHome();
+  try {
+    const ids = await page.locator('[data-archive-card]').evaluateAll((cards) => cards.map((c) => c.id));
+    assert.deepEqual(ids, [
+      'archive-jokenpo', 'archive-lista-de-contatos', 'archive-the-warriors', 'archive-armazem-do-pierre',
+      'archive-vue-apps', 'archive-doutor-agenda', 'archive-quake-log-parser', 'archive-brinu-portfolio-v2',
+    ]);
+  } finally {
+    await context.close();
+  }
+});
+
+test('C26: archive entries show repo and only real demo links', async () => {
+  const { context, page } = await openHome();
+  try {
+    for (const entry of getLocalizedArchive('pt-br')) {
+      const card = page.locator(`#archive-${entry.id}`);
+      assert.equal((await card.locator('[data-archive-title]').innerText()).trim().toUpperCase(), entry.title.toUpperCase());
+      assert.equal((await card.locator('[data-archive-description]').innerText()).trim(), entry.description);
+      assert.equal(await card.locator('[data-archive-stack-item]').count(), entry.stack.length);
+      const hrefs = await card.locator('a[data-archive-link]').evaluateAll((as) => as.map((a) => [a.dataset.archiveLink, a.getAttribute('href')]));
+      assert.deepEqual(hrefs, entry.links.map((l) => [l.type, l.url]));
+      assert.ok(hrefs.some(([type]) => type === 'github'), `${entry.id} has no repository link`);
+      for (const [, href] of hrefs) {
+        assert.ok(href && href !== '#' && href.startsWith('https://'), `${entry.id} has an empty link`);
+      }
+    }
+    assert.equal(await page.locator('#archive-doutor-agenda a[data-archive-link="demo"]').count(), 0);
+  } finally {
+    await context.close();
+  }
+});
+
+test('C27: doutor agenda shows its in progress status in both locales', async () => {
+  for (const [locale, expected] of [['pt-br', 'Em construção'], ['en', 'In progress']]) {
+    const { context, page } = await openHome(locale);
+    try {
+      const status = page.locator('#archive-doutor-agenda [data-archive-status]');
+      assert.equal((await status.innerText()).trim().toUpperCase(), expected.toUpperCase());
+      assert.equal(await page.locator('[data-archive-status]').count(), 1);
+      if (locale === 'en') {
+        const en = getLocalizedArchive('en').find((e) => e.id === 'jokenpo');
+        assert.equal((await page.locator('#archive-jokenpo [data-archive-description]').innerText()).trim(), en.description);
+        const enCase = getLocalizedCases('en').find((c) => c.id === 'uriana');
+        assert.equal((await page.locator('#case-uriana [data-case-description]').innerText()).trim(), enCase.description);
+      }
+    } finally {
+      await context.close();
+    }
+  }
+});

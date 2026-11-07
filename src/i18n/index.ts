@@ -8,6 +8,7 @@ import {
   getLocalizedCases,
   getLocalizedSkillCategories,
 } from '../data/cases.ts';
+import { getLocalizedArchive } from '../data/archive.ts';
 
 export { DICTIONARIES, type Locale, type TranslationSchema };
 
@@ -211,6 +212,22 @@ export function applyDomTranslations(locale: Locale): void {
         const labelSpan = linkEl.querySelector<HTMLElement>('[data-case-link-label]');
         if (labelSpan) labelSpan.textContent = linkData.label;
       }
+    });
+  });
+
+  getLocalizedArchive(validLocale).forEach((entry) => {
+    const card = document.getElementById(`archive-${entry.id}`);
+    if (!card) return;
+    const setText = (selector: string, value: string) => {
+      const node = card.querySelector<HTMLElement>(selector);
+      if (node) node.textContent = value;
+    };
+    setText('[data-archive-title]', entry.title);
+    setText('[data-archive-description]', entry.description);
+    if (entry.status) setText('[data-archive-status]', entry.status);
+    card.querySelectorAll<HTMLElement>('[data-archive-link-label]').forEach((label, idx) => {
+      const link = entry.links[idx];
+      if (link) label.textContent = link.label;
     });
   });
 

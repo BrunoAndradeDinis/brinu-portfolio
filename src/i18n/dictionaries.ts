@@ -115,6 +115,8 @@ export interface TranslationSchema {
     challengeLabel: string;
     solutionLabel: string;
     metricLabel: string;
+    archiveTag: string;
+    archiveTitle: string;
   };
   about: {
     sectionAria: string;
@@ -411,10 +413,12 @@ export const ptBrDict: TranslationSchema = {
     actTag: '[ ATO I // SELECTED WORKS :: PROJETOS EM DESTAQUE ]',
     title: 'BOUNTY ARCHIVE',
     countLabel: 'PROJETOS SELECIONADOS // 4 CASES',
-    domainLabel: 'CLOUD INFRASTRUCTURE :: SISTEMAS DISTRIBUÍDOS :: CREATIVE FRONTEND',
+    domainLabel: 'FRONTEND EM PRODUÇÃO :: FULLSTACK TYPESCRIPT :: CREATIVE DEV',
     challengeLabel: '// DESAFIO TÉCNICO',
     solutionLabel: ':: SOLUÇÃO ARQUITETURAL',
     metricLabel: '[ IMPACTO ]',
+    archiveTag: '// ARQUIVO • PROJETOS MENORES COM DEMO',
+    archiveTitle: 'ARQUIVO',
   },
   about: {
     sectionAria: 'Dossiê Confidant do Operador: Bruno Dinis',
@@ -722,10 +726,12 @@ export const enDict = {
     actTag: '[ ACT I // SELECTED WORKS :: BOUNTY ARCHIVE ]',
     title: 'BOUNTY ARCHIVE',
     countLabel: 'SELECTED WORKS // 4 CASES',
-    domainLabel: 'CLOUD INFRASTRUCTURE :: DISTRIBUTED SYSTEMS :: CREATIVE FRONTEND',
+    domainLabel: 'PRODUCTION FRONTEND :: FULLSTACK TYPESCRIPT :: CREATIVE DEV',
     challengeLabel: '// TECHNICAL CHALLENGE',
     solutionLabel: ':: ARCHITECTURAL SOLUTION',
     metricLabel: '[ IMPACT ]',
+    archiveTag: '// ARCHIVE • SMALLER PROJECTS WITH DEMOS',
+    archiveTitle: 'ARCHIVE',
   },
   about: {
     sectionAria: 'Confidant Operator Dossier: Bruno Dinis',

@@ -1,8 +1,10 @@
 ---
 import { getLocalizedCases } from "../data/cases";
+import { getLocalizedArchive } from "../data/archive";
 import { ptBrDict } from "../i18n/dictionaries";
 
 const cases = getLocalizedCases("pt-br");
+const archive = getLocalizedArchive("pt-br");
 const track1Cases = cases.filter((c) => c.track === 1);
 const track2Cases = cases.filter((c) => c.track === 2);
 
@@ -199,6 +201,55 @@ const tracks = [
           ))}
         </div>
       ))}
+    </div>
+
+    <div data-archive class="mt-16 sm:mt-20 pt-10 border-t-4 border-space-base">
+      <span class="mb-2 block font-mono text-xs sm:text-sm font-bold tracking-widest text-space-base uppercase" data-i18n="works.archiveTag">
+        {ptBrDict.works.archiveTag}
+      </span>
+      <h3 class="mb-8 font-display text-[clamp(1.8rem,4vw,3rem)] font-black tracking-tight text-space-base leading-none uppercase" data-i18n="works.archiveTitle">
+        {ptBrDict.works.archiveTitle}
+      </h3>
+      <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5 sm:gap-6">
+        {archive.map((entry) => (
+          <article
+            id={`archive-${entry.id}`}
+            data-archive-card
+            class="flex flex-col justify-between gap-4 border-4 border-space-base bg-space-base p-5 text-paper-white shadow-[6px_6px_0_var(--color-space-base)]"
+          >
+            <div>
+              <div class="mb-2 flex flex-wrap items-start justify-between gap-2">
+                <h4 data-archive-title class="font-display text-lg sm:text-xl font-black uppercase leading-tight">{entry.title}</h4>
+                {entry.status && (
+                  <span data-archive-status class="shrink-0 bg-bebop-red px-2 py-0.5 font-mono text-[10px] font-black uppercase text-paper-white">
+                    {entry.status}
+                  </span>
+                )}
+              </div>
+              <p data-archive-description class="font-body text-sm leading-relaxed text-paper-white/90">{entry.description}</p>
+            </div>
+            <div class="flex flex-wrap gap-1.5 font-mono text-[10px] uppercase">
+              {entry.stack.map((tech) => (
+                <span data-archive-stack-item class="border border-paper-white px-2 py-0.5 font-bold">{tech}</span>
+              ))}
+            </div>
+            <div class="flex flex-wrap gap-2 border-t-2 border-bebop-red pt-3">
+              {entry.links.map((link) => (
+                <a
+                  href={link.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  data-archive-link={link.type}
+                  class="inline-flex items-center gap-1.5 border-2 border-paper-white px-2.5 py-1 font-mono text-[11px] font-black uppercase transition-colors duration-150 hover:bg-paper-white hover:text-space-base focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-paper-white"
+                >
+                  <span data-archive-link-label>{link.label}</span>
+                  <span aria-hidden="true">↗</span>
+                </a>
+              ))}
+            </div>
+          </article>
+        ))}
+      </div>
     </div>
   </div>
 </section>
