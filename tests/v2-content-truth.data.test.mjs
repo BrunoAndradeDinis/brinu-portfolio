@@ -27,6 +27,9 @@ test('C17: type check rejects missing or empty localized text', () => {
   assert.notEqual(missing.status, 0, 'text without en must fail the type check');
   const empty = typeCheck('tests/fixtures/content-truth/empty-pt.ts');
   assert.notEqual(empty.status, 0, 'empty pt text must fail the type check');
+  const bypass = typeCheck('tests/fixtures/content-truth/literal-bypass.ts');
+  assert.notEqual(bypass.status, 0, 'a literal object must not satisfy Localized<string>');
+  assert.match(bypass.stdout + bypass.stderr, /LOCALIZED_BRAND|not assignable/);
 });
 
 test('T1: formatPeriod renders localized month ranges', () => {
@@ -276,4 +279,25 @@ test('T7: footer stack line names the astro version the site runs', () => {
   for (const dict of [ptBrDict, enDict]) {
     assert.match(dict.footer.stackLine, new RegExp(`ASTRO ${astroMajor}\\b`));
   }
+});
+
+test('C17: every localized field in the data modules has both locales filled', () => {
+  const modules = { MAIN_CASES, ARCHIVE, CAREER, EDUCATION, ARSENAL };
+  let checked = 0;
+  const walk = (value, trail) => {
+    if (!value || typeof value !== 'object') return;
+    const keys = Object.keys(value);
+    if (keys.length === 2 && keys.includes('pt-br') && keys.includes('en')) {
+      for (const locale of ['pt-br', 'en']) {
+        if (typeof value[locale] === 'string') {
+          assert.ok(value[locale].trim(), `${trail}.${locale} is empty`);
+          checked += 1;
+        }
+      }
+      return;
+    }
+    for (const [key, child] of Object.entries(value)) walk(child, `${trail}.${key}`);
+  };
+  for (const [name, data] of Object.entries(modules)) walk(data, name);
+  assert.ok(checked > 150, `expected to check every localized string, checked ${checked}`);
 });
