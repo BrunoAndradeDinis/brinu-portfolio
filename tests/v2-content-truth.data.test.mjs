@@ -108,6 +108,9 @@ test('C16: every link url is declared once in src/data', () => {
   const counts = urls.reduce((acc, url) => acc.set(url, (acc.get(url) ?? 0) + 1), new Map());
   const repeated = [...counts].filter(([, n]) => n > 1).map(([url]) => url);
   assert.deepEqual(repeated, [], `urls declared more than once: ${repeated.join(', ')}`);
+  for (const file of ['cases.ts', 'archive.ts', 'career.ts', 'arsenal.ts'].map((f) => `src/data/${f}`)) {
+    assert.doesNotMatch(fs.readFileSync(file, 'utf8'), /BY_LOCALE/, `${file} still branches whole records by locale`);
+  }
 });
 
 test('C18: cases module has no unused project cases export', () => {

@@ -57,6 +57,23 @@ after(async () => {
   if (server) await new Promise((resolve) => server.close(resolve));
 });
 
+async function waitForStableScroll(page) {
+  await page.waitForFunction(
+    () =>
+      new Promise((resolve) => {
+        const samples = [];
+        const tick = () => {
+          samples.push(window.scrollY);
+          if (samples.length >= 4 && samples.slice(-4).every((y) => y === samples.at(-1))) resolve(true);
+          else setTimeout(tick, 100);
+        };
+        tick();
+      }),
+    null,
+    { timeout: 10000 }
+  );
+}
+
 async function openHome(locale = 'pt-br') {
   const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
   await context.route(/^https?:\/\/(?!127\.0\.0\.1)/, (route) =>
@@ -161,5 +178,51 @@ test('C27: doutor agenda shows its in progress status in both locales', async ()
     } finally {
       await context.close();
     }
+  }
+});
+
+const { getArsenalCounter } = await import('../src/data/arsenal.ts');
+
+test('C22: page shows no rank max or verified capabilities labels', async () => {
+  for (const locale of ['pt-br', 'en']) {
+    const { context, page } = await openHome(locale);
+    try {
+      const text = await page.locator('body').innerText();
+      assert.doesNotMatch(text, /RANK MAX/i);
+      assert.doesNotMatch(text, /CAPACIDADES VERIFICADAS|VERIFIED CAPABILITIES/i);
+    } finally {
+      await context.close();
+    }
+  }
+});
+
+test('C23: arsenal counter is computed from the data', async () => {
+  for (const [locale, expected] of [['pt-br', '3 DOMÍNIOS • 15 SKILLS COM PROVA'], ['en', '3 DOMAINS • 15 SKILLS WITH PROOF']]) {
+    const { context, page } = await openHome(locale);
+    try {
+      assert.equal(getArsenalCounter(locale), expected);
+      assert.equal((await page.locator('[data-arsenal-counter]').innerText()).trim(), expected);
+      assert.equal(await page.locator('[data-skill-vignette]').count(), 3);
+      assert.equal(await page.locator('[data-skill-badge]').count(), 15);
+    } finally {
+      await context.close();
+    }
+  }
+});
+
+test('C24: clicking an evidence chip scrolls to its card', async () => {
+  const { context, page } = await openHome();
+  try {
+    const chip = page.locator('[data-skill-badge]', { hasText: 'PostgreSQL + Prisma' }).locator('a[data-evidence-link="case:uriana"]');
+    assert.equal(await chip.getAttribute('href'), '#case-uriana');
+    await waitForStableScroll(page);
+    const before = await page.evaluate(() => document.getElementById('case-uriana').getBoundingClientRect().top);
+    assert.ok(Math.abs(before) > 900, `card must start out of view (top ${before})`);
+    await chip.dispatchEvent('click', { button: 0 });
+    await page.waitForFunction(() => Math.abs(document.getElementById('case-uriana').getBoundingClientRect().top) <= 40, null, {
+      timeout: 15000,
+    });
+  } finally {
+    await context.close();
   }
 });

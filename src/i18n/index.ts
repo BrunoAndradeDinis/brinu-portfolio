@@ -4,10 +4,8 @@ import {
   type Locale,
   type TranslationSchema,
 } from './dictionaries.ts';
-import {
-  getLocalizedCases,
-  getLocalizedSkillCategories,
-} from '../data/cases.ts';
+import { getLocalizedCases } from '../data/cases.ts';
+import { getArsenalCounter, getLocalizedArsenal } from '../data/arsenal.ts';
 import { getLocalizedArchive } from '../data/archive.ts';
 
 export { DICTIONARIES, type Locale, type TranslationSchema };
@@ -231,25 +229,21 @@ export function applyDomTranslations(locale: Locale): void {
     });
   });
 
-  // Update localized skill categories
-  const skillCategories = getLocalizedSkillCategories(validLocale);
-  skillCategories.forEach((cat) => {
-    const vignette = document.querySelector<HTMLElement>(
-      `[data-skill-vignette="${cat.id}"]`
-    );
+  getLocalizedArsenal(validLocale).forEach((domain) => {
+    const vignette = document.querySelector<HTMLElement>(`[data-skill-vignette="${domain.id}"]`);
     if (!vignette) return;
     const titleEl = vignette.querySelector<HTMLElement>('[data-skill-title]');
-    const subEl = vignette.querySelector<HTMLElement>('[data-skill-subtitle]');
-    if (titleEl) titleEl.textContent = cat.title;
-    if (subEl) subEl.textContent = cat.subtitle;
-
-    const badges = vignette.querySelectorAll<HTMLElement>('[data-skill-badge-text]');
-    badges.forEach((badge, idx) => {
-      if (cat.skills[idx]) {
-        badge.textContent = cat.skills[idx];
-      }
-    });
+    if (titleEl) titleEl.textContent = domain.title;
+    domain.skills
+      .flatMap((skill) => skill.evidence)
+      .forEach((evidence) => {
+        vignette.querySelectorAll<HTMLElement>(`[data-evidence-link="${evidence.ref}"]`).forEach((link) => {
+          link.textContent = evidence.label;
+        });
+      });
   });
+  const counterEl = document.querySelector<HTMLElement>('[data-arsenal-counter]');
+  if (counterEl) counterEl.textContent = getArsenalCounter(validLocale);
 
   // Update all [data-lang-toggle] buttons
   const toggles = document.querySelectorAll<HTMLElement>('[data-lang-toggle]');

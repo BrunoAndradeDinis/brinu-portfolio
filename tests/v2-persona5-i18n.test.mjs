@@ -5,10 +5,8 @@ import path from 'node:path';
 import http from 'node:http';
 import { chromium } from 'playwright';
 import { PROFILE } from '../src/data/profile.ts';
-import {
-  getLocalizedCases,
-  getLocalizedSkillCategories,
-} from '../src/data/cases.ts';
+import { getLocalizedCases } from '../src/data/cases.ts';
+import { getLocalizedArsenal } from '../src/data/arsenal.ts';
 import { DICTIONARIES, ptBrDict, enDict } from '../src/i18n/dictionaries.ts';
 import {
   sanitizeLocale,
@@ -222,7 +220,7 @@ test('C3: Hero, Contact, Footer, /whoami, and telemetry reference canonical prof
   await context.close();
 });
 
-test('T2: getLocalizedCases and getLocalizedSkillCategories provide matching pt-br and en structures', () => {
+test('T2: getLocalizedCases and getLocalizedArsenal provide matching pt-br and en structures', () => {
   const ptCases = getLocalizedCases('pt-br');
   const enCases = getLocalizedCases('en');
 
@@ -234,15 +232,15 @@ test('T2: getLocalizedCases and getLocalizedSkillCategories provide matching pt-
   );
   assert.notEqual(ptCases[0].description, enCases[0].description);
 
-  const ptSkills = getLocalizedSkillCategories('pt-br');
-  const enSkills = getLocalizedSkillCategories('en');
-  assert.equal(ptSkills.length, 4);
-  assert.equal(enSkills.length, 4);
+  const ptDomains = getLocalizedArsenal('pt-br');
+  const enDomains = getLocalizedArsenal('en');
+  assert.equal(ptDomains.length, 3);
+  assert.equal(enDomains.length, 3);
   assert.deepEqual(
-    ptSkills.map((s) => s.id),
-    enSkills.map((s) => s.id)
+    ptDomains.map((d) => d.id),
+    enDomains.map((d) => d.id)
   );
-  assert.notEqual(ptSkills[0].subtitle, enSkills[0].subtitle);
+  assert.notEqual(ptDomains[1].title, enDomains[1].title);
 });
 
 test('C4: pt-br and en dictionaries have 100% key parity and non-empty translations', () => {

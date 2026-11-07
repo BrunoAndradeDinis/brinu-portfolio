@@ -143,7 +143,6 @@ export interface TranslationSchema {
     };
     skillsTag: string;
     skillsTitle: string;
-    skillsCount: string;
   };
   lab: {
     sectionAria: string;
@@ -449,7 +448,6 @@ export const ptBrDict: TranslationSchema = {
     },
     skillsTag: '// MATRIZ DE HABILIDADES • CONFIDANT RANKS',
     skillsTitle: 'ARSENAL TÉCNICO // 3 DOMÍNIOS',
-    skillsCount: '4 ARCANAS • 24 CAPACIDADES VERIFICADAS',
   },
   lab: {
     sectionAria: 'Creative Lab: Experimentos Visuais e Áudio Sintetizado',
@@ -762,7 +760,6 @@ export const enDict = {
     },
     skillsTag: '// SKILL MATRIX • CONFIDANT RANKS',
     skillsTitle: 'TECHNICAL ARSENAL // 3 DOMAINS',
-    skillsCount: '4 ARCANAS • 24 VERIFIED CAPABILITIES',
   },
   lab: {
     sectionAria: 'Creative Lab: Visual Experiments and Synthesized Web Audio',

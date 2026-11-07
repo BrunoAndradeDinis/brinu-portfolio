@@ -1,8 +1,9 @@
 ---
-import { getLocalizedSkillCategories } from "../data/cases";
+import { getArsenalCounter, getLocalizedArsenal } from "../data/arsenal";
 import { ptBrDict } from "../i18n/dictionaries";
 
-const categories = getLocalizedSkillCategories("pt-br");
+const domains = getLocalizedArsenal("pt-br");
+const counter = getArsenalCounter("pt-br");
 ---
 
 <div class="mt-14 sm:mt-16 pt-12 border-t-4 border-bebop-red" data-skills-matrix>
@@ -23,64 +24,52 @@ const categories = getLocalizedSkillCategories("pt-br");
     </div>
     <div
       class="font-mono text-xs font-bold text-paper-white border-2 border-paper-white bg-bebop-red px-3 py-1 -skew-x-6 self-start sm:self-end"
-      data-i18n="about.skillsCount"
+      data-arsenal-counter
     >
-      {ptBrDict.about.skillsCount}
+      {counter}
     </div>
   </div>
 
-  <div class="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
-    {categories.map((cat, idx) => {
-      const isRedHeader = idx % 2 === 0;
-      return (
-        <div
-          data-skill-vignette={cat.id}
-          class="group relative flex flex-col justify-between border-4 border-paper-white bg-space-surface-1 p-5 sm:p-7 shadow-[6px_6px_0_var(--color-bebop-red)] transition-transform duration-200 hover:-translate-y-1"
-        >
-          <div>
-            <div class="flex items-center justify-between pb-3 mb-4 border-b-2 border-bebop-red">
-              <span
-                class:list={[
-                  "font-mono text-[10px] sm:text-xs font-black uppercase tracking-wider px-2.5 py-0.5 border-2",
-                  isRedHeader
-                    ? "bg-bebop-red text-paper-white border-paper-white"
-                    : "bg-paper-white text-space-base border-paper-white",
-                ]}
-              >
-                {cat.arcana}
-              </span>
-              <span class="font-mono text-[10px] font-black text-bebop-red uppercase tracking-widest">
-                {cat.rank}
-              </span>
-            </div>
-
-            <h4
-              data-skill-title
-              class="font-display text-xl sm:text-2xl font-black text-paper-white uppercase leading-tight"
-            >
-              {cat.title}
-            </h4>
-            <p
-              data-skill-subtitle
-              class="mt-1 font-mono text-xs text-muted-gray leading-normal"
-            >
-              {cat.subtitle}
-            </p>
-          </div>
-
-          <div class="mt-6 flex flex-wrap gap-2 sm:gap-2.5">
-            {cat.skills.map((skill) => (
-              <span
-                data-skill-badge
-                class="inline-flex items-center border-2 border-paper-white bg-space-base px-3 py-1.5 font-mono text-xs font-bold text-paper-white shadow-[3px_3px_0_var(--color-bebop-red)] transition-colors duration-150 hover:bg-bebop-red hover:text-paper-white cursor-default select-none"
-              >
-                <span class="mr-1.5 text-bebop-red group-hover:text-paper-white text-[10px]">■</span>
-                <span data-skill-badge-text>{skill}</span>
-              </span>
-            ))}
-          </div>
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
+    {domains.map((domain, idx) => (
+      <div
+        data-skill-vignette={domain.id}
+        class="relative flex flex-col border-4 border-paper-white bg-space-surface-1 p-5 sm:p-7 shadow-[6px_6px_0_var(--color-bebop-red)]"
+      >
+        <div class="flex items-center justify-between pb-3 mb-5 border-b-2 border-bebop-red">
+          <h4
+            data-skill-title
+            class="font-display text-xl sm:text-2xl font-black text-paper-white uppercase leading-tight"
+          >
+            {domain.title}
+          </h4>
+          <span class:list={[
+            "font-mono text-[10px] sm:text-xs font-black px-2 py-0.5 border-2 border-paper-white",
+            idx % 2 === 0 ? "bg-bebop-red text-paper-white" : "bg-paper-white text-space-base",
+          ]}>
+            0{idx + 1}
+          </span>
         </div>
-      );
-    })}
+        <ul class="flex flex-col gap-3">
+          {domain.skills.map((skill) => (
+            <li data-skill-badge class="flex flex-wrap items-center gap-x-2 gap-y-1.5 border-b border-paper-white/15 pb-2.5 last:border-b-0">
+              <span data-skill-badge-text class="font-mono text-xs sm:text-sm font-black text-paper-white uppercase">
+                {skill.name}
+              </span>
+              <span class="font-mono text-[10px] text-muted-gray" aria-hidden="true">→</span>
+              {skill.evidence.map((evidence) => (
+                <a
+                  href={`#${evidence.anchor}`}
+                  data-evidence-link={evidence.ref}
+                  class="border border-bebop-red px-1.5 py-0.5 font-mono text-[10px] sm:text-[11px] font-bold uppercase text-paper-white transition-colors duration-150 hover:bg-bebop-red focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-paper-white"
+                >
+                  {evidence.label}
+                </a>
+              ))}
+            </li>
+          ))}
+        </ul>
+      </div>
+    ))}
   </div>
 </div>
