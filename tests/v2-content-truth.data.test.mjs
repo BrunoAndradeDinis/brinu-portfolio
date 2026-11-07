@@ -164,3 +164,32 @@ test('C14: quake is an archive entry that states the 80 percent jest threshold',
     assert.doesNotMatch(quake.text.description[locale], /100%/);
   }
 });
+
+const { CAREER, EDUCATION, getLocalizedCareer, getLocalizedEducation } = await import('../src/data/career.ts');
+
+test('T4: career lists three roles newest first with linkedin dates', () => {
+  assert.deepEqual(CAREER.map((c) => c.id), ['magalu-cloud', 'luizalabs', 'magazine-luiza']);
+  const pt = getLocalizedCareer('pt-br');
+  const en = getLocalizedCareer('en');
+  assert.deepEqual(pt.map((c) => c.period), ['dez/2025 – atual', 'nov/2019 – nov/2025', 'jun/2017 – out/2019']);
+  assert.deepEqual(en.map((c) => c.period), ['Dec 2025 – present', 'Nov 2019 – Nov 2025', 'Jun 2017 – Oct 2019']);
+  assert.deepEqual(pt.map((c) => c.role), ['Desenvolvedor de front-end', 'Assistente de helpdesk II', 'Atendente de SAC']);
+  assert.deepEqual(
+    pt.find((c) => c.id === 'luizalabs').automations.map((a) => [a.name, a.repoUrl]),
+    [
+      ['Consulta CNPJ', 'https://github.com/BrunoAndradeDinis/consultaCNPJ'],
+      ['sheetScriptForm', 'https://github.com/BrunoAndradeDinis/sheetScriptForm'],
+      ['Mapa de Desempenho', 'https://github.com/BrunoAndradeDinis/mapaDeDesempenho'],
+    ]
+  );
+});
+
+test('T4: education lists the four approved entries without fatec', () => {
+  assert.deepEqual(EDUCATION.map((e) => e.id), ['ampli', 'ebac', 'full-stack-club', 'alura']);
+  assert.deepEqual(
+    getLocalizedEducation('pt-br').map((e) => [e.institution, e.status]),
+    [['Ampli', 'Concluído'], ['EBAC', 'Concluído'], ['Full Stack Club', 'Em andamento'], ['Alura', 'Em andamento']]
+  );
+  assert.deepEqual(getLocalizedEducation('en').map((e) => e.status), ['Completed', 'Completed', 'In progress', 'In progress']);
+  assert.doesNotMatch(fs.readFileSync('src/data/career.ts', 'utf8'), /fatec/i);
+});
