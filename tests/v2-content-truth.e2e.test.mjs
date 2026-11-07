@@ -416,3 +416,57 @@ test('C5: home title and description say desenvolvedor frontend', () => {
   assert.doesNotMatch(title, /Software Engineer|Engenheiro de Software/);
   assert.equal(title, ptBrDict.meta.title);
 });
+
+test('C32: right click keeps the native context menu', async () => {
+  const { context, page } = await openHome();
+  try {
+    await page.evaluate(() => {
+      window.__contextMenuPrevented = null;
+      window.addEventListener('contextmenu', (event) => {
+        setTimeout(() => {
+          window.__contextMenuPrevented = event.defaultPrevented;
+        }, 0);
+      });
+    });
+    await page.locator('#hero').click({ button: 'right', position: { x: 200, y: 200 } });
+    await page.waitForFunction(() => window.__contextMenuPrevented !== null);
+    assert.equal(await page.evaluate(() => window.__contextMenuPrevented), false);
+    assert.equal(await page.locator('[role="dialog"]:visible, [role="alertdialog"]:visible').count(), 0);
+    assert.equal(fs.existsSync('src/components/RightClickGuard.tsx'), false);
+  } finally {
+    await context.close();
+  }
+});
+
+const FORBIDDEN_CLAIMS = [
+  'Golang', 'Go (Golang)', 'golang/', 'Kubernetes', 'K8s', 'GraphQL', 'Cache Distribuído', 'Distributed Caching',
+  'Zero-Downtime', 'sistemas distribuídos', 'Sistemas Distribuídos', 'distributed systems', 'Distributed Systems',
+  'Engenheiro de Software', 'Software Engineer', 'INP <', 'INP &lt;', '100% de cobertura', '100% unit test coverage',
+];
+
+function filesUnder(dir, pattern) {
+  return fs.readdirSync(dir, { withFileTypes: true }).flatMap((e) => {
+    const full = path.join(dir, e.name);
+    if (e.isDirectory()) return filesUnder(full, pattern);
+    return pattern.test(e.name) ? [full] : [];
+  });
+}
+
+test('C2: forbidden claims are absent from build, dictionaries and data', () => {
+  const files = [
+    ...filesUnder('dist', /\.(html|js|svg)$/),
+    ...filesUnder('src/i18n', /\.ts$/),
+    ...filesUnder('src/data', /\.ts$/),
+    ...filesUnder('public/assets/filmstrip', /\.svg$/),
+  ];
+  assert.ok(files.some((f) => f.endsWith('index.html')));
+  const hits = [];
+  for (const file of files) {
+    const text = fs.readFileSync(file, 'utf8');
+    for (const term of FORBIDDEN_CLAIMS) {
+      if (text.includes(term)) hits.push(`${file}: ${term}`);
+    }
+    if (/DISTRIBUTED SYSTEMS|SISTEMAS DISTRIBUÍDOS|ARQUITETURA DISTRIBUÍDA|DISTRIBUTED ARCHITECTURE|JEST COVERAGE: 100|99\.99% SLA/i.test(text)) hits.push(`${file}: distributed or unbacked claim`);
+  }
+  assert.deepEqual(hits, []);
+});

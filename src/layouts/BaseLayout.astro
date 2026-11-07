@@ -5,7 +5,6 @@ import "../styles/global.css";
 import IntroPreloader from "../components/IntroPreloader.astro";
 import ComicNav from "../components/ComicNav.astro";
 import CockpitMenu from "../components/CockpitMenu";
-import RightClickGuard from "../components/RightClickGuard";
 import CiladaAlert from "../components/CiladaAlert";
 import { ptBrDict } from "../i18n/dictionaries";
 import { PROFILE, buildPersonJsonLd } from "../data/profile";
@@ -84,7 +83,6 @@ const personJsonLd = JSON.stringify(buildPersonJsonLd());
     </div>
 
     <CockpitMenu client:load />
-    <RightClickGuard client:load />
     <CiladaAlert client:load />
 
     <script>

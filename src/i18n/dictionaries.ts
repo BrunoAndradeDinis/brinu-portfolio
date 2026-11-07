@@ -270,15 +270,6 @@ export interface TranslationSchema {
     stackLine: string;
     privacyLine: string;
   };
-  rightClick: {
-    dialogAria: string;
-    tag: string;
-    closeAria: string;
-    headline: string;
-    body: string;
-    escHint: string;
-    readyBadge: string;
-  };
   cilada: {
     dialogAria: string;
     tag: string;
@@ -540,7 +531,7 @@ export const ptBrDict: TranslationSchema = {
     title: 'TRANSMIT A BOUNTY',
     availableBadge: 'DISPONÍVEL PARA PROJETOS DE ALTO IMPACTO',
     leadText:
-      'Tem um desafio complexo de engenharia, precisa de uma arquitetura distribuída resiliente ou quer construir uma interface memorável?',
+      'Tem um produto que precisa de um frontend rápido, acessível e com personalidade? Vamos conversar.',
     subText:
       'Desenvolvo software com rigor arquitetural SOLID, código limpo e identidade visual marcante a partir de Franca / SP para todo o mundo.',
     directTag: '// CANAL DIRETO DE COMUNICAÇÃO',
@@ -578,7 +569,7 @@ export const ptBrDict: TranslationSchema = {
   footer: {
     sectionAria: 'Rodapé do Portfólio e Encerramento',
     ticker:
-      '• SEE YOU SPACE COWBOY • 2026 BRINU.DEV • FRANCA / SP • ARQUITETURA DISTRIBUÍDA • PERSONA BRUTALIST UI •',
+      '• SEE YOU SPACE COWBOY • 2026 BRINU.DEV • FRANCA / SP • DESENVOLVEDOR FRONTEND • PERSONA BRUTALIST UI •',
     badge: 'TRANSMISSÃO CONCLUÍDA // PROTOCOLO BRINU V2',
     signature: '"SEE YOU SPACE COWBOY…"',
     subtitle: "YOU'RE GONNA CARRY THAT WEIGHT.",
@@ -588,15 +579,6 @@ export const ptBrDict: TranslationSchema = {
     engineeredIn: `PROJETADO & ENGENHEIRADO EM ${PROFILE.location.label.toUpperCase()}`,
     stackLine: 'ASTRO 5 • REACT 19 • TAILWIND V4 • GSAP • THREE.JS • SOLID',
     privacyLine: 'ZERO COOKIES • ZERO RASTREAMENTO • ALTA PERFORMANCE',
-  },
-  rightClick: {
-    dialogAria: 'Alerta de inspeção técnica',
-    tag: '// INSPEÇÃO TÉCNICA DETECTADA',
-    closeAria: 'Fechar alerta',
-    headline: 'Ei visitante! Inspecionando a estrutura pelo botão direito?',
-    body: 'Pressione F12 para abrir o DevTools. O recibo completo de telemetria e comandos interativos já estão prontos no console.',
-    escHint: 'PRESSIONE [ESC] OU CLIQUE FORA PARA FECHAR',
-    readyBadge: 'DEVTOOLS PRONTO',
   },
   cilada: {
     dialogAria: 'Alerta de emergência: É uma cilada, Brinu!',
@@ -622,7 +604,7 @@ export const ptBrDict: TranslationSchema = {
       skillsOut:
         'total 8\ndrwxr-xr-x  astro/       react-19/    typescript/  tailwind/\ndrwxr-xr-x  gsap/        playwright/  docker/      solid-arch/',
       philosophyOut:
-        '"Arquitetura limpa SOLID, código resiliente na nuvem e direção de arte inegociável."',
+        '"Arquitetura limpa SOLID, interfaces acessíveis e direção de arte inegociável."',
     },
   },
 };
@@ -862,7 +844,7 @@ export const enDict = {
     title: 'TRANSMIT A BOUNTY',
     availableBadge: 'AVAILABLE FOR HIGH-IMPACT CONTRACTS',
     leadText:
-      'Have a demanding engineering challenge, need a resilient distributed architecture, or want to build an unforgettable interface?',
+      'Have a product that needs a fast, accessible frontend with personality? Let’s talk.',
     subText:
       'I engineer software with strict SOLID architecture, clean code, and unmistakable visual identity from Franca / SP, Brazil to the world.',
     directTag: '// DIRECT FREQUENCY COMMUNICATION',
@@ -900,7 +882,7 @@ export const enDict = {
   footer: {
     sectionAria: 'Portfolio Footer and Sign-off',
     ticker:
-      '• SEE YOU SPACE COWBOY • 2026 BRINU.DEV • FRANCA / SP • DISTRIBUTED SYSTEMS • PERSONA BRUTALIST UI •',
+      '• SEE YOU SPACE COWBOY • 2026 BRINU.DEV • FRANCA / SP • FRONTEND DEVELOPER • PERSONA BRUTALIST UI •',
     badge: 'TRANSMISSION COMPLETE // BRINU V2 PROTOCOL',
     signature: '"SEE YOU SPACE COWBOY…"',
     subtitle: "YOU'RE GONNA CARRY THAT WEIGHT.",
@@ -910,15 +892,6 @@ export const enDict = {
     engineeredIn: `DESIGNED & ENGINEERED IN ${PROFILE.location.label.toUpperCase()}`,
     stackLine: 'ASTRO 5 • REACT 19 • TAILWIND V4 • GSAP • THREE.JS • SOLID',
     privacyLine: 'NO COOKIES • ZERO TRACKING • PURE BRUTALIST PERFORMANCE',
-  },
-  rightClick: {
-    dialogAria: 'Technical inspection alert',
-    tag: '// TECHNICAL INSPECTION DETECTED',
-    closeAria: 'Close alert',
-    headline: 'Hey visitor! Inspecting the circuits via right-click?',
-    body: 'Press F12 to open DevTools. The full telemetry receipt and interactive console commands are waiting for you.',
-    escHint: 'PRESS [ESC] OR CLICK OUTSIDE TO CLOSE',
-    readyBadge: 'DEVTOOLS READY',
   },
   cilada: {
     dialogAria: "Emergency alert: It's a trap, Brinu!",
@@ -944,7 +917,7 @@ export const enDict = {
       skillsOut:
         'total 8\ndrwxr-xr-x  astro/       react-19/    typescript/  tailwind/\ndrwxr-xr-x  gsap/        playwright/  docker/      solid-arch/',
       philosophyOut:
-        '"Clean SOLID architecture, resilient cloud code, and uncompromising art direction."',
+        '"Clean SOLID architecture, accessible interfaces, and uncompromising art direction."',
     },
   },
 } satisfies TranslationSchema;
