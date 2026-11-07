@@ -458,6 +458,7 @@ test('C2: forbidden claims are absent from build, dictionaries and data', () => 
     ...filesUnder('src/i18n', /\.ts$/),
     ...filesUnder('src/data', /\.ts$/),
     ...filesUnder('public/assets/filmstrip', /\.svg$/),
+    ...filesUnder('src/components', /\.(astro|tsx|ts)$/),
   ];
   assert.ok(files.some((f) => f.endsWith('index.html')));
   const hits = [];
@@ -467,6 +468,8 @@ test('C2: forbidden claims are absent from build, dictionaries and data', () => 
       if (text.includes(term)) hits.push(`${file}: ${term}`);
     }
     if (/DISTRIBUTED SYSTEMS|SISTEMAS DISTRIBUÍDOS|ARQUITETURA DISTRIBUÍDA|DISTRIBUTED ARCHITECTURE|JEST COVERAGE: 100|99\.99% SLA/i.test(text)) hits.push(`${file}: distributed or unbacked claim`);
+    const unbacked = text.match(/O\(N\) Concurrency|Go & Node|CONCURRENT|\d+(\.\d+)?% Uptime|\bHLS\b|ASTRO 5\b|90s Cult/i);
+    if (unbacked) hits.push(`${file}: ${unbacked[0]}`);
   }
   assert.deepEqual(hits, []);
 });

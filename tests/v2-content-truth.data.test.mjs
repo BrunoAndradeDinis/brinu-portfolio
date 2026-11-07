@@ -270,3 +270,10 @@ test('T7: dictionaries carry the approved copy deck in both locales', () => {
   assert.match(ptBrDict.hero.ticker, /DESENVOLVEDOR FRONTEND/);
   assert.doesNotMatch(JSON.stringify(ptBrDict) + JSON.stringify(enDict), /golang/i);
 });
+
+test('T7: footer stack line names the astro version the site runs', () => {
+  const astroMajor = JSON.parse(fs.readFileSync('node_modules/astro/package.json', 'utf8')).version.split('.')[0];
+  for (const dict of [ptBrDict, enDict]) {
+    assert.match(dict.footer.stackLine, new RegExp(`ASTRO ${astroMajor}\\b`));
+  }
+});

@@ -577,7 +577,7 @@ export const ptBrDict: TranslationSchema = {
     backToTopAria: 'Voltar suavemente ao topo da página',
     copyright: '© 2026 BRUNO DE ANDRADE DINIS (BRINU) // TODOS OS DIREITOS RESERVADOS.',
     engineeredIn: `PROJETADO & ENGENHEIRADO EM ${PROFILE.location.label.toUpperCase()}`,
-    stackLine: 'ASTRO 5 • REACT 19 • TAILWIND V4 • GSAP • THREE.JS • SOLID',
+    stackLine: 'ASTRO 7 • REACT 19 • TAILWIND V4 • GSAP • THREE.JS • SOLID',
     privacyLine: 'ZERO COOKIES • ZERO RASTREAMENTO • ALTA PERFORMANCE',
   },
   cilada: {
@@ -890,7 +890,7 @@ export const enDict = {
     backToTopAria: 'Scroll smoothly back to top',
     copyright: '© 2026 BRUNO DE ANDRADE DINIS (BRINU) // ALL RIGHTS RESERVED.',
     engineeredIn: `DESIGNED & ENGINEERED IN ${PROFILE.location.label.toUpperCase()}`,
-    stackLine: 'ASTRO 5 • REACT 19 • TAILWIND V4 • GSAP • THREE.JS • SOLID',
+    stackLine: 'ASTRO 7 • REACT 19 • TAILWIND V4 • GSAP • THREE.JS • SOLID',
     privacyLine: 'NO COOKIES • ZERO TRACKING • PURE BRUTALIST PERFORMANCE',
   },
   cilada: {

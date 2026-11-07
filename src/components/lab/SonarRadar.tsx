@@ -21,17 +21,17 @@ const INITIAL_TARGETS: RadarTarget[] = [
     angleDeg: 42,
     distance: 0.68,
     color: '#FE0000',
-    metrics: '99.98% Uptime • HLS 24/7',
+    metrics: 'FFmpeg + Xvfb • RTMP 24/7',
     lastPingTime: 0,
   },
   {
     id: 'quake-log',
     name: 'Quake Log Parser',
-    category: 'CONCURRENT BACKEND',
+    category: 'REST API & TESTS',
     angleDeg: 128,
     distance: 0.46,
     color: '#FBFAF4',
-    metrics: 'O(N) Concurrency • Go & Node',
+    metrics: 'Jest 80% threshold • Node & MongoDB',
     lastPingTime: 0,
   },
   {
@@ -41,7 +41,7 @@ const INITIAL_TARGETS: RadarTarget[] = [
     angleDeg: 215,
     distance: 0.78,
     color: '#FE0000',
-    metrics: 'Interactive Canvas • Sound FX',
+    metrics: 'Next.js 14 • State Machine',
     lastPingTime: 0,
   },
   {
@@ -51,7 +51,7 @@ const INITIAL_TARGETS: RadarTarget[] = [
     angleDeg: 295,
     distance: 0.58,
     color: '#FBFAF4',
-    metrics: '90s Cult Cinema • Gulp Pipeline',
+    metrics: 'Cult Cinema • Gulp Pipeline',
     lastPingTime: 0,
   },
   {
