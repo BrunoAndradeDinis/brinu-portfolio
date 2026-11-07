@@ -38,3 +38,21 @@ test('intro mode and duration budgets follow the spec', async () => {
   assert.equal(SHORT_EXIT_MS, 600);
   assert.equal(REDUCED_FADE_MS, 200);
 });
+
+test('C8: scroll lock is set and released only through motion.ts', async () => {
+  const fs = await import('node:fs');
+  const motion = fs.readFileSync('src/utils/motion.ts', 'utf8');
+  assert.match(motion, /export function pauseScroll\(/);
+  assert.match(motion, /export function resumeScroll\(/);
+
+  for (const file of ['src/components/IntroPreloader.astro', 'src/utils/intro-takeover.ts', 'src/utils/intro-timing.ts']) {
+    const src = fs.readFileSync(file, 'utf8');
+    assert.doesNotMatch(src, /from ['"]lenis['"]/, `${file} must not import Lenis`);
+    assert.doesNotMatch(src, /getLenis\(|\.stop\(\)|lenis-stopped/, `${file} must not touch the scroll lock directly`);
+  }
+
+  const preloader = fs.readFileSync('src/components/IntroPreloader.astro', 'utf8');
+  assert.match(preloader, /import \{ pauseScroll, resumeScroll \} from ["']\.\.\/utils\/motion["']/);
+  assert.match(preloader, /pauseScroll\(\)/);
+  assert.match(preloader, /resumeScroll\(\)/);
+});

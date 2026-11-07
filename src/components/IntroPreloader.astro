@@ -57,19 +57,6 @@ const LETTERS = ["B", "R", "I", "N", "U"] as const;
     justify-content: center;
     overflow: hidden;
     cursor: pointer;
-    will-change: transform;
-  }
-
-  .intro-preloader.is-exiting {
-    pointer-events: none;
-    transition: transform var(--intro-exit-ms, 850ms) cubic-bezier(0.85, 0, 0.15, 1);
-    transform: translateY(-100%);
-  }
-
-  .intro-preloader.is-exiting[data-intro-mode="reduced"] {
-    transition: opacity var(--intro-exit-ms, 200ms) linear;
-    transform: none;
-    opacity: 0;
   }
 
   .intro-preloader__backdrop {
@@ -103,7 +90,7 @@ const LETTERS = ["B", "R", "I", "N", "U"] as const;
     display: inline-block;
     font-family: var(--font-display);
     font-weight: 900;
-    letter-spacing: -0.02em;
+    letter-spacing: -0.025em;
     color: transparent;
     background-image: url("/assets/brinu-avatar.jpg");
     background-size: 280% auto;
@@ -176,10 +163,9 @@ const LETTERS = ["B", "R", "I", "N", "U"] as const;
 
 <script>
   import { pauseScroll, resumeScroll } from "../utils/motion";
+  import { runTakeover, type TakeoverHandle } from "../utils/intro-takeover";
   import {
     INTRO_SEEN_KEY,
-    SHORT_EXIT_MS,
-    REDUCED_FADE_MS,
     computeExitDelay,
     counterValueAt,
     resolveIntroMode,
@@ -187,7 +173,6 @@ const LETTERS = ["B", "R", "I", "N", "U"] as const;
   } from "../utils/intro-timing";
 
   const AVATAR_SRC = "/assets/brinu-avatar.jpg";
-  const FULL_EXIT_MS = 850;
 
   function readSeenFlag(): boolean {
     try {
@@ -237,6 +222,7 @@ const LETTERS = ["B", "R", "I", "N", "U"] as const;
     counterFrame = requestAnimationFrame(tickCounter);
 
     const finish = () => {
+      window.removeEventListener("keydown", onKeyDown);
       document.documentElement.classList.add("intro-completed");
       preloader.remove();
       resumeScroll();
@@ -244,21 +230,22 @@ const LETTERS = ["B", "R", "I", "N", "U"] as const;
       window.dispatchEvent(new CustomEvent("intro-complete"));
     };
 
-    const beginExit = () => {
-      if (exiting) return;
+    let takeover: TakeoverHandle | null = null;
+
+    const beginExit = (skip = false) => {
+      if (exiting) {
+        takeover?.skip();
+        return;
+      }
       exiting = true;
       clearTimeout(exitTimer);
       cancelAnimationFrame(counterFrame);
       setCounter(100);
       writeSeenFlag();
-      window.removeEventListener("keydown", onKeyDown);
       performance.mark("intro:exit-start");
-
-      const exitMs = mode === "reduced" ? REDUCED_FADE_MS : mode === "short" ? SHORT_EXIT_MS - 100 : FULL_EXIT_MS;
-      preloader.style.setProperty("--intro-exit-ms", `${exitMs}ms`);
       preloader.dataset.introState = "exiting";
       preloader.classList.add("is-exiting");
-      setTimeout(finish, exitMs);
+      takeover = runTakeover({ preloader, mode, skip, onComplete: finish });
     };
 
     const schedule = () => {
@@ -269,12 +256,12 @@ const LETTERS = ["B", "R", "I", "N", "U"] as const;
         fontsReady,
         avatarReady,
       });
-      exitTimer = setTimeout(beginExit, delay);
+      exitTimer = setTimeout(() => beginExit(false), delay);
     };
 
     function onKeyDown(event: KeyboardEvent) {
       if (event.key === "Escape" || event.key === " " || event.key === "Enter") {
-        beginExit();
+        beginExit(true);
       }
     }
 
@@ -294,12 +281,12 @@ const LETTERS = ["B", "R", "I", "N", "U"] as const;
 
     if (!isFrozen) schedule();
 
-    preloader.addEventListener("click", beginExit);
+    preloader.addEventListener("click", () => beginExit(true));
     window.addEventListener("keydown", onKeyDown);
 
     window.addEventListener("pageshow", (event) => {
       if (event.persisted && document.getElementById("intro-preloader")) {
-        beginExit();
+        beginExit(true);
       }
     });
   }
