@@ -3,6 +3,24 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 
+test('C1: P5Title, P5Panel and P5Badge components exist under src/components/p5', () => {
+  const titlePath = path.resolve('src/components/p5/P5Title.astro');
+  const panelPath = path.resolve('src/components/p5/P5Panel.astro');
+  const badgePath = path.resolve('src/components/p5/P5Badge.astro');
+
+  assert.equal(fs.existsSync(titlePath), true, 'Expected src/components/p5/P5Title.astro');
+  assert.equal(fs.existsSync(panelPath), true, 'Expected src/components/p5/P5Panel.astro');
+  assert.equal(fs.existsSync(badgePath), true, 'Expected src/components/p5/P5Badge.astro');
+
+  const titleSrc = fs.readFileSync(titlePath, 'utf8');
+  const panelSrc = fs.readFileSync(panelPath, 'utf8');
+  const badgeSrc = fs.readFileSync(badgePath, 'utf8');
+
+  assert.ok(titleSrc.includes('data-p5-title'), 'P5Title must expose data-p5-title attribute');
+  assert.ok(panelSrc.includes('data-p5-panel') && panelSrc.includes('p5-panel'), 'P5Panel must expose data-p5-panel and p5-panel class');
+  assert.ok(badgeSrc.includes('data-p5-badge') && badgeSrc.includes('p5-badge'), 'P5Badge must expose data-p5-badge and p5-badge class');
+});
+
 test('C2: tokens.css declares each --color-* once without legacy color aliases', () => {
   const tokensPath = path.resolve('src/styles/tokens.css');
   const tokensCss = fs.readFileSync(tokensPath, 'utf8');
