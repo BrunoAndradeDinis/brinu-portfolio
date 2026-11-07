@@ -140,6 +140,17 @@ import { ptBrDict } from "../i18n/dictionaries";
     cockpitBtn.addEventListener("click", () => {
       const isExpanded = cockpitBtn.getAttribute("aria-expanded") === "true";
       const nextState = !isExpanded;
+      if (
+        nextState &&
+        !document.documentElement.classList.contains("cockpit-menu-open")
+      ) {
+        const scrollbarWidth =
+          window.innerWidth - document.documentElement.clientWidth;
+        document.documentElement.style.setProperty(
+          "--cockpit-scrollbar-comp",
+          `${Math.max(0, scrollbarWidth)}px`
+        );
+      }
       updateBars(nextState);
 
       window.dispatchEvent(
@@ -249,20 +260,21 @@ import { ptBrDict } from "../i18n/dictionaries";
     pointer-events: none;
   }
 
-  #comic-nav-header[data-scrolled="true"][data-cockpit-open="false"] {
+  #comic-nav-header[data-scrolled="true"] {
     height: auto !important;
     padding-top: 0.5rem !important;
     padding-bottom: 0.5rem !important;
     align-items: flex-start !important;
   }
 
+  :global(html.cockpit-menu-open) #comic-nav-header,
   #comic-nav-header[data-cockpit-open="true"] {
     width: auto !important;
-    right: var(--cockpit-scrollbar-comp, 0px);
+    right: var(--cockpit-scrollbar-comp, 0px) !important;
   }
 
-  #comic-nav-header[data-scrolled="true"][data-cockpit-open="false"] .nav-secondary-item,
-  #comic-nav-header[data-scrolled="true"][data-cockpit-open="false"] [data-nav-nameplate] {
+  #comic-nav-header[data-scrolled="true"] .nav-secondary-item,
+  #comic-nav-header[data-scrolled="true"] [data-nav-nameplate] {
     display: none !important;
   }
 

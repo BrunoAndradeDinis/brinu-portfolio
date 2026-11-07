@@ -149,22 +149,28 @@ export const CockpitMenu: React.FC = () => {
 
   const openMenu = useCallback(() => {
     isClosingRef.current = false;
-    setIsOpen(true);
-    syncCockpitTriggerDom(true);
-    audioSynth.playKnobClick(960, 0.08);
-    if (typeof document !== 'undefined') {
+    if (
+      typeof document !== 'undefined' &&
+      !document.documentElement.classList.contains('cockpit-menu-open')
+    ) {
       const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
-      document.documentElement.style.setProperty('--cockpit-scrollbar-comp', `${Math.max(0, scrollbarWidth)}px`);
+      document.documentElement.style.setProperty(
+        '--cockpit-scrollbar-comp',
+        `${Math.max(0, scrollbarWidth)}px`
+      );
       document.documentElement.classList.add('lenis-stopped', 'cockpit-menu-open');
       document.body.classList.add('lenis-stopped', 'cockpit-menu-open');
     }
+    setIsOpen(true);
+    syncCockpitTriggerDom(true);
+    audioSynth.playKnobClick(960, 0.08);
   }, []);
 
   useEffect(() => {
     setIsMuted(audioSynth.isMuted());
 
     const initialTrigger = document.getElementById('cockpit-trigger-btn');
-    if (initialTrigger?.getAttribute('aria-expanded') === 'true') {
+    if (!isOpen && initialTrigger?.getAttribute('aria-expanded') === 'true') {
       openMenu();
     }
 
