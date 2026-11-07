@@ -297,12 +297,12 @@ export const ptBrDict: TranslationSchema = {
     skipToContent: 'PULAR PARA O CONTEÚDO PRINCIPAL',
   },
   meta: {
-    title: 'Bruno Dinis // Brinu — Engenheiro de Software & Creative Technologist',
+    title: 'Bruno Dinis // Brinu — Desenvolvedor Frontend & Creative Developer',
     description:
-      'Portfólio brutalista de engenharia de software, arquitetura distribuída e interfaces de alta performance de Bruno de Andrade Dinis (Brinu) em Franca / SP.',
+      'Portfólio de Bruno de Andrade Dinis (Brinu), Desenvolvedor Frontend na Magalu Cloud: Astro, React, TypeScript e motion com GSAP, em Franca / SP.',
     whoamiTitle: 'Bruno Dinis // Brinu — Terminal Confidant /whoami',
     whoamiDescription:
-      'Terminal interativo de Bruno Dinis (Brinu): arquitetura em nuvem, sistemas distribuídos e diretrizes de engenharia.',
+      'Terminal interativo de Bruno Dinis (Brinu): trajetória, stack e projetos.',
   },
   preloader: {
     sceneTag: '[ 1996 // ATO 01 ]',
@@ -338,7 +338,7 @@ export const ptBrDict: TranslationSchema = {
   },
   hero: {
     ticker:
-      '• ARQUITETURA DE SISTEMAS DISTRIBUÍDOS • CREATIVE TECHNOLOGIST • PAI DA HELENA • NOIVO • FRANCA / SP • SEE YOU SPACE COWBOY •',
+      '• DESENVOLVEDOR FRONTEND • MAGALU CLOUD • CREATIVE DEVELOPER • PAI DA HELENA • FRANCA / SP • SEE YOU SPACE COWBOY •',
     avatarAria:
       'Avatar oficial de Bruno Dinis em moldura brutalista. Clique para interagir.',
     bubbleDefault: PROFILE.family['pt-br'],
@@ -348,30 +348,30 @@ export const ptBrDict: TranslationSchema = {
       'É uma cilada, Brinu!',
       PROFILE.role['pt-br'],
       'Base: Franca / SP • Remoto',
-      'Arquitetura Limpa & Sistemas Distribuídos',
+      'Astro, React & motion de autor',
     ],
-    manifestoLeftLine1: 'POR MUITO TEMPO',
-    manifestoLeftLine2: 'O CÓDIGO MONÓTONO',
-    manifestoLeftLine3: 'DOMINOU A WEB',
+    manifestoLeftLine1: '8 ANOS DE MAGALU',
+    manifestoLeftLine2: 'DO ATENDIMENTO',
+    manifestoLeftLine3: 'AO FRONT-END',
     craftCta: 'A ENGENHARIA COMEÇOU',
     craftAria: 'Explorar projetos selecionados',
-    manifestoRightLine1: 'TRANSFORMANDO',
-    manifestoRightLine2: 'ARQUITETURAS COMPLEXAS',
-    manifestoRightLine3: 'EM ARTE BRUTALISTA',
+    manifestoRightLine1: 'INTERFACES',
+    manifestoRightLine2: 'COM PERSONALIDADE',
+    manifestoRightLine3: 'E CÓDIGO LIMPO',
     socialAria: 'Canais Oficiais de Contato e Perfis Sociais',
   },
   filmstrip: {
     sectionAria: 'Esteira de Filme Parallax & Manifesto Editorial',
     tag: '// REEL PARALLAX :: CORTE BRUTALISTA 2.5°',
-    heading: 'IDENTIFIQUEI AS FORTALEZAS DA MONOTONIA',
+    heading: 'CADA FRAME, UM PROJETO ENTREGUE',
     passionTag: '// REEL PARALLAX 02 :: ARQUIVO DE PAIXÕES & CULTURA -2.5°',
     slides: {
-      s1Title: 'AuraStream 24/7 Cloud Broadcast Engine',
-      s2Title: 'Quake 3 Arena Concurrent Log Parser',
-      s3Title: 'Jokenpo Arena Franky State Machine',
-      s4Title: 'The Warriors Design Editorial Brutalista',
-      s5Title: 'Arquitetura Resiliente de Sistemas Distribuídos',
-      s6Title: 'Pai da Helena & Creative Technologist',
+      s1Title: 'AuraStream Engine — Transmissão 24/7',
+      s2Title: 'Quake III Log Parser API',
+      s3Title: 'Jokenpo — Arena Franky',
+      s4Title: 'The Warriors — Landing Page',
+      s5Title: 'Magalu Cloud — Site Institucional',
+      s6Title: 'Pai da Helena & Creative Developer',
     },
     passionSlides: {
       p1Reel: 'FRAME 01 // BANDA MEDULLA',
@@ -423,11 +423,11 @@ export const ptBrDict: TranslationSchema = {
     statusBadge: 'STATUS: ATIVO // EM PRODUÇÃO',
     domainLine: PROFILE.tagline['pt-br'].toUpperCase(),
     operatorTag: 'OPERADOR: BRINU',
-    roleHeading: 'ENGENHEIRO DE SISTEMAS & CRIADOR',
+    roleHeading: 'DESENVOLVEDOR FRONTEND & CRIADOR',
     bioP1:
-      'Engenheiro de Software focado na arquitetura de sistemas distribuídos de alta disponibilidade, computação em nuvem resiliente e pipelines de mídia assíncrona 24/7. Minha rotina é orquestrar concorrência pesada e projetar serviços onde falhas não são uma opção.',
+      'Desenvolvedor frontend no time da Magalu Cloud, construindo com Astro, React e Tailwind. Antes do código, foram 8 anos no ecossistema Magalu entre SAC e helpdesk — onde comecei a automatizar o próprio trabalho com extensões, dashboards e chatbots.',
     bioP2:
-      'A engenharia não termina no terminal. Trago uma direção de arte inspirada no brutalismo gráfico de Persona 5 e no ritmo neo-noir de Cowboy Bebop: interfaces angulares, velozes e expressivas construídas sobre arquitetura SOLID.',
+      'Fora do expediente, levo direção de arte para a web: interfaces angulares inspiradas em Persona 5 e Cowboy Bebop, com motion de 60fps. Pai da Helena, operando de Franca / SP.',
     bioP3:
       'Acima de qualquer cluster distribuído, a base real é humana: pai dedicado da Helena — fonte diária de propósito e alegria — e noivo apaixonado, operando diretamente de Franca / SP.',
     manifestoTag: 'MANIFESTO CENTRAL',
@@ -441,10 +441,10 @@ export const ptBrDict: TranslationSchema = {
       coreLabel: 'NÚCLEO HUMANO //',
       coreValue: PROFILE.family['pt-br'],
       stackLabel: 'ARSENAL PRINCIPAL //',
-      stackValue: 'Go • Node.js/TS • Docker/K8s • FFmpeg • Astro 5 • React 19 • GSAP',
+      stackValue: 'Astro • React/Next.js • TypeScript • Tailwind • GSAP',
     },
     skillsTag: '// MATRIZ DE HABILIDADES • CONFIDANT RANKS',
-    skillsTitle: 'ARSENAL TÉCNICO // 4 DOMÍNIOS',
+    skillsTitle: 'ARSENAL TÉCNICO // 3 DOMÍNIOS',
     skillsCount: '4 ARCANAS • 24 CAPACIDADES VERIFICADAS',
   },
   lab: {
@@ -591,12 +591,12 @@ export const ptBrDict: TranslationSchema = {
     sessionComplete: '[SESSÃO CONCLUÍDA // TELEMETRIA 100% VERIFICADA — FRANCA / SP]',
     steps: {
       whoamiOut: `${PROFILE.fullName} (@${PROFILE.handle}) — ${PROFILE.role['pt-br']}`,
-      uptimeOut: `${PROFILE.family['pt-br']} · Construindo sistemas distribuídos e interfaces brutalistas`,
+      uptimeOut: `${PROFILE.family['pt-br']} · Desenvolvedor frontend na Magalu Cloud`,
       locationOut: `${PROFILE.location.remoteLabel['pt-br']} (${PROFILE.email})`,
       missionOut:
-        'Streaming 24/7 & Arquitetura Distribuída (Cloud Compute & Object Storage S3 na Magalu Cloud)',
+        'Frontend na Magalu Cloud • Streaming 24/7 com a AuraStream na Magalu Cloud',
       skillsOut:
-        'total 8\ndrwxr-xr-x  golang/      typescript/  react-19/   astro-5/\ndrwxr-xr-x  threejs/     gsap/        docker/     solid-arch/',
+        'total 8\ndrwxr-xr-x  astro/       react-19/    typescript/  tailwind/\ndrwxr-xr-x  gsap/        playwright/  docker/      solid-arch/',
       philosophyOut:
         '"Arquitetura limpa SOLID, código resiliente na nuvem e direção de arte inegociável."',
     },
@@ -608,12 +608,12 @@ export const enDict = {
     skipToContent: 'SKIP TO MAIN CONTENT',
   },
   meta: {
-    title: 'Bruno Dinis // Brinu — Software Engineer & Creative Technologist',
+    title: 'Bruno Dinis // Brinu — Frontend Developer & Creative Developer',
     description:
-      'Brutalist software engineering, distributed systems, and high-performance UI portfolio of Bruno de Andrade Dinis (Brinu), based in Franca / SP, Brazil.',
+      'Portfolio of Bruno de Andrade Dinis (Brinu), Frontend Developer at Magalu Cloud: Astro, React, TypeScript and GSAP motion, based in Franca / SP, Brazil.',
     whoamiTitle: 'Bruno Dinis // Brinu — Confidant Terminal /whoami',
     whoamiDescription:
-      'Interactive command terminal of Bruno Dinis (Brinu): cloud architecture, distributed systems, and engineering principles.',
+      'Interactive terminal of Bruno Dinis (Brinu): career, stack and projects.',
   },
   preloader: {
     sceneTag: '[ 1996 // ACT 01 ]',
@@ -649,7 +649,7 @@ export const enDict = {
   },
   hero: {
     ticker:
-      "• ARCHITECTING RESILIENT DISTRIBUTED SYSTEMS • CREATIVE TECHNOLOGIST • HELENA'S DAD • FIANCÉ • FRANCA / SP • SEE YOU SPACE COWBOY •",
+      '• FRONTEND DEVELOPER • MAGALU CLOUD • CREATIVE DEVELOPER • HELENA\'S DAD • FRANCA / SP • SEE YOU SPACE COWBOY •',
     avatarAria:
       'Official avatar of Bruno Dinis in brutalist frame. Click to interact.',
     bubbleDefault: PROFILE.family.en,
@@ -659,30 +659,30 @@ export const enDict = {
       "It's a trap, Brinu!",
       PROFILE.role.en,
       'Base: Franca / SP • Remote',
-      'Clean SOLID Architecture & Distributed Systems',
+      'Astro, React & signature motion',
     ],
-    manifestoLeftLine1: 'FOR TOO LONG',
-    manifestoLeftLine2: 'BORING CODE',
-    manifestoLeftLine3: 'HAS RULED THE WEB',
+    manifestoLeftLine1: '8 YEARS AT MAGALU',
+    manifestoLeftLine2: 'FROM SUPPORT',
+    manifestoLeftLine3: 'TO FRONTEND',
     craftCta: 'THE CRAFT HAS BEGUN',
     craftAria: 'Explore selected works: The Craft Has Begun',
-    manifestoRightLine1: 'TURNING COMPLEX',
-    manifestoRightLine2: 'ARCHITECTURES INTO',
-    manifestoRightLine3: 'BRUTALIST ART',
+    manifestoRightLine1: 'INTERFACES',
+    manifestoRightLine2: 'WITH PERSONALITY',
+    manifestoRightLine3: 'AND CLEAN CODE',
     socialAria: 'Official Contact Channels and Social Profiles',
   },
   filmstrip: {
     sectionAria: 'Filmstrip Storyboard Parallax & Editorial Manifesto',
     tag: '// PARALLAX REEL :: 2.5° BRUTALIST CUT',
-    heading: 'I HAVE IDENTIFIED THE STRONGHOLDS',
+    heading: 'EVERY FRAME, A SHIPPED PROJECT',
     passionTag: '// REEL PARALLAX 02 :: PASSIONS & CULTURAL ARCHIVE -2.5°',
     slides: {
-      s1Title: 'AuraStream 24/7 Cloud Broadcast Engine',
-      s2Title: 'Quake 3 Arena Concurrent Log Parser',
-      s3Title: 'Jokenpo Franky Arena State Machine',
-      s4Title: 'The Warriors Cult Editorial Brutalism',
-      s5Title: 'Resilient Distributed Systems Architecture',
-      s6Title: "Helena's Dad & Creative Technologist",
+      s1Title: 'AuraStream Engine — 24/7 Broadcast',
+      s2Title: 'Quake III Log Parser API',
+      s3Title: 'Jokenpo — Franky Arena',
+      s4Title: 'The Warriors — Landing Page',
+      s5Title: 'Magalu Cloud — Corporate Website',
+      s6Title: 'Helena\'s Dad & Creative Developer',
     },
     passionSlides: {
       p1Reel: 'FRAME 01 // MEDULLA BAND',
@@ -734,11 +734,11 @@ export const enDict = {
     statusBadge: 'STATUS: ACTIVE // DEPLOYED',
     domainLine: PROFILE.tagline.en.toUpperCase(),
     operatorTag: 'OPERATOR: BRINU',
-    roleHeading: 'THE SYSTEM ARCHITECT & MAKER',
+    roleHeading: 'FRONTEND DEVELOPER & MAKER',
     bioP1:
-      'Software Engineer focused on high-availability distributed systems, resilient cloud computing, and 24/7 asynchronous media pipelines. My daily craft is orchestrating heavy concurrency and engineering services where failure is not an option.',
+      'Frontend developer on the Magalu Cloud team, building with Astro, React and Tailwind. Before code, I spent 8 years in the Magalu ecosystem between customer service and helpdesk — where I started automating my own work with extensions, dashboards and chatbots.',
     bioP2:
-      'Engineering does not stop at the command line. I bring a sharp aesthetic signature inspired by Persona 5 graphic brutalism and Cowboy Bebop neo-noir rhythm: angular, fast, and expressive interfaces built on SOLID architecture.',
+      'Off the clock, I bring art direction to the web: angular interfaces inspired by Persona 5 and Cowboy Bebop, with 60fps motion. Helena\'s dad, based in Franca / SP.',
     bioP3:
       'Above any cloud cluster or distributed pipeline, the foundation is human: devoted father to Helena — my daily source of joy and purpose — and proud fiancé, operating out of Franca / SP, Brazil.',
     manifestoTag: 'CORE MANIFESTO',
@@ -752,10 +752,10 @@ export const enDict = {
       coreLabel: 'HUMAN CORE //',
       coreValue: PROFILE.family.en,
       stackLabel: 'CORE ARSENAL //',
-      stackValue: 'Go • Node.js/TS • Docker/K8s • FFmpeg • Astro 5 • React 19 • GSAP',
+      stackValue: 'Astro • React/Next.js • TypeScript • Tailwind • GSAP',
     },
     skillsTag: '// SKILL MATRIX • CONFIDANT RANKS',
-    skillsTitle: 'TECHNICAL ARSENAL // 4 DOMAINS',
+    skillsTitle: 'TECHNICAL ARSENAL // 3 DOMAINS',
     skillsCount: '4 ARCANAS • 24 VERIFIED CAPABILITIES',
   },
   lab: {
@@ -902,12 +902,12 @@ export const enDict = {
     sessionComplete: '[SESSION COMPLETE // 100% TELEMETRY VERIFIED — FRANCA / SP]',
     steps: {
       whoamiOut: `${PROFILE.fullName} (@${PROFILE.handle}) — ${PROFILE.role.en}`,
-      uptimeOut: `${PROFILE.family.en} · Engineering distributed systems and brutalist interfaces`,
+      uptimeOut: `${PROFILE.family.en} · Frontend developer at Magalu Cloud`,
       locationOut: `${PROFILE.location.remoteLabel.en} (${PROFILE.email})`,
       missionOut:
-        '24/7 Streaming & Distributed Architecture (Cloud Compute & S3 Object Storage on Magalu Cloud)',
+        'Frontend at Magalu Cloud • 24/7 streaming with AuraStream on Magalu Cloud',
       skillsOut:
-        'total 8\ndrwxr-xr-x  golang/      typescript/  react-19/   astro-5/\ndrwxr-xr-x  threejs/     gsap/        docker/     solid-arch/',
+        'total 8\ndrwxr-xr-x  astro/       react-19/    typescript/  tailwind/\ndrwxr-xr-x  gsap/        playwright/  docker/      solid-arch/',
       philosophyOut:
         '"Clean SOLID architecture, resilient cloud code, and uncompromising art direction."',
     },
