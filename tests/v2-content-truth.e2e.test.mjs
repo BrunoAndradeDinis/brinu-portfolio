@@ -336,9 +336,32 @@ const { mottoSentence } = await import('../src/components/filmstrip/motto.ts');
 
 const normalize = (text) => text.replace(/\s+/g, ' ').trim();
 
+function ptOnlyStrings() {
+  const pairs = [];
+  const walk = (pt, en) => {
+    if (typeof pt === 'string') {
+      if (typeof en === 'string' && pt.trim() && pt !== en) pairs.push(pt.trim());
+      return;
+    }
+    if (pt && typeof pt === 'object') for (const key of Object.keys(pt)) walk(pt[key], en?.[key]);
+  };
+  walk(ptBrDict, enDict);
+  return new Set(pairs);
+}
+
 test('C3: switching to en translates portrait alt and filmstrip captions', async () => {
-  const { context, page } = await openHome('en');
+  const { context, page } = await openHome('pt-br');
   try {
+    for (const id of ['#lab-crt-tuner', '#lab-sonar-radar', '#lab-cyber-deck', '#contact']) {
+      await page.locator(id).scrollIntoViewIfNeeded();
+      await page.waitForTimeout(300);
+    }
+    await page.waitForFunction(() => document.querySelectorAll('astro-island[ssr]').length === 0, null, { timeout: 15000 });
+    await page.evaluate(() => window.scrollTo(0, 0));
+    await page.locator('#nav-lang-toggle-btn').click();
+    await page.waitForFunction(() => window.localStorage.getItem('brinu_locale') === 'en' && document.documentElement.lang === 'en');
+    await page.waitForTimeout(800);
+
     assert.equal(await page.locator('#about-official-avatar').getAttribute('alt'), enDict.about.portraitAlt);
     assert.notEqual(enDict.about.portraitAlt, ptBrDict.about.portraitAlt);
     for (const i of [1, 2, 3, 4, 5, 6]) {
@@ -347,6 +370,20 @@ test('C3: switching to en translates portrait alt and filmstrip captions', async
       assert.equal((await slide.locator(`[data-i18n="filmstrip.slides.s${i}Title"]`).textContent()).trim(), enDict.filmstrip.slides[`s${i}Title`]);
       assert.equal(await slide.locator('img').getAttribute('alt'), enDict.filmstrip.slides[`s${i}Alt`]);
     }
+
+    const attributes = await page.evaluate(() =>
+      [...document.querySelectorAll('[alt], [aria-label], [title]')].flatMap((el) =>
+        ['alt', 'aria-label', 'title']
+          .filter((name) => el.hasAttribute(name))
+          .map((name) => ({ name, value: el.getAttribute(name).trim(), tag: el.tagName }))
+      )
+    );
+    assert.ok(attributes.length > 20, `expected many labelled elements, got ${attributes.length}`);
+    const ptStrings = ptOnlyStrings();
+    const leftovers = attributes.filter(
+      (a) => a.value && (ptStrings.has(a.value) || /[ãõç]|ção\b|ções\b|\b(de|do|da|para|com)\s/i.test(a.value))
+    );
+    assert.deepEqual(leftovers, [], 'portuguese text left in attributes on the en page');
   } finally {
     await context.close();
   }

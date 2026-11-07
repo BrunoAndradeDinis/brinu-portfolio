@@ -46,7 +46,9 @@ import { ptBrDict } from "../i18n/dictionaries";
     <div
       data-lab-nav
       class="mt-6 flex flex-wrap items-center gap-2.5 sm:gap-3 text-xs font-mono"
-      aria-label="Creative Lab Experiments"
+      aria-label={ptBrDict.a11y.labNavAria}
+      data-i18n="a11y.labNavAria"
+      data-i18n-attr="aria-label"
     >
       <span class="text-bebop-red uppercase text-[11px] font-bold mr-1" data-i18n="lab.indexLabel">
         {ptBrDict.lab.indexLabel}

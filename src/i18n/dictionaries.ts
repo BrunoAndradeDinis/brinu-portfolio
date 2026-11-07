@@ -5,6 +5,10 @@ export type Locale = 'pt-br' | 'en';
 export interface TranslationSchema {
   a11y: {
     skipToContent: string;
+    preloaderAria: string;
+    mainNavAria: string;
+    heroPortraitAlt: string;
+    labNavAria: string;
   };
   meta: {
     title: string;
@@ -299,6 +303,10 @@ export interface TranslationSchema {
 export const ptBrDict: TranslationSchema = {
   a11y: {
     skipToContent: 'PULAR PARA O CONTEÚDO PRINCIPAL',
+    preloaderAria: 'Abertura do portfólio',
+    mainNavAria: 'Navegação principal',
+    heroPortraitAlt: 'Retrato estilo HQ noir de Bruno Dinis',
+    labNavAria: 'Experimentos do Creative Lab',
   },
   meta: {
     title: 'Bruno Dinis // Brinu — Desenvolvedor Frontend & Creative Developer',
@@ -612,6 +620,10 @@ export const ptBrDict: TranslationSchema = {
 export const enDict = {
   a11y: {
     skipToContent: 'SKIP TO MAIN CONTENT',
+    preloaderAria: 'Portfolio opening',
+    mainNavAria: 'Main navigation',
+    heroPortraitAlt: 'Noir comic-style portrait of Bruno Dinis',
+    labNavAria: 'Creative Lab experiments',
   },
   meta: {
     title: 'Bruno Dinis // Brinu — Frontend Developer & Creative Developer',
