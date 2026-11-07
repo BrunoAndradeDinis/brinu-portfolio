@@ -49,12 +49,12 @@ export const PROFILE = {
   birthYear: 1996,
   operatorId: 'BD-1996',
   role: {
-    'pt-br': 'Engenheiro de Software & Creative Technologist',
-    en: 'Software Engineer & Creative Technologist',
+    'pt-br': 'Desenvolvedor Frontend & Creative Developer',
+    en: 'Frontend Developer & Creative Developer',
   },
   tagline: {
-    'pt-br': 'Arquitetura em Nuvem • Sistemas Distribuídos • Interfaces Expressivas',
-    en: 'Cloud Architecture • Distributed Systems • Expressive Interfaces',
+    'pt-br': 'Astro & React • Motion de autor • Interfaces expressivas',
+    en: 'Astro & React • Signature motion • Expressive interfaces',
   },
   location: {
     city: 'Franca',
@@ -93,7 +93,6 @@ export interface PersonJsonLdContract {
   readonly '@type': 'Person';
   readonly name: string;
   readonly alternateName: string;
-  readonly birthDate: string;
   readonly jobTitle: string;
   readonly email: string;
   readonly address: {
@@ -111,7 +110,6 @@ export function buildPersonJsonLd(): PersonJsonLdContract {
     '@type': 'Person',
     name: PROFILE.fullName,
     alternateName: PROFILE.handle,
-    birthDate: String(PROFILE.birthYear),
     jobTitle: PROFILE.role.en,
     email: PROFILE.email,
     address: {

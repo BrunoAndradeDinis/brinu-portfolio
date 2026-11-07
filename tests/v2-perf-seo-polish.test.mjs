@@ -203,7 +203,7 @@ test('T2a: buildPersonJsonLd exports canonical Schema.org Person with Franca / S
   assert.equal(jsonLd['@type'], 'Person');
   assert.equal(jsonLd.name, 'Bruno de Andrade Dinis');
   assert.equal(jsonLd.alternateName, 'Brinu');
-  assert.equal(jsonLd.birthDate, '1996');
+  assert.equal('birthDate' in jsonLd, false);
   assert.equal(jsonLd.email, 'bruno.a.dinis96@gmail.com');
   assert.equal(jsonLd.address['@type'], 'PostalAddress');
   assert.equal(jsonLd.address.addressLocality, 'Franca');

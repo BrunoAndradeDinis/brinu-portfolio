@@ -232,3 +232,17 @@ test('T5: arsenal counter and localized evidence labels come from the data', () 
   const prisma = getLocalizedArsenal('en').flatMap((d) => d.skills).find((s) => s.name === 'PostgreSQL + Prisma');
   assert.deepEqual(prisma.evidence, [{ ref: 'case:uriana', anchor: 'case-uriana', label: 'Uriana' }]);
 });
+
+const { PROFILE, buildPersonJsonLd } = await import('../src/data/profile.ts');
+
+test('C1: profile role is frontend developer and creative developer', () => {
+  assert.equal(PROFILE.role['pt-br'], 'Desenvolvedor Frontend & Creative Developer');
+  assert.equal(PROFILE.role.en, 'Frontend Developer & Creative Developer');
+});
+
+test('C4: json-ld job title is the en role and has no birth date', () => {
+  const jsonLd = buildPersonJsonLd();
+  assert.equal(jsonLd.jobTitle, 'Frontend Developer & Creative Developer');
+  assert.equal('birthDate' in jsonLd, false);
+  assert.doesNotMatch(JSON.stringify(jsonLd), /1996-|"1996"/);
+});
