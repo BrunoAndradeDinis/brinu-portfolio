@@ -75,6 +75,7 @@ export const SonarRadar: React.FC = () => {
   const beamAngleRef = useRef<number>(0);
   const animFrameRef = useRef<number>(0);
   const lastTimeRef = useRef<number>(0);
+  const monoFontRef = useRef<string>('monospace');
 
   useEffect(() => {
     setIsMuted(audioSynth.isMuted());
@@ -218,7 +219,7 @@ export const SonarRadar: React.FC = () => {
       }
 
       if (intensity > 0.25) {
-        ctx.font = '10px "Space Mono", monospace';
+        ctx.font = `10px ${monoFontRef.current}`;
         ctx.fillStyle = target.color;
         ctx.fillText(target.id.toUpperCase(), targetX + 8, targetY + 3);
       }
@@ -235,6 +236,8 @@ export const SonarRadar: React.FC = () => {
     const rect = canvas.getBoundingClientRect();
     canvas.width = rect.width * dpr;
     canvas.height = rect.height * dpr;
+    monoFontRef.current =
+      getComputedStyle(canvas).getPropertyValue('--font-mono').trim() || 'monospace';
 
     animFrameRef.current = requestAnimationFrame(renderRadar);
 

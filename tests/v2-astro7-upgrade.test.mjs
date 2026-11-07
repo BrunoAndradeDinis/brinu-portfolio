@@ -237,3 +237,31 @@ test('C11: font-display token lists only loaded families', async () => {
     await page.close();
   }
 });
+
+function listSourceFiles(dir) {
+  return fs.readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+    const full = path.join(dir, entry.name);
+    return entry.isDirectory() ? listSourceFiles(full) : [full];
+  });
+}
+
+test('C13: src files resolve fonts through tokens instead of literal family names', async () => {
+  const literalFamily = /["'`](Syne|Archivo|Space Mono|Permanent Marker)["'`]/;
+  const offenders = listSourceFiles('src')
+    .filter((file) => /\.(astro|tsx?|css|mjs|js)$/.test(file))
+    .filter((file) => literalFamily.test(fs.readFileSync(file, 'utf8')));
+  assert.deepEqual(offenders, [], `literal font family names in: ${offenders.join(', ')}`);
+
+  const page = await browser.newPage();
+  try {
+    await page.goto(`${baseUrl}/?freeze`, { waitUntil: 'load' });
+    const monoStack = await page.evaluate(() =>
+      getComputedStyle(document.documentElement).getPropertyValue('--font-mono').trim()
+    );
+    const firstFamily = monoStack.split(',')[0].trim().replace(/^["']|["']$/g, '');
+    assert.notEqual(firstFamily, 'Space Mono', '--font-mono must resolve to the Fonts API family');
+    assert.match(firstFamily, /^Space Mono-/, '--font-mono must start with the self-hosted Space Mono face');
+  } finally {
+    await page.close();
+  }
+});
