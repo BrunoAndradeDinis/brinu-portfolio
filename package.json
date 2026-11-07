@@ -3,12 +3,16 @@
   "type": "module",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": ">=22.22.0"
+  },
   "scripts": {
     "dev": "astro dev",
     "start": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "check": "astro check"
+    "check": "astro check",
+    "test": "npm run build && node --test tests/*.test.mjs"
   },
   "dependencies": {
     "@astrojs/react": "^4.2.1",
