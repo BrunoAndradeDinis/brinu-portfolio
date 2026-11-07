@@ -15,10 +15,10 @@
   --color-crt-cyan: #FE0000;
   --color-alarm-red: #FE0000;
 
-  --font-display: 'Heavitas', 'Syne', 'Cabinet Grotesk', sans-serif;
-  --font-spray: 'spray', 'Permanent Marker', cursive;
-  --font-mono: 'Space Mono', 'JetBrains Mono', monospace;
-  --font-body: 'Archivo', 'Helvetica Neue', sans-serif;
+  --font-display: var(--font-syne);
+  --font-spray: var(--font-permanent-marker);
+  --font-mono: var(--font-space-mono);
+  --font-body: var(--font-archivo);
 
   --shadow-comic-xs: 0 2px 0 #080808;
   --shadow-comic-sm: 0 3px 0 #080808;
@@ -88,11 +88,6 @@
   --color-muted-gray: #C7C6BF;
   --color-crt-cyan: #FE0000;
   --color-alarm-red: #FE0000;
-
-  --font-display: 'Heavitas', 'Syne', 'Cabinet Grotesk', sans-serif;
-  --font-spray: 'spray', 'Permanent Marker', cursive;
-  --font-mono: 'Space Mono', 'JetBrains Mono', monospace;
-  --font-body: 'Archivo', 'Helvetica Neue', sans-serif;
 
   --border-comic-thick: 0.7rem;
   --border-comic-heavy: 0.5rem;

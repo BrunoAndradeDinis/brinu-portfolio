@@ -194,3 +194,32 @@ test('C12: generated font faces use font-display swap', async () => {
     await page.close();
   }
 });
+
+test('C11: font-display token lists only loaded families', async () => {
+  const tokens = fs.readFileSync('src/styles/tokens.css', 'utf8');
+  const declarations = tokens.match(/--font-display\s*:[^;]+;/g) ?? [];
+  assert.equal(declarations.length, 1, '--font-display must be declared exactly once');
+  assert.ok(!/Heavitas/i.test(tokens), 'tokens.css must not name Heavitas');
+
+  const page = await browser.newPage();
+  try {
+    await page.goto(`${baseUrl}/?freeze`, { waitUntil: 'load' });
+    const result = await page.evaluate(async () => {
+      await document.fonts.ready;
+      const probe = document.createElement('span');
+      probe.className = 'font-display';
+      probe.textContent = 'BRINU';
+      document.body.appendChild(probe);
+      const family = getComputedStyle(probe).fontFamily.split(',')[0].trim();
+      await document.fonts.load(`800 1em ${family}`);
+      const loaded = [...document.fonts].some(
+        (f) => f.status === 'loaded' && family.replace(/["']/g, '') === f.family.replace(/["']/g, '')
+      );
+      probe.remove();
+      return { family, loaded };
+    });
+    assert.ok(result.loaded, `first family of .font-display (${result.family}) has no loaded font face`);
+  } finally {
+    await page.close();
+  }
+});
