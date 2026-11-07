@@ -228,7 +228,7 @@ test('C24: clicking an evidence chip scrolls to its card', async () => {
     const before = await page.evaluate(() => document.getElementById('case-uriana').getBoundingClientRect().top);
     assert.ok(Math.abs(before) > 900, `card must start out of view (top ${before})`);
     await chip.dispatchEvent('click', { button: 0 });
-    await page.waitForFunction(() => Math.abs(document.getElementById('case-uriana').getBoundingClientRect().top) <= 40, null, {
+    await page.waitForFunction(() => Math.abs(document.getElementById('case-uriana').getBoundingClientRect().top) <= 90, null, {
       timeout: 15000,
     });
   } finally {

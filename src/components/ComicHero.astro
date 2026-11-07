@@ -1,6 +1,8 @@
 ---
 import { PROFILE } from "../data/profile";
 import { ptBrDict } from "../i18n/dictionaries";
+import P5Panel from "./p5/P5Panel.astro";
+import P5Badge from "./p5/P5Badge.astro";
 ---
 
 <div
@@ -78,23 +80,28 @@ import { ptBrDict } from "../i18n/dictionaries";
           </div>
 
           <div
-            class="relative h-[clamp(3.2rem,13vw,4.5rem)] w-[clamp(3.2rem,13vw,4.5rem)] sm:h-[clamp(5.5rem,12vw,7.5rem)] sm:w-[clamp(5.5rem,12vw,7.5rem)] md:h-[clamp(8rem,13vw,11.5rem)] md:w-[clamp(8rem,13vw,11.5rem)] lg:h-[clamp(11.5rem,14vw,15.5rem)] lg:w-[clamp(11.5rem,14vw,15.5rem)] overflow-hidden border-3 sm:border-4 md:border-[0.45rem] lg:border-[0.5rem] border-space-base bg-paper-white shadow-[0_3px_0_var(--color-space-base)] sm:shadow-[0_5px_0_var(--color-space-base)] md:shadow-[0_7px_0_var(--color-space-base)] lg:shadow-[0_10px_0_var(--color-space-base)]"
+            data-hero-avatar-frame
+            class="relative h-[clamp(3.2rem,13vw,4.5rem)] w-[clamp(3.2rem,13vw,4.5rem)] sm:h-[clamp(5.5rem,12vw,7.5rem)] sm:w-[clamp(5.5rem,12vw,7.5rem)] md:h-[clamp(8rem,13vw,11.5rem)] md:w-[clamp(8rem,13vw,11.5rem)] lg:h-[clamp(11.5rem,14vw,15.5rem)] lg:w-[clamp(11.5rem,14vw,15.5rem)] rotate-[5deg] bg-space-base p-[0.3rem] sm:p-[0.4rem] md:p-[0.5rem] [clip-path:polygon(9%_0%,100%_7%,91%_100%,0%_93%)]"
           >
-            <img
-              src="/assets/brinu-avatar.jpg"
-              alt={ptBrDict.a11y.heroPortraitAlt}
-              data-i18n="a11y.heroPortraitAlt"
-              data-i18n-attr="alt"
-              class="h-full w-full object-cover contrast-125 saturate-110 transition-transform duration-500 ease-out group-hover:scale-110"
-            />
             <div
-              class="pointer-events-none absolute inset-0 bg-gradient-to-t from-space-base/30 via-transparent to-transparent mix-blend-multiply"
-              aria-hidden="true"
-            ></div>
-            <div
-              class="pointer-events-none absolute inset-0 bg-[radial-gradient(#080808_1px,transparent_1px)] [background-size:6px_6px] opacity-10 mix-blend-overlay"
-              aria-hidden="true"
-            ></div>
+              class="relative h-full w-full overflow-hidden bg-paper-white [clip-path:polygon(9%_0%,100%_7%,91%_100%,0%_93%)]"
+            >
+              <img
+                src="/assets/brinu-avatar.jpg"
+                alt={ptBrDict.a11y.heroPortraitAlt}
+                data-i18n="a11y.heroPortraitAlt"
+                data-i18n-attr="alt"
+                class="h-full w-full -rotate-[5deg] scale-125 object-cover contrast-125 saturate-110 transition-transform duration-500 ease-out group-hover:scale-[1.35]"
+              />
+              <div
+                class="pointer-events-none absolute inset-0 bg-gradient-to-t from-space-base/30 via-transparent to-transparent mix-blend-multiply"
+                aria-hidden="true"
+              ></div>
+              <div
+                class="pointer-events-none absolute inset-0 bg-[radial-gradient(#080808_1px,transparent_1px)] [background-size:6px_6px] opacity-10 mix-blend-overlay"
+                aria-hidden="true"
+              ></div>
+            </div>
           </div>
 
           <div
@@ -119,14 +126,16 @@ import { ptBrDict } from "../i18n/dictionaries";
     </div>
 
     <div
-      class="mt-4 sm:mt-8 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-5 sm:gap-6 md:gap-8 pt-2 sm:pt-4"
+      class="mt-6 sm:mt-10 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6 sm:gap-8 pt-2 sm:pt-4"
     >
-      <div
+      <P5Panel
+        as="div"
+        cut="a"
         data-hero-manifesto="left"
-        class="flex flex-col items-start text-left max-w-full sm:max-w-[48%] lg:max-w-md shrink-0"
+        class="-rotate-1 bg-space-base px-4 py-4 sm:px-6 sm:py-5 flex flex-col items-start text-left max-w-full sm:max-w-[48%] lg:max-w-md shrink-0"
       >
         <p
-          class="mb-2 sm:mb-4 font-body text-xs sm:text-base md:text-lg lg:text-2xl font-black leading-snug tracking-tight text-space-base uppercase"
+          class="mb-2 sm:mb-4 font-body text-xs sm:text-base md:text-lg lg:text-2xl font-black leading-snug tracking-tight text-paper-white uppercase"
         >
           <span data-i18n="hero.manifestoLeftLine1">{ptBrDict.hero.manifestoLeftLine1}</span><br />
           <span data-i18n="hero.manifestoLeftLine2">{ptBrDict.hero.manifestoLeftLine2}</span><br />
@@ -134,13 +143,13 @@ import { ptBrDict } from "../i18n/dictionaries";
         </p>
         <a
           href="#works"
-          class="group/craft inline-flex items-center gap-1.5 sm:gap-2.5 font-mono text-[11px] sm:text-xs md:text-xs lg:text-sm tracking-wider text-space-base transition-opacity hover:opacity-85 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-space-base"
+          class="group/craft inline-flex items-center gap-1.5 sm:gap-2.5 font-mono text-[11px] sm:text-xs md:text-xs lg:text-sm tracking-wider text-paper-white transition-opacity hover:opacity-85 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-paper-white"
           aria-label={ptBrDict.hero.craftAria}
           data-i18n="hero.craftAria"
           data-i18n-attr="aria-label"
         >
           <span
-            class="inline-flex h-5 w-5 sm:h-6 sm:w-6 items-center justify-center bg-space-base text-paper-white transition-transform duration-200 group-hover/craft:translate-y-0.5"
+            class="inline-flex h-5 w-5 sm:h-6 sm:w-6 items-center justify-center bg-bebop-red text-space-base transition-transform duration-200 group-hover/craft:translate-y-0.5"
             aria-hidden="true"
           >
             <svg class="size-3 sm:size-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
@@ -149,50 +158,51 @@ import { ptBrDict } from "../i18n/dictionaries";
           </span>
           <span class="font-black" data-i18n="hero.craftCta">{ptBrDict.hero.craftCta}</span>
         </a>
-      </div>
+      </P5Panel>
 
-      <div
-        data-hero-manifesto="right"
-        class="flex flex-col items-start sm:items-end text-left sm:text-right max-w-full sm:max-w-[50%] lg:max-w-md shrink-0"
-      >
-        <p
-          class="mb-2 sm:mb-4 font-body text-xs sm:text-base md:text-lg lg:text-2xl font-black leading-snug tracking-tight text-space-base text-left sm:text-right uppercase"
+      <div class="flex flex-col items-start sm:items-end gap-4 max-w-full sm:max-w-[50%] lg:max-w-md shrink-0">
+        <P5Panel
+          as="div"
+          cut="b"
+          data-hero-manifesto="right"
+          class="rotate-1 bg-paper-white px-4 py-4 sm:px-6 sm:py-5 flex flex-col items-start sm:items-end text-left sm:text-right"
         >
-          <span data-i18n="hero.manifestoRightLine1">{ptBrDict.hero.manifestoRightLine1}</span><br />
-          <span data-i18n="hero.manifestoRightLine2">{ptBrDict.hero.manifestoRightLine2}</span><br />
-          <span data-i18n="hero.manifestoRightLine3">{ptBrDict.hero.manifestoRightLine3}</span>
-        </p>
+          <p
+            class="font-body text-xs sm:text-base md:text-lg lg:text-2xl font-black leading-snug tracking-tight text-space-base text-left sm:text-right uppercase"
+          >
+            <span data-i18n="hero.manifestoRightLine1">{ptBrDict.hero.manifestoRightLine1}</span><br />
+            <span data-i18n="hero.manifestoRightLine2">{ptBrDict.hero.manifestoRightLine2}</span><br />
+            <span data-i18n="hero.manifestoRightLine3">{ptBrDict.hero.manifestoRightLine3}</span>
+          </p>
+        </P5Panel>
         <div
-          class="flex flex-wrap justify-start sm:justify-end gap-1.5 sm:gap-2 lg:gap-2.5"
+          data-hero-socials
+          class="flex flex-col items-start sm:items-end gap-2"
           role="list"
           aria-label={ptBrDict.hero.socialAria}
           data-i18n="hero.socialAria"
           data-i18n-attr="aria-label"
         >
           <a
-            href={PROFILE.github.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            class="inline-block border-2 border-space-base bg-space-base px-2.5 py-1 sm:px-3.5 sm:py-1.5 font-mono text-[10px] sm:text-xs lg:text-sm font-bold text-paper-white transition-all duration-150 hover:-translate-y-0.5 hover:bg-paper-white hover:text-space-base shadow-[3px_3px_0_var(--color-space-base)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-space-base"
+            href={PROFILE.github.url} target="_blank" rel="noopener noreferrer"
+            class="group/badge focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-space-base"
             aria-label={`GitHub (${PROFILE.github.handle})`}
           >
-            GITHUB
+            <P5Badge class="inline-block bg-space-base px-3 py-1.5 sm:px-4 sm:py-2 font-mono text-[10px] sm:text-xs lg:text-sm font-bold text-paper-white transition-colors duration-150 group-hover/badge:bg-paper-white group-hover/badge:text-space-base">GITHUB</P5Badge>
           </a>
           <a
-            href={PROFILE.linkedin.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            class="inline-block border-2 border-space-base bg-space-base px-2.5 py-1 sm:px-3.5 sm:py-1.5 font-mono text-[10px] sm:text-xs lg:text-sm font-bold text-paper-white transition-all duration-150 hover:-translate-y-0.5 hover:bg-paper-white hover:text-space-base shadow-[3px_3px_0_var(--color-space-base)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-space-base"
+            href={PROFILE.linkedin.url} target="_blank" rel="noopener noreferrer"
+            class="group/badge focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-space-base"
             aria-label={`LinkedIn (${PROFILE.linkedin.handle})`}
           >
-            LINKEDIN
+            <P5Badge class="inline-block bg-space-base px-3 py-1.5 sm:px-4 sm:py-2 font-mono text-[10px] sm:text-xs lg:text-sm font-bold text-paper-white transition-colors duration-150 group-hover/badge:bg-paper-white group-hover/badge:text-space-base">LINKEDIN</P5Badge>
           </a>
           <a
             href={`mailto:${PROFILE.email}`}
-            class="inline-block border-2 border-space-base bg-space-base px-2.5 py-1 sm:px-3.5 sm:py-1.5 font-mono text-[10px] sm:text-xs lg:text-sm font-bold text-paper-white transition-all duration-150 hover:-translate-y-0.5 hover:bg-paper-white hover:text-space-base shadow-[3px_3px_0_var(--color-space-base)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-space-base"
+            class="group/badge focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-space-base"
             aria-label={`E-mail (${PROFILE.email})`}
           >
-            E-MAIL
+            <P5Badge class="inline-block bg-space-base px-3 py-1.5 sm:px-4 sm:py-2 font-mono text-[10px] sm:text-xs lg:text-sm font-bold text-paper-white transition-colors duration-150 group-hover/badge:bg-paper-white group-hover/badge:text-space-base">E-MAIL</P5Badge>
           </a>
         </div>
       </div>
