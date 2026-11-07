@@ -8,6 +8,7 @@ import { getLocalizedCases } from '../data/cases.ts';
 import { getArsenalCounter, getLocalizedArsenal } from '../data/arsenal.ts';
 import { getLocalizedArchive } from '../data/archive.ts';
 import { getLocalizedCareer, getLocalizedEducation } from '../data/career.ts';
+import { renderRansomTitleDom } from '../components/p5/ransom.ts';
 
 export { DICTIONARIES, type Locale, type TranslationSchema };
 
@@ -148,6 +149,9 @@ export function applyDomTranslations(locale: Locale): void {
       const targetAttr = el.getAttribute('data-i18n-attr');
       if (targetAttr) {
         el.setAttribute(targetAttr, translated);
+      } else if (el.hasAttribute('data-p5-title')) {
+        const wasRevealed = el.getAttribute('data-p5-revealed') !== 'false';
+        renderRansomTitleDom(el, translated, { reveal: wasRevealed });
       } else {
         el.textContent = translated;
       }

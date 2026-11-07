@@ -1,0 +1,96 @@
+---
+import type { HTMLAttributes } from "astro/types";
+
+interface Props extends HTMLAttributes<"h2"> {
+  text: string;
+  class?: string;
+}
+
+const { text, class: className = "", ...rest } = Astro.props;
+---
+
+<h2
+  data-p5-title
+  data-p5-raw-text={text}
+  aria-label={text}
+  class:list={["p5-title", className]}
+  {...rest}
+>{text}</h2>
+
+<script>
+  import { gsap, ScrollTrigger, registerP5Eases } from "../../utils/motion";
+  import { renderRansomTitleDom, revealRansomTitleDom } from "./ransom";
+
+  function initP5Titles() {
+    registerP5Eases();
+    const prefersReducedMotion =
+      typeof window.matchMedia === "function" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    const titles = document.querySelectorAll<HTMLElement>("[data-p5-title]");
+    titles.forEach((titleEl) => {
+      if (titleEl.dataset.p5Bound === "true") return;
+      titleEl.dataset.p5Bound = "true";
+
+      if (prefersReducedMotion) {
+        titleEl.dataset.p5Animated = "false";
+        renderRansomTitleDom(titleEl, undefined, { reveal: true });
+        return;
+      }
+
+      titleEl.dataset.p5Animated = "true";
+      renderRansomTitleDom(titleEl, undefined, { reveal: false });
+
+      const triggerReveal = () => {
+        if (titleEl.getAttribute("data-p5-revealed") === "true") return;
+        const chars = revealRansomTitleDom(titleEl);
+        if (chars.length === 0) return;
+
+        gsap.fromTo(
+          chars,
+          { y: 12, scale: 0.86, rotation: 0 },
+          {
+            y: 0,
+            scale: 1,
+            rotation: (_idx, target: HTMLElement) =>
+              Number(target.getAttribute("data-p5-rot") ?? "-4"),
+            duration: 0.24,
+            stagger: 0.012,
+            ease: "p5Overshoot",
+            overwrite: "auto",
+            onComplete: () => {
+              chars.forEach((ch) => {
+                const deg = Number(ch.getAttribute("data-p5-rot") ?? "-4");
+                ch.style.transform = `rotate(${deg}deg)`;
+              });
+            },
+          }
+        );
+      };
+
+      const rect = titleEl.getBoundingClientRect();
+      if (rect.top < window.innerHeight * 0.96 && rect.bottom > 0) {
+        triggerReveal();
+      } else {
+        ScrollTrigger.create({
+          trigger: titleEl,
+          start: "top 95%",
+          once: true,
+          onEnter: triggerReveal,
+        });
+      }
+    });
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initP5Titles);
+  } else {
+    initP5Titles();
+  }
+  document.addEventListener("astro:page-load", () => {
+    document.querySelectorAll<HTMLElement>("[data-p5-title]").forEach((el) => {
+      delete el.dataset.p5Bound;
+    });
+    initP5Titles();
+  });
+</script>

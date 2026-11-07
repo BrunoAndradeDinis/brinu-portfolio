@@ -96,3 +96,57 @@ test('C4: halftone and shatter svg patterns exist under 4 kB each', () => {
   assert.ok(shatterSvg.includes('<svg') && shatterSvg.includes('<pattern') && shatterSvg.includes('<polygon'), 'shatter.svg must define an SVG <pattern> with <polygon> shards');
 });
 
+test('C19: ransom font stacks include explicit fallback families and preserve rotations', async () => {
+  const { RANSOM_FONT_STACKS, planRansomTitle } = await import('../src/components/p5/ransom.ts');
+
+  assert.equal(RANSOM_FONT_STACKS.length, 4);
+  for (const entry of RANSOM_FONT_STACKS) {
+    assert.ok(
+      entry.stack.includes(',') && /(sans-serif|monospace|cursive)/.test(entry.stack),
+      `Font stack "${entry.stack}" must include a generic fallback family`
+    );
+  }
+
+  const words = planRansomTitle('BOUNTY ARCHIVE');
+  const chars = words.flatMap((w) => w.chars);
+  assert.equal(chars.map((c) => c.char).join(''), 'BOUNTYARCHIVE');
+
+  const uniqueFamilies = new Set(chars.map((c) => c.fontToken));
+  assert.ok(uniqueFamilies.size >= 3, `Expected at least 3 font families, got ${uniqueFamilies.size}`);
+
+  for (const ch of chars) {
+    assert.ok(
+      ch.rotationDeg >= -8 && ch.rotationDeg <= 8 && ch.rotationDeg !== 0,
+      `Expected non-zero rotation in [-8, 8], got ${ch.rotationDeg} for "${ch.char}"`
+    );
+    assert.ok(
+      ch.fontStack.includes(',') && /(sans-serif|monospace|cursive)/.test(ch.fontStack),
+      `Expected fallback stack on letter "${ch.char}", got ${ch.fontStack}`
+    );
+  }
+});
+
+test('C20: single-word titles under 4 letters alternate at least 2 font families', async () => {
+  const { planRansomTitle } = await import('../src/components/p5/ransom.ts');
+
+  for (const shortTitle of ['LAB', 'BIO', 'OI', 'HI']) {
+    const words = planRansomTitle(shortTitle);
+    assert.equal(words.length, 1);
+    const chars = words[0].chars;
+    assert.equal(chars.length, shortTitle.length);
+    const families = new Set(chars.map((c) => c.fontToken));
+    assert.ok(
+      families.size >= 2,
+      `Expected "${shortTitle}" (<4 letters) to alternate at least 2 font families, got ${families.size}`
+    );
+    for (let i = 1; i < chars.length; i += 1) {
+      assert.notEqual(
+        chars[i].fontToken,
+        chars[i - 1].fontToken,
+        `Adjacent letters in "${shortTitle}" must alternate font families`
+      );
+    }
+  }
+});
+
+
