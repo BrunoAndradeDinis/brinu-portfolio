@@ -180,3 +180,43 @@ test('C16: hero i18n keys and strings are unchanged in pt-br and en', async () =
     }
   }
 });
+
+test('C15: hero ticker ends in a non-horizontal diagonal cut', async () => {
+  const { context, page } = await openHome('pt-br', { reducedMotion: 'reduce' });
+  try {
+    const clip = await page.locator('[data-hero-ticker]').evaluate((el) => getComputedStyle(el).clipPath);
+    assert.match(clip, /^polygon\(/, `Expected polygon clip-path, got ${clip}`);
+    const points = clip.replace(/^polygon\(|\)$/g, '').split(',').map((p) => p.trim().split(/\s+/));
+    const bottomYs = points.map((p) => parseFloat(p[1])).filter((y) => y > 50);
+    assert.ok(bottomYs.length >= 2, 'polygon needs at least two bottom points');
+    assert.ok(Math.max(...bottomYs) - Math.min(...bottomYs) > 5, `Expected a slanted bottom edge, got y values ${bottomYs}`);
+  } finally {
+    await context.close();
+  }
+});
+
+test('C17: zero horizontal overflow at 320, 375, 768 and 1440px in pt-br and en during and after the intro', async () => {
+  const widths = [320, 375, 768, 1440];
+  for (const locale of ['pt-br', 'en']) {
+    for (const width of widths) {
+      const context = await browser.newContext({ viewport: { width, height: 900 } });
+      const page = await context.newPage();
+      try {
+        await page.addInitScript((loc) => window.localStorage.setItem('brinu_locale', loc), locale);
+        await page.goto(`${baseUrl}/`, { waitUntil: 'networkidle' });
+        await dismissIntroIfPresent(page);
+        const metrics = await page.evaluate(() => {
+          const vw = document.documentElement.clientWidth;
+          const offenders = [...document.querySelectorAll('#hero *, [data-hero-ticker]')]
+            .filter((el) => el.getBoundingClientRect().right > vw + 1 || el.getBoundingClientRect().left < -1)
+            .map((el) => el.tagName + (el.id ? '#' + el.id : '') + '.' + String(el.className).slice(0, 40));
+          return { scrollWidth: document.documentElement.scrollWidth, vw, offenders };
+        });
+        assert.ok(metrics.scrollWidth <= metrics.vw, `Overflow after intro at ${width}px (${locale}): ${metrics.scrollWidth} > ${metrics.vw}`);
+        assert.deepEqual(metrics.offenders.slice(0, 5), [], `Hero elements outside the viewport at ${width}px (${locale})`);
+      } finally {
+        await context.close();
+      }
+    }
+  }
+});
