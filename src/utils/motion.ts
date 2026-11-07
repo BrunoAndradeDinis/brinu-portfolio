@@ -44,6 +44,68 @@ let isInitialized = false;
 let mediaQueryList: MediaQueryList | null = null;
 let handleMediaChange: ((e: MediaQueryListEvent) => void) | null = null;
 let handleAnchorClick: ((e: MouseEvent) => void) | null = null;
+let handleViewportBgSync: (() => void) | null = null;
+
+/**
+ * Calcula a distância vertical do topo da viewport até 16px abaixo dos controles visíveis da nav.
+ */
+export function getNavClearanceOffset(): number {
+  if (typeof document === 'undefined') return 104;
+  const avatar = document.querySelector<HTMLElement>('#comic-nav-logo [data-nav-avatar]');
+  const trigger = document.getElementById('cockpit-trigger-btn');
+  const header = document.getElementById('comic-nav-header');
+
+  let bottom = 0;
+  if (avatar) {
+    bottom = Math.max(bottom, avatar.getBoundingClientRect().bottom);
+  }
+  if (trigger) {
+    bottom = Math.max(bottom, trigger.getBoundingClientRect().bottom);
+  }
+  if (bottom <= 0 && header) {
+    bottom = header.getBoundingClientRect().bottom;
+  }
+  return Math.max(72, Math.ceil(bottom) + 16);
+}
+
+/**
+ * Sincroniza o background-color do <html> e <body> com a seção que ocupa o topo da viewport.
+ */
+export function syncHtmlBackgroundToViewportTop(): void {
+  if (typeof window === 'undefined' || typeof document === 'undefined') return;
+
+  const sections = Array.from(
+    document.querySelectorAll<HTMLElement>('#main-content > section, footer[data-bebop-footer]')
+  );
+  if (sections.length === 0) return;
+
+  const probeY = 8;
+  let active: HTMLElement | null = null;
+
+  for (const sec of sections) {
+    const rect = sec.getBoundingClientRect();
+    if (rect.top <= probeY && rect.bottom > probeY) {
+      active = sec;
+      break;
+    }
+  }
+
+  if (!active) {
+    const firstRect = sections[0]?.getBoundingClientRect();
+    if (firstRect && firstRect.top > probeY) {
+      active = sections[0] ?? null;
+    } else {
+      active = sections[sections.length - 1] ?? null;
+    }
+  }
+
+  if (!active) return;
+  const computedBg = window.getComputedStyle(active).backgroundColor;
+  if (computedBg && computedBg !== 'rgba(0, 0, 0, 0)' && computedBg !== 'transparent') {
+    document.documentElement.style.backgroundColor = computedBg;
+    document.body.style.backgroundColor = computedBg;
+  }
+}
 
 /**
  * Retorna a instância ativa do Lenis Smooth Scroll, se inicializada.
@@ -109,14 +171,19 @@ function setupAnchorInterception(): void {
     event.preventDefault();
 
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const clearance = getNavClearanceOffset();
+    const targetY = Math.max(
+      0,
+      window.scrollY + targetElement.getBoundingClientRect().top - clearance
+    );
 
     if (lenisInstance && !prefersReducedMotion) {
-      lenisInstance.scrollTo(targetElement, {
-        offset: 0,
-        duration: 1.2,
+      lenisInstance.scrollTo(targetY, {
+        duration: 0.75,
+        force: true,
       });
     } else {
-      targetElement.scrollIntoView({ behavior: 'smooth' });
+      window.scrollTo({ top: targetY, behavior: 'auto' });
     }
   };
 
@@ -148,6 +215,7 @@ function createLenis(): void {
 
   // Notifica o ScrollTrigger a cada passo de scroll do Lenis
   lenisInstance.on('scroll', ScrollTrigger.update);
+  lenisInstance.on('scroll', syncHtmlBackgroundToViewportTop);
 
   // Sincroniza o RAF do Lenis ao ticker do GSAP para evitar corrida de quadros
   tickerCallback = (time: number) => {
@@ -174,6 +242,13 @@ export function initMotionCoordinator(): void {
 
   // Interceptação de âncoras suaves (#works, etc.)
   setupAnchorInterception();
+
+  handleViewportBgSync = () => {
+    syncHtmlBackgroundToViewportTop();
+  };
+  window.addEventListener('scroll', handleViewportBgSync, { passive: true });
+  window.addEventListener('resize', handleViewportBgSync, { passive: true });
+  syncHtmlBackgroundToViewportTop();
 
   // Monitora alterações dinâmicas de prefers-reduced-motion
   mediaQueryList = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -231,6 +306,12 @@ export function destroyMotionCoordinator(): void {
   if (handleAnchorClick) {
     document.removeEventListener('click', handleAnchorClick);
     handleAnchorClick = null;
+  }
+
+  if (handleViewportBgSync) {
+    window.removeEventListener('scroll', handleViewportBgSync);
+    window.removeEventListener('resize', handleViewportBgSync);
+    handleViewportBgSync = null;
   }
 
   if (mediaQueryList && handleMediaChange && 'removeEventListener' in mediaQueryList) {

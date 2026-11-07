@@ -14,6 +14,7 @@ html {
   color: var(--color-paper-white);
   font-family: var(--font-body);
   overflow-x: clip;
+  scroll-padding-top: calc(var(--height-comic-nav, 7rem) + 1rem);
   scrollbar-gutter: stable;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;

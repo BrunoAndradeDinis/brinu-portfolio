@@ -18,6 +18,7 @@ import { ptBrDict } from "../i18n/dictionaries";
     data-i18n-attr="aria-label"
   >
     <div
+      data-nav-avatar
       class="flex h-11 w-11 sm:h-12 sm:w-12 md:h-14 md:w-14 shrink-0 items-center justify-center overflow-hidden border-3 sm:border-4 border-space-base bg-paper-white shadow-[3px_3px_0_var(--color-space-base)] transition-transform duration-200 group-hover:scale-105 group-hover:-rotate-3"
     >
       <img
@@ -27,6 +28,7 @@ import { ptBrDict } from "../i18n/dictionaries";
       />
     </div>
     <span
+      data-nav-nameplate
       class="hidden sm:inline-flex items-center border-2 sm:border-3 border-space-base bg-paper-white px-2.5 sm:px-3 py-1 font-display text-xs sm:text-sm md:text-base font-black tracking-tight text-space-base shadow-[3px_3px_0_var(--color-space-base)] -skew-x-6 transition-all duration-150 group-hover:bg-space-base group-hover:text-paper-white group-hover:border-paper-white"
     >
       <span class="skew-x-6">
@@ -248,13 +250,17 @@ import { ptBrDict } from "../i18n/dictionaries";
   }
 
   #comic-nav-header[data-scrolled="true"] .nav-secondary-item,
-  #comic-nav-header[data-cockpit-open="true"] .nav-secondary-item {
+  #comic-nav-header[data-cockpit-open="true"] .nav-secondary-item,
+  #comic-nav-header[data-scrolled="true"] [data-nav-nameplate],
+  #comic-nav-header[data-cockpit-open="true"] [data-nav-nameplate] {
     opacity: 0;
+    visibility: hidden;
     pointer-events: none;
     transform: translateY(-4px) scale(0.95);
   }
 
-  #comic-nav-header .nav-secondary-item {
+  #comic-nav-header .nav-secondary-item,
+  #comic-nav-header [data-nav-nameplate] {
     transition: opacity 200ms ease, transform 200ms ease;
   }
 
