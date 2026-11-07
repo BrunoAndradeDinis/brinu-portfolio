@@ -406,3 +406,13 @@ test('C37: hero and filmstrip render the approved copy deck', async () => {
     }
   }
 });
+
+test('C5: home title and description say desenvolvedor frontend', () => {
+  const html = fs.readFileSync('dist/index.html', 'utf8');
+  const title = (html.match(/<title>([^<]*)<\/title>/)?.[1] ?? '').replaceAll('&amp;', '&');
+  const description = html.match(/<meta name="description" content="([^"]*)"/)?.[1] ?? '';
+  assert.match(title, /Desenvolvedor Frontend/);
+  assert.match(description, /Desenvolvedor Frontend/);
+  assert.doesNotMatch(title, /Software Engineer|Engenheiro de Software/);
+  assert.equal(title, ptBrDict.meta.title);
+});
