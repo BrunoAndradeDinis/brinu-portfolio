@@ -120,7 +120,7 @@ test('C5: every built js chunk is under 500 kB', () => {
 });
 
 const FONT_VARIABLES = [
-  { cssVariable: '--font-syne', weight: 900 },
+  { cssVariable: '--font-syne', weight: 800 },
   { cssVariable: '--font-archivo', weight: 400 },
   { cssVariable: '--font-space-mono', weight: 700 },
   { cssVariable: '--font-permanent-marker', weight: 400 },
@@ -141,20 +141,26 @@ test('C9: syne archivo space mono and permanent marker are loaded', async () => 
   try {
     await page.goto(`${baseUrl}/?freeze`, { waitUntil: 'load' });
     const results = await page.evaluate(async (fonts) => {
+      const unquote = (name) => name.trim().replace(/^["']|["']$/g, '');
+      const covers = (range, weight) => {
+        const [min, max = min] = String(range).split(/\s+/).map(Number);
+        return weight >= min && weight <= max;
+      };
       const rootStyle = getComputedStyle(document.documentElement);
       const out = [];
       for (const { cssVariable, weight } of fonts) {
-        const stack = rootStyle.getPropertyValue(cssVariable).trim();
-        const family = stack.split(',')[0].trim();
-        await document.fonts.load(`${weight} 1em ${family}`);
-        out.push({ cssVariable, family, loaded: family !== '' && document.fonts.check(`${weight} 1em ${family}`) });
+        const firstFamily = rootStyle.getPropertyValue(cssVariable).split(',')[0].trim();
+        const family = unquote(firstFamily);
+        if (family) await document.fonts.load(`${weight} 1em ${firstFamily}`);
+        const face = [...document.fonts].find(
+          (f) => unquote(f.family) === family && covers(f.weight, weight) && f.status === 'loaded'
+        );
+        out.push({ cssVariable, family, weight, loaded: Boolean(family) && Boolean(face) });
       }
-      const loadedFaces = [...document.fonts].filter((f) => f.status === 'loaded').length;
-      return { out, loadedFaces };
+      return out;
     }, FONT_VARIABLES);
-    assert.ok(results.loadedFaces > 0, 'at least one font face must be loaded');
-    for (const r of results.out) {
-      assert.ok(r.loaded, `${r.cssVariable} (${r.family}) is not loaded`);
+    for (const r of results) {
+      assert.ok(r.loaded, `${r.cssVariable} (${r.family}) has no loaded face at weight ${r.weight}`);
     }
   } finally {
     await page.close();
@@ -205,20 +211,28 @@ test('C11: font-display token lists only loaded families', async () => {
   try {
     await page.goto(`${baseUrl}/?freeze`, { waitUntil: 'load' });
     const result = await page.evaluate(async () => {
-      await document.fonts.ready;
+      const GENERIC = new Set([
+        'serif', 'sans-serif', 'monospace', 'cursive', 'fantasy', 'system-ui',
+        'ui-serif', 'ui-sans-serif', 'ui-monospace', 'ui-rounded', 'emoji', 'math', 'fangsong',
+      ]);
+      const unquote = (name) => name.trim().replace(/^["']|["']$/g, '');
       const probe = document.createElement('span');
       probe.className = 'font-display';
       probe.textContent = 'BRINU';
       document.body.appendChild(probe);
-      const family = getComputedStyle(probe).fontFamily.split(',')[0].trim();
-      await document.fonts.load(`800 1em ${family}`);
-      const loaded = [...document.fonts].some(
-        (f) => f.status === 'loaded' && family.replace(/["']/g, '') === f.family.replace(/["']/g, '')
-      );
+      const stack = getComputedStyle(probe).fontFamily.split(',').map(unquote);
       probe.remove();
-      return { family, loaded };
+      await document.fonts.load(`800 1em "${stack[0]}"`);
+      const faces = [...document.fonts];
+      const withoutSource = stack.filter(
+        (family) => !GENERIC.has(family.toLowerCase()) && !faces.some((f) => unquote(f.family) === family)
+      );
+      const firstLoaded = faces.some((f) => unquote(f.family) === stack[0] && f.status === 'loaded');
+      return { stack, withoutSource, firstLoaded };
     });
-    assert.ok(result.loaded, `first family of .font-display (${result.family}) has no loaded font face`);
+    assert.ok(result.stack.length > 0, '.font-display must resolve a font-family');
+    assert.deepEqual(result.withoutSource, [], `families without a font source: ${result.withoutSource.join(', ')}`);
+    assert.ok(result.firstLoaded, `first family of .font-display (${result.stack[0]}) has no loaded face`);
   } finally {
     await page.close();
   }
