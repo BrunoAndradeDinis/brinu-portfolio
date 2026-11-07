@@ -197,17 +197,26 @@ test('C22: page shows no rank max or verified capabilities labels', async () => 
 });
 
 test('C23: arsenal counter is computed from the data', async () => {
-  for (const [locale, expected] of [['pt-br', '3 DOMÍNIOS • 15 SKILLS COM PROVA'], ['en', '3 DOMAINS • 15 SKILLS WITH PROOF']]) {
+  const { ARSENAL } = await import('../src/data/arsenal.ts');
+  const domains = ARSENAL.length;
+  const skills = ARSENAL.reduce((n, d) => n + d.skills.length, 0);
+  const words = { 'pt-br': ['DOMÍNIOS', 'SKILLS COM PROVA'], en: ['DOMAINS', 'SKILLS WITH PROOF'] };
+  for (const locale of ['pt-br', 'en']) {
     const { context, page } = await openHome(locale);
     try {
-      assert.equal(getArsenalCounter(locale), expected);
+      const domCount = await page.locator('[data-skill-vignette]').count();
+      const domSkills = await page.locator('[data-skill-badge]').count();
+      assert.equal(domCount, domains);
+      assert.equal(domSkills, skills);
+      const expected = `${domCount} ${words[locale][0]} • ${domSkills} ${words[locale][1]}`;
       assert.equal((await page.locator('[data-arsenal-counter]').innerText()).trim(), expected);
-      assert.equal(await page.locator('[data-skill-vignette]').count(), 3);
-      assert.equal(await page.locator('[data-skill-badge]').count(), 15);
+      assert.equal(getArsenalCounter(locale), expected);
     } finally {
       await context.close();
     }
   }
+  const source = fs.readFileSync('src/components/SkillsGrid.astro', 'utf8');
+  assert.doesNotMatch(source, /\b\d+\s+(DOMÍNIOS|DOMAINS|SKILLS)/, 'counter must not be hardcoded in the component');
 });
 
 test('C24: clicking an evidence chip scrolls to its card', async () => {
@@ -241,6 +250,12 @@ test('C28: career lists three roles newest first with localized dates', async ()
       assert.deepEqual(periods.map((p) => p.trim().toLowerCase()), expected[locale].map((p) => p.toLowerCase()));
       const orgs = await page.locator('#about [data-career-org]').allInnerTexts();
       assert.deepEqual(orgs.map((o) => o.trim().toUpperCase()), ['MAGALU CLOUD', 'LUIZALABS', 'MAGAZINE LUIZA']);
+      const roles = await page.locator('#about [data-career-role]').allInnerTexts();
+      const expectedRoles = {
+        'pt-br': ['Desenvolvedor de front-end', 'Assistente de helpdesk II', 'Atendente de SAC'],
+        en: ['Frontend Developer', 'Helpdesk Assistant II', 'Customer Service Agent'],
+      };
+      assert.deepEqual(roles.map((r) => r.trim().toUpperCase()), expectedRoles[locale].map((r) => r.toUpperCase()));
     } finally {
       await context.close();
     }
@@ -276,6 +291,18 @@ test('C30: education lists the four approved entries with status', async () => {
       assert.deepEqual(ids, ['education-ampli', 'education-ebac', 'education-full-stack-club', 'education-alura']);
       const statuses = await page.locator('#about [data-education-status]').allInnerTexts();
       assert.deepEqual(statuses.map((s) => s.trim().toUpperCase()), expected[locale].map((s) => s.toUpperCase()));
+      const courses = await page.locator('#about [data-education-course]').allInnerTexts();
+      const expectedCourses = {
+        'pt-br': ['CST em Desenvolvimento Web', 'Engenheiro de Front-end', 'Developer Fullstack', 'Formação técnica em programação'],
+        en: ['Associate Degree in Web Development', 'Frontend Engineer', 'Fullstack Developer', 'Technical programming track'],
+      };
+      assert.deepEqual(courses.map((c) => c.trim()), expectedCourses[locale]);
+      const periods = await page.locator('#about [data-education-period]').allInnerTexts();
+      const expectedPeriods = {
+        'pt-br': ['mai/2023 – dez/2024', 'nov/2024 – jun/2026', 'jun/2025 – atual', 'mai/2022 – atual'],
+        en: ['May 2023 – Dec 2024', 'Nov 2024 – Jun 2026', 'Jun 2025 – present', 'May 2022 – present'],
+      };
+      assert.deepEqual(periods.map((p) => p.trim().toLowerCase()), expectedPeriods[locale].map((p) => p.toLowerCase()));
     } finally {
       await context.close();
     }
