@@ -72,6 +72,18 @@ export interface TranslationSchema {
       s4Title: string;
       s5Title: string;
       s6Title: string;
+      s1Reel: string;
+      s2Reel: string;
+      s3Reel: string;
+      s4Reel: string;
+      s5Reel: string;
+      s6Reel: string;
+      s1Alt: string;
+      s2Alt: string;
+      s3Alt: string;
+      s4Alt: string;
+      s5Alt: string;
+      s6Alt: string;
     };
     passionSlides: {
       p1Reel: string;
@@ -93,15 +105,14 @@ export interface TranslationSchema {
       p6Title: string;
       p6Alt: string;
     };
-    p1: string;
-    p2: string;
-    p3Part1: string;
-    p3Highlight1: string;
-    p3Part2: string;
-    p3Highlight2: string;
-    p3Part3: string;
-    p3Highlight3: string;
-    p3Part4: string;
+    motto: {
+      part1: string;
+      highlight1: string;
+      part2: string;
+      highlight2: string;
+      part3: string;
+      highlight3: string;
+    };
   };
   works: {
     sectionAria: string;
@@ -374,6 +385,18 @@ export const ptBrDict: TranslationSchema = {
       s4Title: 'The Warriors — Landing Page',
       s5Title: 'Magalu Cloud — Site Institucional',
       s6Title: 'Pai da Helena & Creative Developer',
+      s1Reel: 'FRAME 01 // AURASTREAM',
+      s2Reel: 'FRAME 02 // QUAKE LOG API',
+      s3Reel: 'FRAME 03 // ARENA FRANKY',
+      s4Reel: 'FRAME 04 // THE WARRIORS',
+      s5Reel: 'FRAME 05 // MAGALU CLOUD',
+      s6Reel: 'FRAME 06 // SPACE COWBOY',
+      s1Alt: 'Frame 01: AuraStream Engine, transmissão 24/7 com FFmpeg e Xvfb',
+      s2Alt: 'Frame 02: Quake Log Parser API com Jest e Docker Compose',
+      s3Alt: 'Frame 03: Jokenpo, Arena Franky',
+      s4Alt: 'Frame 04: The Warriors, landing page com pipeline Gulp',
+      s5Alt: 'Frame 05: site institucional da Magalu Cloud',
+      s6Alt: 'Frame 06: Space Cowboy, pai da Helena e creative developer',
     },
     passionSlides: {
       p1Reel: 'FRAME 01 // BANDA MEDULLA',
@@ -395,15 +418,14 @@ export const ptBrDict: TranslationSchema = {
       p6Title: 'Izakaya & Comfort Food // Culinária Afetiva',
       p6Alt: 'Storyboard Paixão 06: Gastronomia Afetiva e Street Food',
     },
-    p1: 'EU NÃO LEMBRO MAIS COMO A WEB ERA ANTES DISSO… E NÃO PARECE QUE ESTAMOS NA REALIDADE BASE NESTE EXATO MOMENTO.',
-    p2: 'A ÚNICA CERTEZA ALÉM DA PERCEPÇÃO SENSORIAL É QUE ESTOU AQUI PARA ARQUITETAR SISTEMAS RESILIENTES E SALVAR O FRONTEND DESSA CORRIDA MONÓTONA.',
-    p3Part1: 'O ',
-    p3Highlight1: 'CÓDIGO SEM ALMA',
-    p3Part2: '… REINOU POR TEMPO DEMAIS… DE ',
-    p3Highlight2: 'NUVENS DISTRIBUÍDAS',
-    p3Part3: ' A INTERFACES DE IMPACTO BRUTALISTA… A ',
-    p3Highlight3: 'ARTE DO SPACE COWBOY',
-    p3Part4: ' FINALMENTE COMEÇOU.',
+    motto: {
+      part1: 'APRENDI A RESOLVER',
+      highlight1: 'PROBLEMAS',
+      part2: 'ATENDENDO',
+      highlight2: 'PESSOAS',
+      part3: '— HOJE EU RESOLVO COM',
+      highlight3: 'INTERFACES.',
+    },
   },
   works: {
     sectionAria: 'Arquivo de Projetos Autorais de Bruno Dinis',
@@ -685,6 +707,18 @@ export const enDict = {
       s4Title: 'The Warriors — Landing Page',
       s5Title: 'Magalu Cloud — Corporate Website',
       s6Title: 'Helena\'s Dad & Creative Developer',
+      s1Reel: 'FRAME 01 // AURASTREAM',
+      s2Reel: 'FRAME 02 // QUAKE LOG API',
+      s3Reel: 'FRAME 03 // FRANKY ARENA',
+      s4Reel: 'FRAME 04 // THE WARRIORS',
+      s5Reel: 'FRAME 05 // MAGALU CLOUD',
+      s6Reel: 'FRAME 06 // SPACE COWBOY',
+      s1Alt: 'Frame 01: AuraStream Engine, 24/7 broadcast with FFmpeg and Xvfb',
+      s2Alt: 'Frame 02: Quake Log Parser API with Jest and Docker Compose',
+      s3Alt: 'Frame 03: Jokenpo, Franky Arena',
+      s4Alt: 'Frame 04: The Warriors, landing page with a Gulp pipeline',
+      s5Alt: 'Frame 05: Magalu Cloud corporate website',
+      s6Alt: 'Frame 06: Space Cowboy, Helena\'s dad and creative developer',
     },
     passionSlides: {
       p1Reel: 'FRAME 01 // MEDULLA BAND',
@@ -706,15 +740,14 @@ export const enDict = {
       p6Title: 'Izakaya & Comfort Food // Soul Kitchen',
       p6Alt: 'Passion Storyboard Frame 06: Soul Food and Street Kitchen',
     },
-    p1: 'I DO NOT REALLY REMEMBER WHAT THE WEB WAS BEFORE THIS… AND IN SOME WAYS IT DOES NOT FEEL LIKE WE ARE IN BASE REALITY IN THE CURRENT MOMENT.',
-    p2: 'THE ONE THING I AM SURE OF BEYOND SENSORY PERCEPTION IS THAT I AM HERE TO ENGINEER RESILIENT SYSTEMS AND SAVE THE FRONTEND FROM THIS MONOTONOUS RAT RACE.',
-    p3Part1: 'THE ',
-    p3Highlight1: 'BORING CODE',
-    p3Part2: '… IT HAS RULED FOR TOO LONG… FROM ',
-    p3Highlight2: 'DISTRIBUTED CLOUD',
-    p3Part3: ' PIPELINES TO EXPRESSIVE BRUTALIST INTERFACES… THE ',
-    p3Highlight3: 'SPACE COWBOY',
-    p3Part4: ' CRAFT HAS FINALLY BEGUN.',
+    motto: {
+      part1: 'I LEARNED TO SOLVE',
+      highlight1: 'PROBLEMS',
+      part2: 'BY HELPING',
+      highlight2: 'PEOPLE',
+      part3: '— TODAY I SOLVE THEM WITH',
+      highlight3: 'INTERFACES.',
+    },
   },
   works: {
     sectionAria: 'Bounty Archive: Selected Works by Bruno Dinis',

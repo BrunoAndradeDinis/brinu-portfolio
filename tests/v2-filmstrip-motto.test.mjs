@@ -4,6 +4,11 @@ import fs from 'node:fs';
 import path from 'node:path';
 import http from 'node:http';
 import { chromium } from 'playwright';
+import { ptBrDict, enDict } from '../src/i18n/dictionaries.ts';
+import { buildMottoTokens } from '../src/components/filmstrip/motto.ts';
+
+const mottoWords = (dict) => buildMottoTokens(dict)[0].flatMap((t) => t.text.trim().split(/\s+/).filter(Boolean));
+const mottoChars = (dict) => mottoWords(dict).join('').length;
 
 const MIME_TYPES = {
   '.html': 'text/html; charset=utf-8',
@@ -88,8 +93,8 @@ test('F1: FilmstripParallax renders 3D character flip spans (.char-flip), word w
   const wordCount = await page.locator('[data-motto-text] .motto__word').count();
   const badgeCount = await page.locator('[data-motto-text] [class*="skew-x"]').count();
 
-  assert.ok(charCount > 100, `Expected >100 characters in motto, got ${charCount}`);
-  assert.ok(wordCount > 20, `Expected >20 words in motto, got ${wordCount}`);
+  assert.equal(charCount, mottoChars(ptBrDict), `Expected one .char-flip per motto character, got ${charCount}`);
+  assert.equal(wordCount, mottoWords(ptBrDict).length, `Expected one .motto__word per motto word, got ${wordCount}`);
   assert.ok(badgeCount >= 3, `Expected at least 3 badge containers, got ${badgeCount}`);
 
   await page.close();
@@ -148,7 +153,7 @@ test('F3: Changing language reactively rebuilds motto characters in the new lang
   await dismissIntroIfPresent(page);
 
   const initialText = await page.locator('[data-motto-text]').innerText();
-  assert.ok(initialText.includes('EU NÃO LEMBRO MAIS'), 'Initial text should be Portuguese');
+  assert.ok(initialText.includes('APRENDI A RESOLVER'), 'Initial text should be Portuguese');
 
   // Trigger locale change to EN
   await page.evaluate(() => {
@@ -161,10 +166,10 @@ test('F3: Changing language reactively rebuilds motto characters in the new lang
   await page.waitForTimeout(300);
 
   const updatedText = await page.locator('[data-motto-text]').innerText();
-  assert.ok(updatedText.includes('I DO NOT REALLY REMEMBER'), 'Updated text should be English');
+  assert.ok(updatedText.includes('I LEARNED TO SOLVE'), 'Updated text should be English');
 
   const enCharCount = await page.locator('[data-motto-text] .char-flip').count();
-  assert.ok(enCharCount > 100, `EN motto should retain .char-flip spans, got ${enCharCount}`);
+  assert.equal(enCharCount, mottoChars(enDict), `EN motto should retain one .char-flip per character, got ${enCharCount}`);
 
   await page.close();
 });

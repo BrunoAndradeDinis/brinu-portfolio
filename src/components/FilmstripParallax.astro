@@ -1,14 +1,13 @@
 ---
 import { ptBrDict, enDict } from "../i18n/dictionaries";
+import { buildMottoTokens, type NarrativeToken } from "./filmstrip/motto";
 
 interface FilmSlide {
   id: string;
-  reel: string;
-  titleKey: string;
-  titleDefault: string;
+  index: 1 | 2 | 3 | 4 | 5 | 6;
+  href: string;
   bgColor: string;
   imgSrc: string;
-  alt: string;
 }
 
 interface PassionSlide {
@@ -23,68 +22,27 @@ interface PassionSlide {
   altDefault: string;
 }
 
-interface NarrativeToken {
-  text: string;
-  badgeClass?: string;
-  badgeInnerClass?: string;
-}
-
 const FILM_SLIDES: FilmSlide[] = [
-  {
-    id: "slide-aurastream",
-    reel: "FRAME 01 // AURASTREAM 24/7",
-    titleKey: "filmstrip.slides.s1Title",
-    titleDefault: ptBrDict.filmstrip.slides.s1Title,
-    bgColor: "#FE0000",
-    imgSrc: "/assets/filmstrip/slide-1.svg",
-    alt: "Storyboard Frame 01: AuraStream 24/7 Cloud Engine com FFmpeg, Xvfb e S3",
-  },
-  {
-    id: "slide-quake-parser",
-    reel: "FRAME 02 // QUAKE TELEMETRY",
-    titleKey: "filmstrip.slides.s2Title",
-    titleDefault: ptBrDict.filmstrip.slides.s2Title,
-    bgColor: "#080808",
-    imgSrc: "/assets/filmstrip/slide-2.svg",
-    alt: "Storyboard Frame 02: Quake Log Parser API com cobertura 100% Jest e Docker",
-  },
-  {
-    id: "slide-jokenpo-franky",
-    reel: "FRAME 03 // ARENA FRANKY",
-    titleKey: "filmstrip.slides.s3Title",
-    titleDefault: ptBrDict.filmstrip.slides.s3Title,
-    bgColor: "#FE0000",
-    imgSrc: "/assets/filmstrip/slide-3.svg",
-    alt: "Storyboard Frame 03: Jokenpo Arena Franky Gamified State Machine",
-  },
-  {
-    id: "slide-the-warriors",
-    reel: "FRAME 04 // THE WARRIORS",
-    titleKey: "filmstrip.slides.s4Title",
-    titleDefault: ptBrDict.filmstrip.slides.s4Title,
-    bgColor: "#080808",
-    imgSrc: "/assets/filmstrip/slide-4.svg",
-    alt: "Storyboard Frame 04: The Warriors Design Editorial Noir e Pipeline Gulp",
-  },
-  {
-    id: "slide-cloud-infra",
-    reel: "FRAME 05 // CLOUD INFRA",
-    titleKey: "filmstrip.slides.s5Title",
-    titleDefault: ptBrDict.filmstrip.slides.s5Title,
-    bgColor: "#FE0000",
-    imgSrc: "/assets/filmstrip/slide-5.svg",
-    alt: "Storyboard Frame 05: Arquitetura de Sistemas Distribuídos e Cloud Computing",
-  },
-  {
-    id: "slide-space-cowboy",
-    reel: "FRAME 06 // SPACE COWBOY",
-    titleKey: "filmstrip.slides.s6Title",
-    titleDefault: ptBrDict.filmstrip.slides.s6Title,
-    bgColor: "#080808",
-    imgSrc: "/assets/filmstrip/slide-6.svg",
-    alt: "Storyboard Frame 06: Space Cowboy Creative Technologist e Helena's Dad",
-  },
+  { id: "slide-aurastream", index: 1, href: "#case-aurastream", bgColor: "#FE0000", imgSrc: "/assets/filmstrip/slide-1.svg" },
+  { id: "slide-quake-parser", index: 2, href: "#archive-quake-log-parser", bgColor: "#080808", imgSrc: "/assets/filmstrip/slide-2.svg" },
+  { id: "slide-jokenpo-franky", index: 3, href: "#archive-jokenpo", bgColor: "#FE0000", imgSrc: "/assets/filmstrip/slide-3.svg" },
+  { id: "slide-the-warriors", index: 4, href: "#archive-the-warriors", bgColor: "#080808", imgSrc: "/assets/filmstrip/slide-4.svg" },
+  { id: "slide-magalu-cloud", index: 5, href: "#case-magalu-cloud", bgColor: "#FE0000", imgSrc: "/assets/filmstrip/slide-5.svg" },
+  { id: "slide-space-cowboy", index: 6, href: "#about", bgColor: "#080808", imgSrc: "/assets/filmstrip/slide-6.svg" },
 ];
+
+const slideText = (slide: FilmSlide) => {
+  const key = `s${slide.index}` as const;
+  const slides = ptBrDict.filmstrip.slides;
+  return {
+    reelKey: `filmstrip.slides.${key}Reel`,
+    reel: slides[`${key}Reel`],
+    titleKey: `filmstrip.slides.${key}Title`,
+    title: slides[`${key}Title`],
+    altKey: `filmstrip.slides.${key}Alt`,
+    alt: slides[`${key}Alt`],
+  };
+};
 
 const PASSION_SLIDES: PassionSlide[] = [
   {
@@ -156,56 +114,8 @@ const PASSION_SLIDES: PassionSlide[] = [
 ];
 
 const NARRATIVE_CONFIG: Record<string, NarrativeToken[][]> = {
-  "pt-br": [
-    [{ text: ptBrDict.filmstrip.p1 }],
-    [{ text: ptBrDict.filmstrip.p2 }],
-    [
-      { text: ptBrDict.filmstrip.p3Part1 },
-      {
-        text: ptBrDict.filmstrip.p3Highlight1,
-        badgeClass: "inline-block border-2 sm:border-3 border-space-base bg-space-base px-2 sm:px-3 py-0.5 text-paper-white -skew-x-6 shadow-[3px_3px_0_var(--color-paper-white)] align-baseline my-1",
-        badgeInnerClass: "inline-block skew-x-6",
-      },
-      { text: ptBrDict.filmstrip.p3Part2 },
-      {
-        text: ptBrDict.filmstrip.p3Highlight2,
-        badgeClass: "inline-block border-2 sm:border-3 border-space-base bg-paper-white px-2 sm:px-3 py-0.5 text-space-base skew-x-3 shadow-[3px_3px_0_var(--color-space-base)] align-baseline my-1",
-        badgeInnerClass: "inline-block -skew-x-3",
-      },
-      { text: ptBrDict.filmstrip.p3Part3 },
-      {
-        text: ptBrDict.filmstrip.p3Highlight3,
-        badgeClass: "inline-block border-2 sm:border-3 border-space-base bg-space-base px-2 sm:px-3 py-0.5 text-bebop-red -skew-x-6 shadow-[3px_3px_0_var(--color-paper-white)] align-baseline my-1",
-        badgeInnerClass: "inline-block skew-x-6",
-      },
-      { text: ptBrDict.filmstrip.p3Part4 },
-    ],
-  ],
-  en: [
-    [{ text: enDict.filmstrip.p1 }],
-    [{ text: enDict.filmstrip.p2 }],
-    [
-      { text: enDict.filmstrip.p3Part1 },
-      {
-        text: enDict.filmstrip.p3Highlight1,
-        badgeClass: "inline-block border-2 sm:border-3 border-space-base bg-space-base px-2 sm:px-3 py-0.5 text-paper-white -skew-x-6 shadow-[3px_3px_0_var(--color-paper-white)] align-baseline my-1",
-        badgeInnerClass: "inline-block skew-x-6",
-      },
-      { text: enDict.filmstrip.p3Part2 },
-      {
-        text: enDict.filmstrip.p3Highlight2,
-        badgeClass: "inline-block border-2 sm:border-3 border-space-base bg-paper-white px-2 sm:px-3 py-0.5 text-space-base skew-x-3 shadow-[3px_3px_0_var(--color-space-base)] align-baseline my-1",
-        badgeInnerClass: "inline-block -skew-x-3",
-      },
-      { text: enDict.filmstrip.p3Part3 },
-      {
-        text: enDict.filmstrip.p3Highlight3,
-        badgeClass: "inline-block border-2 sm:border-3 border-space-base bg-space-base px-2 sm:px-3 py-0.5 text-bebop-red -skew-x-6 shadow-[3px_3px_0_var(--color-paper-white)] align-baseline my-1",
-        badgeInnerClass: "inline-block skew-x-6",
-      },
-      { text: enDict.filmstrip.p3Part4 },
-    ],
-  ],
+  "pt-br": buildMottoTokens(ptBrDict),
+  en: buildMottoTokens(enDict),
 };
 
 function splitWords(text: string): string[] {
@@ -258,10 +168,14 @@ function splitWords(text: string): string[] {
             </figure>
           </div>
 
-          {FILM_SLIDES.map((slide) => (
-            <div
+          {FILM_SLIDES.map((slide) => {
+            const text = slideText(slide);
+            return (
+            <a
+              href={slide.href}
               data-film-slide
-              class="relative shrink-0 bg-space-base py-3 pr-3 sm:py-5 sm:pr-5"
+              data-film-link={slide.href}
+              class="relative block shrink-0 bg-space-base py-3 pr-3 sm:py-5 sm:pr-5 focus-visible:outline-2 focus-visible:outline-offset-[-6px] focus-visible:outline-paper-white"
             >
               <figure
                 class="media relative media-fill min-w-[18rem] max-w-[18rem] sm:min-w-[28rem] sm:max-w-[28rem] lg:min-w-[36rem] lg:max-w-[36rem] overflow-hidden border-2 border-paper-white"
@@ -273,20 +187,23 @@ function splitWords(text: string): string[] {
                 ></div>
                 <img
                   src={slide.imgSrc}
-                  alt={slide.alt}
+                  alt={text.alt}
+                  data-i18n={text.altKey}
+                  data-i18n-attr="alt"
                   decoding="async"
                   draggable="false"
                   class="media__image is-loaded absolute inset-0 h-full w-full object-cover"
                 />
                 <figcaption class="pointer-events-none absolute top-2.5 left-2.5 z-10 flex items-center gap-1.5 border-2 border-paper-white bg-space-base/95 px-2.5 py-1 font-mono text-[9px] sm:text-[11px] font-bold tracking-wider text-paper-white uppercase">
                   <span class="inline-block h-1.5 w-1.5 bg-bebop-red"></span>
-                  <span>{slide.reel}</span>
+                  <span data-i18n={text.reelKey}>{text.reel}</span>
                   <span class="hidden sm:inline text-muted-gray">::</span>
-                  <span class="hidden sm:inline" data-i18n={slide.titleKey}>{slide.titleDefault}</span>
+                  <span class="hidden sm:inline" data-i18n={text.titleKey}>{text.title}</span>
                 </figcaption>
               </figure>
-            </div>
-          ))}
+            </a>
+            );
+          })}
 
           <div class="relative -ml-2 sm:-ml-3.5 flex shrink-0 self-stretch bg-space-base py-3 sm:py-5">
             <figure class="media relative media-fit mx-2 sm:mx-3.5 w-[1rem] sm:w-[1.25rem] self-stretch overflow-hidden">
@@ -442,64 +359,11 @@ function splitWords(text: string): string[] {
   import { gsap, ScrollTrigger } from "../utils/motion";
   import { LOCALE_CHANGE_EVENT, type Locale, getLocale } from "../i18n";
   import { ptBrDict, enDict } from "../i18n/dictionaries";
-
-  interface NarrativeToken {
-    text: string;
-    badgeClass?: string;
-    badgeInnerClass?: string;
-  }
+  import { buildMottoTokens, type NarrativeToken } from "./filmstrip/motto";
 
   const NARRATIVE_CONFIG: Record<string, NarrativeToken[][]> = {
-    "pt-br": [
-      [{ text: ptBrDict.filmstrip.p1 }],
-      [{ text: ptBrDict.filmstrip.p2 }],
-      [
-        { text: ptBrDict.filmstrip.p3Part1 },
-        {
-          text: ptBrDict.filmstrip.p3Highlight1,
-          badgeClass: "inline-block border-2 sm:border-3 border-space-base bg-space-base px-2 sm:px-3 py-0.5 text-paper-white -skew-x-6 shadow-[3px_3px_0_var(--color-paper-white)] align-baseline my-1",
-          badgeInnerClass: "inline-block skew-x-6",
-        },
-        { text: ptBrDict.filmstrip.p3Part2 },
-        {
-          text: ptBrDict.filmstrip.p3Highlight2,
-          badgeClass: "inline-block border-2 sm:border-3 border-space-base bg-paper-white px-2 sm:px-3 py-0.5 text-space-base skew-x-3 shadow-[3px_3px_0_var(--color-space-base)] align-baseline my-1",
-          badgeInnerClass: "inline-block -skew-x-3",
-        },
-        { text: ptBrDict.filmstrip.p3Part3 },
-        {
-          text: ptBrDict.filmstrip.p3Highlight3,
-          badgeClass: "inline-block border-2 sm:border-3 border-space-base bg-space-base px-2 sm:px-3 py-0.5 text-bebop-red -skew-x-6 shadow-[3px_3px_0_var(--color-paper-white)] align-baseline my-1",
-          badgeInnerClass: "inline-block skew-x-6",
-        },
-        { text: ptBrDict.filmstrip.p3Part4 },
-      ],
-    ],
-    en: [
-      [{ text: enDict.filmstrip.p1 }],
-      [{ text: enDict.filmstrip.p2 }],
-      [
-        { text: enDict.filmstrip.p3Part1 },
-        {
-          text: enDict.filmstrip.p3Highlight1,
-          badgeClass: "inline-block border-2 sm:border-3 border-space-base bg-space-base px-2 sm:px-3 py-0.5 text-paper-white -skew-x-6 shadow-[3px_3px_0_var(--color-paper-white)] align-baseline my-1",
-          badgeInnerClass: "inline-block skew-x-6",
-        },
-        { text: enDict.filmstrip.p3Part2 },
-        {
-          text: enDict.filmstrip.p3Highlight2,
-          badgeClass: "inline-block border-2 sm:border-3 border-space-base bg-paper-white px-2 sm:px-3 py-0.5 text-space-base skew-x-3 shadow-[3px_3px_0_var(--color-space-base)] align-baseline my-1",
-          badgeInnerClass: "inline-block -skew-x-3",
-        },
-        { text: enDict.filmstrip.p3Part3 },
-        {
-          text: enDict.filmstrip.p3Highlight3,
-          badgeClass: "inline-block border-2 sm:border-3 border-space-base bg-space-base px-2 sm:px-3 py-0.5 text-bebop-red -skew-x-6 shadow-[3px_3px_0_var(--color-paper-white)] align-baseline my-1",
-          badgeInnerClass: "inline-block skew-x-6",
-        },
-        { text: enDict.filmstrip.p3Part4 },
-      ],
-    ],
+    "pt-br": buildMottoTokens(ptBrDict),
+    en: buildMottoTokens(enDict),
   };
 
   function buildMottoHTML(tokensByParagraph: NarrativeToken[][]): string {
@@ -538,6 +402,11 @@ function splitWords(text: string): string[] {
     const mottoText = document.querySelector<HTMLElement>("[data-motto-text]");
 
     if (!mottoSection || !parallaxEl || !parallaxRevEl || !mottoText) return;
+
+    const initialLocale = getLocale();
+    if (initialLocale !== "pt-br") {
+      mottoText.innerHTML = buildMottoHTML(NARRATIVE_CONFIG[initialLocale] || NARRATIVE_CONFIG["pt-br"]);
+    }
 
     const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 

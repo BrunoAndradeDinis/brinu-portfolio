@@ -303,3 +303,106 @@ test('C33: about shows at most two bio paragraphs and no manifesto', async () =>
     await context.close();
   }
 });
+
+const { ptBrDict, enDict } = await import('../src/i18n/dictionaries.ts');
+const { mottoSentence } = await import('../src/components/filmstrip/motto.ts');
+
+const normalize = (text) => text.replace(/\s+/g, ' ').trim();
+
+test('C3: switching to en translates portrait alt and filmstrip captions', async () => {
+  const { context, page } = await openHome('en');
+  try {
+    assert.equal(await page.locator('#about-official-avatar').getAttribute('alt'), enDict.about.portraitAlt);
+    assert.notEqual(enDict.about.portraitAlt, ptBrDict.about.portraitAlt);
+    for (const i of [1, 2, 3, 4, 5, 6]) {
+      const slide = page.locator('[data-film-slide]').nth(i - 1);
+      assert.equal((await slide.locator(`[data-i18n="filmstrip.slides.s${i}Reel"]`).textContent()).trim(), enDict.filmstrip.slides[`s${i}Reel`]);
+      assert.equal((await slide.locator(`[data-i18n="filmstrip.slides.s${i}Title"]`).textContent()).trim(), enDict.filmstrip.slides[`s${i}Title`]);
+      assert.equal(await slide.locator('img').getAttribute('alt'), enDict.filmstrip.slides[`s${i}Alt`]);
+    }
+  } finally {
+    await context.close();
+  }
+});
+
+test('C34: filmstrip motto is the single approved sentence', async () => {
+  for (const [locale, dict, expected] of [
+    ['pt-br', ptBrDict, 'APRENDI A RESOLVER PROBLEMAS ATENDENDO PESSOAS — HOJE EU RESOLVO COM INTERFACES.'],
+    ['en', enDict, 'I LEARNED TO SOLVE PROBLEMS BY HELPING PEOPLE — TODAY I SOLVE THEM WITH INTERFACES.'],
+  ]) {
+    const { context, page } = await openHome(locale);
+    try {
+      assert.equal(mottoSentence(dict), expected);
+      assert.equal(await page.locator('[data-motto-text] p').count(), 1);
+      const rendered = await page.locator('[data-motto-text]').evaluate((el) => el.textContent);
+      assert.equal(normalize(rendered), expected);
+      assert.equal(await page.locator('[data-motto-text] [class*="skew-x"]').count() >= 3, true);
+    } finally {
+      await context.close();
+    }
+  }
+});
+
+test('C35: first reel captions come from the dictionary and frames link to cases', async () => {
+  const { context, page } = await openHome();
+  try {
+    const frames = page.locator('[data-filmstrip-parallax] a[data-film-slide]');
+    assert.equal(await frames.count(), 6);
+    const hrefs = await frames.evaluateAll((as) => as.map((a) => a.getAttribute('href')));
+    assert.deepEqual(hrefs, ['#case-aurastream', '#archive-quake-log-parser', '#archive-jokenpo', '#archive-the-warriors', '#case-magalu-cloud', '#about']);
+    for (const href of hrefs) {
+      assert.equal(await page.locator(href).count(), 1, `${href} target must exist`);
+    }
+    for (const i of [1, 2, 3, 4, 5, 6]) {
+      const reel = frames.nth(i - 1).locator(`[data-i18n="filmstrip.slides.s${i}Reel"]`);
+      assert.equal((await reel.textContent()).trim(), ptBrDict.filmstrip.slides[`s${i}Reel`]);
+    }
+    const source = fs.readFileSync('src/components/FilmstripParallax.astro', 'utf8');
+    assert.doesNotMatch(source, /reel: "FRAME 0\d/, 'first reel captions must not be hardcoded');
+  } finally {
+    await context.close();
+  }
+});
+
+const REFERENCE_COPY = [
+  'O CÓDIGO MONÓTONO', 'DOMINOU A WEB', 'FORTALEZAS DA MONOTONIA', 'REALIDADE BASE', 'PERCEPÇÃO SENSORIAL',
+  'CORRIDA MONÓTONA', 'REINOU POR TEMPO DEMAIS', 'FOR TOO LONG', 'HAS RULED THE WEB', 'IDENTIFIED THE STRONGHOLDS',
+  'BASE REALITY', 'SENSORY PERCEPTION', 'RAT RACE',
+];
+
+function builtHtmlFiles(dir = 'dist') {
+  return fs.readdirSync(dir, { withFileTypes: true }).flatMap((e) => {
+    const full = path.join(dir, e.name);
+    if (e.isDirectory()) return builtHtmlFiles(full);
+    return /\.(html|js)$/.test(e.name) ? [full] : [];
+  });
+}
+
+test('C36: no translated reference copy remains', () => {
+  const sources = [...builtHtmlFiles(), 'src/i18n/dictionaries.ts'];
+  for (const file of sources) {
+    const text = fs.readFileSync(file, 'utf8').toUpperCase();
+    for (const phrase of REFERENCE_COPY) {
+      assert.ok(!text.includes(phrase.toUpperCase()), `${file} contains "${phrase}"`);
+    }
+  }
+});
+
+test('C37: hero and filmstrip render the approved copy deck', async () => {
+  const expectations = {
+    'pt-br': { left: '8 ANOS DE MAGALU DO ATENDIMENTO AO FRONT-END', right: 'INTERFACES COM PERSONALIDADE E CÓDIGO LIMPO', heading: 'CADA FRAME, UM PROJETO ENTREGUE' },
+    en: { left: '8 YEARS AT MAGALU FROM SUPPORT TO FRONTEND', right: 'INTERFACES WITH PERSONALITY AND CLEAN CODE', heading: 'EVERY FRAME, A SHIPPED PROJECT' },
+  };
+  for (const [locale, exp] of Object.entries(expectations)) {
+    const { context, page } = await openHome(locale);
+    try {
+      const left = await page.locator('[data-hero-manifesto="left"]').evaluate((el) => el.innerText);
+      const right = await page.locator('[data-hero-manifesto="right"]').evaluate((el) => el.innerText);
+      assert.ok(normalize(left).toUpperCase().includes(exp.left), `left manifesto was "${normalize(left)}"`);
+      assert.ok(normalize(right).toUpperCase().includes(exp.right), `right manifesto was "${normalize(right)}"`);
+      assert.equal(normalize(await page.locator('[data-i18n="filmstrip.heading"]').textContent()), exp.heading);
+    } finally {
+      await context.close();
+    }
+  }
+});

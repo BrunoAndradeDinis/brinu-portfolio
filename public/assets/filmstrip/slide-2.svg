@@ -13,10 +13,10 @@
     <text x="34" y="145" fill="#FBFAF4" font-family="monospace" font-weight="700" font-size="20">[INIT_GAME] match_id=0492</text>
     <text x="34" y="185" fill="#30B5BB" font-family="monospace" font-weight="700" font-size="20">[KILL] Isgalamido -&gt; MOD_RAILGUN</text>
     <text x="34" y="225" fill="#FE0000" font-family="monospace" font-weight="700" font-size="20">[WORLD] &lt;world&gt; fragged Zeh (-1)</text>
-    <text x="34" y="275" fill="#EBA602" font-family="monospace" font-weight="900" font-size="24">JEST COVERAGE: 100.0%</text>
+    <text x="34" y="275" fill="#EBA602" font-family="monospace" font-weight="900" font-size="24">JEST THRESHOLD: 80%</text>
   </g>
   <text x="110" y="555" fill="#FBFAF4" font-family="sans-serif" font-weight="900" font-size="68">QUAKE PARSER</text>
   <text x="730" y="555" fill="#080808" font-family="sans-serif" font-weight="900" font-size="68">API</text>
-  <text x="110" y="615" fill="#2EFE0C" font-family="monospace" font-weight="700" font-size="26">CONCURRENT LOG TELEMETRY // DOCKER + TS</text>
+  <text x="110" y="615" fill="#2EFE0C" font-family="monospace" font-weight="700" font-size="26">LOG PARSER API // DOCKER + TS</text>
 </svg>
 

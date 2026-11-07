@@ -41,7 +41,7 @@
   <g transform="translate(700, 220) rotate(-6)">
     <rect x="0" y="0" width="330" height="130" fill="#080808" stroke="#FBFAF4" stroke-width="6"/>
     <text x="28" y="62" fill="#2EFE0C" font-family="monospace" font-weight="900" font-size="34">ON AIR 24/7</text>
-    <text x="28" y="104" fill="#FBFAF4" font-family="monospace" font-weight="700" font-size="22">ZERO BUFFER DROP</text>
+    <text x="28" y="104" fill="#FBFAF4" font-family="monospace" font-weight="700" font-size="22">NO OBS NEEDED</text>
   </g>
 </svg>
 
