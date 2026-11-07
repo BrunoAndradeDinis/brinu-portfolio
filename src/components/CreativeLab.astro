@@ -3,6 +3,8 @@ import CrtTuner from "./lab/CrtTuner";
 import SonarRadar from "./lab/SonarRadar";
 import CyberDeck from "./lab/CyberDeck";
 import { ptBrDict } from "../i18n/dictionaries";
+import P5Title from "./p5/P5Title.astro";
+import P5Badge from "./p5/P5Badge.astro";
 ---
 
 <section
@@ -21,22 +23,21 @@ import { ptBrDict } from "../i18n/dictionaries";
         >
           {ptBrDict.lab.actTag}
         </span>
-        <h2
+        <P5Title
+          text={ptBrDict.lab.title}
           data-lab-title
           data-i18n="lab.title"
           class="font-display text-[clamp(2.2rem,6vw,5rem)] font-black tracking-tight text-paper-white leading-none uppercase"
-        >
-          {ptBrDict.lab.title}
-        </h2>
+        />
       </div>
 
       <div class="flex flex-col sm:items-end text-left sm:text-right font-mono text-xs text-muted-gray">
-        <span
-          class="font-bold text-paper-white bg-bebop-red px-2.5 py-0.5 border border-paper-white -skew-x-6"
+        <P5Badge
+          class="font-bold text-space-base bg-bebop-red px-2.5 py-0.5 border border-paper-white"
           data-i18n="lab.statusBadge"
         >
           {ptBrDict.lab.statusBadge}
-        </span>
+        </P5Badge>
         <span class="mt-1.5 text-[10px] sm:text-xs text-muted-gray tracking-wider" data-i18n="lab.domainLine">
           {ptBrDict.lab.domainLine}
         </span>

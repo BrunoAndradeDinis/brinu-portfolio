@@ -130,23 +130,27 @@ test('C12: html background color matches the section occupying the top of the vi
 test('C14: activating an in-page anchor link stops target at least 8px below visible nav controls', async () => {
   const { context, page } = await openHome('pt-br');
   try {
-    const urianaChip = page.locator('a[href="#case-uriana"]').first();
+    const urianaChip = page.locator('#about a[href="#case-uriana"]').first();
     await urianaChip.scrollIntoViewIfNeeded();
     await page.waitForTimeout(100);
     await urianaChip.click();
 
-    await page.waitForFunction(() => {
-      const target = document.getElementById('case-uriana');
-      const avatar = document.querySelector('#comic-nav-logo [data-nav-avatar]');
-      const trigger = document.getElementById('cockpit-trigger-btn');
-      if (!target || !avatar || !trigger) return false;
-      const navBottom = Math.max(
-        avatar.getBoundingClientRect().bottom,
-        trigger.getBoundingClientRect().bottom
-      );
-      const targetTop = target.getBoundingClientRect().top;
-      return targetTop >= navBottom + 8 && targetTop <= navBottom + 80;
-    }, null, { timeout: 4000 });
+    try {
+      await page.waitForFunction(() => {
+        const target = document.getElementById('case-uriana');
+        const avatar = document.querySelector('#comic-nav-logo [data-nav-avatar]');
+        const trigger = document.getElementById('cockpit-trigger-btn');
+        if (!target || !avatar || !trigger) return false;
+        const navBottom = Math.max(
+          avatar.getBoundingClientRect().bottom,
+          trigger.getBoundingClientRect().bottom
+        );
+        const targetTop = target.getBoundingClientRect().top;
+        return targetTop >= navBottom + 8 && targetTop <= navBottom + 80;
+      }, null, { timeout: 4000 });
+    } catch {
+      // Fall through to metrics assertion for diagnostic message
+    }
 
     const metrics = await page.evaluate(() => {
       const target = document.getElementById('case-uriana');
@@ -475,5 +479,284 @@ test('C10: every text node under 24px in #works and #contact has contrast ratio 
     await context.close();
   }
 });
+
+test('C5: section h2 splits into letters with at least 3 font families and rotations between -8 and 8 deg', async () => {
+  const { context, page } = await openHome('pt-br');
+  try {
+    const bountyTitle = page.locator('#works [data-p5-title]').first();
+    await bountyTitle.scrollIntoViewIfNeeded();
+    await page.waitForTimeout(350);
+
+    const analysis = await bountyTitle.evaluate((el) => {
+      const chars = Array.from(el.querySelectorAll('[data-p5-char]'));
+      const families = new Set(chars.map((c) => window.getComputedStyle(c).fontFamily));
+      const rotations = chars.map((c) => {
+        const inlineRot = Number.parseFloat(c.getAttribute('data-p5-rot') || '0');
+        const tr = window.getComputedStyle(c).transform;
+        let computedDeg = inlineRot;
+        const m = tr.match(/matrix\(([^)]+)\)/);
+        if (m) {
+          const [a, b] = m[1].split(',').map((v) => Number.parseFloat(v.trim()));
+          computedDeg = Math.atan2(b, a) * (180 / Math.PI);
+        }
+        return {
+          char: c.textContent,
+          inlineRot,
+          computedDeg: Number(computedDeg.toFixed(2)),
+        };
+      });
+      return {
+        revealed: el.getAttribute('data-p5-revealed'),
+        charCount: chars.length,
+        familyCount: families.size,
+        rotations,
+      };
+    });
+
+    assert.equal(analysis.revealed, 'true');
+    assert.ok(analysis.charCount >= 10, `Expected split characters, got ${analysis.charCount}`);
+    assert.ok(
+      analysis.familyCount >= 3,
+      `Expected at least 3 computed font-family values across letters, got ${analysis.familyCount}`
+    );
+    for (const r of analysis.rotations) {
+      assert.ok(
+        r.inlineRot >= -8 && r.inlineRot <= 8 && r.inlineRot !== 0,
+        `Expected data-p5-rot in [-8, 8] for "${r.char}", got ${r.inlineRot}`
+      );
+      assert.ok(
+        r.computedDeg >= -8.5 && r.computedDeg <= 8.5 && Math.abs(r.computedDeg) >= 0.5,
+        `Expected computed transform rotation in [-8, 8] for "${r.char}", got ${r.computedDeg}`
+      );
+    }
+  } finally {
+    await context.close();
+  }
+});
+
+test('C6: P5Title exposes full title via aria-label and hides individual letters from assistive tech', async () => {
+  const { context, page } = await openHome('pt-br');
+  try {
+    const titles = await page.evaluate(() => {
+      return Array.from(document.querySelectorAll('[data-p5-title]')).map((el) => {
+        const chars = Array.from(el.querySelectorAll('[data-p5-char]'));
+        const words = Array.from(el.querySelectorAll('[data-p5-word]'));
+        return {
+          ariaLabel: el.getAttribute('aria-label'),
+          textContent: (el.textContent || '').trim(),
+          charCount: chars.length,
+          allCharsHidden: chars.every((c) => c.getAttribute('aria-hidden') === 'true'),
+          allWordsHidden: words.every((w) => w.getAttribute('aria-hidden') === 'true'),
+        };
+      });
+    });
+
+    assert.ok(titles.length >= 5, `Expected at least 5 section P5Title headings, got ${titles.length}`);
+    for (const t of titles) {
+      assert.ok(t.ariaLabel && t.ariaLabel.length > 0, 'P5Title must have non-empty aria-label');
+      assert.equal(t.ariaLabel, t.textContent, 'aria-label must match full reconstructed title text');
+      assert.ok(t.charCount > 0, 'P5Title must contain split letter elements');
+      assert.equal(t.allCharsHidden, true, 'Every [data-p5-char] must have aria-hidden="true"');
+      assert.equal(t.allWordsHidden, true, 'Every [data-p5-word] must have aria-hidden="true"');
+    }
+  } finally {
+    await context.close();
+  }
+});
+
+test('C7: P5Title renders static ransom-note state immediately when reduced motion is active', async () => {
+  const { context, page } = await openHome('pt-br', { reducedMotion: 'reduce' });
+  try {
+    const state = await page.evaluate(() => {
+      return Array.from(document.querySelectorAll('[data-p5-title]')).map((el) => {
+        const chars = Array.from(el.querySelectorAll('[data-p5-char]'));
+        return {
+          animated: el.getAttribute('data-p5-animated'),
+          revealed: el.getAttribute('data-p5-revealed'),
+          allRotatedStatic: chars.every((c) => {
+            const tr = c.style.transform || '';
+            return tr.startsWith('rotate(') && tr !== 'rotate(0deg)';
+          }),
+        };
+      });
+    });
+
+    assert.ok(state.length >= 5);
+    for (const item of state) {
+      assert.equal(item.animated, 'false', 'P5Title must skip entrance animation under prefers-reduced-motion');
+      assert.equal(item.revealed, 'true', 'P5Title must immediately be in revealed state under prefers-reduced-motion');
+      assert.equal(item.allRotatedStatic, true, 'All letters must immediately have their static ransom rotation');
+    }
+  } finally {
+    await context.close();
+  }
+});
+
+test('C8: P5Title rebuilds letters and aria-label when locale changes', async () => {
+  const { context, page } = await openHome('pt-br', { reducedMotion: 'reduce' });
+  try {
+    const before = await page.evaluate(() => {
+      const contactTitle = document.querySelector('#contact [data-p5-title]');
+      if (!contactTitle) return null;
+      const chars = Array.from(contactTitle.querySelectorAll('[data-p5-char]'))
+        .map((c) => c.textContent)
+        .join('');
+      return {
+        ariaLabel: contactTitle.getAttribute('aria-label'),
+        chars,
+      };
+    });
+
+    assert.ok(before);
+    assert.equal(before.ariaLabel, 'VAMOS CONVERSAR');
+    assert.equal(before.chars, 'VAMOSCONVERSAR');
+
+    await page.click('#nav-lang-toggle-btn');
+
+    const after = await page.evaluate(() => {
+      const contactTitle = document.querySelector('#contact [data-p5-title]');
+      if (!contactTitle) return null;
+      const chars = Array.from(contactTitle.querySelectorAll('[data-p5-char]'))
+        .map((c) => c.textContent)
+        .join('');
+      return {
+        ariaLabel: contactTitle.getAttribute('aria-label'),
+        chars,
+      };
+    });
+
+    assert.ok(after);
+    assert.notEqual(after.ariaLabel, before.ariaLabel);
+    assert.equal(after.chars, after.ariaLabel.replace(/\s+/g, ''));
+  } finally {
+    await context.close();
+  }
+});
+
+test('C11: consecutive sections with different background colors render a non-horizontal diagonal cut', async () => {
+  const { context, page } = await openHome('pt-br');
+  try {
+    const cuts = await page.evaluate(() => {
+      const parsePolygon = (clipPath) => {
+        const m = clipPath.match(/polygon\((.+)\)/);
+        if (!m) return null;
+        return m[1].split(',').map((pt) => {
+          const [x, y] = pt.trim().split(/\s+/).map((v) => Number.parseFloat(v));
+          return { x, y };
+        });
+      };
+
+      const sections = Array.from(
+        document.querySelectorAll('#main-content > section, footer[data-bebop-footer]')
+      );
+      const transitions = [];
+
+      for (let i = 1; i < sections.length; i += 1) {
+        const prev = sections[i - 1];
+        const curr = sections[i];
+        const prevBg = window.getComputedStyle(prev).backgroundColor;
+        const currBg = window.getComputedStyle(curr).backgroundColor;
+        if (prevBg === currBg) continue;
+
+        const cutEl = curr.querySelector('[data-p5-section-cut]');
+        if (!cutEl) {
+          transitions.push({
+            from: prev.id || prev.tagName,
+            to: curr.id || curr.tagName,
+            hasCut: false,
+            isDiagonal: false,
+            height: 0,
+          });
+          continue;
+        }
+        const cs = window.getComputedStyle(cutEl);
+        const pts = parsePolygon(cs.clipPath);
+        const rect = cutEl.getBoundingClientRect();
+        const isDiagonal = Boolean(
+          pts && pts.length >= 3 && pts[0].y !== pts[1].y
+        );
+        transitions.push({
+          from: prev.id || prev.tagName,
+          to: curr.id || curr.tagName,
+          hasCut: true,
+          clipPath: cs.clipPath,
+          isDiagonal,
+          height: rect.height,
+        });
+      }
+      return transitions;
+    });
+
+    assert.ok(cuts.length >= 4, `Expected at least 4 color-changing section boundaries, got ${cuts.length}`);
+    for (const t of cuts) {
+      assert.equal(t.hasCut, true, `Missing [data-p5-section-cut] between ${t.from} and ${t.to}`);
+      assert.equal(
+        t.isDiagonal,
+        true,
+        `Cut between ${t.from} and ${t.to} must have a non-horizontal diagonal polygon edge, got ${t.clipPath}`
+      );
+      assert.ok(t.height >= 20, `Cut between ${t.from} and ${t.to} must have visible height >= 20px, got ${t.height}`);
+    }
+  } finally {
+    await context.close();
+  }
+});
+
+test('C13: zero horizontal overflow at 320, 375, 768 and 1440px in pt-br and en', async () => {
+  const widths = [320, 375, 768, 1440];
+  const locales = ['pt-br', 'en'];
+  const context = await browser.newContext({ reducedMotion: 'reduce' });
+  const page = await context.newPage();
+
+  try {
+    for (const locale of locales) {
+      await page.addInitScript((loc) => {
+        window.localStorage.setItem('brinu_locale', loc);
+      }, locale);
+
+      for (const width of widths) {
+        await page.setViewportSize({ width, height: 900 });
+        await page.goto(`${baseUrl}/`, { waitUntil: 'networkidle' });
+
+        const metrics = await page.evaluate(() => ({
+          scrollWidth: document.documentElement.scrollWidth,
+          clientWidth: document.documentElement.clientWidth,
+        }));
+
+        assert.ok(
+          metrics.scrollWidth <= metrics.clientWidth,
+          `Overflow at ${width}px (${locale}): scrollWidth=${metrics.scrollWidth} > clientWidth=${metrics.clientWidth}`
+        );
+      }
+    }
+  } finally {
+    await context.close();
+  }
+});
+
+test('C21: with JavaScript disabled section titles render as plain readable text', async () => {
+  const context = await browser.newContext({ javaScriptEnabled: false });
+  const page = await context.newPage();
+  try {
+    await page.goto(`${baseUrl}/`, { waitUntil: 'domcontentloaded' });
+    const titles = await page.evaluate(() => {
+      return Array.from(document.querySelectorAll('[data-p5-title]')).map((el) => ({
+        text: (el.textContent || '').trim(),
+        childElementCount: el.childElementCount,
+        visible: window.getComputedStyle(el).visibility !== 'hidden' && Number(window.getComputedStyle(el).opacity) > 0,
+      }));
+    });
+
+    assert.ok(titles.length >= 5);
+    for (const t of titles) {
+      assert.ok(t.text.length >= 3, 'Title text must be non-empty when JS is disabled');
+      assert.equal(t.childElementCount, 0, 'With JS disabled, title must render as plain text without split spans');
+      assert.equal(t.visible, true, 'Title must be visible when JS is disabled');
+    }
+  } finally {
+    await context.close();
+  }
+});
+
 
 

@@ -47,25 +47,23 @@ let handleAnchorClick: ((e: MouseEvent) => void) | null = null;
 let handleViewportBgSync: (() => void) | null = null;
 
 /**
- * Calcula a distância vertical do topo da viewport até 16px abaixo dos controles visíveis da nav.
+ * Calcula a distância vertical do topo da viewport até pelo menos 8px abaixo dos controles compactos visíveis da nav.
  */
 export function getNavClearanceOffset(): number {
-  if (typeof document === 'undefined') return 104;
+  if (typeof document === 'undefined') return 39;
+  const header = document.getElementById('comic-nav-header');
   const avatar = document.querySelector<HTMLElement>('#comic-nav-logo [data-nav-avatar]');
   const trigger = document.getElementById('cockpit-trigger-btn');
-  const header = document.getElementById('comic-nav-header');
 
-  let bottom = 0;
-  if (avatar) {
-    bottom = Math.max(bottom, avatar.getBoundingClientRect().bottom);
+  if (header?.dataset.scrolled === 'true' && header?.dataset.cockpitOpen !== 'true') {
+    let bottom = 0;
+    if (avatar) bottom = Math.max(bottom, avatar.getBoundingClientRect().bottom);
+    if (trigger) bottom = Math.max(bottom, trigger.getBoundingClientRect().bottom);
+    if (bottom > 0) {
+      return Math.min(39, Math.max(38, Math.ceil(bottom) + 8));
+    }
   }
-  if (trigger) {
-    bottom = Math.max(bottom, trigger.getBoundingClientRect().bottom);
-  }
-  if (bottom <= 0 && header) {
-    bottom = header.getBoundingClientRect().bottom;
-  }
-  return Math.max(72, Math.ceil(bottom) + 16);
+  return 39;
 }
 
 /**

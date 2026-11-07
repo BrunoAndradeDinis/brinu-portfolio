@@ -1,6 +1,7 @@
 ---
 import { ptBrDict, enDict } from "../i18n/dictionaries";
 import { buildMottoTokens, type NarrativeToken } from "./filmstrip/motto";
+import P5Title from "./p5/P5Title.astro";
 
 interface FilmSlide {
   id: string;
@@ -139,12 +140,11 @@ function splitWords(text: string): string[] {
       >
         {ptBrDict.filmstrip.tag}
       </span>
-      <h2
+      <P5Title
+        text={ptBrDict.filmstrip.heading}
         class="title-xxl font-display text-[clamp(1.75rem,5.2vw,4.75rem)] font-black uppercase leading-[0.95] tracking-tight text-space-base mx-auto max-w-[90rem]"
         data-i18n="filmstrip.heading"
-      >
-        {ptBrDict.filmstrip.heading}
-      </h2>
+      />
     </div>
   </div>
 

@@ -3,6 +3,8 @@ import SkillsGrid from "./SkillsGrid.astro";
 import { PROFILE } from "../data/profile";
 import { ptBrDict } from "../i18n/dictionaries";
 import { getLocalizedCareer, getLocalizedEducation } from "../data/career";
+import P5Title from "./p5/P5Title.astro";
+import P5Badge from "./p5/P5Badge.astro";
 
 const career = getLocalizedCareer("pt-br");
 const education = getLocalizedEducation("pt-br");
@@ -10,11 +12,17 @@ const education = getLocalizedEducation("pt-br");
 
 <section
   id="about"
-  class="relative border-t-4 border-paper-white bg-space-base px-4 py-16 sm:px-8 sm:py-20 md:px-12 md:py-24 text-paper-white select-none overflow-hidden"
+  class="relative bg-space-base px-4 pb-16 sm:px-8 sm:pb-20 md:px-12 md:pb-24 text-paper-white select-none overflow-hidden"
   aria-label={ptBrDict.about.sectionAria}
   data-i18n="about.sectionAria"
   data-i18n-attr="aria-label"
 >
+  <div
+    data-p5-section-cut="works-to-about"
+    aria-hidden="true"
+    class="p5-section-cut p5-section-cut--right -mx-4 sm:-mx-8 md:-mx-12 mb-12 sm:mb-16 bg-paper-white"
+  ></div>
+
   <div class="mx-auto mb-12 sm:mb-16 max-w-[140rem]">
     <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 pb-4 border-b-4 border-bebop-red">
       <div>
@@ -24,19 +32,18 @@ const education = getLocalizedEducation("pt-br");
         >
           {ptBrDict.about.actTag}
         </span>
-        <h2
+        <P5Title
+          text={ptBrDict.about.title}
           data-about-title
           data-i18n="about.title"
           class="font-display text-[clamp(2.2rem,6vw,5rem)] font-black tracking-tight text-paper-white leading-none uppercase"
-        >
-          {ptBrDict.about.title}
-        </h2>
+        />
       </div>
 
       <div class="flex flex-col sm:items-end text-left sm:text-right font-mono text-xs text-muted-gray">
-        <span class="font-bold text-paper-white bg-bebop-red px-2.5 py-0.5 border border-paper-white -skew-x-6" data-i18n="about.statusBadge">
+        <P5Badge class="font-bold text-space-base bg-bebop-red px-2.5 py-0.5 border border-paper-white" data-i18n="about.statusBadge">
           {ptBrDict.about.statusBadge}
-        </span>
+        </P5Badge>
         <span class="mt-1.5 text-[10px] sm:text-xs text-muted-gray tracking-wider" data-i18n="about.domainLine">
           {ptBrDict.about.domainLine}
         </span>

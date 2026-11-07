@@ -5,11 +5,17 @@ import { ptBrDict } from "../i18n/dictionaries";
 
 <footer
   data-bebop-footer
-  class="relative border-t-4 border-paper-white bg-space-base text-paper-white select-none overflow-hidden"
+  class="relative bg-space-base text-paper-white select-none overflow-hidden"
   aria-label={ptBrDict.footer.sectionAria}
   data-i18n="footer.sectionAria"
   data-i18n-attr="aria-label"
 >
+  <div
+    data-p5-section-cut="contact-to-footer"
+    aria-hidden="true"
+    class="p5-section-cut p5-section-cut--right w-full bg-paper-white"
+  ></div>
+
   <div
     class="ticker-tape !bg-bebop-red !text-paper-white !border-t-0 !border-b-4 !border-space-base !text-base sm:!text-lg md:!text-xl font-black"
     aria-hidden="true"

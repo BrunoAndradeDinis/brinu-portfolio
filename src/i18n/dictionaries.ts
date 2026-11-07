@@ -432,7 +432,7 @@ export const ptBrDict: TranslationSchema = {
     jumpCutSub: '// CORTE 02 :: ARQUIVO DE PROJETOS SELECIONADOS',
     sessionTag: '[ SESSÃO #01 ]',
     actTag: '[ ATO I // SELECTED WORKS :: PROJETOS EM DESTAQUE ]',
-    title: 'BOUNTY ARCHIVE',
+    title: 'ARQUIVO DE PROJETOS',
     countLabel: 'PROJETOS SELECIONADOS // 4 CASES',
     domainLabel: 'FRONTEND EM PRODUÇÃO :: FULLSTACK TYPESCRIPT :: CREATIVE DEV',
     challengeLabel: '// DESAFIO TÉCNICO',
@@ -444,7 +444,7 @@ export const ptBrDict: TranslationSchema = {
   about: {
     sectionAria: 'Dossiê Confidant do Operador: Bruno Dinis',
     actTag: '[ ATO II // DOSSIÊ CONFIDANT • REGISTRO 1996 ]',
-    title: 'DOSSIER: BRINU',
+    title: 'DOSSIÊ: BRINU',
     statusBadge: 'STATUS: ATIVO // EM PRODUÇÃO',
     domainLine: PROFILE.tagline['pt-br'].toUpperCase(),
     operatorTag: 'OPERADOR: BRINU',
@@ -536,7 +536,7 @@ export const ptBrDict: TranslationSchema = {
   contact: {
     sectionAria: 'Contato e Envio de Propostas — Bounty Board',
     actTag: '[ ATO IV // BOUNTY BOARD • TRANSMISSÃO DIRETA ]',
-    title: 'TRANSMIT A BOUNTY',
+    title: 'VAMOS CONVERSAR',
     availableBadge: 'DISPONÍVEL PARA PROJETOS DE ALTO IMPACTO',
     leadText:
       'Tem um produto que precisa de um frontend rápido, acessível e com personalidade? Vamos conversar.',

@@ -17,10 +17,10 @@ export interface RansomWord {
 }
 
 export const RANSOM_FONT_STACKS: readonly RansomFontEntry[] = [
-  { token: 'display', stack: 'var(--font-display, Syne, sans-serif)' },
-  { token: 'body', stack: 'var(--font-body, Archivo, sans-serif)' },
-  { token: 'mono', stack: 'var(--font-mono, "Space Mono", monospace)' },
-  { token: 'spray', stack: 'var(--font-spray, "Permanent Marker", cursive)' },
+  { token: 'display', stack: 'var(--font-display, Impact, sans-serif)' },
+  { token: 'body', stack: 'var(--font-body, system-ui, sans-serif)' },
+  { token: 'mono', stack: 'var(--font-mono, ui-monospace, monospace)' },
+  { token: 'spray', stack: 'var(--font-spray, fantasy, cursive)' },
 ] as const;
 
 const ROTATION_PATTERN: readonly number[] = [

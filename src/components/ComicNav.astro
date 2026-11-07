@@ -249,6 +249,24 @@ import { ptBrDict } from "../i18n/dictionaries";
     pointer-events: none;
   }
 
+  #comic-nav-header[data-scrolled="true"][data-cockpit-open="false"] {
+    height: auto !important;
+    padding-top: 2px !important;
+    padding-bottom: 2px !important;
+    align-items: flex-start !important;
+  }
+
+  #comic-nav-header[data-scrolled="true"][data-cockpit-open="false"] [data-nav-avatar],
+  #comic-nav-header[data-scrolled="true"][data-cockpit-open="false"] #cockpit-trigger-btn {
+    height: 24px !important;
+    width: 24px !important;
+  }
+
+  #comic-nav-header[data-scrolled="true"][data-cockpit-open="false"] .nav-secondary-item,
+  #comic-nav-header[data-scrolled="true"][data-cockpit-open="false"] [data-nav-nameplate] {
+    display: none !important;
+  }
+
   #comic-nav-header[data-scrolled="true"] .nav-secondary-item,
   #comic-nav-header[data-cockpit-open="true"] .nav-secondary-item,
   #comic-nav-header[data-scrolled="true"] [data-nav-nameplate],
