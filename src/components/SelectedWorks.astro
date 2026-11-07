@@ -2,6 +2,9 @@
 import { getLocalizedCases } from "../data/cases";
 import { getLocalizedArchive } from "../data/archive";
 import { ptBrDict } from "../i18n/dictionaries";
+import P5Title from "./p5/P5Title.astro";
+import P5Panel from "./p5/P5Panel.astro";
+import P5Badge from "./p5/P5Badge.astro";
 
 const cases = getLocalizedCases("pt-br");
 const archive = getLocalizedArchive("pt-br");
@@ -10,36 +13,36 @@ const track2Cases = cases.filter((c) => c.track === 2);
 
 const variants = {
   red: {
-    card: "bg-bebop-red text-space-base border-4 border-space-base shadow-[8px_8px_0_var(--color-space-base)] hover:-translate-x-1 hover:-translate-y-1 hover:shadow-[12px_12px_0_var(--color-space-base)]",
+    card: "bg-bebop-red text-space-base border-4 border-space-base shadow-[8px_8px_0_var(--color-space-base)] hover:-translate-x-1 hover:-translate-y-1",
     head: "border-b-4 border-space-base",
     meta: "text-space-base",
     badge: "bg-space-base text-paper-white",
     title: "text-space-base",
-    subtitle: "text-space-base/85",
+    subtitle: "text-space-base",
     body: "text-space-base",
     block: "border-2 border-space-base bg-space-base text-paper-white",
     label1: "text-bebop-red",
     label2: "text-paper-white",
     metric: "bg-paper-white text-space-base border-2 border-space-base",
-    stack: "border-2 border-space-base bg-paper-white/90 text-space-base",
+    stack: "border-2 border-space-base bg-paper-white text-space-base",
     links: "border-t-4 border-space-base",
-    link: "border-2 border-space-base bg-space-base text-paper-white hover:bg-paper-white hover:text-space-base",
+    link: "relative overflow-hidden border-2 border-space-base bg-space-base text-paper-white hover:text-space-base focus:text-space-base focus-visible:text-space-base",
   },
   black: {
-    card: "bg-space-base text-paper-white border-4 border-paper-white shadow-[8px_8px_0_var(--color-space-base)] hover:-translate-x-1 hover:-translate-y-1 hover:shadow-[12px_12px_0_var(--color-space-base)]",
+    card: "bg-space-base text-paper-white border-4 border-space-base shadow-[8px_8px_0_var(--color-bebop-red)] hover:-translate-x-1 hover:-translate-y-1",
     head: "border-b-4 border-bebop-red",
     meta: "text-bebop-red",
-    badge: "bg-bebop-red text-paper-white",
+    badge: "bg-paper-white text-space-base",
     title: "text-paper-white",
     subtitle: "text-bebop-red",
     body: "text-paper-white",
     block: "border-2 border-paper-white bg-space-surface-1 text-paper-white",
     label1: "text-bebop-red",
     label2: "text-paper-white",
-    metric: "bg-bebop-red text-paper-white border-2 border-paper-white",
-    stack: "border-2 border-paper-white text-paper-white",
+    metric: "bg-space-surface-1 text-paper-white border-2 border-bebop-red",
+    stack: "border-2 border-paper-white bg-space-base text-paper-white",
     links: "border-t-4 border-bebop-red",
-    link: "border-2 border-paper-white bg-bebop-red text-paper-white hover:bg-paper-white hover:text-space-base",
+    link: "relative overflow-hidden border-2 border-paper-white bg-space-surface-1 text-paper-white hover:text-space-base focus:text-space-base focus-visible:text-space-base",
   },
 } as const;
 
@@ -51,25 +54,31 @@ const tracks = [
 
 <section
   id="works"
-  class="relative border-t-4 border-space-base bg-bebop-red px-4 py-12 sm:px-8 sm:py-16 md:px-12 md:py-20 text-space-base select-none overflow-hidden"
+  class="relative bg-paper-white px-4 pb-12 sm:px-8 sm:pb-16 md:px-12 md:pb-20 text-space-base select-none overflow-hidden"
   aria-label={ptBrDict.works.sectionAria}
   data-i18n="works.sectionAria"
   data-i18n-attr="aria-label"
 >
   <div
+    data-p5-section-cut="filmstrip-to-works"
+    aria-hidden="true"
+    class="p5-section-cut p5-section-cut--left -mx-4 sm:-mx-8 md:-mx-12 bg-bebop-red"
+  ></div>
+
+  <div
     id="tank-jump-cut-strip"
     data-tank-strip
-    class="relative -mx-4 sm:-mx-8 md:-mx-12 -mt-12 sm:-mt-16 md:-mt-20 mb-12 sm:mb-16 md:mb-20 overflow-hidden border-b-4 border-space-base bg-space-base py-3 sm:py-4"
+    class="relative -mx-4 sm:-mx-8 md:-mx-12 mb-12 sm:mb-16 md:mb-20 overflow-hidden border-y-4 border-space-base bg-space-base py-3 sm:py-4"
   >
     <div class="mx-auto flex w-full max-w-[140rem] flex-wrap items-center justify-between gap-3 px-4 sm:px-8 py-1.5">
       <div class="flex items-center gap-3">
-        <span
+        <P5Badge
           data-jump-cut-badge
           data-i18n="works.jumpCutBadge"
-          class="inline-flex items-center border-2 border-paper-white bg-bebop-red px-2.5 py-1 font-display text-[11px] sm:text-xs md:text-sm font-black uppercase tracking-wider text-paper-white -skew-x-6"
+          class="border-2 border-paper-white bg-bebop-red px-2.5 py-1 font-display text-[11px] sm:text-xs md:text-sm font-black uppercase tracking-wider text-space-base"
         >
           {ptBrDict.works.jumpCutBadge}
-        </span>
+        </P5Badge>
         <span
           class="font-mono text-[10px] sm:text-xs tracking-widest text-paper-white uppercase font-bold"
           data-i18n="works.jumpCutSub"
@@ -78,9 +87,9 @@ const tracks = [
         </span>
       </div>
       <div class="flex items-center gap-3 font-mono text-[9px] sm:text-xs tracking-wider text-paper-white uppercase">
-        <span class="border-2 border-paper-white px-2.5 py-0.5 font-bold text-paper-white" data-i18n="works.sessionTag">
+        <P5Badge class="border-2 border-paper-white bg-space-surface-1 px-2.5 py-0.5 font-bold text-paper-white" data-i18n="works.sessionTag">
           {ptBrDict.works.sessionTag}
-        </span>
+        </P5Badge>
       </div>
     </div>
   </div>
@@ -91,17 +100,16 @@ const tracks = [
         <span class="mb-2 block font-mono text-xs sm:text-sm font-bold tracking-widest text-space-base uppercase" data-i18n="works.actTag">
           {ptBrDict.works.actTag}
         </span>
-        <h2
+        <P5Title
+          text={ptBrDict.works.title}
           data-bounty-title
           data-i18n="works.title"
           class="font-display text-[clamp(2.2rem,6vw,5rem)] font-black tracking-tight text-space-base leading-none uppercase"
-        >
-          {ptBrDict.works.title}
-        </h2>
+        />
       </div>
       <div class="flex flex-col sm:items-end text-left sm:text-right font-mono text-xs text-space-base uppercase">
         <span class="font-black" data-i18n="works.countLabel">{ptBrDict.works.countLabel}</span>
-        <span class="text-[10px] sm:text-xs tracking-wider" data-i18n="works.domainLabel">
+        <span class="text-[10px] sm:text-xs tracking-wider text-space-base" data-i18n="works.domainLabel">
           {ptBrDict.works.domainLabel}
         </span>
       </div>
@@ -112,8 +120,10 @@ const tracks = [
     <div class="flex flex-col gap-10 sm:gap-12">
       {tracks.map((track) => (
         <div data-reel-track={track.id} class="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-10">
-          {track.cases.map((project) => (
-            <article
+          {track.cases.map((project, cIdx) => (
+            <P5Panel
+              as="article"
+              cut={(track.id + cIdx) % 2 === 0 ? "b" : "a"}
               id={`case-${project.id}`}
               data-reel-card
               class:list={["group relative flex flex-col justify-between transition-all duration-150", track.v.card]}
@@ -121,13 +131,13 @@ const tracks = [
               <div class="relative z-10 p-6 sm:p-8">
                 <div class:list={["mb-4 flex flex-wrap items-center justify-between gap-2 pb-3 font-mono text-xs font-black uppercase", track.v.head, track.v.meta]}>
                   <span data-case-reel>[ {project.reelNumber} ] // {project.category}</span>
-                  <span
+                  <P5Badge
                     data-badge-indicator
                     data-case-badge
                     class:list={["px-2.5 py-0.5 text-[10px] sm:text-xs font-black", track.v.badge]}
                   >
                     {project.badge}
-                  </span>
+                  </P5Badge>
                 </div>
 
                 <h3
@@ -157,7 +167,7 @@ const tracks = [
                     >
                       {ptBrDict.works.challengeLabel}
                     </span>
-                    <p data-case-challenge class="text-[11px] sm:text-xs">{project.challenge}</p>
+                    <p data-case-challenge class="text-[11px] sm:text-xs text-paper-white">{project.challenge}</p>
                   </div>
                   <div>
                     <span
@@ -166,7 +176,7 @@ const tracks = [
                     >
                       {ptBrDict.works.solutionLabel}
                     </span>
-                    <p data-case-solution class="text-[11px] sm:text-xs">{project.solution}</p>
+                    <p data-case-solution class="text-[11px] sm:text-xs text-paper-white">{project.solution}</p>
                   </div>
                 </div>
 
@@ -189,15 +199,16 @@ const tracks = [
                       rel="noopener noreferrer"
                       aria-label={link.ariaLabel}
                       data-case-link
-                      class:list={["inline-flex items-center gap-2 px-3.5 py-1.5 font-mono text-xs font-black uppercase transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-space-base", track.v.link]}
+                      class:list={["inline-flex items-center gap-2 px-3.5 py-1.5 font-mono text-xs font-black uppercase transition-colors duration-100 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-space-base", track.v.link]}
                     >
-                      <span data-case-link-label>{link.label}</span>
-                      <span aria-hidden="true">↗</span>
+                      <span data-p5-select-poly aria-hidden="true" class="p5-select-poly"></span>
+                      <span data-case-link-label class="relative z-10">{link.label}</span>
+                      <span aria-hidden="true" class="relative z-10">↗</span>
                     </a>
                   ))}
                 </div>
               </div>
-            </article>
+            </P5Panel>
           ))}
         </div>
       ))}
@@ -211,26 +222,28 @@ const tracks = [
         {ptBrDict.works.archiveTitle}
       </h3>
       <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5 sm:gap-6">
-        {archive.map((entry) => (
-          <article
+        {archive.map((entry, aIdx) => (
+          <P5Panel
+            as="article"
+            cut={aIdx % 2 === 0 ? "a" : "b"}
             id={`archive-${entry.id}`}
             data-archive-card
             class="flex flex-col justify-between gap-4 border-4 border-space-base bg-space-base p-5 text-paper-white shadow-[6px_6px_0_var(--color-space-base)]"
           >
             <div>
               <div class="mb-2 flex flex-wrap items-start justify-between gap-2">
-                <h4 data-archive-title class="font-display text-lg sm:text-xl font-black uppercase leading-tight">{entry.title}</h4>
+                <h4 data-archive-title class="font-display text-lg sm:text-xl font-black uppercase leading-tight text-paper-white">{entry.title}</h4>
                 {entry.status && (
-                  <span data-archive-status class="shrink-0 bg-bebop-red px-2 py-0.5 font-mono text-[10px] font-black uppercase text-paper-white">
+                  <P5Badge data-archive-status class="shrink-0 bg-bebop-red px-2.5 py-0.5 font-mono text-[10px] font-black uppercase text-space-base">
                     {entry.status}
-                  </span>
+                  </P5Badge>
                 )}
               </div>
-              <p data-archive-description class="font-body text-sm leading-relaxed text-paper-white/90">{entry.description}</p>
+              <p data-archive-description class="font-body text-sm leading-relaxed text-paper-white">{entry.description}</p>
             </div>
             <div class="flex flex-wrap gap-1.5 font-mono text-[10px] uppercase">
               {entry.stack.map((tech) => (
-                <span data-archive-stack-item class="border border-paper-white px-2 py-0.5 font-bold">{tech}</span>
+                <span data-archive-stack-item class="border border-paper-white px-2 py-0.5 font-bold text-paper-white">{tech}</span>
               ))}
             </div>
             <div class="flex flex-wrap gap-2 border-t-2 border-bebop-red pt-3">
@@ -240,14 +253,14 @@ const tracks = [
                   target="_blank"
                   rel="noopener noreferrer"
                   data-archive-link={link.type}
-                  class="inline-flex items-center gap-1.5 border-2 border-paper-white px-2.5 py-1 font-mono text-[11px] font-black uppercase transition-colors duration-150 hover:bg-paper-white hover:text-space-base focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-paper-white"
+                  class="inline-flex items-center gap-1.5 border-2 border-paper-white px-2.5 py-1 font-mono text-[11px] font-black uppercase text-paper-white transition-colors duration-150 hover:bg-paper-white hover:text-space-base focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-paper-white"
                 >
                   <span data-archive-link-label>{link.label}</span>
                   <span aria-hidden="true">↗</span>
                 </a>
               ))}
             </div>
-          </article>
+          </P5Panel>
         ))}
       </div>
     </div>

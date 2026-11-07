@@ -213,3 +213,159 @@ test('C15: scrolling past hero hides nameplate and keeps only avatar badge and m
     await context.close();
   }
 });
+
+test('C16: case cards and archive cards render through P5Panel with non-rectangular clip-path', async () => {
+  const { context, page } = await openHome('pt-br');
+  try {
+    const panels = await page.evaluate(() => {
+      const parsePolygon = (clipPath) => {
+        const match = clipPath.match(/polygon\((.+)\)/);
+        if (!match) return null;
+        return match[1].split(',').map((pt) => {
+          const [x, y] = pt.trim().split(/\s+/).map((v) => Number.parseFloat(v));
+          return { x, y };
+        });
+      };
+
+      const isNonRectangular = (pts) => {
+        if (!pts || pts.length < 4) return false;
+        const isAxisAlignedRect =
+          pts.length === 4 &&
+          pts[0].x === 0 &&
+          pts[0].y === 0 &&
+          pts[1].x === 100 &&
+          pts[1].y === 0 &&
+          pts[2].x === 100 &&
+          pts[2].y === 100 &&
+          pts[3].x === 0 &&
+          pts[3].y === 100;
+        return !isAxisAlignedRect;
+      };
+
+      const caseCards = Array.from(document.querySelectorAll('#works [data-reel-card]'));
+      const archiveCards = Array.from(document.querySelectorAll('#works [data-archive-card]'));
+
+      return {
+        caseCount: caseCards.length,
+        archiveCount: archiveCards.length,
+        cases: caseCards.map((el) => {
+          const cp = window.getComputedStyle(el).clipPath;
+          return {
+            id: el.id,
+            hasPanelAttr: el.hasAttribute('data-p5-panel'),
+            clipPath: cp,
+            nonRect: isNonRectangular(parsePolygon(cp)),
+          };
+        }),
+        archives: archiveCards.map((el) => {
+          const cp = window.getComputedStyle(el).clipPath;
+          return {
+            id: el.id,
+            hasPanelAttr: el.hasAttribute('data-p5-panel'),
+            clipPath: cp,
+            nonRect: isNonRectangular(parsePolygon(cp)),
+          };
+        }),
+      };
+    });
+
+    assert.equal(panels.caseCount, 4);
+    assert.equal(panels.archiveCount, 8);
+    for (const card of [...panels.cases, ...panels.archives]) {
+      assert.equal(card.hasPanelAttr, true, `${card.id} must render through P5Panel`);
+      assert.equal(
+        card.nonRect,
+        true,
+        `${card.id} must have a non-rectangular polygon clip-path, got ${card.clipPath}`
+      );
+    }
+  } finally {
+    await context.close();
+  }
+});
+
+test('C17: hovering or focusing a case link reveals the P5 selection polygon within 150ms', async () => {
+  const { context, page } = await openHome('pt-br');
+  try {
+    const firstLink = page.locator('#works a[data-case-link]').first();
+    const secondLink = page.locator('#works a[data-case-link]').nth(1);
+    await firstLink.scrollIntoViewIfNeeded();
+    await page.waitForTimeout(80);
+
+    const beforeHover = await firstLink.evaluate((el) => {
+      const poly = el.querySelector('[data-p5-select-poly]');
+      return poly ? Number(window.getComputedStyle(poly).opacity) : -1;
+    });
+    assert.equal(beforeHover, 0, 'Selection polygon must start at opacity 0 before hover/focus');
+
+    await firstLink.hover();
+    await page.waitForTimeout(130);
+
+    const afterHover = await firstLink.evaluate((el) => {
+      const poly = el.querySelector('[data-p5-select-poly]');
+      const label = el.querySelector('[data-case-link-label]');
+      if (!poly || !label) return null;
+      const ps = window.getComputedStyle(poly);
+      const ls = window.getComputedStyle(label);
+      const rect = poly.getBoundingClientRect();
+      return {
+        opacity: Number(ps.opacity),
+        clipPath: ps.clipPath,
+        polyZ: Number(ps.zIndex) || 0,
+        labelZ: Number(ls.zIndex) || 0,
+        width: rect.width,
+        height: rect.height,
+      };
+    });
+
+    assert.ok(afterHover, 'Expected [data-p5-select-poly] and [data-case-link-label] inside case link');
+    assert.ok(
+      afterHover.opacity >= 0.9,
+      `Selection polygon must appear within 150ms on hover, got opacity=${afterHover.opacity}`
+    );
+    assert.ok(afterHover.clipPath.startsWith('polygon('), `Expected polygon clip-path, got ${afterHover.clipPath}`);
+    assert.ok(afterHover.labelZ > afterHover.polyZ, 'Selection polygon must render behind link label');
+    assert.ok(afterHover.width > 20 && afterHover.height > 12);
+
+    await secondLink.focus();
+    await page.waitForTimeout(130);
+
+    const afterFocus = await secondLink.evaluate((el) => {
+      const poly = el.querySelector('[data-p5-select-poly]');
+      return poly ? Number(window.getComputedStyle(poly).opacity) : 0;
+    });
+    assert.ok(
+      afterFocus >= 0.9,
+      `Selection polygon must appear within 150ms on keyboard focus, got opacity=${afterFocus}`
+    );
+  } finally {
+    await context.close();
+  }
+});
+
+test('C18: status and badge chips render through P5Badge', async () => {
+  const { context, page } = await openHome('pt-br');
+  try {
+    const badgeMetrics = await page.evaluate(() => {
+      const caseBadges = Array.from(document.querySelectorAll('#works [data-case-badge]'));
+      const archiveStatuses = Array.from(document.querySelectorAll('#works [data-archive-status]'));
+      const all = [...caseBadges, ...archiveStatuses];
+      return {
+        caseBadgeCount: caseBadges.length,
+        archiveStatusCount: archiveStatuses.length,
+        allHaveP5Badge: all.every(
+          (el) =>
+            el.hasAttribute('data-p5-badge') &&
+            window.getComputedStyle(el).clipPath.startsWith('polygon(')
+        ),
+      };
+    });
+
+    assert.equal(badgeMetrics.caseBadgeCount, 4);
+    assert.ok(badgeMetrics.archiveStatusCount >= 1);
+    assert.equal(badgeMetrics.allHaveP5Badge, true, 'All case badges and archive statuses must render via P5Badge');
+  } finally {
+    await context.close();
+  }
+});
+
