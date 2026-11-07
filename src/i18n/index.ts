@@ -7,6 +7,7 @@ import {
 import { getLocalizedCases } from '../data/cases.ts';
 import { getArsenalCounter, getLocalizedArsenal } from '../data/arsenal.ts';
 import { getLocalizedArchive } from '../data/archive.ts';
+import { getLocalizedCareer, getLocalizedEducation } from '../data/career.ts';
 
 export { DICTIONARIES, type Locale, type TranslationSchema };
 
@@ -227,6 +228,28 @@ export function applyDomTranslations(locale: Locale): void {
       const link = entry.links[idx];
       if (link) label.textContent = link.label;
     });
+  });
+
+  getLocalizedCareer(validLocale).forEach((entry) => {
+    const item = document.getElementById(`career-${entry.id}`);
+    if (!item) return;
+    const role = item.querySelector<HTMLElement>('[data-career-role]');
+    const period = item.querySelector<HTMLElement>('[data-career-period]');
+    const summary = item.querySelector<HTMLElement>('[data-career-summary]');
+    if (role) role.textContent = entry.role;
+    if (period) period.textContent = entry.period;
+    if (summary) summary.textContent = entry.summary;
+  });
+
+  getLocalizedEducation(validLocale).forEach((entry) => {
+    const item = document.getElementById(`education-${entry.id}`);
+    if (!item) return;
+    const course = item.querySelector<HTMLElement>('[data-education-course]');
+    const period = item.querySelector<HTMLElement>('[data-education-period]');
+    const status = item.querySelector<HTMLElement>('[data-education-status]');
+    if (course) course.textContent = entry.course;
+    if (period) period.textContent = entry.period;
+    if (status) status.textContent = entry.status;
   });
 
   getLocalizedArsenal(validLocale).forEach((domain) => {

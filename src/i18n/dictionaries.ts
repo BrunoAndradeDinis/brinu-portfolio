@@ -128,9 +128,10 @@ export interface TranslationSchema {
     roleHeading: string;
     bioP1: string;
     bioP2: string;
-    bioP3: string;
-    manifestoTag: string;
-    manifestoQuote: string;
+    portraitAlt: string;
+    careerTitle: string;
+    educationTitle: string;
+    automationsLabel: string;
     stats: {
       roleLabel: string;
       roleValue: string;
@@ -431,11 +432,10 @@ export const ptBrDict: TranslationSchema = {
       'Desenvolvedor frontend no time da Magalu Cloud, construindo com Astro, React e Tailwind. Antes do código, foram 8 anos no ecossistema Magalu entre SAC e helpdesk — onde comecei a automatizar o próprio trabalho com extensões, dashboards e chatbots.',
     bioP2:
       'Fora do expediente, levo direção de arte para a web: interfaces angulares inspiradas em Persona 5 e Cowboy Bebop, com motion de 60fps. Pai da Helena, operando de Franca / SP.',
-    bioP3:
-      'Acima de qualquer cluster distribuído, a base real é humana: pai dedicado da Helena — fonte diária de propósito e alegria — e noivo apaixonado, operando diretamente de Franca / SP.',
-    manifestoTag: 'MANIFESTO CENTRAL',
-    manifestoQuote:
-      '"Software de altíssimo rendimento arquitetural sem abrir mão de identidade brutalista, rigor técnico e alma autoral."',
+    portraitAlt: 'Retrato ilustrado de Bruno Dinis',
+    careerTitle: 'TRAJETÓRIA',
+    educationTitle: 'FORMAÇÃO',
+    automationsLabel: 'AUTOMAÇÕES',
     stats: {
       roleLabel: 'PAPEL ATUAL //',
       roleValue: PROFILE.role['pt-br'],
@@ -743,11 +743,10 @@ export const enDict = {
       'Frontend developer on the Magalu Cloud team, building with Astro, React and Tailwind. Before code, I spent 8 years in the Magalu ecosystem between customer service and helpdesk — where I started automating my own work with extensions, dashboards and chatbots.',
     bioP2:
       'Off the clock, I bring art direction to the web: angular interfaces inspired by Persona 5 and Cowboy Bebop, with 60fps motion. Helena\'s dad, based in Franca / SP.',
-    bioP3:
-      'Above any cloud cluster or distributed pipeline, the foundation is human: devoted father to Helena — my daily source of joy and purpose — and proud fiancé, operating out of Franca / SP, Brazil.',
-    manifestoTag: 'CORE MANIFESTO',
-    manifestoQuote:
-      '"High architectural throughput without compromising brutalist identity, engineering rigor, and human soul."',
+    portraitAlt: 'Illustrated portrait of Bruno Dinis',
+    careerTitle: 'CAREER',
+    educationTitle: 'EDUCATION',
+    automationsLabel: 'AUTOMATIONS',
     stats: {
       roleLabel: 'CURRENT ROLE //',
       roleValue: PROFILE.role.en,

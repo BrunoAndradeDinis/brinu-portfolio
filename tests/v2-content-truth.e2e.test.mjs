@@ -226,3 +226,80 @@ test('C24: clicking an evidence chip scrolls to its card', async () => {
     await context.close();
   }
 });
+
+test('C28: career lists three roles newest first with localized dates', async () => {
+  const expected = {
+    'pt-br': ['dez/2025 – atual', 'nov/2019 – nov/2025', 'jun/2017 – out/2019'],
+    en: ['Dec 2025 – present', 'Nov 2019 – Nov 2025', 'Jun 2017 – Oct 2019'],
+  };
+  for (const locale of ['pt-br', 'en']) {
+    const { context, page } = await openHome(locale);
+    try {
+      const ids = await page.locator('#about [data-career-entry]').evaluateAll((items) => items.map((i) => i.id));
+      assert.deepEqual(ids, ['career-magalu-cloud', 'career-luizalabs', 'career-magazine-luiza']);
+      const periods = await page.locator('#about [data-career-period]').allInnerTexts();
+      assert.deepEqual(periods.map((p) => p.trim().toLowerCase()), expected[locale].map((p) => p.toLowerCase()));
+      const orgs = await page.locator('#about [data-career-org]').allInnerTexts();
+      assert.deepEqual(orgs.map((o) => o.trim().toUpperCase()), ['MAGALU CLOUD', 'LUIZALABS', 'MAGAZINE LUIZA']);
+    } finally {
+      await context.close();
+    }
+  }
+});
+
+test('C29: luizalabs entry links its three automations', async () => {
+  const { context, page } = await openHome();
+  try {
+    const links = await page
+      .locator('#career-luizalabs a[data-automation-link]')
+      .evaluateAll((as) => as.map((a) => [a.textContent.replace('↗', '').trim(), a.getAttribute('href'), a.getAttribute('target')]));
+    assert.deepEqual(links, [
+      ['Consulta CNPJ', 'https://github.com/BrunoAndradeDinis/consultaCNPJ', '_blank'],
+      ['sheetScriptForm', 'https://github.com/BrunoAndradeDinis/sheetScriptForm', '_blank'],
+      ['Mapa de Desempenho', 'https://github.com/BrunoAndradeDinis/mapaDeDesempenho', '_blank'],
+    ]);
+    assert.equal(await page.locator('#career-magalu-cloud a[data-automation-link]').count(), 0);
+  } finally {
+    await context.close();
+  }
+});
+
+test('C30: education lists the four approved entries with status', async () => {
+  const expected = {
+    'pt-br': ['Concluído', 'Concluído', 'Em andamento', 'Em andamento'],
+    en: ['Completed', 'Completed', 'In progress', 'In progress'],
+  };
+  for (const locale of ['pt-br', 'en']) {
+    const { context, page } = await openHome(locale);
+    try {
+      const ids = await page.locator('#about [data-education-entry]').evaluateAll((items) => items.map((i) => i.id));
+      assert.deepEqual(ids, ['education-ampli', 'education-ebac', 'education-full-stack-club', 'education-alura']);
+      const statuses = await page.locator('#about [data-education-status]').allInnerTexts();
+      assert.deepEqual(statuses.map((s) => s.trim().toUpperCase()), expected[locale].map((s) => s.toUpperCase()));
+    } finally {
+      await context.close();
+    }
+  }
+});
+
+test('C31: page does not mention fatec', async () => {
+  for (const locale of ['pt-br', 'en']) {
+    const { context, page } = await openHome(locale);
+    try {
+      assert.doesNotMatch(await page.content(), /fatec/i);
+    } finally {
+      await context.close();
+    }
+  }
+});
+
+test('C33: about shows at most two bio paragraphs and no manifesto', async () => {
+  const { context, page } = await openHome();
+  try {
+    assert.equal(await page.locator('#about [data-i18n^="about.bioP"]').count(), 2);
+    assert.equal(await page.locator('#about [data-i18n="about.manifestoQuote"], #about blockquote').count(), 0);
+    assert.doesNotMatch(await page.locator('#about').innerText(), /MANIFESTO/i);
+  } finally {
+    await context.close();
+  }
+});

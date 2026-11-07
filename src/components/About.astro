@@ -2,6 +2,10 @@
 import SkillsGrid from "./SkillsGrid.astro";
 import { PROFILE } from "../data/profile";
 import { ptBrDict } from "../i18n/dictionaries";
+import { getLocalizedCareer, getLocalizedEducation } from "../data/career";
+
+const career = getLocalizedCareer("pt-br");
+const education = getLocalizedEducation("pt-br");
 ---
 
 <section
@@ -52,7 +56,9 @@ import { ptBrDict } from "../i18n/dictionaries";
           <img
             id="about-official-avatar"
             src="/assets/brinu-avatar.jpg"
-            alt="Retrato oficial ilustrado de Bruno Dinis"
+            alt={ptBrDict.about.portraitAlt}
+            data-i18n="about.portraitAlt"
+            data-i18n-attr="alt"
             width={341}
             height={394}
             class="w-full h-auto aspect-[341/394] object-cover contrast-125 transition-transform duration-500 group-hover:scale-[1.03]"
@@ -92,25 +98,6 @@ import { ptBrDict } from "../i18n/dictionaries";
         <div class="space-y-4 font-body text-sm sm:text-base text-paper-white/95 leading-relaxed mb-8">
           <p data-i18n="about.bioP1">{ptBrDict.about.bioP1}</p>
           <p data-i18n="about.bioP2">{ptBrDict.about.bioP2}</p>
-          <p data-i18n="about.bioP3">{ptBrDict.about.bioP3}</p>
-        </div>
-
-        <div class="relative mb-8 border-2 border-paper-white bg-space-base p-4 sm:p-5 shadow-[4px_4px_0_var(--color-bebop-red)]">
-          <div
-            class="absolute -top-3 left-4 bg-bebop-red border border-paper-white px-2.5 py-0.5 font-mono text-[10px] font-bold text-paper-white uppercase tracking-wider -skew-x-6"
-            data-i18n="about.manifestoTag"
-          >
-            {ptBrDict.about.manifestoTag}
-          </div>
-          <blockquote
-            class="font-body text-xs sm:text-sm md:text-base text-paper-white italic font-bold leading-snug pt-1"
-            data-i18n="about.manifestoQuote"
-          >
-            {ptBrDict.about.manifestoQuote}
-          </blockquote>
-          <div class="mt-2 text-right font-spray text-sm text-bebop-red">
-            — {PROFILE.handle} ({PROFILE.fullName})
-          </div>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 border-2 border-paper-white bg-space-base p-4 font-mono text-xs">
@@ -146,6 +133,57 @@ import { ptBrDict } from "../i18n/dictionaries";
               {ptBrDict.about.stats.stackValue}
             </span>
           </div>
+        </div>
+
+        <div data-career class="mt-8">
+          <h4 class="mb-4 font-mono text-xs font-black uppercase tracking-widest text-bebop-red" data-i18n="about.careerTitle">
+            {ptBrDict.about.careerTitle}
+          </h4>
+          <ol class="flex flex-col gap-4 border-l-4 border-bebop-red pl-4">
+            {career.map((entry) => (
+              <li id={`career-${entry.id}`} data-career-entry class="flex flex-col gap-1">
+                <span data-career-period class="font-mono text-[11px] font-bold uppercase text-muted-gray">{entry.period}</span>
+                <span class="font-display text-base sm:text-lg font-black uppercase text-paper-white">
+                  <span data-career-role>{entry.role}</span> <span class="text-bebop-red">@</span> <span data-career-org>{entry.org}</span>
+                </span>
+                <p data-career-summary class="font-body text-sm text-paper-white/90 leading-relaxed">{entry.summary}</p>
+                {entry.automations.length > 0 && (
+                  <div class="mt-1 flex flex-wrap items-center gap-2 font-mono text-[11px]">
+                    <span class="font-black uppercase text-bebop-red" data-i18n="about.automationsLabel">{ptBrDict.about.automationsLabel}</span>
+                    {entry.automations.map((automation) => (
+                      <a
+                        href={automation.repoUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        data-automation-link={automation.id}
+                        class="border border-paper-white px-2 py-0.5 font-bold uppercase text-paper-white transition-colors duration-150 hover:bg-paper-white hover:text-space-base"
+                      >
+                        {automation.name} ↗
+                      </a>
+                    ))}
+                  </div>
+                )}
+              </li>
+            ))}
+          </ol>
+        </div>
+
+        <div data-education class="mt-8">
+          <h4 class="mb-4 font-mono text-xs font-black uppercase tracking-widest text-bebop-red" data-i18n="about.educationTitle">
+            {ptBrDict.about.educationTitle}
+          </h4>
+          <ul class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {education.map((entry) => (
+              <li id={`education-${entry.id}`} data-education-entry class="border-2 border-paper-white/40 p-3">
+                <span class="block font-display text-sm font-black uppercase text-paper-white">{entry.institution}</span>
+                <span data-education-course class="block font-body text-sm text-paper-white/90">{entry.course}</span>
+                <span class="mt-1 flex flex-wrap gap-2 font-mono text-[10px] uppercase">
+                  <span data-education-period class="text-muted-gray">{entry.period}</span>
+                  <span data-education-status class="font-black text-bebop-red">{entry.status}</span>
+                </span>
+              </li>
+            ))}
+          </ul>
         </div>
       </div>
     </div>
