@@ -452,7 +452,7 @@ export const ptBrDict: TranslationSchema = {
     bioP1:
       'Desenvolvedor frontend no time da Magalu Cloud, construindo com Astro, React e Tailwind. Antes do código, foram 8 anos no ecossistema Magalu entre SAC e helpdesk — onde comecei a automatizar o próprio trabalho com extensões, dashboards e chatbots.',
     bioP2:
-      'Fora do expediente, levo direção de arte para a web: interfaces angulares inspiradas em Persona 5 e Cowboy Bebop, com motion de 60fps. Pai da Helena, operando de Franca / SP.',
+      'Fora do expediente, levo direção de arte para a web: interfaces angulares inspiradas em Persona 5 e Cowboy Bebop. Pai da Helena, operando de Franca / SP.',
     portraitAlt: 'Retrato ilustrado de Bruno Dinis',
     careerTitle: 'TRAJETÓRIA',
     educationTitle: 'FORMAÇÃO',
@@ -474,7 +474,7 @@ export const ptBrDict: TranslationSchema = {
     sectionAria: 'Creative Lab: Experimentos Visuais e Áudio Sintetizado',
     actTag: '[ ATO III // CREATIVE LAB • WEBGL, CANVAS & WEB AUDIO ]',
     title: 'CREATIVE LAB',
-    statusBadge: 'STATUS: INTERATIVO // 60FPS',
+    statusBadge: 'STATUS: INTERATIVO // TEMPO REAL',
     domainLine: 'WEB AUDIO NATIVO • SHADERS • THREE.JS • CANVAS 2D',
     indexLabel: 'EXPERIMENTOS //',
     navTuner: '01 // SINTONIZADOR CRT',
@@ -769,7 +769,7 @@ export const enDict = {
     bioP1:
       'Frontend developer on the Magalu Cloud team, building with Astro, React and Tailwind. Before code, I spent 8 years in the Magalu ecosystem between customer service and helpdesk — where I started automating my own work with extensions, dashboards and chatbots.',
     bioP2:
-      'Off the clock, I bring art direction to the web: angular interfaces inspired by Persona 5 and Cowboy Bebop, with 60fps motion. Helena\'s dad, based in Franca / SP.',
+      'Off the clock, I bring art direction to the web: angular interfaces inspired by Persona 5 and Cowboy Bebop. Helena\'s dad, based in Franca / SP.',
     portraitAlt: 'Illustrated portrait of Bruno Dinis',
     careerTitle: 'CAREER',
     educationTitle: 'EDUCATION',
@@ -791,7 +791,7 @@ export const enDict = {
     sectionAria: 'Creative Lab: Visual Experiments and Synthesized Web Audio',
     actTag: '[ ACT III // CREATIVE LAB • WEBGL, CANVAS & WEB AUDIO ]',
     title: 'CREATIVE LAB',
-    statusBadge: 'STATUS: INTERACTIVE // 60FPS',
+    statusBadge: 'STATUS: INTERACTIVE // REAL-TIME',
     domainLine: 'NATIVE WEB AUDIO • SHADERS • THREE.JS • CANVAS 2D',
     indexLabel: 'EXPERIMENTS //',
     navTuner: '01 // CRT TUNER',

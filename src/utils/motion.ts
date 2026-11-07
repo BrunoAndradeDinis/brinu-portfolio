@@ -50,20 +50,16 @@ let handleViewportBgSync: (() => void) | null = null;
  * Calcula a distância vertical do topo da viewport até pelo menos 8px abaixo dos controles compactos visíveis da nav.
  */
 export function getNavClearanceOffset(): number {
-  if (typeof document === 'undefined') return 39;
-  const header = document.getElementById('comic-nav-header');
+  if (typeof document === 'undefined') return 80;
   const avatar = document.querySelector<HTMLElement>('#comic-nav-logo [data-nav-avatar]');
   const trigger = document.getElementById('cockpit-trigger-btn');
-
-  if (header?.dataset.scrolled === 'true' && header?.dataset.cockpitOpen !== 'true') {
-    let bottom = 0;
-    if (avatar) bottom = Math.max(bottom, avatar.getBoundingClientRect().bottom);
-    if (trigger) bottom = Math.max(bottom, trigger.getBoundingClientRect().bottom);
-    if (bottom > 0) {
-      return Math.min(39, Math.max(38, Math.ceil(bottom) + 8));
-    }
-  }
-  return 39;
+  const controlHeight = Math.max(
+    avatar?.getBoundingClientRect().height ?? 0,
+    trigger?.getBoundingClientRect().height ?? 0
+  );
+  const compactNavPadding = 8;
+  const gap = 10;
+  return Math.ceil(compactNavPadding + controlHeight + gap) || 80;
 }
 
 /**

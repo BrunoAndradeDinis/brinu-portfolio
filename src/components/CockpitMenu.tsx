@@ -97,6 +97,7 @@ export const CockpitMenu: React.FC = () => {
       if (typeof document !== 'undefined') {
         document.documentElement.classList.remove('lenis-stopped', 'cockpit-menu-open');
         document.body.classList.remove('lenis-stopped', 'cockpit-menu-open');
+        document.documentElement.style.removeProperty('--cockpit-scrollbar-comp');
       }
       return;
     }
@@ -116,6 +117,8 @@ export const CockpitMenu: React.FC = () => {
         if (typeof document !== 'undefined') {
           document.documentElement.classList.remove('lenis-stopped', 'cockpit-menu-open');
           document.body.classList.remove('lenis-stopped', 'cockpit-menu-open');
+          document.documentElement.style.removeProperty('--cockpit-scrollbar-comp');
+        document.documentElement.style.removeProperty('--cockpit-scrollbar-comp');
         }
       },
     });
@@ -150,6 +153,8 @@ export const CockpitMenu: React.FC = () => {
     syncCockpitTriggerDom(true);
     audioSynth.playKnobClick(960, 0.08);
     if (typeof document !== 'undefined') {
+      const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+      document.documentElement.style.setProperty('--cockpit-scrollbar-comp', `${Math.max(0, scrollbarWidth)}px`);
       document.documentElement.classList.add('lenis-stopped', 'cockpit-menu-open');
       document.body.classList.add('lenis-stopped', 'cockpit-menu-open');
     }

@@ -251,15 +251,14 @@ import { ptBrDict } from "../i18n/dictionaries";
 
   #comic-nav-header[data-scrolled="true"][data-cockpit-open="false"] {
     height: auto !important;
-    padding-top: 2px !important;
-    padding-bottom: 2px !important;
+    padding-top: 0.5rem !important;
+    padding-bottom: 0.5rem !important;
     align-items: flex-start !important;
   }
 
-  #comic-nav-header[data-scrolled="true"][data-cockpit-open="false"] [data-nav-avatar],
-  #comic-nav-header[data-scrolled="true"][data-cockpit-open="false"] #cockpit-trigger-btn {
-    height: 24px !important;
-    width: 24px !important;
+  #comic-nav-header[data-cockpit-open="true"] {
+    width: auto !important;
+    right: var(--cockpit-scrollbar-comp, 0px);
   }
 
   #comic-nav-header[data-scrolled="true"][data-cockpit-open="false"] .nav-secondary-item,
