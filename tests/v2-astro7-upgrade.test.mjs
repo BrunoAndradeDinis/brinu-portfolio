@@ -265,3 +265,35 @@ test('C13: src files resolve fonts through tokens instead of literal family name
     await page.close();
   }
 });
+
+test('C14: font-black display text matches the loaded syne 800 face', async () => {
+  const page = await browser.newPage();
+  try {
+    await page.goto(`${baseUrl}/?freeze`, { waitUntil: 'load' });
+    const matched = await page.evaluate(async () => {
+      const unquote = (name) => name.trim().replace(/^["']|["']$/g, '');
+      const probe = document.createElement('span');
+      probe.className = 'font-display font-black';
+      probe.textContent = 'BRINU';
+      document.body.appendChild(probe);
+      const style = getComputedStyle(probe);
+      const firstFamily = style.fontFamily.split(',')[0].trim();
+      const weight = style.fontWeight;
+      probe.remove();
+      const faces = await document.fonts.load(`${weight} 1em ${firstFamily}`);
+      return {
+        weight,
+        family: unquote(firstFamily),
+        faces: faces.map((f) => ({ family: unquote(f.family), weight: f.weight, status: f.status })),
+      };
+    });
+    assert.equal(matched.weight, '900');
+    assert.match(matched.family, /^Syne-/, `display family is ${matched.family}`);
+    assert.ok(
+      matched.faces.some((f) => f.family === matched.family && f.weight === '800' && f.status === 'loaded'),
+      `900 text must resolve to the loaded Syne 800 face, got ${JSON.stringify(matched.faces)}`
+    );
+  } finally {
+    await page.close();
+  }
+});
