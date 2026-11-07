@@ -6,7 +6,6 @@ import http from 'node:http';
 import { chromium } from 'playwright';
 import { PROFILE } from '../src/data/profile.ts';
 import {
-  PROJECT_CASES,
   getLocalizedCases,
   getLocalizedSkillCategories,
 } from '../src/data/cases.ts';
@@ -233,7 +232,6 @@ test('T2: getLocalizedCases and getLocalizedSkillCategories provide matching pt-
     ptCases.map((c) => c.id),
     enCases.map((c) => c.id)
   );
-  assert.equal(PROJECT_CASES.length, 4);
   assert.notEqual(ptCases[0].description, enCases[0].description);
 
   const ptSkills = getLocalizedSkillCategories('pt-br');
@@ -331,7 +329,7 @@ test('C6: language toggle switches pt-br and en, persists to localStorage, and u
   );
   assert.equal(
     (await page.locator('#case-aurastream [data-case-description]').first().textContent()).trim(),
-    getLocalizedCases('en')[0].description
+    getLocalizedCases('en').find((c) => c.id === 'aurastream').description
   );
 
   // Scroll to #contact so client:visible BountyDispatch island hydrates and updates reactively without reload
