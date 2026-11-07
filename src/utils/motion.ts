@@ -58,7 +58,7 @@ export function getNavClearanceOffset(): number {
     trigger?.getBoundingClientRect().height ?? 0
   );
   const compactNavPadding = 8;
-  const gap = 10;
+  const gap = 14;
   return Math.ceil(compactNavPadding + controlHeight + gap) || 80;
 }
 

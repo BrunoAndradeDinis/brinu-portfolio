@@ -506,6 +506,7 @@ const FORBIDDEN_CLAIMS = [
   'Golang', 'Go (Golang)', 'golang/', 'Kubernetes', 'K8s', 'GraphQL', 'Cache Distribuído', 'Distributed Caching',
   'Zero-Downtime', 'sistemas distribuídos', 'Sistemas Distribuídos', 'distributed systems', 'Distributed Systems',
   'Engenheiro de Software', 'Software Engineer', 'INP <', 'INP &lt;', '100% de cobertura', '100% unit test coverage',
+  '60fps', '60FPS', '60 fps', '60 FPS',
 ];
 
 function filesUnder(dir, pattern) {
