@@ -118,3 +118,79 @@ test('C5: every built js chunk is under 500 kB', () => {
     assert.ok(size < 500 * 1000, `${file} is ${size} bytes`);
   }
 });
+
+const FONT_VARIABLES = [
+  { cssVariable: '--font-syne', weight: 900 },
+  { cssVariable: '--font-archivo', weight: 400 },
+  { cssVariable: '--font-space-mono', weight: 700 },
+  { cssVariable: '--font-permanent-marker', weight: 400 },
+];
+
+const FONT_FILE = /\.(woff2?|ttf|otf|eot)(\?|$)/i;
+
+test('C8: built html has no google fonts references', () => {
+  for (const file of ['dist/index.html', 'dist/whoami/index.html']) {
+    const html = fs.readFileSync(file, 'utf8');
+    assert.ok(!html.includes('fonts.googleapis.com'), `${file} references fonts.googleapis.com`);
+    assert.ok(!html.includes('fonts.gstatic.com'), `${file} references fonts.gstatic.com`);
+  }
+});
+
+test('C9: syne archivo space mono and permanent marker are loaded', async () => {
+  const page = await browser.newPage();
+  try {
+    await page.goto(`${baseUrl}/?freeze`, { waitUntil: 'load' });
+    const results = await page.evaluate(async (fonts) => {
+      const rootStyle = getComputedStyle(document.documentElement);
+      const out = [];
+      for (const { cssVariable, weight } of fonts) {
+        const stack = rootStyle.getPropertyValue(cssVariable).trim();
+        const family = stack.split(',')[0].trim();
+        await document.fonts.load(`${weight} 1em ${family}`);
+        out.push({ cssVariable, family, loaded: family !== '' && document.fonts.check(`${weight} 1em ${family}`) });
+      }
+      const loadedFaces = [...document.fonts].filter((f) => f.status === 'loaded').length;
+      return { out, loadedFaces };
+    }, FONT_VARIABLES);
+    assert.ok(results.loadedFaces > 0, 'at least one font face must be loaded');
+    for (const r of results.out) {
+      assert.ok(r.loaded, `${r.cssVariable} (${r.family}) is not loaded`);
+    }
+  } finally {
+    await page.close();
+  }
+});
+
+test('C10: every font request targets the site origin', async () => {
+  const page = await browser.newPage();
+  const fontRequests = [];
+  page.on('request', (req) => {
+    if (req.resourceType() === 'font' || FONT_FILE.test(req.url())) {
+      fontRequests.push(req.url());
+    }
+  });
+  try {
+    await page.goto(`${baseUrl}/?freeze`, { waitUntil: 'networkidle' });
+    await page.evaluate(() => document.fonts.ready);
+    assert.ok(fontRequests.length > 0, 'page must request font files');
+    for (const url of fontRequests) {
+      assert.equal(new URL(url).origin, baseUrl, `font requested from another origin: ${url}`);
+    }
+  } finally {
+    await page.close();
+  }
+});
+
+test('C12: generated font faces use font-display swap', async () => {
+  const page = await browser.newPage();
+  try {
+    await page.goto(`${baseUrl}/?freeze`, { waitUntil: 'load' });
+    const faces = await page.evaluate(() => [...document.fonts].map((f) => ({ family: f.family, display: f.display })));
+    assert.ok(faces.length > 0, 'page must declare font faces');
+    for (const face of faces) {
+      assert.equal(face.display, 'swap', `${face.family} uses font-display ${face.display}`);
+    }
+  } finally {
+    await page.close();
+  }
+});
