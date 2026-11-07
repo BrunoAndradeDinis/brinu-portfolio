@@ -124,3 +124,43 @@ test('T2: main cases have both locales filled for every text field', () => {
     }
   }
 });
+
+const { ARCHIVE, getLocalizedArchive } = await import('../src/data/archive.ts');
+
+test('T3: archive holds the eight approved entries with their links', () => {
+  assert.deepEqual(ARCHIVE.map((e) => e.id), [
+    'jokenpo', 'lista-de-contatos', 'the-warriors', 'armazem-do-pierre',
+    'vue-apps', 'doutor-agenda', 'quake-log-parser', 'brinu-portfolio-v2',
+  ]);
+  const links = Object.fromEntries(ARCHIVE.map((e) => [e.id, e.links.map((l) => `${l.type} ${l.url}`)]));
+  assert.deepEqual(links['jokenpo'], ['github https://github.com/BrunoAndradeDinis/jokenpo', 'demo https://jokenpo-three-psi.vercel.app']);
+  assert.deepEqual(links['doutor-agenda'], ['github https://github.com/BrunoAndradeDinis/doutor-agenda']);
+  assert.deepEqual(links['vue-apps'], [
+    'github https://github.com/BrunoAndradeDinis/to-do-list',
+    'demo https://to-do-list-vue-js-orcin.vercel.app',
+    'github https://github.com/BrunoAndradeDinis/calc-vue',
+    'demo https://calc-vue-two.vercel.app',
+  ]);
+  for (const entry of ARCHIVE) {
+    assert.ok(entry.links.some((l) => l.type === 'github'), `${entry.id} needs a repository link`);
+    for (const locale of ['pt-br', 'en']) {
+      assert.ok(entry.text.title[locale].trim() && entry.text.description[locale].trim(), `${entry.id} ${locale} text`);
+    }
+  }
+  assert.deepEqual(ARCHIVE.filter((e) => e.inProgress).map((e) => e.id), ['doutor-agenda']);
+  assert.equal(getLocalizedArchive('pt-br').find((e) => e.id === 'doutor-agenda').status, 'Em construção');
+  assert.equal(getLocalizedArchive('en').find((e) => e.id === 'doutor-agenda').status, 'In progress');
+  assert.equal(getLocalizedArchive('en').find((e) => e.id === 'jokenpo').status, null);
+});
+
+test('C14: quake is an archive entry that states the 80 percent jest threshold', () => {
+  assert.equal(MAIN_CASES.some((c) => c.id === 'quake-log-parser'), false);
+  const quake = ARCHIVE.find((e) => e.id === 'quake-log-parser');
+  assert.ok(quake, 'quake-log-parser must be in the archive');
+  assert.deepEqual(quake.links.map((l) => l.url), ['https://github.com/BrunoAndradeDinis/quake-log-backend-node']);
+  for (const locale of ['pt-br', 'en']) {
+    assert.match(quake.text.description[locale], /80%/);
+    assert.match(quake.text.description[locale], /Jest/);
+    assert.doesNotMatch(quake.text.description[locale], /100%/);
+  }
+});
