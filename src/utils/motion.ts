@@ -9,11 +9,33 @@
 import Lenis from 'lenis';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { CustomEase } from 'gsap/CustomEase';
 
-// Registra o ScrollTrigger no GSAP imediatamente se no cliente
+gsap.registerPlugin(CustomEase);
 if (typeof window !== 'undefined') {
   gsap.registerPlugin(ScrollTrigger);
 }
+
+let cachedEases: {
+  readonly p5Snap: gsap.EaseFunction;
+  readonly p5Overshoot: gsap.EaseFunction;
+} | null = null;
+
+export function registerP5Eases(): {
+  readonly p5Snap: gsap.EaseFunction;
+  readonly p5Overshoot: gsap.EaseFunction;
+} {
+  if (!cachedEases) {
+    const snap = CustomEase.create('p5Snap', 'M0,0 C0.12,0.98 0.24,1 1,1');
+    const overshoot = CustomEase.create('p5Overshoot', 'M0,0 C0.18,1.28 0.36,1 1,1');
+    cachedEases = { p5Snap: snap, p5Overshoot: overshoot };
+  }
+  return cachedEases;
+}
+
+const initialEases = registerP5Eases();
+export const p5Snap: gsap.EaseFunction = initialEases.p5Snap;
+export const p5Overshoot: gsap.EaseFunction = initialEases.p5Overshoot;
 
 // Estado singleton
 let lenisInstance: Lenis | null = null;

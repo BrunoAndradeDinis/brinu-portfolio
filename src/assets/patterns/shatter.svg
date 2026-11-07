@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="160" height="160" viewBox="0 0 160 160">
+  <defs>
+    <pattern id="p5-shatter" width="80" height="80" patternUnits="userSpaceOnUse">
+      <polygon points="0,0 38,6 24,34 4,26" fill="#080808" />
+      <polygon points="42,2 78,0 66,28 34,20" fill="#FE0000" />
+      <polygon points="10,40 48,30 36,68 2,62" fill="#FE0000" />
+      <polygon points="52,36 80,44 74,78 40,70" fill="#080808" />
+    </pattern>
+  </defs>
+  <rect width="160" height="160" fill="url(#p5-shatter)" />
+</svg>
