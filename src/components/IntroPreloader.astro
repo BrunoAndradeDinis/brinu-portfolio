@@ -1,111 +1,50 @@
 ---
 import { ptBrDict } from "../i18n/dictionaries";
+
+const LETTERS = ["B", "R", "I", "N", "U"] as const;
 ---
 
 <div
   id="intro-preloader"
   class="intro-preloader"
+  data-intro-state="loading"
+  data-intro-mode="full"
   aria-label={ptBrDict.a11y.preloaderAria}
   data-i18n="a11y.preloaderAria"
   data-i18n-attr="aria-label"
 >
   <div class="intro-preloader__backdrop"></div>
 
-  <!-- SVG com Máscara Tipográfica Monumental "BRINU" -->
-  <div class="intro-preloader__canvas-wrapper">
-    <svg
-      class="intro-preloader__svg"
-      viewBox="0 0 2000 450"
-      preserveAspectRatio="xMidYMid meet"
-      aria-hidden="true"
-    >
-      <defs>
-        <!-- Máscara de Recorte com o Nome "BRINU" -->
-        <clipPath id="brinu-letters-clip">
-          <text x="50%" y="74%" text-anchor="middle" class="svg-clip-text">
-            BRINU
-          </text>
-        </clipPath>
-      </defs>
-
-      <!-- Grupo com as Imagens Deslizando Horizontalmente Por Dentro das Letras -->
-      <g clip-path="url(#brinu-letters-clip)">
-        <!-- Fundo escuro interno -->
-        <rect
-          x="0"
-          y="0"
-          width="2000"
-          height="450"
-          fill="var(--color-space-base)"></rect>
-
-        <!-- Trilha de Imagens em Movimento Horizontal Contínuo -->
-        <g class="intro-filmstrip-track">
-          <image
-            href="/assets/brinu-avatar.jpg"
-            x="-250"
-            y="-50"
-            width="550"
-            height="520"
-            preserveAspectRatio="xMidYMid slice"
-          />
-          <image
-            href="/assets/brinu-avatar.jpg"
-            x="300"
-            y="-50"
-            width="550"
-            height="520"
-            preserveAspectRatio="xMidYMid slice"
-          />
-          <image
-            href="/assets/brinu-avatar.jpg"
-            x="850"
-            y="-50"
-            width="550"
-            height="520"
-            preserveAspectRatio="xMidYMid slice"
-          />
-          <image
-            href="/assets/brinu-avatar.jpg"
-            x="1400"
-            y="-50"
-            width="550"
-            height="520"
-            preserveAspectRatio="xMidYMid slice"
-          />
-          <image
-            href="/assets/brinu-avatar.jpg"
-            x="1950"
-            y="-50"
-            width="550"
-            height="520"
-            preserveAspectRatio="xMidYMid slice"
-          />
-        </g>
-
-        <!-- Filtro e Textura Noir Estilizada Sobre as Imagens -->
-        <rect
-          x="0"
-          y="0"
-          width="2000"
-          height="450"
-          fill="rgba(var(--color-bebop-red-rgb), 0.15)"
-          style="mix-blend-mode: color-burn;"></rect>
-      </g>
-
-      <!-- Contorno Externo das Letras Estilo Quadrinhos -->
-      <text x="50%" y="74%" text-anchor="middle" class="svg-stroke-text">
-        BRINU
-      </text>
-    </svg>
+  <div class="intro-preloader__stage">
+    <div class="intro-letters" aria-hidden="true">
+      {
+        LETTERS.map((letter, index) => (
+          <span class="intro-letter" data-intro-letter={letter} style={`--i:${index}`}>
+            {letter}
+          </span>
+        ))
+      }
+    </div>
 
     <div class="intro-preloader__caption">
       <span class="caption-tag font-mono" data-i18n="preloader.sceneTag">{ptBrDict.preloader.sceneTag}</span>
+      <span class="caption-counter font-display" aria-hidden="true">
+        <span data-intro-counter>0</span><span class="caption-counter__unit">%</span>
+      </span>
       <span class="caption-prompt font-mono" data-i18n="preloader.skipPrompt"
         >{ptBrDict.preloader.skipPrompt}</span
       >
     </div>
   </div>
 </div>
+
+<noscript>
+  <style>
+    #intro-preloader {
+      display: none !important;
+    }
+  </style>
+</noscript>
 
 <style>
   .intro-preloader {
@@ -118,14 +57,19 @@ import { ptBrDict } from "../i18n/dictionaries";
     justify-content: center;
     overflow: hidden;
     cursor: pointer;
-    transition: transform var(--transition-curtain);
     will-change: transform;
   }
 
-  /* Estado de saída: cortina cinemática sobe revelando a Home */
   .intro-preloader.is-exiting {
-    transform: translateY(-100%);
     pointer-events: none;
+    transition: transform var(--intro-exit-ms, 850ms) cubic-bezier(0.85, 0, 0.15, 1);
+    transform: translateY(-100%);
+  }
+
+  .intro-preloader.is-exiting[data-intro-mode="reduced"] {
+    transition: opacity var(--intro-exit-ms, 200ms) linear;
+    transform: none;
+    opacity: 0;
   }
 
   .intro-preloader__backdrop {
@@ -135,7 +79,7 @@ import { ptBrDict } from "../i18n/dictionaries";
     pointer-events: none;
   }
 
-  .intro-preloader__canvas-wrapper {
+  .intro-preloader__stage {
     position: relative;
     width: 90vw;
     max-width: 1600px;
@@ -145,49 +89,52 @@ import { ptBrDict } from "../i18n/dictionaries";
     justify-content: center;
   }
 
-  .intro-preloader__svg {
+  .intro-letters {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.02em;
+    font-size: clamp(3.5rem, 16vw, 17rem);
+    line-height: 0.85;
     width: 100%;
-    height: auto;
-    filter: drop-shadow(0 15px 40px rgba(var(--color-space-base-rgb), 0.9));
   }
 
-  .svg-clip-text {
+  .intro-letter {
+    display: inline-block;
     font-family: var(--font-display);
     font-weight: 900;
-    font-size: 260px;
-    letter-spacing: -6px;
+    letter-spacing: -0.02em;
+    color: transparent;
+    background-image: url("/assets/brinu-avatar.jpg");
+    background-size: 280% auto;
+    background-position: 0% 30%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-stroke: 2px rgba(var(--color-paper-white-rgb), 0.35);
+    animation: introFilm 3.5s linear infinite;
+    animation-delay: calc(var(--i) * -0.7s);
+    will-change: background-position;
   }
 
-  .svg-stroke-text {
-    font-family: var(--font-display);
-    font-weight: 900;
-    font-size: 260px;
-    letter-spacing: -6px;
-    fill: none;
-    stroke: rgba(var(--color-paper-white-rgb), 0.15);
-    stroke-width: var(--border-comic-medium);
-    pointer-events: none;
-  }
-
-  /* Animação horizontal das imagens deslizando dentro das letras */
-  @keyframes filmstripPan {
-    0% {
-      transform: translateX(0);
-    }
-    100% {
-      transform: translateX(-550px);
+  @keyframes introFilm {
+    to {
+      background-position: 100% 30%;
     }
   }
 
-  .intro-filmstrip-track {
-    animation: filmstripPan 3.5s linear infinite;
-    will-change: transform;
+  .intro-preloader[data-intro-mode="short"] .intro-letter {
+    background-image: none;
+    color: var(--color-paper-white);
+    -webkit-text-stroke: 0;
+    animation: none;
   }
 
   .intro-preloader__caption {
     margin-top: var(--space-4);
     display: flex;
-    align-items: center;
+    align-items: baseline;
+    justify-content: center;
+    flex-wrap: wrap;
     gap: var(--space-4);
     font-size: 1.2rem;
     letter-spacing: 0.15em;
@@ -200,75 +147,162 @@ import { ptBrDict } from "../i18n/dictionaries";
     font-weight: 700;
   }
 
+  .caption-counter {
+    color: var(--color-paper-white);
+    font-weight: 900;
+    font-size: 2.4rem;
+    letter-spacing: 0;
+    min-width: 4.2ch;
+    text-align: right;
+    transform: skewX(-6deg);
+  }
+
+  .caption-counter__unit {
+    color: var(--color-bebop-red);
+    font-size: 1.4rem;
+  }
+
   .caption-prompt {
     opacity: 0.7;
     font-size: 1rem;
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .intro-filmstrip-track {
+    .intro-letter {
       animation: none;
-    }
-    .intro-preloader {
-      transition: opacity var(--transition-fast);
-    }
-    .intro-preloader.is-exiting {
-      transform: none;
-      opacity: 0;
     }
   }
 </style>
 
 <script>
   import { pauseScroll, resumeScroll } from "../utils/motion";
+  import {
+    INTRO_SEEN_KEY,
+    SHORT_EXIT_MS,
+    REDUCED_FADE_MS,
+    computeExitDelay,
+    counterValueAt,
+    resolveIntroMode,
+    type IntroMode,
+  } from "../utils/intro-timing";
 
-  const preloader = document.getElementById("intro-preloader");
-  if (preloader) {
-    const preloaderEl = preloader;
-    let dismissed = false;
+  const AVATAR_SRC = "/assets/brinu-avatar.jpg";
+  const FULL_EXIT_MS = 850;
 
-    // Trava o scroll no início da cortina
+  function readSeenFlag(): boolean {
+    try {
+      return window.sessionStorage.getItem(INTRO_SEEN_KEY) === "1";
+    } catch {
+      return false;
+    }
+  }
+
+  function writeSeenFlag(): void {
+    try {
+      window.sessionStorage.setItem(INTRO_SEEN_KEY, "1");
+    } catch {
+      /* storage unavailable: the long intro simply plays again */
+    }
+  }
+
+  function initPreloader(): void {
+    const preloader = document.getElementById("intro-preloader");
+    if (!preloader || preloader.dataset.introBound === "true") return;
+    preloader.dataset.introBound = "true";
+
+    const counterEl = preloader.querySelector<HTMLElement>("[data-intro-counter]");
+    const mode: IntroMode = resolveIntroMode({
+      reducedMotion: window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+      seenThisSession: readSeenFlag(),
+    });
+    preloader.dataset.introMode = mode;
+    performance.mark("intro:start");
     pauseScroll();
 
-    function dismissPreloader() {
-      if (dismissed) return;
-      dismissed = true;
+    const startedAt = performance.now();
+    let fontsReady = false;
+    let avatarReady = false;
+    let exiting = false;
+    let exitTimer: ReturnType<typeof setTimeout> | undefined;
+    let counterFrame = 0;
 
-      window.removeEventListener("keydown", onKeyDown);
+    const setCounter = (value: number) => {
+      if (counterEl) counterEl.textContent = String(value);
+    };
 
-      preloaderEl.classList.add("is-exiting");
+    const tickCounter = () => {
+      setCounter(counterValueAt(performance.now() - startedAt));
+      counterFrame = requestAnimationFrame(tickCounter);
+    };
+    counterFrame = requestAnimationFrame(tickCounter);
+
+    const finish = () => {
       document.documentElement.classList.add("intro-completed");
-
-      // Destrava o scroll ao concluir a cortina
+      preloader.remove();
       resumeScroll();
-
-      // Dispara evento customizado na janela
+      performance.mark("intro:complete");
       window.dispatchEvent(new CustomEvent("intro-complete"));
+    };
 
-      // Remove do DOM após conclusão da animação
-      setTimeout(() => {
-        preloaderEl.remove();
-      }, 900);
-    }
+    const beginExit = () => {
+      if (exiting) return;
+      exiting = true;
+      clearTimeout(exitTimer);
+      cancelAnimationFrame(counterFrame);
+      setCounter(100);
+      writeSeenFlag();
+      window.removeEventListener("keydown", onKeyDown);
+      performance.mark("intro:exit-start");
 
-    // Abertura com duração automática de ~3.8 segundos (pausada se ?freeze para inspeção e testes)
-    const isFrozen = window.location.search.includes("freeze");
-    const autoTimer = isFrozen ? null : setTimeout(dismissPreloader, 3800);
+      const exitMs = mode === "reduced" ? REDUCED_FADE_MS : mode === "short" ? SHORT_EXIT_MS - 100 : FULL_EXIT_MS;
+      preloader.style.setProperty("--intro-exit-ms", `${exitMs}ms`);
+      preloader.dataset.introState = "exiting";
+      preloader.classList.add("is-exiting");
+      setTimeout(finish, exitMs);
+    };
 
-    function onKeyDown(e: KeyboardEvent) {
-      if (e.key === "Escape" || e.key === " " || e.key === "Enter") {
-        if (autoTimer) clearTimeout(autoTimer);
-        dismissPreloader();
+    const schedule = () => {
+      if (exiting) return;
+      clearTimeout(exitTimer);
+      const delay = computeExitDelay({
+        elapsedMs: performance.now() - startedAt,
+        fontsReady,
+        avatarReady,
+      });
+      exitTimer = setTimeout(beginExit, delay);
+    };
+
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape" || event.key === " " || event.key === "Enter") {
+        beginExit();
       }
     }
 
-    // Permite ao usuário clicar ou pressionar qualquer tecla para avançar imediatamente
-    preloader.addEventListener("click", () => {
-      if (autoTimer) clearTimeout(autoTimer);
-      dismissPreloader();
+    const isFrozen = window.location.search.includes("freeze");
+
+    document.fonts.ready.then(() => {
+      fontsReady = true;
+      if (!isFrozen) schedule();
     });
 
-    window.addEventListener("keydown", onKeyDown);
-  }
-</script>
+    const avatarProbe = new Image();
+    avatarProbe.onload = () => {
+      avatarReady = true;
+      if (!isFrozen) schedule();
+    };
+    avatarProbe.src = AVATAR_SRC;
 
+    if (!isFrozen) schedule();
+
+    preloader.addEventListener("click", beginExit);
+    window.addEventListener("keydown", onKeyDown);
+
+    window.addEventListener("pageshow", (event) => {
+      if (event.persisted && document.getElementById("intro-preloader")) {
+        beginExit();
+      }
+    });
+  }
+
+  initPreloader();
+</script>

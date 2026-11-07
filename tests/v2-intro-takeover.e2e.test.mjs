@@ -220,3 +220,132 @@ test('C17: zero horizontal overflow at 320, 375, 768 and 1440px in pt-br and en 
     }
   }
 });
+
+async function openIntro({ locale = 'pt-br', contextOptions = {}, init } = {}) {
+  const context = await browser.newContext({ viewport: { width: 1440, height: 900 }, ...contextOptions });
+  const page = await context.newPage();
+  await page.addInitScript((loc) => window.localStorage.setItem('brinu_locale', loc), locale);
+  if (init) await page.addInitScript(init);
+  return { context, page };
+}
+
+const markTime = (page, name) =>
+  page.evaluate((n) => performance.getEntriesByName(n).map((e) => e.startTime), name);
+
+test('C3: preloader counter goes from 0 to 100 and reaches 100 when exit starts', async () => {
+  const { context, page } = await openIntro({
+    init: () => {
+      window.__counterSamples = [];
+      document.addEventListener('DOMContentLoaded', () => {
+        const el = document.querySelector('[data-intro-counter]');
+        if (!el) return;
+        window.__counterSamples.push({ t: performance.now(), v: Number(el.textContent) });
+        new MutationObserver(() => {
+          window.__counterSamples.push({ t: performance.now(), v: Number(el.textContent) });
+        }).observe(el, { childList: true, characterData: true, subtree: true });
+      });
+    },
+  });
+  try {
+    await page.goto(`${baseUrl}/`, { waitUntil: 'domcontentloaded' });
+    await page.waitForFunction(() => performance.getEntriesByName('intro:exit-start').length > 0, null, { timeout: 8000 });
+    const { samples, exitStart } = await page.evaluate(() => ({
+      samples: window.__counterSamples,
+      exitStart: performance.getEntriesByName('intro:exit-start')[0].startTime,
+    }));
+    assert.ok(samples.length > 5, `Expected a live counter, got ${samples.length} samples`);
+    assert.ok(samples[0].v <= 20, `Counter should start near 0, started at ${samples[0].v}`);
+    for (let i = 1; i < samples.length; i++) {
+      assert.ok(samples[i].v >= samples[i - 1].v, `Counter went backwards: ${samples[i - 1].v} -> ${samples[i].v}`);
+    }
+    const hundred = samples.find((s) => s.v === 100);
+    assert.ok(hundred, 'Counter must reach 100');
+    assert.ok(hundred.t <= exitStart + 30, `Counter reached 100 at ${hundred.t}, after exit start ${exitStart}`);
+    assert.ok(samples.filter((s) => s.t < exitStart - 30).every((s) => s.v < 100), 'Counter must not show 100 before the exit starts');
+  } finally {
+    await context.close();
+  }
+});
+
+test('C10: repeat visit runs short exit within 0.6 s without the film', async () => {
+  const fresh = await openIntro();
+  try {
+    await fresh.page.goto(`${baseUrl}/`, { waitUntil: 'domcontentloaded' });
+    const first = await fresh.page.evaluate(() => {
+      const pre = document.getElementById('intro-preloader');
+      return { mode: pre.dataset.introMode, film: getComputedStyle(pre.querySelector('[data-intro-letter]')).backgroundImage };
+    });
+    assert.equal(first.mode, 'full');
+    assert.match(first.film, /brinu-avatar/, 'first visit keeps the film inside the letters');
+  } finally {
+    await fresh.context.close();
+  }
+
+  const { context, page } = await openIntro({ init: () => window.sessionStorage.setItem('brinu_intro_seen', '1') });
+  try {
+    await page.goto(`${baseUrl}/`, { waitUntil: 'domcontentloaded' });
+    const repeat = await page.evaluate(() => {
+      const pre = document.getElementById('intro-preloader');
+      return { mode: pre.dataset.introMode, film: getComputedStyle(pre.querySelector('[data-intro-letter]')).backgroundImage };
+    });
+    assert.equal(repeat.mode, 'short');
+    assert.equal(repeat.film, 'none', 'repeat visit must not show the film');
+    await page.waitForFunction(() => performance.getEntriesByName('intro:complete').length > 0, null, { timeout: 8000 });
+    const [exitStart] = await markTime(page, 'intro:exit-start');
+    const [complete] = await markTime(page, 'intro:complete');
+    assert.ok(complete - exitStart <= 600, `Short exit took ${complete - exitStart}ms`);
+  } finally {
+    await context.close();
+  }
+});
+
+test('C12: with JavaScript disabled the hero is visible and the preloader does not cover the page', async () => {
+  const { context, page } = await openIntro({ contextOptions: { javaScriptEnabled: false } });
+  try {
+    await page.goto(`${baseUrl}/`, { waitUntil: 'domcontentloaded' });
+    assert.equal(await page.locator('#intro-preloader').isVisible(), false, 'preloader must be hidden without JS');
+    assert.equal(await page.locator('#hero h1').isVisible(), true, 'hero must be visible without JS');
+    await page.locator('#hero a[href="#works"]').click({ trial: true, timeout: 3000 });
+  } finally {
+    await context.close();
+  }
+});
+
+test('C18: exit still happens when the avatar image fails to load', async () => {
+  const { context, page } = await openIntro();
+  try {
+    await page.route('**/assets/brinu-avatar.jpg', (route) => route.abort());
+    await page.goto(`${baseUrl}/`, { waitUntil: 'domcontentloaded' });
+    await page.waitForFunction(() => performance.getEntriesByName('intro:complete').length > 0, null, { timeout: 8000 });
+    const [start] = await markTime(page, 'intro:start');
+    const [exitStart] = await markTime(page, 'intro:exit-start');
+    const waited = exitStart - start;
+    assert.ok(waited >= 2900 && waited <= 3600, `Exit should start at the 3 s cap, started at ${waited}ms`);
+    assert.equal(await page.locator('#intro-preloader').count(), 0);
+  } finally {
+    await context.close();
+  }
+});
+
+test('C19: preloader does not replay when restored from bfcache', async () => {
+  const { context, page } = await openIntro({
+    init: () => {
+      window.__introCompleteCount = 0;
+      window.addEventListener('intro-complete', () => { window.__introCompleteCount += 1; });
+    },
+  });
+  try {
+    await page.goto(`${baseUrl}/`, { waitUntil: 'domcontentloaded' });
+    await page.waitForFunction(() => performance.getEntriesByName('intro:complete').length > 0, null, { timeout: 8000 });
+    await page.evaluate(() => window.dispatchEvent(new PageTransitionEvent('pageshow', { persisted: true })));
+    await page.waitForTimeout(300);
+    const state = await page.evaluate(() => ({
+      preloaders: document.querySelectorAll('#intro-preloader').length,
+      starts: performance.getEntriesByName('intro:start').length,
+      completes: window.__introCompleteCount,
+    }));
+    assert.deepEqual(state, { preloaders: 0, starts: 1, completes: 1 });
+  } finally {
+    await context.close();
+  }
+});
