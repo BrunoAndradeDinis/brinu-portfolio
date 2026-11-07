@@ -7,18 +7,14 @@
   --color-space-border: #FE0000;
 
   --color-bebop-red: #FE0000;
-  --color-bebop-amber: #FE0000;
-  --color-acid-green: #FBFAF4;
-  --color-contrast-pink: #FBFAF4;
   --color-paper-white: #FBFAF4;
   --color-muted-gray: #C7C6BF;
-  --color-crt-cyan: #FE0000;
   --color-alarm-red: #FE0000;
 
-  --font-display: var(--font-syne);
-  --font-spray: var(--font-permanent-marker);
-  --font-mono: var(--font-space-mono);
-  --font-body: var(--font-archivo);
+  --font-display: var(--font-syne), sans-serif;
+  --font-spray: var(--font-permanent-marker), cursive;
+  --font-mono: var(--font-space-mono), monospace;
+  --font-body: var(--font-archivo), sans-serif;
 
   --shadow-comic-xs: 0 2px 0 #080808;
   --shadow-comic-sm: 0 3px 0 #080808;
@@ -70,24 +66,16 @@
 }
 
 :root {
-  --color-space-base: #080808;
-  --color-space-surface-1: #0D0D0D;
-  --color-space-surface-2: #121212;
-  --color-space-border: #FE0000;
-
   --color-space-base-rgb: 8, 8, 8;
   --color-bebop-red-rgb: 254, 0, 0;
-  --color-acid-green-rgb: 251, 250, 244;
   --color-paper-white-rgb: 251, 250, 244;
 
-  --color-bebop-red: #FE0000;
-  --color-bebop-amber: #FE0000;
-  --color-acid-green: #FBFAF4;
-  --color-contrast-pink: #FBFAF4;
-  --color-paper-white: #FBFAF4;
-  --color-muted-gray: #C7C6BF;
-  --color-crt-cyan: #FE0000;
-  --color-alarm-red: #FE0000;
+  --clip-p5-panel-a: polygon(0.8% 0%, 100% 0.6%, 99.1% 100%, 0% 99.2%);
+  --clip-p5-panel-b: polygon(0% 0.7%, 99.2% 0%, 100% 99.1%, 0.9% 100%);
+  --clip-p5-badge: polygon(5% 0%, 100% 0%, 95% 100%, 0% 100%);
+  --clip-p5-select: polygon(3% 0%, 100% 6%, 97% 100%, 0% 94%);
+  --clip-p5-cut-left: polygon(0% 0%, 100% 72%, 100% 100%, 0% 100%);
+  --clip-p5-cut-right: polygon(0% 72%, 100% 0%, 100% 100%, 0% 100%);
 
   --border-comic-thick: 0.7rem;
   --border-comic-heavy: 0.5rem;
