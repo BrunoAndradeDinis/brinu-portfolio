@@ -193,3 +193,42 @@ test('T4: education lists the four approved entries without fatec', () => {
   assert.deepEqual(getLocalizedEducation('en').map((e) => e.status), ['Completed', 'Completed', 'In progress', 'In progress']);
   assert.doesNotMatch(fs.readFileSync('src/data/career.ts', 'utf8'), /fatec/i);
 });
+
+const { ARSENAL, getArsenalCounter, resolveEvidenceAnchor, getLocalizedArsenal } = await import('../src/data/arsenal.ts');
+
+test('C19: arsenal has the three approved domains', () => {
+  assert.deepEqual(ARSENAL.map((d) => d.title['pt-br']), ['Frontend & Motion', 'Backend & Dados', 'Qualidade & Ferramentas']);
+  assert.deepEqual(ARSENAL.map((d) => d.title.en), ['Frontend & Motion', 'Backend & Data', 'Quality & Tooling']);
+});
+
+test('C20: each arsenal domain has four to five skills', () => {
+  for (const domain of ARSENAL) {
+    assert.ok(domain.skills.length >= 4 && domain.skills.length <= 5, `${domain.id} has ${domain.skills.length} skills`);
+  }
+});
+
+test('C21: every arsenal evidence resolves to an existing anchor', () => {
+  const caseIds = new Set(MAIN_CASES.map((c) => `case-${c.id}`));
+  const archiveIds = new Set(ARCHIVE.map((a) => `archive-${a.id}`));
+  const careerIds = new Set(CAREER.map((c) => `career-${c.id}`));
+  for (const domain of ARSENAL) {
+    for (const skill of domain.skills) {
+      assert.ok(skill.evidence.length > 0, `${skill.name} has no evidence`);
+      for (const ref of skill.evidence) {
+        const anchor = resolveEvidenceAnchor(ref);
+        assert.ok(anchor, `${skill.name} evidence ${ref} does not resolve`);
+        assert.ok(caseIds.has(anchor) || archiveIds.has(anchor) || careerIds.has(anchor), `${anchor} is not a rendered id`);
+      }
+    }
+  }
+  assert.equal(resolveEvidenceAnchor('case:quake-log-parser'), null);
+  assert.equal(resolveEvidenceAnchor('archive:does-not-exist'), null);
+  assert.equal(resolveEvidenceAnchor('nonsense'), null);
+});
+
+test('T5: arsenal counter and localized evidence labels come from the data', () => {
+  assert.equal(getArsenalCounter('pt-br'), '3 DOMÍNIOS • 15 SKILLS COM PROVA');
+  assert.equal(getArsenalCounter('en'), '3 DOMAINS • 15 SKILLS WITH PROOF');
+  const prisma = getLocalizedArsenal('en').flatMap((d) => d.skills).find((s) => s.name === 'PostgreSQL + Prisma');
+  assert.deepEqual(prisma.evidence, [{ ref: 'case:uriana', anchor: 'case-uriana', label: 'Uriana' }]);
+});
