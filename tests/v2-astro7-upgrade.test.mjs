@@ -90,3 +90,31 @@ test('C7: only package-lock.json is tracked', () => {
   assert.ok(tracked.includes('package-lock.json'), 'package-lock.json must be tracked');
   assert.ok(!tracked.includes('yarn.lock'), 'yarn.lock must not be tracked');
 });
+
+function majorOf(range) {
+  const match = String(range ?? '').match(/(\d+)\./);
+  return match ? Number(match[1]) : NaN;
+}
+
+test('C1: astro and @astrojs/react are declared with major version 7', () => {
+  assert.equal(majorOf(pkg.dependencies.astro), 7);
+  assert.equal(majorOf(pkg.dependencies['@astrojs/react']), 7);
+  const installedAstro = JSON.parse(
+    fs.readFileSync('node_modules/astro/package.json', 'utf8')
+  ).version;
+  assert.equal(majorOf(installedAstro), 7);
+});
+
+test('C2: build emits index.html and whoami/index.html', () => {
+  assert.ok(fs.existsSync('dist/index.html'), 'dist/index.html must exist');
+  assert.ok(fs.existsSync('dist/whoami/index.html'), 'dist/whoami/index.html must exist');
+});
+
+test('C5: every built js chunk is under 500 kB', () => {
+  const chunks = fs.readdirSync('dist/_astro').filter((f) => f.endsWith('.js'));
+  assert.ok(chunks.length > 0, 'build must emit js chunks');
+  for (const file of chunks) {
+    const size = fs.statSync(path.join('dist/_astro', file)).size;
+    assert.ok(size < 500 * 1000, `${file} is ${size} bytes`);
+  }
+});
