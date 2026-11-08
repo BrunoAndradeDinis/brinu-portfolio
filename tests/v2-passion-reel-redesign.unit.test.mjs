@@ -34,3 +34,25 @@ test('copy deck: both locales expose the same passionSlides keys', async () => {
   assert.deepEqual(pt, en);
   assert.ok(pt.length >= 18 + 30, `expected at least 48 keys, got ${pt.length}`);
 });
+
+test('C1: six distinct passion-bg svgs exist and the old passion svgs are gone', async () => {
+  const crypto = await import('node:crypto');
+  const hashes = new Set();
+  for (let i = 1; i <= 6; i++) {
+    const file = `public/assets/filmstrip/passion-bg-${i}.svg`;
+    assert.ok(fs.existsSync(file), `${file} must exist`);
+    hashes.add(crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex'));
+    assert.equal(fs.existsSync(`public/assets/filmstrip/passion-${i}.svg`), false, `old passion-${i}.svg must be removed`);
+  }
+  assert.equal(hashes.size, 6, 'the six backgrounds must have pairwise different content');
+});
+
+test('C2: passion backgrounds have no text elements and stay under 20 kB', () => {
+  for (let i = 1; i <= 6; i++) {
+    const file = `public/assets/filmstrip/passion-bg-${i}.svg`;
+    const body = fs.readFileSync(file, 'utf8');
+    assert.doesNotMatch(body, /<text[\s>]/i, `${file} must not contain <text>`);
+    assert.doesNotMatch(body, /<tspan|<foreignObject/i, `${file} must not hold text via tspan or foreignObject`);
+    assert.ok(fs.statSync(file).size < 20 * 1024, `${file} must be under 20 kB`);
+  }
+});
