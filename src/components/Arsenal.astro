@@ -14,3 +14,33 @@ import { ptBrDict } from "../i18n/dictionaries";
     <SkillsGrid />
   </div>
 </section>
+
+<script>
+  import { gsap } from "../utils/motion";
+
+  function setupArsenalReveal() {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const matrix = document.querySelector<HTMLElement>("[data-skills-matrix]");
+    if (!matrix || matrix.dataset.revealBound === "true") return;
+    matrix.dataset.revealBound = "true";
+    gsap.fromTo(
+      matrix,
+      { opacity: 0, y: 30 },
+      {
+        scrollTrigger: { trigger: matrix, start: "top 85%", once: true },
+        opacity: 1,
+        y: 0,
+        duration: 0.8,
+        ease: "power2.out",
+        force3D: true,
+      }
+    );
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", setupArsenalReveal);
+  } else {
+    setupArsenalReveal();
+  }
+  document.addEventListener("astro:page-load", setupArsenalReveal);
+</script>

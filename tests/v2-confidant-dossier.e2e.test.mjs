@@ -310,3 +310,176 @@ test('C11: arsenal evidence chip scrolls to the case below the nav', async () =>
     await context.close();
   }
 });
+
+const sampleInit = () => {
+  window.__clip = [];
+  window.__period = [];
+  window.__org = [];
+  window.__aria = [];
+  const start = performance.now();
+  const loop = () => {
+    const cards = [...document.querySelectorAll('#about [data-about-card]')];
+    if (cards.length) {
+      window.__clip.push({ t: performance.now() - start, clips: cards.map((c) => getComputedStyle(c).clipPath), inline: cards.map((c) => c.style.clipPath), opacity: cards.map((c) => getComputedStyle(c).opacity) });
+    }
+    const period = document.querySelector('#career-magalu-cloud [data-career-period]');
+    const org = document.querySelector('#career-magalu-cloud [data-career-org]');
+    if (period) {
+      const last = window.__period[window.__period.length - 1];
+      if (!last || last.text !== period.textContent) {
+        window.__period.push({ t: performance.now() - start, text: period.textContent, role: period.getAttribute('role'), label: period.getAttribute('aria-label') });
+      }
+    }
+    if (org) {
+      const last = window.__org[window.__org.length - 1];
+      if (!last || last.text !== org.textContent) window.__org.push({ t: performance.now() - start, text: org.textContent });
+    }
+    requestAnimationFrame(loop);
+  };
+  requestAnimationFrame(loop);
+};
+
+const gotoAbout = async (page) => {
+  await page.evaluate(() => {
+    const el = document.querySelector('#about');
+    window.scrollTo(0, el.getBoundingClientRect().top + scrollY + 250);
+  });
+};
+
+test('C12: dossier cards enter once with a staggered diagonal clip-path wipe', async () => {
+  const { context, page } = await openHome('pt-br');
+  try {
+    await page.addInitScript(sampleInit);
+    await page.reload({ waitUntil: 'networkidle' });
+    await dismissIntroIfPresent(page);
+    await gotoAbout(page);
+    await page.waitForTimeout(3200);
+    const { clip } = await page.evaluate(() => ({ clip: window.__clip }));
+    const last = clip[clip.length - 1];
+    last.clips.forEach((c, i) => {
+      assert.match(c, /^polygon\(/, `card ${i} resting clip-path`);
+      assert.equal(last.inline[i], '', `card ${i} must not keep an inline clip-path`);
+      assert.equal(last.opacity[i], '1', `card ${i} full opacity`);
+    });
+    const finalClips = last.clips;
+    const settled = [0, 1, 2].map((i) => clip.find((s) => s.t > 0 && s.clips[i] === finalClips[i] && clip.slice(clip.indexOf(s)).every((x) => x.clips[i] === finalClips[i]))?.t);
+    for (let i = 0; i < 3; i++) assert.ok(settled[i] !== undefined, `card ${i} must settle`);
+    assert.ok(clip.some((s) => s.clips.some((c, i) => c !== finalClips[i])), 'cards must animate from a different polygon');
+    assert.ok(clip.some((s) => s.clips[1].includes('-14%')), 'the wipe must start from the collapsed diagonal polygon');
+    assert.ok(settled[1] - settled[0] >= 100 && settled[2] - settled[1] >= 100, `cards must settle staggered, got ${settled}`);
+
+    const before = clip.length;
+    await page.evaluate(() => window.scrollTo(0, 0));
+    await page.waitForTimeout(700);
+    await gotoAbout(page);
+    await page.waitForTimeout(1200);
+    const after = (await page.evaluate(() => window.__clip)).slice(before);
+    assert.ok(after.every((s) => s.clips.every((c, i) => c === finalClips[i])), 'the wipe must not replay');
+  } finally {
+    await context.close();
+  }
+});
+
+test('C13: career fields decode once within 1.2 s ending on the exact text', async () => {
+  const { getLocalizedCareer } = await import('../src/data/career.ts');
+  const expected = getLocalizedCareer('pt-br').find((e) => e.id === 'magalu-cloud');
+  const { context, page } = await openHome('pt-br');
+  try {
+    await page.addInitScript(sampleInit);
+    await page.reload({ waitUntil: 'networkidle' });
+    await dismissIntroIfPresent(page);
+    await gotoAbout(page);
+    await page.waitForTimeout(3500);
+    const { period, org } = await page.evaluate(() => ({ period: window.__period, org: window.__org }));
+    for (const [name, series, final] of [['period', period, expected.period], ['org', org, expected.org]]) {
+      assert.equal(series[series.length - 1].text, final, `${name} must end on the exact text`);
+      const intermediates = series.filter((s) => s.text !== final);
+      assert.ok(intermediates.length >= 3, `${name} must show scrambled steps, saw ${intermediates.length}`);
+      const decodeStart = series.find((s) => s.text !== final && s !== series[0])?.t ?? series[1].t;
+      const decodeEnd = series[series.length - 1].t;
+      assert.ok(decodeEnd - decodeStart <= 1500, `${name} decode took ${decodeEnd - decodeStart}ms`);
+    }
+    const count = period.length;
+    await page.evaluate(() => window.scrollTo(0, 0));
+    await page.waitForTimeout(600);
+    await gotoAbout(page);
+    await page.waitForTimeout(1800);
+    assert.equal((await page.evaluate(() => window.__period)).length, count, 'the decode must not replay');
+  } finally {
+    await context.close();
+  }
+});
+
+test('C14: locale change during decode ends on the new locale text', async () => {
+  const { getLocalizedCareer } = await import('../src/data/career.ts');
+  const en = getLocalizedCareer('en').find((e) => e.id === 'magalu-cloud');
+  const { context, page } = await openHome('pt-br');
+  try {
+    await page.addInitScript(sampleInit);
+    await page.reload({ waitUntil: 'networkidle' });
+    await dismissIntroIfPresent(page);
+    await gotoAbout(page);
+    await page.waitForFunction(() => window.__period.length > 1, null, { timeout: 8000 });
+    await page.locator('#nav-lang-toggle-btn').dispatchEvent('click');
+    await page.waitForTimeout(3000);
+    assert.equal((await page.locator('#career-magalu-cloud [data-career-period]').textContent()).trim(), en.period);
+    assert.equal((await page.locator('#career-magalu-cloud [data-career-org]').textContent()).trim(), en.org);
+    const tail = (await page.evaluate(() => window.__period)).filter((s) => s.t > 0).slice(-3).map((s) => s.text);
+    assert.equal(tail[tail.length - 1], en.period);
+    assert.equal(await page.locator('#career-magalu-cloud [data-career-period]').getAttribute('aria-label'), null, 'the decode label is cleared');
+  } finally {
+    await context.close();
+  }
+});
+
+test('C15: reduced motion renders cards and fields in their final state', async () => {
+  const { getLocalizedCareer } = await import('../src/data/career.ts');
+  const expected = getLocalizedCareer('pt-br').find((e) => e.id === 'magalu-cloud');
+  const { context, page } = await openHome('pt-br', { reducedMotion: 'reduce' });
+  try {
+    await page.addInitScript(sampleInit);
+    await page.reload({ waitUntil: 'networkidle' });
+    await dismissIntroIfPresent(page);
+    await gotoAbout(page);
+    await page.waitForTimeout(1800);
+    const { clip, period, org } = await page.evaluate(() => ({ clip: window.__clip, period: window.__period, org: window.__org }));
+    for (const s of clip) {
+      s.clips.forEach((c, i) => {
+        assert.match(c, /^polygon\(/);
+        assert.equal(s.inline[i], '', 'no inline clip-path in reduced motion');
+        assert.equal(s.opacity[i], '1');
+        assert.ok(!c.includes('-14%'), 'no collapsed wipe polygon');
+      });
+    }
+    assert.equal(period.length, 1, 'the period must never change after first paint');
+    assert.equal(period[0].text, expected.period);
+    assert.equal(org.length, 1);
+    assert.equal(org[0].text, expected.org);
+  } finally {
+    await context.close();
+  }
+});
+
+test('C18: scrambled characters are not exposed to assistive technology', async () => {
+  const { getLocalizedCareer } = await import('../src/data/career.ts');
+  const expected = getLocalizedCareer('pt-br').find((e) => e.id === 'magalu-cloud');
+  const { context, page } = await openHome('pt-br');
+  try {
+    await page.addInitScript(sampleInit);
+    await page.reload({ waitUntil: 'networkidle' });
+    await dismissIntroIfPresent(page);
+    await gotoAbout(page);
+    await page.waitForTimeout(3500);
+    const period = await page.evaluate(() => window.__period);
+    const scrambled = period.filter((s) => s.text !== expected.period);
+    assert.ok(scrambled.length >= 3, 'precondition: scrambled steps were observed');
+    for (const step of scrambled) {
+      assert.equal(step.role, 'img', 'a scrambling field exposes one labelled image role');
+      assert.equal(step.label, expected.period, 'the accessible name is the final text');
+    }
+    const live = await page.locator('#career-magalu-cloud [data-career-period]').evaluate((el) => [el.getAttribute('role'), el.getAttribute('aria-label')]);
+    assert.deepEqual(live, [null, null], 'the decode role and label are cleared once finished');
+  } finally {
+    await context.close();
+  }
+});

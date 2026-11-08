@@ -167,68 +167,17 @@ const currentId = CAREER.find((entry) => entry.end === "present")?.id;
 </section>
 
 <script>
-  import { gsap } from "../utils/motion";
+  import { initDossier } from "./about/dossier";
 
-  let isAboutInitialized = false;
-
-  function setupAboutScroll() {
-    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (prefersReducedMotion) return;
-    if (isAboutInitialized) return;
-    isAboutInitialized = true;
-
-    const aboutSection = document.getElementById("about");
-    const avatarPanel = document.querySelector("[data-about-avatar-panel]");
-    const contentPanel = document.querySelector("[data-about-content-panel]");
-    const skillsMatrix = document.querySelector("[data-skills-matrix]");
-
-    if (aboutSection && avatarPanel && contentPanel) {
-      gsap.fromTo(
-        [avatarPanel, contentPanel],
-        { opacity: 0, y: 35 },
-        {
-          scrollTrigger: {
-            trigger: aboutSection,
-            start: "top 80%",
-            once: true,
-          },
-          opacity: 1,
-          y: 0,
-          duration: 0.8,
-          stagger: 0.2,
-          ease: "power2.out",
-          force3D: true,
-        }
-      );
-    }
-
-    if (skillsMatrix) {
-      gsap.fromTo(
-        skillsMatrix,
-        { opacity: 0, y: 30 },
-        {
-          scrollTrigger: {
-            trigger: skillsMatrix,
-            start: "top 85%",
-            once: true,
-          },
-          opacity: 1,
-          y: 0,
-          duration: 0.8,
-          ease: "power2.out",
-          force3D: true,
-        }
-      );
-    }
+  function boot() {
+    const about = document.getElementById("about");
+    if (about) initDossier(about);
   }
 
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", setupAboutScroll);
+    document.addEventListener("DOMContentLoaded", boot);
   } else {
-    setupAboutScroll();
+    boot();
   }
-  document.addEventListener("astro:page-load", () => {
-    isAboutInitialized = false;
-    setupAboutScroll();
-  });
+  document.addEventListener("astro:page-load", boot);
 </script>
