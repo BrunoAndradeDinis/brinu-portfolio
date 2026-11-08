@@ -26,6 +26,8 @@ export function initDossier(root: HTMLElement): void {
   root.dataset.dossierBound = 'true';
   if (prefersReducedMotion()) return;
 
+  const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+
   const cards = Array.from(root.querySelectorAll<HTMLElement>('[data-about-card]'));
   const steps = Array.from(root.querySelectorAll<HTMLElement>('[data-career-entry]'));
   const active = new Map<HTMLElement, gsap.core.Tween>();
@@ -40,7 +42,7 @@ export function initDossier(root: HTMLElement): void {
   };
 
   const decode = (step: HTMLElement) => {
-    const careerId = step.id.replace('career-', '');
+    if (prefersReducedMotion()) return;
     (['period', 'org'] as const).forEach((field) => {
       const el = step.querySelector<HTMLElement>(`[data-career-${field}]`);
       if (!el || el.dataset.decoded === 'true') return;
@@ -74,6 +76,10 @@ export function initDossier(root: HTMLElement): void {
     start: 'top 75%',
     once: true,
     onEnter: () => {
+      if (prefersReducedMotion()) {
+        gsap.set(cards, { clearProps: 'clipPath' });
+        return;
+      }
       cards.forEach((card, index) => {
         gsap.to(card, {
           clipPath: rest[index],
@@ -88,6 +94,18 @@ export function initDossier(root: HTMLElement): void {
 
   steps.forEach((step) => {
     ScrollTrigger.create({ trigger: step, start: 'top 85%', once: true, onEnter: () => decode(step) });
+  });
+
+  motionQuery.addEventListener('change', () => {
+    if (!motionQuery.matches) return;
+    gsap.killTweensOf(cards);
+    gsap.set(cards, { clearProps: 'clipPath' });
+    active.forEach((tween, el) => {
+      tween.kill();
+      el.textContent = el.getAttribute('aria-label') ?? el.textContent;
+      clearDecoding(el);
+    });
+    active.clear();
   });
 
   window.addEventListener(LOCALE_CHANGE_EVENT, () => {

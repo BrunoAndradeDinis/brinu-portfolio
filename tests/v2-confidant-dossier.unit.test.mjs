@@ -26,7 +26,7 @@ test('C20: dictionaries carry the two-line bio and drop the old bio, role headin
   const { DICTIONARIES } = await import('../src/i18n/dictionaries.ts');
   for (const locale of ['pt-br', 'en']) {
     const about = DICTIONARIES[locale].about;
-    for (const key of ['bioLine1', 'bioLine2', 'baseLine']) assert.ok(typeof about[key] === 'string' && about[key].length > 10, `${locale} about.${key}`);
+    for (const key of ['bioLine1', 'bioLine2', 'baseLine']) assert.equal(about[key], DECK[locale][key], `${locale} about.${key} must equal the copy deck`);
     for (const gone of ['bioP1', 'bioP2', 'roleHeading', 'stats']) assert.equal(gone in about, false, `${locale} about.${gone} must be gone`);
   }
 });

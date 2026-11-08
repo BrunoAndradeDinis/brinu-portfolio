@@ -136,6 +136,19 @@ test('C1: portrait sits left of the cards in a polygon rotated at least 3 deg', 
   }
 });
 
+test('C1: two columns start at exactly 1024px and stack at 1023px', async () => {
+  for (const [width, twoColumns] of [[1023, false], [1024, true]]) {
+    const { context, page } = await openAbout('pt-br', { reducedMotion: 'reduce', viewport: { width, height: 900 } });
+    try {
+      const r = await page.evaluate(() => ({ portrait: document.querySelector('[data-about-portrait-frame]').getBoundingClientRect(), card: document.querySelector('[data-about-card]').getBoundingClientRect() }));
+      const beside = r.portrait.right <= r.card.left + 2;
+      assert.equal(beside, twoColumns, `${width}px: portrait right ${r.portrait.right}, card left ${r.card.left}`);
+    } finally {
+      await context.close();
+    }
+  }
+});
+
 test('C2: right column renders bio, career and education panels in order', async () => {
   const { context, page } = await openAbout('pt-br', { reducedMotion: 'reduce' });
   try {
@@ -171,6 +184,8 @@ test('C4: about has no role heading, statistics block or bioP elements', async (
     assert.equal(await page.locator('#about [data-i18n^="about.bioP"], #about [data-i18n="about.roleHeading"], #about [data-i18n^="about.stats"]').count(), 0);
     const text = await page.locator('#about').innerText();
     assert.doesNotMatch(text, /DESENVOLVEDOR FRONTEND & CRIADOR|PAPEL ATUAL|NÚCLEO HUMANO|ARSENAL PRINCIPAL/i);
+    await toggleLocale(page);
+    assert.doesNotMatch(await page.locator('#about').innerText(), /CURRENT ROLE|HUMAN CORE|MAIN ARSENAL|CURRENT BASE|FRONTEND DEVELOPER & CREATOR/i);
   } finally {
     await context.close();
   }
@@ -241,6 +256,8 @@ test('C8: locale change updates ladder text in place', async () => {
       assert.equal((await page.locator(`#career-${entry.id} [data-career-period]`).textContent()).trim(), entry.period);
     }
     for (const entry of getLocalizedEducation('en')) {
+      assert.equal((await page.locator(`#education-${entry.id} [data-education-course]`).textContent()).trim(), entry.course);
+      assert.equal((await page.locator(`#education-${entry.id} [data-education-period]`).textContent()).trim(), entry.period);
       assert.equal((await page.locator(`#education-${entry.id} [data-education-status]`).textContent()).trim(), entry.status);
     }
     assert.equal((await page.locator('#career-magalu-cloud [data-career-current]').textContent()).trim(), DECK.en.currentMarker);
@@ -305,7 +322,7 @@ test('C11: arsenal evidence chip scrolls to the case below the nav', async () =>
       const trigger = document.getElementById('cockpit-trigger-btn');
       return { target, navBottom: Math.max(avatar.getBoundingClientRect().bottom, trigger.getBoundingClientRect().bottom) };
     });
-    assert.ok(m.target >= m.navBottom && m.target <= m.navBottom + 90, `case top ${m.target} vs nav bottom ${m.navBottom}`);
+    assert.ok(m.target >= m.navBottom + 1 && m.target <= m.navBottom + 90, `case top ${m.target} vs nav bottom ${m.navBottom}`);
   } finally {
     await context.close();
   }
@@ -317,6 +334,7 @@ const sampleInit = () => {
   window.__org = [];
   window.__aria = [];
   const start = performance.now();
+  window.__now = () => performance.now() - start;
   const loop = () => {
     const cards = [...document.querySelectorAll('#about [data-about-card]')];
     if (cards.length) {
@@ -365,8 +383,12 @@ test('C12: dossier cards enter once with a staggered diagonal clip-path wipe', a
     const settled = [0, 1, 2].map((i) => clip.find((s) => s.t > 0 && s.clips[i] === finalClips[i] && clip.slice(clip.indexOf(s)).every((x) => x.clips[i] === finalClips[i]))?.t);
     for (let i = 0; i < 3; i++) assert.ok(settled[i] !== undefined, `card ${i} must settle`);
     assert.ok(clip.some((s) => s.clips.some((c, i) => c !== finalClips[i])), 'cards must animate from a different polygon');
-    assert.ok(clip.some((s) => s.clips[1].includes('-14%')), 'the wipe must start from the collapsed diagonal polygon');
-    assert.ok(settled[1] - settled[0] >= 100 && settled[2] - settled[1] >= 100, `cards must settle staggered, got ${settled}`);
+    for (const i of [0, 1, 2]) assert.ok(clip.some((s) => s.clips[i].includes('-14%')), `card ${i} must start from the collapsed diagonal polygon`);
+    for (const c of finalClips) {
+      const pts = c.replace(/^polygon\(|\)$/g, '').split(',').map((p) => p.trim());
+      assert.notDeepEqual(pts, ['0% 0%', '100% 0%', '100% 100%', '0% 100%'], 'the resting polygon must not be a plain rectangle');
+    }
+    assert.ok(settled[1] - settled[0] >= 150 && settled[2] - settled[1] >= 150, `cards must settle staggered, got ${settled}`);
 
     const before = clip.length;
     await page.evaluate(() => window.scrollTo(0, 0));
@@ -391,13 +413,14 @@ test('C13: career fields decode once within 1.2 s ending on the exact text', asy
     await gotoAbout(page);
     await page.waitForTimeout(3500);
     const { period, org } = await page.evaluate(() => ({ period: window.__period, org: window.__org }));
+    assert.equal(period[0].text, expected.period, 'the field must show its final text before it enters view');
     for (const [name, series, final] of [['period', period, expected.period], ['org', org, expected.org]]) {
       assert.equal(series[series.length - 1].text, final, `${name} must end on the exact text`);
       const intermediates = series.filter((s) => s.text !== final);
       assert.ok(intermediates.length >= 3, `${name} must show scrambled steps, saw ${intermediates.length}`);
       const decodeStart = series.find((s) => s.text !== final && s !== series[0])?.t ?? series[1].t;
       const decodeEnd = series[series.length - 1].t;
-      assert.ok(decodeEnd - decodeStart <= 1500, `${name} decode took ${decodeEnd - decodeStart}ms`);
+      assert.ok(decodeEnd - decodeStart <= 1200, `${name} decode took ${decodeEnd - decodeStart}ms`);
     }
     const count = period.length;
     await page.evaluate(() => window.scrollTo(0, 0));
@@ -423,7 +446,7 @@ test('C14: locale change during decode ends on the new locale text', async () =>
     await page.locator('#nav-lang-toggle-btn').dispatchEvent('click');
     await page.waitForTimeout(3000);
     assert.equal((await page.locator('#career-magalu-cloud [data-career-period]').textContent()).trim(), en.period);
-    assert.equal((await page.locator('#career-magalu-cloud [data-career-org]').textContent()).trim(), en.org);
+    assert.equal((await page.locator('#career-magalu-cloud [data-career-role]').textContent()).trim(), en.role);
     const tail = (await page.evaluate(() => window.__period)).filter((s) => s.t > 0).slice(-3).map((s) => s.text);
     assert.equal(tail[tail.length - 1], en.period);
     assert.equal(await page.locator('#career-magalu-cloud [data-career-period]').getAttribute('aria-label'), null, 'the decode label is cleared');
@@ -477,8 +500,13 @@ test('C18: scrambled characters are not exposed to assistive technology', async 
       assert.equal(step.role, 'img', 'a scrambling field exposes one labelled image role');
       assert.equal(step.label, expected.period, 'the accessible name is the final text');
     }
-    const live = await page.locator('#career-magalu-cloud [data-career-period]').evaluate((el) => [el.getAttribute('role'), el.getAttribute('aria-label')]);
-    assert.deepEqual(live, [null, null], 'the decode role and label are cleared once finished');
+    const org = await page.evaluate(() => window.__org);
+    const scrambledOrg = org.filter((s) => s.text !== expected.org);
+    assert.ok(scrambledOrg.length >= 3, 'precondition: the organization also scrambles');
+    for (const sel of ['[data-career-period]', '[data-career-org]']) {
+      const live = await page.locator(`#career-magalu-cloud ${sel}`).evaluate((el) => [el.getAttribute('role'), el.getAttribute('aria-label')]);
+      assert.deepEqual(live, [null, null], `${sel}: the decode role and label are cleared once finished`);
+    }
   } finally {
     await context.close();
   }
@@ -589,5 +617,31 @@ test('C19: portrait stacks above the cards below 1024px', async () => {
     } finally {
       await context.close();
     }
+  }
+});
+
+test('C15: reduced motion enabled after load stops the wipe and the decode', async () => {
+  const { getLocalizedCareer } = await import('../src/data/career.ts');
+  const expected = getLocalizedCareer('pt-br').find((e) => e.id === 'magalu-cloud');
+  const { context, page } = await openHome('pt-br');
+  try {
+    await page.addInitScript(sampleInit);
+    await page.reload({ waitUntil: 'networkidle' });
+    await dismissIntroIfPresent(page);
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.waitForTimeout(300);
+    const markAt = await page.evaluate(() => window.__now());
+    await gotoAbout(page);
+    await page.waitForTimeout(2500);
+    const { clip, period } = await page.evaluate(() => ({ clip: window.__clip, period: window.__period }));
+    const after = clip.filter((s) => s.t > markAt);
+    assert.ok(after.length > 20, 'expected samples after reduced motion was enabled');
+    assert.ok(after.every((s) => s.clips.every((c) => !c.includes('-14%'))), 'no wipe may run after reduced motion is on');
+    const last = clip[clip.length - 1];
+    last.clips.forEach((c, i) => { assert.match(c, /^polygon\(/); assert.equal(last.inline[i], ''); assert.ok(!c.includes('-14%')); });
+    assert.equal(period.length, 1, 'the period must not scramble');
+    assert.equal(period[0].text, expected.period);
+  } finally {
+    await context.close();
   }
 });
