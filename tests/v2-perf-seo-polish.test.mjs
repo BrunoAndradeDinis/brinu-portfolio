@@ -148,55 +148,6 @@ test('C2: all built JS chunks in dist/_astro/ are under 500 kB with zero chunk w
   }
 });
 
-test('C3: CyberDeck renders 3D canvas and toggles cartridge telemetry drawer without errors', async () => {
-  const context = await browser.newContext();
-  const page = await context.newPage();
-  const pageErrors = [];
-  page.on('pageerror', (err) => pageErrors.push(err.message));
-
-  await page.goto(`${baseUrl}/`, { waitUntil: 'networkidle' });
-  await dismissIntroIfPresent(page);
-
-  await page.locator('#lab-cyber-deck').scrollIntoViewIfNeeded();
-  await page.waitForSelector('astro-island[component-url*="CyberDeck"]:not([ssr])', {
-    timeout: 10000,
-  });
-  await page.waitForSelector('[data-cyber-deck]');
-
-  assert.equal(await page.locator('[data-cyber-deck]').count(), 1);
-
-  const ejectBtn = page.locator('[data-deck-eject-btn]');
-  await ejectBtn.click();
-
-  await page.waitForFunction(
-    (expected) => {
-      const el = document.querySelector('[data-cartridge-status]');
-      return el && el.textContent.includes(expected);
-    },
-    ptBrDict.lab.deck.ejected,
-    { timeout: 5000 }
-  );
-
-  const statusText = await page.locator('[data-cartridge-status]').innerText();
-  assert.ok(
-    statusText.includes(ptBrDict.lab.deck.ejected),
-    `Expected statusText to include ${ptBrDict.lab.deck.ejected}, got ${statusText}`
-  );
-
-  await ejectBtn.click();
-  await page.waitForFunction(
-    (expected) => {
-      const el = document.querySelector('[data-cartridge-status]');
-      return el && el.textContent.includes(expected);
-    },
-    ptBrDict.lab.deck.docked,
-    { timeout: 5000 }
-  );
-
-  assert.equal(pageErrors.length, 0, `Page errors encountered: ${pageErrors.join(', ')}`);
-  await context.close();
-});
-
 test('T2a: buildPersonJsonLd exports canonical Schema.org Person with Franca / SP and official links', () => {
   const jsonLd = buildPersonJsonLd();
   assert.equal(jsonLd['@context'], 'https://schema.org');

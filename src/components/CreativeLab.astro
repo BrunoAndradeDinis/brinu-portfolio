@@ -1,7 +1,5 @@
 ---
-import CrtTuner from "./lab/CrtTuner";
-import SonarRadar from "./lab/SonarRadar";
-import CyberDeck from "./lab/CyberDeck";
+import ArcanaDeck from "./ArcanaDeck.astro";
 import { ptBrDict } from "../i18n/dictionaries";
 import P5Title from "./p5/P5Title.astro";
 import P5Badge from "./p5/P5Badge.astro";
@@ -44,57 +42,7 @@ import P5Badge from "./p5/P5Badge.astro";
       </div>
     </div>
 
-    <div
-      data-lab-nav
-      class="mt-6 flex flex-wrap items-center gap-2.5 sm:gap-3 text-xs font-mono"
-      aria-label={ptBrDict.a11y.labNavAria}
-      data-i18n="a11y.labNavAria"
-      data-i18n-attr="aria-label"
-    >
-      <span class="text-bebop-red uppercase text-[11px] font-bold mr-1" data-i18n="lab.indexLabel">
-        {ptBrDict.lab.indexLabel}
-      </span>
-
-      <a
-        href="#lab-crt-tuner"
-        data-nav-tuner
-        data-i18n="lab.navTuner"
-        class="px-3 py-1.5 border-2 border-paper-white bg-space-surface-1 text-paper-white font-bold hover:bg-bebop-red hover:text-paper-white transition-all shadow-[3px_3px_0_var(--color-bebop-red)]"
-      >
-        {ptBrDict.lab.navTuner}
-      </a>
-
-      <a
-        href="#lab-sonar-radar"
-        data-nav-sonar
-        data-i18n="lab.navSonar"
-        class="px-3 py-1.5 border-2 border-paper-white bg-space-surface-1 text-paper-white font-bold hover:bg-bebop-red hover:text-paper-white transition-all shadow-[3px_3px_0_var(--color-bebop-red)]"
-      >
-        {ptBrDict.lab.navSonar}
-      </a>
-
-      <a
-        href="#lab-cyber-deck"
-        data-nav-deck
-        data-i18n="lab.navDeck"
-        class="px-3 py-1.5 border-2 border-paper-white bg-space-surface-1 text-paper-white font-bold hover:bg-bebop-red hover:text-paper-white transition-all shadow-[3px_3px_0_var(--color-bebop-red)]"
-      >
-        {ptBrDict.lab.navDeck}
-      </a>
-    </div>
   </div>
 
-  <div class="mx-auto max-w-[140rem] space-y-16">
-    <div id="lab-crt-tuner" class="scroll-mt-28">
-      <CrtTuner client:visible />
-    </div>
-
-    <div id="lab-sonar-radar" class="scroll-mt-28">
-      <SonarRadar client:visible />
-    </div>
-
-    <div id="lab-cyber-deck" class="scroll-mt-28">
-      <CyberDeck client:visible />
-    </div>
-  </div>
+  <ArcanaDeck />
 </section>

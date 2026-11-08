@@ -1,0 +1,112 @@
+---
+import { getLocalizedCases } from "../data/cases";
+import { ptBrDict } from "../i18n/dictionaries";
+import P5Panel from "./p5/P5Panel.astro";
+
+const cases = getLocalizedCases("pt-br");
+---
+
+<div data-arcana-deck class="arcana-deck mx-auto max-w-[140rem]">
+  <p
+    class="mb-8 font-mono text-[11px] sm:text-xs font-bold tracking-widest text-muted-gray uppercase"
+    data-i18n="lab.hint"
+  >
+    {ptBrDict.lab.hint}
+  </p>
+
+  <ol data-arcana-track role="list" class="grid grid-cols-1 gap-8 md:grid-cols-2 xl:grid-cols-4">
+    {
+      cases.map((project, index) => (
+        <li class="list-none">
+          <P5Panel
+            as="article"
+            cut={index % 2 === 0 ? "a" : "b"}
+            id={`arcana-${project.id}`}
+            data-arcana-card
+            data-arcana-index={index}
+            aria-label={`${project.arcanaCode}: ${project.title}`}
+            class="flex h-full flex-col bg-space-base text-paper-white"
+          >
+            <div data-arcana-front class="flex flex-col gap-3 border-b-4 border-bebop-red p-5 sm:p-6">
+              <span
+                data-arcana-code
+                class="font-mono text-[11px] sm:text-xs font-black tracking-widest text-bebop-red uppercase"
+              >
+                {project.arcanaCode}
+              </span>
+              <h3
+                data-arcana-title
+                class="font-display text-2xl sm:text-3xl font-black uppercase leading-[0.95] tracking-tight text-paper-white [overflow-wrap:anywhere]"
+              >
+                {project.title}
+              </h3>
+              <p
+                data-arcana-category
+                class="font-mono text-[11px] sm:text-xs font-bold uppercase tracking-wider text-muted-gray"
+              >
+                {project.category}
+              </p>
+            </div>
+
+            <div data-arcana-back class="flex flex-1 flex-col gap-4 bg-paper-white p-5 sm:p-6 text-space-base">
+              <div>
+                <h4
+                  class="mb-1 font-mono text-[10px] sm:text-[11px] font-black uppercase tracking-widest text-space-base"
+                  data-i18n="works.challengeLabel"
+                >
+                  {ptBrDict.works.challengeLabel}
+                </h4>
+                <p data-arcana-challenge class="text-xs sm:text-sm leading-snug">{project.challenge}</p>
+              </div>
+              <div>
+                <h4
+                  class="mb-1 font-mono text-[10px] sm:text-[11px] font-black uppercase tracking-widest text-space-base"
+                  data-i18n="works.solutionLabel"
+                >
+                  {ptBrDict.works.solutionLabel}
+                </h4>
+                <p data-arcana-solution class="text-xs sm:text-sm leading-snug">{project.solution}</p>
+              </div>
+              <ul role="list" class="flex flex-wrap gap-1.5">
+                {
+                  project.stack.map((tech) => (
+                    <li
+                      data-arcana-stack-item
+                      class="border-2 border-space-base bg-paper-white px-2 py-0.5 font-mono text-[10px] sm:text-[11px] font-bold text-space-base"
+                    >
+                      {tech}
+                    </li>
+                  ))
+                }
+              </ul>
+              <div class="mt-auto flex flex-wrap gap-2 border-t-4 border-space-base pt-4">
+                {
+                  project.links.map((link) => (
+                    <a
+                      href={link.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      data-arcana-link
+                      aria-label={link.ariaLabel}
+                      class="border-2 border-space-base bg-space-base px-3 py-1.5 font-mono text-[11px] font-black uppercase tracking-wider text-paper-white hover:bg-bebop-red focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-space-base"
+                    >
+                      <span data-arcana-link-label>{link.label}</span>
+                    </a>
+                  ))
+                }
+                <a
+                  href={`#case-${project.id}`}
+                  data-arcana-open
+                  class="border-2 border-space-base bg-bebop-red px-3 py-1.5 font-mono text-[11px] font-black uppercase tracking-wider text-space-base hover:bg-space-base hover:text-paper-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-space-base"
+                  data-i18n="lab.openCase"
+                >
+                  {ptBrDict.lab.openCase}
+                </a>
+              </div>
+            </div>
+          </P5Panel>
+        </li>
+      ))
+    }
+  </ol>
+</div>

@@ -197,6 +197,8 @@ export interface TranslationSchema {
     statusBadge: string;
     domainLine: string;
     indexLabel: string;
+    hint: string;
+    openCase: string;
     navTuner: string;
     navSonar: string;
     navDeck: string;
@@ -537,6 +539,8 @@ export const ptBrDict: TranslationSchema = {
     statusBadge: 'STATUS: INTERATIVO // ARRASTE & VIRE',
     domainLine: 'GSAP DRAGGABLE • CSS 3D • NAVEGAÇÃO POR TECLADO',
     indexLabel: 'CARTAS //',
+    hint: 'ARRASTE, USE AS SETAS E PRESSIONE ENTER PARA VIRAR A CARTA',
+    openCase: 'VER CASE COMPLETO',
     navTuner: '01 // SINTONIZADOR CRT',
     navSonar: '02 // RADAR SONAR',
     navDeck: '03 // CYBER DECK 3D',
@@ -884,6 +888,8 @@ export const enDict = {
     statusBadge: 'STATUS: INTERACTIVE // DRAG & FLIP',
     domainLine: 'GSAP DRAGGABLE • CSS 3D • KEYBOARD NAVIGATION',
     indexLabel: 'CARDS //',
+    hint: 'DRAG, USE THE ARROW KEYS AND PRESS ENTER TO FLIP THE CARD',
+    openCase: 'VIEW FULL CASE',
     navTuner: '01 // CRT TUNER',
     navSonar: '02 // SONAR RADAR',
     navDeck: '03 // 3D CYBER DECK',

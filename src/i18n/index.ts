@@ -218,6 +218,30 @@ export function applyDomTranslations(locale: Locale): void {
     });
   });
 
+  cases.forEach((project) => {
+    const card = document.getElementById(`arcana-${project.id}`);
+    if (!card) return;
+    const setText = (selector: string, value: string) => {
+      const node = card.querySelector<HTMLElement>(selector);
+      if (node) node.textContent = value;
+    };
+    setText('[data-arcana-title]', project.title);
+    setText('[data-arcana-category]', project.category);
+    setText('[data-arcana-challenge]', project.challenge);
+    setText('[data-arcana-solution]', project.solution);
+    card.setAttribute('aria-label', `${project.arcanaCode}: ${project.title}`);
+    card.querySelectorAll<HTMLElement>('[data-arcana-stack-item]').forEach((item, idx) => {
+      if (project.stack[idx]) item.textContent = project.stack[idx];
+    });
+    card.querySelectorAll<HTMLAnchorElement>('[data-arcana-link]').forEach((linkEl, idx) => {
+      const linkData = project.links[idx];
+      if (!linkData) return;
+      linkEl.setAttribute('aria-label', linkData.ariaLabel);
+      const label = linkEl.querySelector<HTMLElement>('[data-arcana-link-label]');
+      if (label) label.textContent = linkData.label;
+    });
+  });
+
   getLocalizedArchive(validLocale).forEach((entry) => {
     const card = document.getElementById(`archive-${entry.id}`);
     if (!card) return;
