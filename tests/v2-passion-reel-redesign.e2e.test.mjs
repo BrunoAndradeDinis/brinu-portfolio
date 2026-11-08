@@ -234,6 +234,11 @@ test('C7: headline uses the display font and other lines the mono font', async (
     assert.deepEqual(result.credits, Array(6).fill(result.mono));
     assert.deepEqual(result.highlight, Array(6).fill(result.mono));
     assert.deepEqual(result.card, Array(12).fill(result.mono));
+    const loaded = await page.evaluate(() =>
+      [...document.fonts].filter((f) => f.status === 'loaded').map((f) => f.family.replace(/^["']|["']$/g, '').toLowerCase()),
+    );
+    assert.ok(loaded.includes(result.display), `display font "${result.display}" must be loaded, loaded: ${loaded.join(', ')}`);
+    assert.ok(loaded.includes(result.mono), `mono font "${result.mono}" must be loaded, loaded: ${loaded.join(', ')}`);
   } finally {
     await context.close();
   }
@@ -258,14 +263,16 @@ test('C8: removed third-party phrases do not appear in the passion frames', asyn
 });
 
 test('C14: each frame image keeps a translated non-empty alt', async () => {
+  const { DICTIONARIES } = await import('../src/i18n/dictionaries.ts');
   const { context, page } = await openHome('pt-br', { reducedMotion: 'reduce' });
   try {
     const pt = (await readFrames(page)).map((f) => f.alt);
     await toggleLocale(page);
     const en = (await readFrames(page)).map((f) => f.alt);
     pt.forEach((alt, i) => {
-      assert.ok(alt && alt.trim().length > 10, `pt alt ${i + 1} empty`);
-      assert.ok(en[i] && en[i].trim().length > 10, `en alt ${i + 1} empty`);
+      assert.equal(alt, DICTIONARIES['pt-br'].filmstrip.passionSlides[`p${i + 1}Alt`], `pt alt ${i + 1}`);
+      assert.equal(en[i], DICTIONARIES.en.filmstrip.passionSlides[`p${i + 1}Alt`], `en alt ${i + 1}`);
+      assert.ok(alt.trim().length > 10 && en[i].trim().length > 10, `alt ${i + 1} must be non-empty`);
       assert.notEqual(alt, en[i], `alt ${i + 1} must be translated`);
     });
   } finally {
@@ -328,6 +335,8 @@ const auditFrames = (page) =>
           plate = plate.parentElement;
           bg = parse(getComputedStyle(plate).backgroundColor);
         }
+        let opacity = 1;
+        for (let n = el; n && n !== figure.parentElement; n = n.parentElement) opacity *= Number(getComputedStyle(n).opacity);
         const fg = parse(getComputedStyle(el).color);
         const l1 = lum(fg);
         const l2 = lum(bg);
@@ -338,7 +347,7 @@ const auditFrames = (page) =>
         for (let n = target; n && n !== figure; n = n.offsetParent) { x += n.offsetLeft; y += n.offsetTop; }
         const box = { left: x, top: y, right: x + target.offsetWidth, bottom: y + target.offsetHeight };
         return {
-          name, plateOpaque: plate !== figure && bg.a === 1, contrast,
+          name, plateOpaque: plate !== figure && bg.a === 1 && opacity >= 0.99, contrast,
           box,
           inside: box.left >= -1 && box.right <= figure.offsetWidth + 1 && box.top >= -1 && box.bottom <= figure.offsetHeight + 1,
           overflows: el.scrollWidth > el.clientWidth + 1,
@@ -349,20 +358,22 @@ const auditFrames = (page) =>
   });
 
 test('C9: every frame text line sits on an opaque plate with contrast at least 4.5:1', async () => {
-  const { context, page } = await openHome('pt-br', { reducedMotion: 'reduce' });
-  try {
-    for (const locale of ['pt-br', 'en']) {
-      if (locale === 'en') await toggleLocale(page);
-      for (const frame of await auditFrames(page)) {
-        assert.ok(frame.lines.length >= 4, `frame ${frame.index} (${locale}) shows only ${frame.lines.length} lines`);
-        for (const line of frame.lines) {
-          assert.equal(line.plateOpaque, true, `frame ${frame.index} ${line.name} (${locale}) has no opaque plate`);
-          assert.ok(line.contrast >= 4.5, `frame ${frame.index} ${line.name} (${locale}) contrast ${line.contrast.toFixed(2)}`);
+  for (const [width, minLines] of [[375, 3], [1440, 6]]) {
+    const { context, page } = await openHome('pt-br', { reducedMotion: 'reduce', viewport: { width, height: 900 } });
+    try {
+      for (const locale of ['pt-br', 'en']) {
+        if (locale === 'en') await toggleLocale(page);
+        for (const frame of await auditFrames(page)) {
+          assert.equal(frame.lines.length, minLines, `frame ${frame.index} (${locale}, ${width}px) shows ${frame.lines.length} lines`);
+          for (const line of frame.lines) {
+            assert.equal(line.plateOpaque, true, `frame ${frame.index} ${line.name} (${locale}, ${width}px) has no opaque plate`);
+            assert.ok(line.contrast >= 4.5, `frame ${frame.index} ${line.name} (${locale}, ${width}px) contrast ${line.contrast.toFixed(2)}`);
+          }
         }
       }
+    } finally {
+      await context.close();
     }
-  } finally {
-    await context.close();
   }
 });
 
@@ -423,16 +434,25 @@ test('C12: reel keeps six frames with inverted tilt and parallax', async () => {
       return Math.atan2(m.b, m.a) * 180 / Math.PI + rotateProp;
     });
     assert.ok(tilt < -1.5 && tilt > -3.5, `expected an inverted tilt near -2.5deg, got ${tilt}`);
-    const x = () => page.locator('[data-filmstrip-parallax-reverse]').evaluate((el) => new DOMMatrixReadOnly(getComputedStyle(el).transform).m41);
-    const before = await x();
-    await page.evaluate(() => {
-      const s = document.querySelector('[data-passion-slide]');
-      window.scrollTo(0, s.getBoundingClientRect().top + scrollY - 300);
-    });
-    await page.waitForTimeout(900);
-    await page.mouse.wheel(0, 400);
-    await page.waitForTimeout(900);
-    assert.notEqual(await x(), before, 'the passion reel must move with scroll');
+    const xOf = (sel) => page.locator(sel).evaluate((el) => new DOMMatrixReadOnly(getComputedStyle(el).transform).m41);
+    const sample = async () => ({ forward: await xOf('[data-filmstrip-parallax]'), reverse: await xOf('[data-filmstrip-parallax-reverse]') });
+    const scrollInSection = async (fraction) => {
+      await page.evaluate((f) => {
+        const sec = document.querySelector('[data-filmstrip-section]');
+        const top = sec.getBoundingClientRect().top + scrollY;
+        window.scrollTo(0, top - innerHeight + (innerHeight + sec.offsetHeight) * f);
+      }, fraction);
+      await page.waitForTimeout(1100);
+    };
+    await scrollInSection(0.25);
+    const first = await sample();
+    await scrollInSection(0.75);
+    const second = await sample();
+    const dForward = second.forward - first.forward;
+    const dReverse = second.reverse - first.reverse;
+    assert.ok(Math.abs(dReverse) > 20, `the passion reel must move with scroll, moved ${dReverse}px`);
+    assert.ok(Math.abs(dForward) > 20, `the first reel must move with scroll, moved ${dForward}px`);
+    assert.ok(Math.sign(dForward) !== Math.sign(dReverse), `the passion reel must run opposite to the first reel (${dForward} vs ${dReverse})`);
   } finally {
     await context.close();
   }
@@ -477,10 +497,11 @@ test('C16: failed background keeps the solid color and legible text', async () =
     await dismissIntroIfPresent(page);
     const solid = await page.locator('[data-passion-slide] [data-passion-bg]').evaluateAll((els) => els.map((el) => getComputedStyle(el).backgroundColor));
     assert.equal(solid.length, 6);
-    for (const color of solid) assert.ok(['rgb(254, 0, 0)', 'rgb(8, 8, 8)'].includes(color), `solid fallback was ${color}`);
+    assert.deepEqual(solid, ['rgb(254, 0, 0)', 'rgb(8, 8, 8)', 'rgb(254, 0, 0)', 'rgb(8, 8, 8)', 'rgb(254, 0, 0)', 'rgb(8, 8, 8)'], 'each frame keeps its own solid color');
     const broken = await page.locator('[data-passion-slide] img').evaluateAll((els) => els.filter((el) => el.complete && el.naturalWidth === 0).length);
     assert.equal(broken, 6, 'precondition: all backgrounds failed');
     for (const frame of await auditFrames(page)) {
+      assert.equal(frame.lines.length, 6, `frame ${frame.index} must still show all its text`);
       for (const line of frame.lines) assert.ok(line.plateOpaque && line.contrast >= 4.5, `frame ${frame.index} ${line.name} lost legibility`);
     }
   } finally {
