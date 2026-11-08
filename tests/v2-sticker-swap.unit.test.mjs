@@ -3,10 +3,10 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import crypto from 'node:crypto';
 
-const COUNT = 22;
+const COUNT = 32;
 const FILES = Array.from({ length: COUNT }, (_, i) => `public/stickers/sticker-${String(i + 1).padStart(2, '0')}.svg`);
 
-test('C1: twenty-two distinct sticker files match the manifest with localized alt text', async () => {
+test('C1: thirty-two distinct sticker files match the manifest with localized alt text', async () => {
   const { STICKERS, getLocalizedStickers } = await import('../src/data/stickers.ts');
   assert.deepEqual(fs.readdirSync('public/stickers').sort(), FILES.map((f) => f.split('/').pop()), 'the folder holds exactly the stickers');
   const hashes = new Set(FILES.map((f) => crypto.createHash('sha256').update(fs.readFileSync(f)).digest('hex')));

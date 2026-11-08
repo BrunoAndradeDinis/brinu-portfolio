@@ -5,6 +5,7 @@ import { ptBrDict } from "../i18n/dictionaries";
 import { getLocalizedStickers } from "../data/stickers";
 
 const stickers = getLocalizedStickers("pt-br");
+const stickersEn = getLocalizedStickers("en");
 ---
 
 <BaseLayout title={ptBrDict.meta.stickersTitle} description={ptBrDict.meta.stickersDescription}>
@@ -36,6 +37,8 @@ const stickers = getLocalizedStickers("pt-br");
                 href={sticker.file}
                 download={`brinu-sticker-${String(index + 1).padStart(2, "0")}.svg`}
                 data-sticker-download
+                data-alt-pt-br={sticker.alt}
+                data-alt-en={stickersEn[index].alt}
                 aria-label={`${ptBrDict.stickers.downloadAria} ${sticker.alt}`}
                 class="group block focus-visible:outline-4 focus-visible:outline-offset-4 focus-visible:outline-bebop-red"
               >
@@ -56,3 +59,22 @@ const stickers = getLocalizedStickers("pt-br");
     </section>
   </main>
 </BaseLayout>
+
+<script>
+  import { LOCALE_CHANGE_EVENT, getDictionary, getLocale } from "../i18n/index";
+
+  function bindStickerText() {
+    const locale = getLocale();
+    const prefix = getDictionary(locale).stickers.downloadAria;
+    document.querySelectorAll<HTMLAnchorElement>("[data-sticker-download]").forEach((link) => {
+      const alt = link.getAttribute(`data-alt-${locale}`);
+      if (!alt) return;
+      link.setAttribute("aria-label", `${prefix} ${alt}`);
+      link.querySelector("img")?.setAttribute("alt", alt);
+    });
+  }
+
+  bindStickerText();
+  window.addEventListener(LOCALE_CHANGE_EVENT, bindStickerText);
+  document.addEventListener("astro:page-load", bindStickerText);
+</script>

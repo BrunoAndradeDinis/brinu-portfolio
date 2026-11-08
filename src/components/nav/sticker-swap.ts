@@ -1,4 +1,4 @@
-import { STICKERS } from '../../data/stickers';
+import { STICKER_FILES } from '../../data/sticker-files';
 
 const TAP_DURATION_MS = 1200;
 
@@ -21,12 +21,12 @@ export function initStickerSwap(logo: HTMLElement): void {
   let tapTimer: ReturnType<typeof setTimeout> | null = null;
 
   const preload = () => {
-    STICKERS.forEach((sticker) => {
+    STICKER_FILES.forEach((file) => {
       const probe = new Image();
       probe.onload = () => {
-        if (!loaded.includes(sticker.file)) loaded.push(sticker.file);
+        if (!loaded.includes(file)) loaded.push(file);
       };
-      probe.src = sticker.file;
+      probe.src = file;
     });
   };
   if (document.readyState === 'complete') setTimeout(preload, 0);

@@ -1,5 +1,94 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" fill="none">
-<circle cx="200" cy="200" r="180" fill="#FBFAF4" stroke="#080808" stroke-width="12"/>
-<path d="M225 30 L120 215 H190 L150 370 L290 160 H215 Z" fill="#FE0000" stroke="#080808" stroke-width="10" stroke-linejoin="round"/>
-<circle cx="130" cy="150" r="18" fill="#080808"/><circle cx="130" cy="150" r="8" fill="#FBFAF4"/>
+  <!-- Background P5 astral disc / glam rock medallion -->
+  <circle cx="200" cy="204" r="176" fill="#080808"/>
+  <circle cx="200" cy="204" r="162" fill="#080808" stroke="#FE0000" stroke-width="6"/>
+  <!-- Halftone/glam starburst rays in background -->
+  <polygon points="200,42 212,90 188,90" fill="#FE0000"/>
+  <polygon points="62,124 108,146 96,166" fill="#FE0000"/>
+  <polygon points="338,124 292,146 304,166" fill="#FE0000"/>
+  <polygon points="48,228 96,220 96,242" fill="#FE0000"/>
+  <polygon points="352,228 304,220 304,242" fill="#FE0000"/>
+
+  <!-- Back mullet hair locks (behind neck & shoulders) -->
+  <path d="M112 215 L82 265 L108 268 L86 322 L126 310 L115 348 L152 325 L248 325 L285 348 L274 310 L314 322 L292 268 L318 265 L288 215 Z" fill="#FE0000" stroke="#080808" stroke-width="8" stroke-linejoin="round"/>
+
+  <!-- Shoulders & Collarbones (Aladdin Sane bust) -->
+  <path d="M72 356 C96 320 142 312 172 306 L172 268 L228 268 L228 306 C258 312 304 320 328 356 C290 382 246 390 200 390 C154 390 110 382 72 356 Z" fill="#FBFAF4" stroke="#080808" stroke-width="9" stroke-linejoin="round"/>
+  <!-- Neck shadows & dramatic collarbone ink lines -->
+  <path d="M174 274 L182 326 L200 340 L172 306 Z" fill="#080808"/>
+  <path d="M226 274 L218 326 L200 340 L228 306 Z" fill="#080808"/>
+  <path d="M106 344 C138 334 168 338 194 352" stroke="#080808" stroke-width="7" stroke-linecap="round"/>
+  <path d="M294 344 C262 334 232 338 206 352" stroke="#080808" stroke-width="7" stroke-linecap="round"/>
+  <!-- Aladdin Sane collarbone liquid drop / highlight -->
+  <path d="M132 352 C146 350 162 356 170 364 C156 368 138 364 132 352 Z" fill="#FE0000" stroke="#080808" stroke-width="4"/>
+
+  <!-- Ears -->
+  <path d="M122 184 C106 182 102 206 112 224 C118 234 128 234 132 226 Z" fill="#FBFAF4" stroke="#080808" stroke-width="8" stroke-linejoin="round"/>
+  <path d="M278 184 C294 182 298 206 288 224 C282 234 272 234 268 226 Z" fill="#FBFAF4" stroke="#080808" stroke-width="8" stroke-linejoin="round"/>
+
+  <!-- Chiseled Bowie Face Silhouette -->
+  <path d="M126 126 C124 168 126 206 136 232 C146 256 174 282 200 286 C226 282 254 256 264 232 C274 206 276 168 274 126 C266 92 238 78 200 78 C162 78 134 92 126 126 Z" fill="#FBFAF4" stroke="#080808" stroke-width="9" stroke-linejoin="round"/>
+
+  <!-- High Cheekbone Comic Shading (Persona 5 ink style) -->
+  <polygon points="132,208 158,224 146,244 136,228" fill="#080808"/>
+  <polygon points="268,208 242,224 254,244 264,228" fill="#080808"/>
+
+  <!-- THE ICONIC ALADDIN SANE LIGHTNING BOLT (slashing across left-side / right eye & cheek) -->
+  <!-- Secondary dual-tone black offset stripe (representing the blue/black stripe on Aladdin Sane) -->
+  <polygon points="184,92 128,178 164,178 132,258 144,262 182,170 146,170 196,92" fill="#080808"/>
+  <!-- Primary Crimson Red Lightning Bolt -->
+  <polygon points="196,88 138,174 178,174 140,262 216,158 176,158 222,88" fill="#FE0000" stroke="#080808" stroke-width="6" stroke-linejoin="round"/>
+  <!-- Crisp inner white highlight along bolt edge -->
+  <polyline points="200,94 148,170 182,170" stroke="#FBFAF4" stroke-width="3" fill="none" stroke-linejoin="round"/>
+
+  <!-- Ziggy Stardust Astral Forehead Sphere (centered high on forehead) -->
+  <circle cx="200" cy="116" r="13" fill="#FE0000" stroke="#080808" stroke-width="5"/>
+  <circle cx="200" cy="116" r="5" fill="#FBFAF4"/>
+
+  <!-- Eyebrows & Closed Glam Eyes (Aladdin Sane cover pose) -->
+  <!-- Left eye (viewer's left, crossed by the lightning bolt) -->
+  <path d="M140 166 C154 158 174 160 186 168" stroke="#080808" stroke-width="6" stroke-linecap="round"/>
+  <path d="M144 182 C156 190 172 190 184 182" stroke="#080808" stroke-width="6" stroke-linecap="round"/>
+  <polygon points="148,184 154,196 160,186" fill="#080808"/>
+  <polygon points="162,186 166,198 172,186" fill="#080808"/>
+  <polygon points="174,184 180,195 184,182" fill="#080808"/>
+
+  <!-- Right eye (viewer's right, closed with heavy glam lashes) -->
+  <path d="M214 168 C226 160 246 158 260 166" stroke="#080808" stroke-width="6" stroke-linecap="round"/>
+  <path d="M216 182 C228 190 244 190 256 182" stroke="#080808" stroke-width="6" stroke-linecap="round"/>
+  <polygon points="216,182 220,195 226,184" fill="#080808"/>
+  <polygon points="228,186 234,198 238,186" fill="#080808"/>
+  <polygon points="240,186 246,196 252,184" fill="#080808"/>
+
+  <!-- Nose (sharp angular bridge & nostrils) -->
+  <path d="M198 168 L192 214 L200 220 L208 214" stroke="#080808" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+  <polygon points="192,214 200,222 200,174" fill="#080808"/>
+
+  <!-- Glam Lips (Crimson Red with center parting line) -->
+  <path d="M174 242 C184 236 194 238 200 241 C206 238 216 236 226 242 C218 254 208 258 200 258 C192 258 182 254 174 242 Z" fill="#FE0000" stroke="#080808" stroke-width="5" stroke-linejoin="round"/>
+  <path d="M176 243 C190 246 210 246 224 243" stroke="#080808" stroke-width="4" stroke-linecap="round"/>
+
+  <!-- Chin dimple / shadow -->
+  <path d="M192 268 Q200 273 208 268" stroke="#080808" stroke-width="4" stroke-linecap="round"/>
+
+  <!-- ICONIC SPIKY ZIGGY STARDUST FLAMING RED MULLET CROWN & BANGS -->
+  <path d="M114 196
+           L102 156 L122 148
+           L104 108 L136 110
+           L124 64 L162 82
+           L164 34 L194 68
+           L208 24 L224 68
+           L256 38 L252 84
+           L288 68 L270 112
+           L300 114 L280 150
+           L298 162 L286 196
+           L272 152 L262 126
+           L248 106 L236 124
+           L224 96 L208 118
+           L198 92 L182 118
+           L168 96 L154 126
+           L140 112 L128 152 Z"
+        fill="#FE0000" stroke="#080808" stroke-width="8" stroke-linejoin="round"/>
+  <!-- Hair texture spikes & comic ink strands -->
+  <path d="M164 56 L180 96 M208 46 L204 92 M248 56 L230 96 M136 82 L160 108 M274 84 L246 110" stroke="#080808" stroke-width="5" stroke-linecap="round"/>
 </svg>

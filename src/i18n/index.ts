@@ -7,7 +7,6 @@ import {
 import { getLocalizedCases } from '../data/cases.ts';
 import { getArsenalCounter, getLocalizedArsenal } from '../data/arsenal.ts';
 import { getLocalizedArchive } from '../data/archive.ts';
-import { getLocalizedStickers } from '../data/stickers.ts';
 import { getLocalizedCareer, getLocalizedEducation } from '../data/career.ts';
 import { renderRansomTitleDom } from '../components/p5/ransom.ts';
 
@@ -253,13 +252,6 @@ export function applyDomTranslations(locale: Locale): void {
       const label = linkEl.querySelector<HTMLElement>('[data-arcana-link-label]');
       if (label) label.textContent = linkData.label;
     });
-  });
-
-  getLocalizedStickers(validLocale).forEach((sticker) => {
-    const link = document.getElementById(`sticker-${sticker.id}`);
-    if (!link) return;
-    link.setAttribute('aria-label', `${dict.stickers.downloadAria} ${sticker.alt}`);
-    link.querySelector('img')?.setAttribute('alt', sticker.alt);
   });
 
   getLocalizedArchive(validLocale).forEach((entry) => {
