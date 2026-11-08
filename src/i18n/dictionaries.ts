@@ -298,7 +298,7 @@ export const ptBrDict: TranslationSchema = {
     whoamiDescription:
       'Terminal interativo de Bruno Dinis (Brinu): trajetória, stack e projetos.',
     stickersTitle: 'Stickers do Brinu // Bruno Dinis',
-    stickersDescription: 'Doze stickers originais do Brinu em SVG, para baixar e usar.',
+    stickersDescription: 'Stickers originais do Brinu em SVG, para baixar e usar.',
   },
   preloader: {
     sceneTag: '[ 1996 // ATO 01 ]',
@@ -488,7 +488,7 @@ export const ptBrDict: TranslationSchema = {
   },
   stickers: {
     sectionAria: 'Biblioteca de stickers do Brinu',
-    actTag: '[ EXTRA // STICKERS • 12 ARQUIVOS SVG ]',
+    actTag: '[ EXTRA // STICKERS • ARQUIVOS SVG ]',
     title: 'STICKERS',
     hint: 'CLIQUE NUM STICKER PARA BAIXAR O SVG',
     downloadLabel: 'BAIXAR SVG',
@@ -594,7 +594,7 @@ export const enDict = {
     whoamiDescription:
       'Interactive terminal of Bruno Dinis (Brinu): career, stack and projects.',
     stickersTitle: 'Brinu stickers // Bruno Dinis',
-    stickersDescription: 'Twelve original Brinu stickers in SVG, free to download and use.',
+    stickersDescription: 'Original Brinu stickers in SVG, free to download and use.',
   },
   preloader: {
     sceneTag: '[ 1996 // ACT 01 ]',
@@ -784,7 +784,7 @@ export const enDict = {
   },
   stickers: {
     sectionAria: 'Brinu sticker library',
-    actTag: '[ BONUS // STICKERS • 12 SVG FILES ]',
+    actTag: '[ BONUS // STICKERS • SVG FILES ]',
     title: 'STICKERS',
     hint: 'CLICK A STICKER TO DOWNLOAD THE SVG',
     downloadLabel: 'DOWNLOAD SVG',

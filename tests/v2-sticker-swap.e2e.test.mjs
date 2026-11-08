@@ -104,7 +104,7 @@ const BRAND = ['#FE0000', '#080808', '#FBFAF4'];
 test('C3: each sticker keeps at least 90% of opaque pixels in the brand palette', async () => {
   const { context, page } = await openHome('pt-br', { reducedMotion: 'reduce' });
   try {
-    for (let i = 1; i <= 12; i++) {
+    for (let i = 1; i <= FILES.length; i++) {
       const n = String(i).padStart(2, '0');
       const stats = await page.evaluate(async ({ url, brand }) => {
         const img = new Image();
@@ -257,7 +257,7 @@ test('C7: a tap shows a sticker for 1.2 s without scrolling and triple tap still
   }
 });
 
-test('C8: stickers are requested only after load and all twelve are requested', async () => {
+test('C8: stickers are requested only after load and all stickers are requested', async () => {
   const { context, page } = await openHome('pt-br');
   try {
     await page.waitForTimeout(1500);
@@ -266,7 +266,7 @@ test('C8: stickers are requested only after load and all twelve are requested', 
       const reqs = performance.getEntriesByType('resource').filter((e) => /\/stickers\/sticker-\d+\.svg$/.test(e.name));
       return { loadStart: nav.loadEventStart, starts: reqs.map((e) => e.startTime), names: reqs.map((e) => new URL(e.name).pathname) };
     });
-    assert.deepEqual([...new Set(info.names)].sort(), [...FILES].sort(), 'all twelve stickers are requested');
+    assert.deepEqual([...new Set(info.names)].sort(), [...FILES].sort(), 'all stickers are requested');
     for (const start of info.starts) assert.ok(start >= info.loadStart, `a sticker was requested at ${start}ms, before load (${info.loadStart}ms)`);
   } finally {
     await context.close();
@@ -414,13 +414,13 @@ const toggleLocale = async (page) => {
   await page.waitForTimeout(600);
 };
 
-test('C11: /stickers renders the twelve stickers in manifest order with localized alt', async () => {
+test('C11: /stickers renders the stickers in manifest order with localized alt', async () => {
   for (const locale of ['pt-br', 'en']) {
     const { context, page } = await openStickers(locale, { reducedMotion: 'reduce' });
     try {
       const expected = getLocalizedStickers(locale);
       const items = await page.locator('[data-stickers-grid] [data-sticker-download]').evaluateAll((els) => els.map((el) => ({ id: el.id, href: el.getAttribute('href'), alt: el.querySelector('img').getAttribute('alt'), loaded: el.querySelector('img').complete })));
-      assert.equal(items.length, 12);
+      assert.equal(items.length, FILES.length);
       assert.deepEqual(items.map((i) => i.id), expected.map((e) => `sticker-${e.id}`));
       assert.deepEqual(items.map((i) => i.href), expected.map((e) => e.file));
       assert.deepEqual(items.map((i) => i.alt), expected.map((e) => e.alt));
@@ -433,7 +433,7 @@ test('C11: /stickers renders the twelve stickers in manifest order with localize
 test('C12: activating a sticker downloads its svg with the same content', async () => {
   const { context, page } = await openStickers('pt-br', { reducedMotion: 'reduce' });
   try {
-    for (const index of Array.from({ length: 12 }, (_, i) => i)) {
+    for (const index of Array.from({ length: FILES.length }, (_, i) => i)) {
       const link = page.locator('[data-stickers-grid] [data-sticker-download]').nth(index);
       await link.scrollIntoViewIfNeeded();
       await page.waitForTimeout(150);
@@ -501,7 +501,7 @@ test('C15: with JavaScript disabled the grid and download links work', async () 
   try {
     await page.goto(`${baseUrl}/stickers`, { waitUntil: 'domcontentloaded' });
     const links = await page.locator('[data-stickers-grid] [data-sticker-download]').evaluateAll((els) => els.map((el) => ({ href: el.getAttribute('href'), download: el.getAttribute('download'), visible: el.getClientRects().length > 0 })));
-    assert.equal(links.length, 12);
+    assert.equal(links.length, FILES.length);
     links.forEach((l, i) => {
       const n = String(i + 1).padStart(2, '0');
       assert.equal(l.href, `/stickers/sticker-${n}.svg`);
