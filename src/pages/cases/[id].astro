@@ -1,0 +1,118 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import P5Panel from "../../components/p5/P5Panel.astro";
+import P5Badge from "../../components/p5/P5Badge.astro";
+import { CASE_VARIANTS } from "../../components/cases/case-variants";
+import { getLocalizedCases } from "../../data/cases";
+import { ptBrDict } from "../../i18n/dictionaries";
+import { caseMeta, casePath, caseStaticPaths, nextCaseId } from "../../utils/case-pages";
+
+export function getStaticPaths() {
+  return caseStaticPaths();
+}
+
+const { id } = Astro.params;
+const project = getLocalizedCases("pt-br").find((entry) => entry.id === id);
+if (!project) throw new Error(`Unknown case: ${id}`);
+
+const v = project.track === 1 ? CASE_VARIANTS.red : CASE_VARIANTS.black;
+const meta = caseMeta(project, ptBrDict.casePage.titleSuffix);
+const nextId = nextCaseId(project.id) ?? project.id;
+---
+
+<BaseLayout title={meta.title} description={meta.description} canonicalPath={casePath(project.id)}>
+  <main id="main-content" tabindex="-1" class="min-h-screen bg-space-base px-4 py-12 sm:px-8 sm:py-16 md:px-12 text-paper-white focus:outline-none">
+    <div class="mx-auto max-w-[70rem]">
+      <span class="mb-4 block font-mono text-xs sm:text-sm font-bold tracking-widest text-bebop-red uppercase" data-i18n="casePage.actTag">
+        {ptBrDict.casePage.actTag}
+      </span>
+
+      <P5Panel
+        as="article"
+        cut="a"
+        id={`case-${project.id}`}
+        data-case-page
+        aria-label={ptBrDict.casePage.sectionAria}
+        data-i18n="casePage.sectionAria"
+        data-i18n-attr="aria-label"
+        class:list={["relative flex flex-col", v.card]}
+      >
+        <div class="relative z-10 p-6 sm:p-10">
+          <div class:list={["mb-4 flex flex-wrap items-center justify-between gap-2 pb-3 font-mono text-xs font-black uppercase", v.head, v.meta]}>
+            <span data-case-reel>[ {project.reelNumber} ] // {project.category}</span>
+            <P5Badge data-case-badge class:list={["px-2.5 py-0.5 text-[10px] sm:text-xs font-black", v.badge]}>
+              {project.badge}
+            </P5Badge>
+          </div>
+
+          <h1
+            data-case-title
+            class:list={["font-display text-[clamp(1.9rem,6vw,4rem)] font-black uppercase leading-tight tracking-tight", v.title]}
+          >
+            {project.title}
+          </h1>
+          <p data-case-subtitle class:list={["font-mono text-xs font-bold uppercase mb-3", v.subtitle]}>{project.subtitle}</p>
+          <p data-case-description class:list={["font-body text-base sm:text-lg leading-relaxed mb-6", v.body]}>{project.description}</p>
+
+          <div class:list={["space-y-4 p-4 mb-6 font-mono text-xs leading-relaxed", v.block]}>
+            <div>
+              <span data-i18n="works.challengeLabel" class:list={["block font-black text-[11px] uppercase tracking-widest mb-1", v.label1]}>
+                {ptBrDict.works.challengeLabel}
+              </span>
+              <p data-case-challenge class="text-xs sm:text-sm text-paper-white">{project.challenge}</p>
+            </div>
+            <div>
+              <span data-i18n="works.solutionLabel" class:list={["block font-black text-[11px] uppercase tracking-widest mb-1", v.label2]}>
+                {ptBrDict.works.solutionLabel}
+              </span>
+              <p data-case-solution class="text-xs sm:text-sm text-paper-white">{project.solution}</p>
+            </div>
+          </div>
+
+          <div class:list={["mb-6 flex items-start gap-2 px-3 py-2 font-mono text-xs font-bold", v.metric]}>
+            <span class="font-black shrink-0" data-i18n="works.metricLabel">{ptBrDict.works.metricLabel}</span>
+            <span data-case-metric>{project.metric}</span>
+          </div>
+
+          <div class="mb-6 flex flex-wrap gap-2 font-mono text-[10px] sm:text-xs uppercase">
+            {project.stack.map((tech) => (
+              <span data-case-stack-item class:list={["px-2.5 py-1 font-bold", v.stack]}>{tech}</span>
+            ))}
+          </div>
+
+          <div class:list={["flex flex-wrap items-center gap-3 pt-4", v.links]}>
+            {project.links.map((link) => (
+              <a
+                href={link.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={link.ariaLabel}
+                data-case-link
+                class:list={["inline-flex items-center gap-2 px-3.5 py-1.5 font-mono text-xs font-black uppercase transition-colors duration-100 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-space-base", v.link]}
+              >
+                <span data-p5-select-poly aria-hidden="true" class="p5-select-poly"></span>
+                <span data-case-link-label class="relative z-10">{link.label}</span>
+                <span aria-hidden="true" class="relative z-10">↗</span>
+              </a>
+            ))}
+          </div>
+        </div>
+      </P5Panel>
+
+      <nav aria-label={ptBrDict.casePage.sectionAria} data-i18n="casePage.sectionAria" data-i18n-attr="aria-label" class="mt-8 flex flex-wrap items-center justify-between gap-4 font-mono text-xs font-black uppercase tracking-wider">
+        <a
+          href={`/#case-${project.id}`}
+          data-case-back
+          data-i18n="casePage.backToWorks"
+          class="border-2 border-paper-white px-4 py-2 text-paper-white hover:bg-paper-white hover:text-space-base focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-bebop-red"
+        >{ptBrDict.casePage.backToWorks}</a>
+        <a
+          href={casePath(nextId)}
+          data-case-next
+          data-i18n="casePage.nextCase"
+          class="border-2 border-bebop-red bg-bebop-red px-4 py-2 text-space-base hover:bg-paper-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-paper-white"
+        >{ptBrDict.casePage.nextCase}</a>
+      </nav>
+    </div>
+  </main>
+</BaseLayout>

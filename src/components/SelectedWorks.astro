@@ -5,50 +5,16 @@ import { ptBrDict } from "../i18n/dictionaries";
 import P5Title from "./p5/P5Title.astro";
 import P5Panel from "./p5/P5Panel.astro";
 import P5Badge from "./p5/P5Badge.astro";
+import { CASE_VARIANTS } from "./cases/case-variants";
 
 const cases = getLocalizedCases("pt-br");
 const archive = getLocalizedArchive("pt-br");
 const track1Cases = cases.filter((c) => c.track === 1);
 const track2Cases = cases.filter((c) => c.track === 2);
 
-const variants = {
-  red: {
-    card: "bg-bebop-red text-space-base border-4 border-space-base shadow-[8px_8px_0_var(--color-space-base)] hover:-translate-x-1 hover:-translate-y-1",
-    head: "border-b-4 border-space-base",
-    meta: "text-space-base",
-    badge: "bg-space-base text-paper-white",
-    title: "text-space-base",
-    subtitle: "text-space-base",
-    body: "text-space-base",
-    block: "border-2 border-space-base bg-space-base text-paper-white",
-    label1: "text-bebop-red",
-    label2: "text-paper-white",
-    metric: "bg-paper-white text-space-base border-2 border-space-base",
-    stack: "border-2 border-space-base bg-paper-white text-space-base",
-    links: "border-t-4 border-space-base",
-    link: "relative overflow-hidden border-2 border-space-base bg-space-base text-paper-white hover:text-space-base focus:text-space-base focus-visible:text-space-base",
-  },
-  black: {
-    card: "bg-space-base text-paper-white border-4 border-space-base shadow-[8px_8px_0_var(--color-bebop-red)] hover:-translate-x-1 hover:-translate-y-1",
-    head: "border-b-4 border-bebop-red",
-    meta: "text-bebop-red",
-    badge: "bg-paper-white text-space-base",
-    title: "text-paper-white",
-    subtitle: "text-bebop-red",
-    body: "text-paper-white",
-    block: "border-2 border-paper-white bg-space-surface-1 text-paper-white",
-    label1: "text-bebop-red",
-    label2: "text-paper-white",
-    metric: "bg-space-surface-1 text-paper-white border-2 border-bebop-red",
-    stack: "border-2 border-paper-white bg-space-base text-paper-white",
-    links: "border-t-4 border-bebop-red",
-    link: "relative overflow-hidden border-2 border-paper-white bg-space-surface-1 text-paper-white hover:text-space-base focus:text-space-base focus-visible:text-space-base",
-  },
-} as const;
-
 const tracks = [
-  { id: 1, cases: track1Cases, v: variants.red },
-  { id: 2, cases: track2Cases, v: variants.black },
+  { id: 1, cases: track1Cases, v: CASE_VARIANTS.red },
+  { id: 2, cases: track2Cases, v: CASE_VARIANTS.black },
 ];
 ---
 

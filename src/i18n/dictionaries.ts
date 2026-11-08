@@ -164,6 +164,14 @@ export interface TranslationSchema {
     metricLabel: string;
     archiveTag: string;
     archiveTitle: string;
+    openCase: string;
+  };
+  casePage: {
+    sectionAria: string;
+    actTag: string;
+    backToWorks: string;
+    nextCase: string;
+    titleSuffix: string;
   };
   about: {
     sectionAria: string;
@@ -454,6 +462,14 @@ export const ptBrDict: TranslationSchema = {
     metricLabel: '[ IMPACTO ]',
     archiveTag: '// ARQUIVO • PROJETOS MENORES COM DEMO',
     archiveTitle: 'ARQUIVO',
+    openCase: 'ABRIR CASE',
+  },
+  casePage: {
+    sectionAria: 'Página do case',
+    actTag: '[ CASE FILE // PÁGINA DO PROJETO ]',
+    backToWorks: '← VOLTAR AOS PROJETOS',
+    nextCase: 'PRÓXIMO CASE →',
+    titleSuffix: 'Bruno Dinis // Brinu',
   },
   about: {
     sectionAria: 'Dossiê Confidant do Operador: Bruno Dinis',
@@ -750,6 +766,14 @@ export const enDict = {
     metricLabel: '[ IMPACT ]',
     archiveTag: '// ARCHIVE • SMALLER PROJECTS WITH DEMOS',
     archiveTitle: 'ARCHIVE',
+    openCase: 'OPEN CASE',
+  },
+  casePage: {
+    sectionAria: 'Case page',
+    actTag: '[ CASE FILE // PROJECT PAGE ]',
+    backToWorks: '← BACK TO PROJECTS',
+    nextCase: 'NEXT CASE →',
+    titleSuffix: 'Bruno Dinis // Brinu',
   },
   about: {
     sectionAria: 'Confidant Operator Dossier: Bruno Dinis',

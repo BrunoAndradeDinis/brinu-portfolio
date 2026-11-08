@@ -13,12 +13,14 @@ interface Props {
   title?: string;
   description?: string;
   ogImage?: string;
+  canonicalPath?: string;
 }
 
 const {
   title = ptBrDict.meta.title,
   description = ptBrDict.meta.description,
   ogImage = "/assets/brinu-avatar.jpg",
+  canonicalPath,
 } = Astro.props;
 
 const personJsonLd = JSON.stringify(buildPersonJsonLd());
@@ -45,6 +47,8 @@ const personJsonLd = JSON.stringify(buildPersonJsonLd());
     <meta property="og:type" content="website" />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
+    {canonicalPath && <link rel="canonical" href={canonicalPath} />}
+    {canonicalPath && <meta property="og:url" content={canonicalPath} />}
     <meta property="og:image" content={ogImage} />
     <meta property="og:locale" content="pt_BR" />
 

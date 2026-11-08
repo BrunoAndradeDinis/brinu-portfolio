@@ -9,6 +9,7 @@ import { getArsenalCounter, getLocalizedArsenal } from '../data/arsenal.ts';
 import { getLocalizedArchive } from '../data/archive.ts';
 import { getLocalizedCareer, getLocalizedEducation } from '../data/career.ts';
 import { renderRansomTitleDom } from '../components/p5/ransom.ts';
+import { caseMeta, parseCaseIdFromPath } from '../utils/case-pages.ts';
 
 export { DICTIONARIES, type Locale, type TranslationSchema };
 
@@ -116,16 +117,27 @@ export function applyDomTranslations(locale: Locale): void {
     typeof window !== 'undefined' &&
     window.location.pathname.includes('/stickers');
 
-  const resolvedTitle = isWhoamiRoute
-    ? dict.meta.whoamiTitle
-    : isStickersRoute
-      ? dict.meta.stickersTitle
-      : dict.meta.title;
-  const resolvedDesc = isWhoamiRoute
-    ? dict.meta.whoamiDescription
-    : isStickersRoute
-      ? dict.meta.stickersDescription
-      : dict.meta.description;
+  const routeCaseId =
+    typeof window !== 'undefined' ? parseCaseIdFromPath(window.location.pathname) : null;
+  const routeCase = routeCaseId
+    ? getLocalizedCases(validLocale).find((entry) => entry.id === routeCaseId)
+    : undefined;
+  const routeCaseMeta = routeCase ? caseMeta(routeCase, dict.casePage.titleSuffix) : null;
+
+  const resolvedTitle = routeCaseMeta
+    ? routeCaseMeta.title
+    : isWhoamiRoute
+      ? dict.meta.whoamiTitle
+      : isStickersRoute
+        ? dict.meta.stickersTitle
+        : dict.meta.title;
+  const resolvedDesc = routeCaseMeta
+    ? routeCaseMeta.description
+    : isWhoamiRoute
+      ? dict.meta.whoamiDescription
+      : isStickersRoute
+        ? dict.meta.stickersDescription
+        : dict.meta.description;
 
   document.title = resolvedTitle;
 
