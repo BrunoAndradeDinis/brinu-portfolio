@@ -34,7 +34,6 @@ export function initArcanaDeck(root: HTMLElement): ArcanaDeckHandle | null {
   let selected = 0;
   let lastDragAt = 0;
   let draggable: Draggable | null = null;
-  let dragStartIndex = 0;
 
   const positions = (): number[] => {
     const center = viewport.clientWidth / 2;
@@ -129,41 +128,40 @@ export function initArcanaDeck(root: HTMLElement): ArcanaDeckHandle | null {
     }
   });
 
-  if (!prefersReducedMotion()) {
-    draggable = Draggable.create(track, {
-      type: 'x',
-      inertia: true,
-      allowContextMenu: true,
-      dragClickables: true,
-      minimumMovement: 6,
-      edgeResistance: 0.85,
-      bounds: undefined,
-      snap: {
-        x: () => {
-          const current = gsap.getProperty(track, 'x') as number;
-          const limited = Math.min(dragStartIndex + 1, Math.max(dragStartIndex - 1, nearestIndex(current)));
-          return positions()[limited];
+  const reduced = prefersReducedMotion();
+  draggable = Draggable.create(track, {
+    type: 'x',
+    inertia: !reduced,
+    allowContextMenu: true,
+    dragClickables: true,
+    minimumMovement: 6,
+    edgeResistance: 0.85,
+    snap: reduced
+      ? undefined
+      : {
+          x: () => positions()[nearestIndex(gsap.getProperty(track, 'x') as number)],
         },
-      },
-      onPress() {
-        gsap.killTweensOf(track);
-        dragStartIndex = selected;
-      },
-      onDrag() {
-        lastDragAt = performance.now();
-      },
-      onThrowUpdate() {
-        lastDragAt = performance.now();
-      },
-      onThrowComplete() {
-        lastDragAt = performance.now();
-        applySelection(nearestIndex(gsap.getProperty(track, 'x') as number));
-      },
-    })[0];
-  }
+    onPress() {
+      gsap.killTweensOf(track);
+    },
+    onDrag() {
+      lastDragAt = performance.now();
+    },
+    onDragEnd() {
+      lastDragAt = performance.now();
+      if (reduced) select(nearestIndex(gsap.getProperty(track, 'x') as number), false);
+    },
+    onThrowUpdate() {
+      lastDragAt = performance.now();
+    },
+    onThrowComplete() {
+      lastDragAt = performance.now();
+      applySelection(nearestIndex(gsap.getProperty(track, 'x') as number));
+    },
+  })[0];
 
-  const onResize = () => select(selected, false);
-  window.addEventListener('resize', onResize);
+  const resizeObserver = new ResizeObserver(() => select(selected, false));
+  resizeObserver.observe(viewport);
 
   applySelection(0);
   select(0, false);

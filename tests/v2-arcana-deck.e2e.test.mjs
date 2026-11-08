@@ -133,7 +133,8 @@ test('C5: card front and back match the works section text', async () => {
             title: [text(card, '[data-arcana-title]'), text(work, '[data-case-title]')],
             challenge: [text(card, '[data-arcana-challenge]'), text(work, '[data-case-challenge]')],
             solution: [text(card, '[data-arcana-solution]'), text(work, '[data-case-solution]')],
-            categoryInReel: text(work, '[data-case-reel]').includes(text(card, '[data-arcana-category]')),
+            categoryInReel: text(work, '[data-case-reel]').endsWith(` // ${text(card, '[data-arcana-category]')}`),
+            linkLabels: [[...card.querySelectorAll('[data-arcana-link-label]')].map((el) => el.textContent.trim()), [...work.querySelectorAll('[data-case-link-label]')].map((el) => el.textContent.trim())],
             stack: [[...card.querySelectorAll('[data-arcana-stack-item]')].map((el) => el.textContent.trim()), [...work.querySelectorAll('[data-case-stack-item]')].map((el) => el.textContent.trim())],
             links: [[...card.querySelectorAll('[data-arcana-link]')].map((el) => el.getAttribute('href')), [...work.querySelectorAll('[data-case-link]')].map((el) => el.getAttribute('href'))],
           };
@@ -141,7 +142,7 @@ test('C5: card front and back match the works section text', async () => {
       });
       assert.equal(data.length, 4);
       for (const c of data) {
-        for (const field of ['title', 'challenge', 'solution', 'stack', 'links']) {
+        for (const field of ['title', 'challenge', 'solution', 'stack', 'links', 'linkLabels']) {
           assert.ok(c[field][0] && c[field][0].length > 0, `${locale} ${c.id} ${field} is empty`);
           assert.deepEqual(c[field][0], c[field][1], `${locale} ${c.id} ${field} differs from the works section`);
         }
@@ -181,6 +182,11 @@ test('C15: with JavaScript disabled the four cases stay readable in the lab', as
     assert.equal(await cards.count(), 4);
     for (let i = 0; i < 4; i++) {
       const card = cards.nth(i);
+      assert.ok((await card.locator('[data-arcana-stack-item]').count()) >= 5, `card ${i + 1} must list its stack`);
+      assert.ok((await card.locator('[data-arcana-link]').count()) >= 1, `card ${i + 1} must list its links`);
+      for (const link of await card.locator('[data-arcana-link], [data-arcana-open]').all()) {
+        assert.equal(await link.isVisible(), true, `card ${i + 1} link must be visible without JS`);
+      }
       for (const sel of ['[data-arcana-code]', '[data-arcana-title]', '[data-arcana-category]', '[data-arcana-challenge]', '[data-arcana-solution]', '[data-arcana-stack-item]']) {
         assert.equal(await card.locator(sel).first().isVisible(), true, `card ${i + 1} ${sel} must be visible without JS`);
         assert.ok((await card.locator(sel).first().textContent()).trim().length > 0, `card ${i + 1} ${sel} must have text`);
@@ -273,8 +279,11 @@ async function dragTrack(page, dx) {
   await page.mouse.down();
   const steps = 12;
   for (let i = 1; i <= steps; i++) await page.mouse.move(x + (dx * i) / steps, y);
+  const xNow = () => page.locator('#lab [data-arcana-track]').evaluate((el) => new DOMMatrixReadOnly(getComputedStyle(el).transform).m41);
   await page.mouse.up();
+  const atRelease = await xNow();
   await page.waitForTimeout(1600);
+  return { atRelease, settled: await xNow() };
 }
 
 test('C6: click, Enter or Space flips the selected card and flips it back', async () => {
@@ -313,6 +322,7 @@ test('C6: click, Enter or Space flips the selected card and flips it back', asyn
 test('C7: arrows and drag change the selected card with snapping', async () => {
   const { context, page } = await openDeck();
   try {
+    assert.ok((await deckState(page)).centerOffset < 3, `the first card must be centered on a fresh load, offset ${(await deckState(page)).centerOffset}`);
     await toggleOf(page, 0).focus();
     await page.keyboard.press('ArrowRight');
     await page.waitForTimeout(700);
@@ -330,10 +340,31 @@ test('C7: arrows and drag change the selected card with snapping', async () => {
     state = await deckState(page);
     assert.equal(state.selectedIndex, 1, 'dragging left by more than half a card selects the next card');
     assert.ok(state.centerOffset < 3, `drag must snap to the card, offset ${state.centerOffset}`);
-    await dragTrack(page, 300);
+    const back = await dragTrack(page, 300);
     state = await deckState(page);
     assert.equal(state.selectedIndex, 0, 'dragging right selects the previous card');
     assert.ok(state.centerOffset < 3, `drag must snap back, offset ${state.centerOffset}`);
+    assert.notEqual(Math.round(back.atRelease), Math.round(back.settled), 'the deck must glide to the snap point after release (inertia)');
+
+    await dragTrack(page, -880);
+    state = await deckState(page);
+    assert.equal(state.selectedIndex, 2, 'a 2.3 card drag lands on the nearest card, not just the next one');
+    assert.ok(state.centerOffset < 3);
+
+    await toggleOf(page, 2).focus();
+    await page.keyboard.press('Home');
+    await page.waitForTimeout(700);
+    assert.equal((await deckState(page)).selectedIndex, 0, 'Home selects the first card');
+    await page.keyboard.press('End');
+    await page.waitForTimeout(700);
+    assert.equal((await deckState(page)).selectedIndex, 3, 'End selects the last card');
+    assert.equal(await page.locator('#lab [data-arcana-next]').isDisabled(), true, 'next is disabled on the last card');
+    await page.locator('#lab [data-arcana-prev]').click();
+    await page.waitForTimeout(700);
+    assert.equal((await deckState(page)).selectedIndex, 2, 'the previous button selects the previous card');
+    await page.locator('#lab [data-arcana-next]').click();
+    await page.waitForTimeout(700);
+    assert.equal((await deckState(page)).selectedIndex, 3, 'the next button selects the next card');
   } finally {
     await context.close();
   }
@@ -369,6 +400,13 @@ test('C9: deck keeps one tab stop and aria-pressed tracks the flip', async () =>
     await page.keyboard.press('Enter');
     await page.waitForTimeout(300);
     assert.deepEqual((await deckState(page)).pressed, ['false', 'true', 'false', 'false']);
+    await page.keyboard.press('Tab');
+    assert.equal(await page.evaluate(() => document.activeElement?.hasAttribute('data-arcana-link') && document.activeElement.closest('[data-arcana-card]').id), 'arcana-uriana', 'Tab from the toggle must reach the first link on the back');
+    await page.keyboard.press('Tab');
+    await page.keyboard.press('Tab');
+    assert.equal(await page.evaluate(() => document.activeElement?.hasAttribute('data-arcana-open') && document.activeElement.closest('[data-arcana-card]').id), 'arcana-uriana', 'Tab must walk the back links in order and end on the open-case link');
+    assert.equal(await page.locator('#lab [data-arcana-prev]').getAttribute('aria-label'), 'Carta anterior');
+    assert.equal(await page.locator('#lab [data-arcana-next]').getAttribute('aria-label'), 'Próxima carta');
     const hiddenFrontFocusable = await page.locator('#lab [data-arcana-card]').nth(1).locator('[data-arcana-front]').evaluate((el) => el.hasAttribute('inert'));
     assert.equal(hiddenFrontFocusable, true, 'the hidden face must be inert');
   } finally {
@@ -425,13 +463,24 @@ test('C11: reduced motion selects and flips instantly', async () => {
     assert.equal(result.flipped, true);
     assert.equal(result.flipDuration, '0s', 'no flip animation');
     assert.equal(result.flipAngle, 180, 'the flip must already be at its end state');
+    await page.evaluate(() => document.querySelector('#lab [data-arcana-card]').querySelector('[data-arcana-toggle]').click());
+    const before = (await deckState(page)).selectedIndex;
+    assert.equal(before, 0);
     const box = await page.locator('#lab [data-arcana-card].is-selected').boundingBox();
-    await page.mouse.move(box.x + 100, box.y + 80);
+    const x = box.x + box.width / 2;
+    const y = box.y + box.height * 0.3;
+    await page.mouse.move(x, y);
     await page.mouse.down();
-    await page.mouse.move(box.x - 300, box.y + 80, { steps: 10 });
+    for (let i = 1; i <= 10; i++) await page.mouse.move(x - (300 * i) / 10, y);
     await page.mouse.up();
+    const trackX = () => page.locator('#lab [data-arcana-track]').evaluate((el) => new DOMMatrixReadOnly(getComputedStyle(el).transform).m41);
+    const atRelease = await trackX();
     await page.waitForTimeout(500);
-    assert.equal((await deckState(page)).selectedIndex, 1, 'there is no inertia drag in reduced motion');
+    const later = await trackX();
+    const state = await deckState(page);
+    assert.equal(state.selectedIndex, 1, 'dragging still changes the card in reduced motion');
+    assert.ok(state.centerOffset < 3, 'the drag snaps to the card');
+    assert.ok(Math.abs(atRelease - later) < 2, `there must be no inertia glide after release (${atRelease} -> ${later})`);
   } finally {
     await context.close();
   }
@@ -465,9 +514,16 @@ test('C17: a short drag returns to the current card', async () => {
   const { context, page } = await openDeck();
   try {
     await dragTrack(page, -100);
-    const state = await deckState(page);
+    let state = await deckState(page);
     assert.equal(state.selectedIndex, 0);
     assert.ok(state.centerOffset < 3, `the deck must return to the card, offset ${state.centerOffset}`);
+    await dragTrack(page, -150);
+    state = await deckState(page);
+    assert.equal(state.selectedIndex, 0, 'a drag of about 40% of a card must return');
+    assert.ok(state.centerOffset < 3);
+    await dragTrack(page, -226);
+    state = await deckState(page);
+    assert.equal(state.selectedIndex, 1, 'a drag of about 60% of a card must advance');
   } finally {
     await context.close();
   }

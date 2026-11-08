@@ -51,6 +51,15 @@ const cases = getLocalizedCases("pt-br");
             aria-label={`${project.arcanaCode}: ${project.title}`}
             class="arcana-card relative flex h-full flex-col bg-bebop-red text-space-base"
           >
+            <button
+              type="button"
+              data-arcana-toggle
+              aria-pressed="false"
+              aria-label={`${project.arcanaCode}: ${project.title}`}
+              class="arcana-toggle absolute right-3 top-3 z-30 hidden h-9 w-9 items-center justify-center border-2 border-paper-white bg-bebop-red font-mono text-base font-black text-space-base hover:bg-paper-white focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-bebop-red"
+            >
+              <span aria-hidden="true">↻</span>
+            </button>
             <div data-arcana-flip class="arcana-flip flex flex-1 flex-col">
             <div data-arcana-front class="arcana-face flex flex-col gap-3 border-b-4 border-space-base bg-bebop-red p-5 sm:p-6">
               <span
@@ -130,15 +139,6 @@ const cases = getLocalizedCases("pt-br");
               </div>
             </div>
             </div>
-            <button
-              type="button"
-              data-arcana-toggle
-              aria-pressed="false"
-              aria-label={`${project.arcanaCode}: ${project.title}`}
-              class="arcana-toggle absolute right-3 top-3 z-30 hidden h-9 w-9 items-center justify-center border-2 border-paper-white bg-bebop-red font-mono text-base font-black text-space-base hover:bg-paper-white focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-bebop-red"
-            >
-              <span aria-hidden="true">↻</span>
-            </button>
           </P5Panel>
         </li>
       ))
