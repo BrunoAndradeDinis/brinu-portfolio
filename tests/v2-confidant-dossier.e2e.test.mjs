@@ -483,3 +483,111 @@ test('C18: scrambled characters are not exposed to assistive technology', async 
     await context.close();
   }
 });
+
+const auditAbout = (page) =>
+  page.evaluate(() => {
+    const parse = (value) => {
+      const m = value.match(/rgba?\(([^)]+)\)/);
+      if (m) {
+        const [r, g, b, a = 1] = m[1].split(/[,/ ]+/).filter(Boolean).map(Number);
+        return { r, g, b, a };
+      }
+      const c = value.match(/color\(srgb ([^)]+)\)/);
+      if (c) {
+        const [r, g, b, a = 1] = c[1].split(/[ /]+/).filter(Boolean).map(Number);
+        return { r: r * 255, g: g * 255, b: b * 255, a };
+      }
+      return { r: 0, g: 0, b: 0, a: 0 };
+    };
+    const lum = ({ r, g, b }) => {
+      const f = (v) => { const s = v / 255; return s <= 0.03928 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4; };
+      return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b);
+    };
+    const backgroundOf = (el) => {
+      for (let n = el; n; n = n.parentElement) {
+        const bg = parse(getComputedStyle(n).backgroundColor);
+        if (bg.a >= 1) return bg;
+      }
+      return { r: 8, g: 8, b: 8, a: 1 };
+    };
+    const results = [];
+    const walker = document.createTreeWalker(document.getElementById('about'), NodeFilter.SHOW_TEXT);
+    for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+      if (!node.textContent.trim()) continue;
+      const el = node.parentElement;
+      const cs = getComputedStyle(el);
+      if (cs.visibility === 'hidden' || cs.display === 'none') continue;
+      const size = parseFloat(cs.fontSize);
+      const bold = Number(cs.fontWeight) >= 700;
+      if (size >= 24 || (bold && size >= 18.66)) continue;
+      const bg = backgroundOf(el);
+      const fg = parse(cs.color);
+      const mixed = { r: fg.r * fg.a + bg.r * (1 - fg.a), g: fg.g * fg.a + bg.g * (1 - fg.a), b: fg.b * fg.a + bg.b * (1 - fg.a) };
+      const l1 = lum(mixed);
+      const l2 = lum(bg);
+      results.push({ text: node.textContent.trim().slice(0, 40), size, contrast: (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05) });
+    }
+    return results;
+  });
+
+test('C16: zero overflow and contrast at least 4.5:1 in the dossier', async () => {
+  for (const locale of ['pt-br', 'en']) {
+    for (const width of [320, 375, 768, 1440]) {
+      const { context, page } = await openAbout(locale, { reducedMotion: 'reduce', viewport: { width, height: 900 } });
+      try {
+        const m = await page.evaluate(() => ({ sw: document.documentElement.scrollWidth, cw: document.documentElement.clientWidth, bw: document.body.scrollWidth, aboutOverflow: [...document.querySelectorAll('#about *')].filter((el) => el.getBoundingClientRect().right > document.documentElement.clientWidth + 1).length }));
+        assert.ok(m.sw <= m.cw && m.bw <= m.cw, `Overflow at ${width}px (${locale}): ${m.sw}/${m.bw} > ${m.cw}`);
+        assert.equal(m.aboutOverflow, 0, `${m.aboutOverflow} dossier elements leave the viewport at ${width}px (${locale})`);
+        const audit = await auditAbout(page);
+        assert.ok(audit.length > 20, 'expected to audit the dossier text');
+        const bad = audit.filter((r) => r.contrast < 4.5);
+        assert.deepEqual(bad.map((r) => `${r.text} (${r.contrast.toFixed(2)})`), [], `low contrast at ${width}px (${locale})`);
+      } finally {
+        await context.close();
+      }
+    }
+  }
+});
+
+test('C17: with JavaScript disabled the dossier is fully readable', async () => {
+  const { getLocalizedCareer, getLocalizedEducation } = await import('../src/data/career.ts');
+  const context = await browser.newContext({ viewport: { width: 1440, height: 900 }, javaScriptEnabled: false });
+  const page = await context.newPage();
+  try {
+    await page.goto(`${baseUrl}/`, { waitUntil: 'domcontentloaded' });
+    for (const sel of ['[data-about-card="bio"]', '[data-about-card="career"]', '[data-about-card="education"]', '[data-about-portrait-frame]']) {
+      assert.equal(await page.locator(`#about ${sel}`).isVisible(), true, `${sel} must be visible without JS`);
+    }
+    const hidden = await page.evaluate(() => [...document.querySelectorAll('#about [data-about-card] *')].filter((el) => {
+      const cs = getComputedStyle(el);
+      return el.textContent.trim() && (cs.visibility === 'hidden' || cs.opacity === '0' || cs.display === 'none');
+    }).length);
+    assert.equal(hidden, 0, 'no text may be hidden without JS');
+    const clip = await page.locator('#about [data-about-card="career"]').evaluate((el) => getComputedStyle(el).clipPath);
+    assert.ok(!clip.includes('-14%'), 'the wipe start polygon must not be applied without JS');
+    for (const entry of getLocalizedCareer('pt-br')) {
+      assert.equal((await page.locator(`#career-${entry.id} [data-career-summary]`).textContent()).trim(), entry.summary);
+      assert.equal((await page.locator(`#career-${entry.id} [data-career-period]`).textContent()).trim(), entry.period);
+    }
+    assert.equal(await page.locator('#about [data-education-entry]').count(), getLocalizedEducation('pt-br').length);
+  } finally {
+    await context.close();
+  }
+});
+
+test('C19: portrait stacks above the cards below 1024px', async () => {
+  for (const width of [768, 1023]) {
+    const { context, page } = await openAbout('pt-br', { reducedMotion: 'reduce', viewport: { width, height: 900 } });
+    try {
+      const r = await page.evaluate(() => {
+        const portrait = document.querySelector('[data-about-portrait-frame]').getBoundingClientRect();
+        const card = document.querySelector('[data-about-card]').getBoundingClientRect();
+        return { portraitBottom: portrait.bottom, cardTop: card.top, sw: document.documentElement.scrollWidth, cw: document.documentElement.clientWidth };
+      });
+      assert.ok(r.portraitBottom <= r.cardTop + 2, `${width}px: portrait bottom ${r.portraitBottom} must sit above the cards (${r.cardTop})`);
+      assert.ok(r.sw <= r.cw, `${width}px overflow`);
+    } finally {
+      await context.close();
+    }
+  }
+});

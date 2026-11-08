@@ -118,7 +118,7 @@ const currentId = CAREER.find((entry) => entry.end === "present")?.id;
                 {entry.id === currentId && (
                   <span data-career-current class="bg-bebop-red px-2 py-0.5 text-space-base" data-i18n="about.currentMarker">{ptBrDict.about.currentMarker}</span>
                 )}
-                <span data-career-period class="text-paper-white/90">{entry.period}</span>
+                <span data-career-period class="text-paper-white">{entry.period}</span>
               </span>
               <span class="font-display text-base sm:text-lg font-black uppercase text-paper-white">
                 <span data-career-role>{entry.role}</span> <span class="text-bebop-red">@</span> <span data-career-org>{entry.org}</span>
@@ -155,7 +155,7 @@ const currentId = CAREER.find((entry) => entry.end === "present")?.id;
               <span class="block font-display text-sm font-black uppercase text-paper-white">{entry.institution}</span>
               <span data-education-course class="block font-body text-sm text-paper-white">{entry.course}</span>
               <span class="mt-1 flex flex-wrap gap-2 font-mono text-[10px] uppercase">
-                <span data-education-period class="text-paper-white/90">{entry.period}</span>
+                <span data-education-period class="text-paper-white">{entry.period}</span>
                 <span data-education-status class="font-black text-bebop-red">{entry.status}</span>
               </span>
             </li>
