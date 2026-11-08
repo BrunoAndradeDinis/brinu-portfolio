@@ -96,6 +96,7 @@ after(async () => {
 });
 
 
+const HERO_BASELINE = {"pt-br": {"ticker": "• DESENVOLVEDOR FRONTEND • MAGALU CLOUD • CREATIVE DEVELOPER • PAI DA HELENA • FRANCA / SP • SEE YOU SPACE COWBOY •", "avatarAria": "Avatar oficial de Bruno Dinis em moldura brutalista. Clique para interagir.", "bubbleDefault": "Pai da Helena & Noivo Apaixonado", "stamp": "PAI DA HELENA", "phrases": ["Pai da Helena & Noivo Apaixonado", "É uma cilada, Brinu!", "Desenvolvedor Frontend & Creative Developer", "Base: Franca / SP • Remoto", "Astro, React & motion de autor"], "manifestoLeftLine1": "8 ANOS DE MAGALU", "manifestoLeftLine2": "DO ATENDIMENTO", "manifestoLeftLine3": "AO FRONT-END", "craftCta": "A ENGENHARIA COMEÇOU", "craftAria": "Explorar projetos selecionados", "manifestoRightLine1": "INTERFACES", "manifestoRightLine2": "COM PERSONALIDADE", "manifestoRightLine3": "E CÓDIGO LIMPO", "socialAria": "Canais Oficiais de Contato e Perfis Sociais"}, "en": {"ticker": "• FRONTEND DEVELOPER • MAGALU CLOUD • CREATIVE DEVELOPER • HELENA'S DAD • FRANCA / SP • SEE YOU SPACE COWBOY •", "avatarAria": "Official avatar of Bruno Dinis in brutalist frame. Click to interact.", "bubbleDefault": "Helena's Dad & Devoted Fiancé", "stamp": "HELENA'S DAD", "phrases": ["Helena's Dad & Devoted Fiancé", "It's a trap, Brinu!", "Frontend Developer & Creative Developer", "Base: Franca / SP • Remote", "Astro, React & signature motion"], "manifestoLeftLine1": "8 YEARS AT MAGALU", "manifestoLeftLine2": "FROM SUPPORT", "manifestoLeftLine3": "TO FRONTEND", "craftCta": "THE CRAFT HAS BEGUN", "craftAria": "Explore selected works: The Craft Has Begun", "manifestoRightLine1": "INTERFACES", "manifestoRightLine2": "WITH PERSONALITY", "manifestoRightLine3": "AND CLEAN CODE", "socialAria": "Official Contact Channels and Social Profiles"}};
 const HERO_KEYS = ['ticker','avatarAria','bubbleDefault','stamp','phrases','manifestoLeftLine1','manifestoLeftLine2','manifestoLeftLine3','craftCta','craftAria','manifestoRightLine1','manifestoRightLine2','manifestoRightLine3','socialAria'];
 
 test('C13: hero avatar renders in a polygonal clip-path rotated at least 3 deg', async () => {
@@ -117,6 +118,14 @@ test('C13: hero avatar renders in a polygonal clip-path rotated at least 3 deg',
       'polygon must not be a plain rectangle',
     );
     assert.ok(frame.angle >= 3, `Expected rotation >= 3deg, got ${frame.angle}`);
+    const img = await page.evaluate(() => {
+      const f = document.querySelector('[data-hero-avatar-frame]').getBoundingClientRect();
+      const i = document.querySelector('[data-hero-avatar-frame] img');
+      const r = i.getBoundingClientRect();
+      return { cx: r.left + r.width / 2, cy: r.top + r.height / 2, fx: f.left + f.width / 2, fy: f.top + f.height / 2, fw: f.width, loaded: i.complete && i.naturalWidth > 0 };
+    });
+    assert.equal(img.loaded, true, 'avatar image must be loaded inside the frame');
+    assert.ok(Math.abs(img.cx - img.fx) < img.fw / 4 && Math.abs(img.cy - img.fy) < img.fw / 4, 'avatar image must sit inside the polygonal frame');
   } finally {
     await context.close();
   }
@@ -131,6 +140,7 @@ test('C14: manifestos render as P5Panel and social links as stacked P5Badge colu
         clip: getComputedStyle(el).clipPath,
       }));
       assert.equal(info.panel, true, `${side} manifesto must be a P5Panel`);
+      assert.equal(await page.locator(`[data-hero-manifesto="${side}"]`).evaluate((el) => el.classList.contains('p5-panel')), true, `${side} manifesto must carry the p5-panel class`);
       assert.match(info.clip, /^polygon\(/, `${side} manifesto needs a polygon clip-path`);
     }
 
@@ -140,10 +150,17 @@ test('C14: manifestos render as P5Panel and social links as stacked P5Badge colu
         return { top: r.top, left: r.left, right: r.right, height: r.height, text: el.textContent.trim() };
       }),
     );
+    assert.equal(await page.locator('#hero [data-hero-socials] [data-p5-badge].p5-badge').count(), 3, 'three badges rendered through P5Badge');
     assert.deepEqual(badges.map((b) => b.text), ['GITHUB', 'LINKEDIN', 'E-MAIL']);
     for (let i = 1; i < badges.length; i++) {
       assert.ok(badges[i].top >= badges[i - 1].top + badges[i - 1].height - 1, 'badges must stack vertically, no side by side');
       assert.ok(Math.abs(badges[i].right - badges[0].right) < 2, 'badges must share one column edge');
+    }
+    await page.setViewportSize({ width: 375, height: 812 });
+    const narrow = await page.locator('#hero [data-hero-socials] [data-p5-badge]').evaluateAll((els) => els.map((el) => ({ top: el.getBoundingClientRect().top, left: el.getBoundingClientRect().left })));
+    for (let i = 1; i < narrow.length; i++) {
+      assert.ok(narrow[i].top > narrow[i - 1].top, 'badges must stay stacked at 375px');
+      assert.ok(Math.abs(narrow[i].left - narrow[0].left) < 2, 'badges must share one column at 375px');
     }
   } finally {
     await context.close();
@@ -155,6 +172,7 @@ test('C16: hero i18n keys and strings are unchanged in pt-br and en', async () =
   for (const locale of ['pt-br', 'en']) {
     const dict = DICTIONARIES[locale].hero;
     assert.deepEqual(Object.keys(dict), HERO_KEYS, `hero keys changed in ${locale}`);
+    assert.deepEqual(dict, HERO_BASELINE[locale], `hero strings changed in ${locale}`);
 
     const { context, page } = await openHome(locale);
     try {
@@ -171,7 +189,7 @@ test('C16: hero i18n keys and strings are unchanged in pt-br and en', async () =
         assert.ok(keysSeen.has(key), `hero.${key} must still be bound in the hero in ${locale}`);
       }
       for (const r of rendered) {
-        const expected = dict[r.key];
+        const expected = HERO_BASELINE[locale][r.key];
         const actual = r.attr ? r.attrValue : r.text;
         assert.equal(actual, expected, `hero.${r.key} differs in ${locale}`);
       }
@@ -199,14 +217,16 @@ test('C17: zero horizontal overflow at 320, 375, 768 and 1440px in pt-br and en 
   const widths = [320, 375, 768, 1440];
   for (const locale of ['pt-br', 'en']) {
     for (const width of widths) {
-      const context = await browser.newContext({ viewport: { width, height: 900 } });
+      const context = await browser.newContext({ viewport: { width, height: width === 320 ? 568 : 900 } });
       const page = await context.newPage();
       try {
         await page.addInitScript((loc) => window.localStorage.setItem('brinu_locale', loc), locale);
         await page.goto(`${baseUrl}/`, { waitUntil: 'domcontentloaded' });
-        await page.waitForFunction(() => performance.getEntriesByName('intro:beat-fly').length > 0, null, { timeout: 8000 });
-        const during = await page.evaluate(() => ({ scrollWidth: document.documentElement.scrollWidth, vw: document.documentElement.clientWidth }));
-        assert.ok(during.scrollWidth <= during.vw, `Overflow during intro at ${width}px (${locale}): ${during.scrollWidth} > ${during.vw}`);
+        for (const beat of ['intro:beat-cut', 'intro:beat-fly', 'intro:beat-settle']) {
+          await page.waitForFunction((b) => performance.getEntriesByName(b).length > 0, beat, { timeout: 8000 });
+          const during = await page.evaluate(() => ({ scrollWidth: document.documentElement.scrollWidth, vw: document.documentElement.clientWidth, bodyScroll: document.body.scrollWidth }));
+          assert.ok(during.scrollWidth <= during.vw && during.bodyScroll <= during.vw, `Overflow at ${beat} at ${width}px (${locale}): ${during.scrollWidth}/${during.bodyScroll} > ${during.vw}`);
+        }
         await page.waitForFunction(() => performance.getEntriesByName('intro:complete').length > 0, null, { timeout: 8000 });
         const metrics = await page.evaluate(() => {
           const vw = document.documentElement.clientWidth;
@@ -280,6 +300,11 @@ test('C10: repeat visit runs short exit within 0.6 s without the film', async ()
     });
     assert.equal(first.mode, 'full');
     assert.match(first.film, /brinu-avatar/, 'first visit keeps the film inside the letters');
+    await fresh.page.waitForFunction(() => performance.getEntriesByName('intro:exit-start').length > 0, null, { timeout: 8000 });
+    assert.equal(await fresh.page.evaluate(() => window.sessionStorage.getItem('brinu_intro_seen')), '1', 'the first visit must set the repeat-visit flag');
+    await fresh.page.waitForFunction(() => performance.getEntriesByName('intro:complete').length > 0, null, { timeout: 8000 });
+    await fresh.page.reload({ waitUntil: 'domcontentloaded' });
+    assert.equal(await fresh.page.evaluate(() => document.getElementById('intro-preloader').dataset.introMode), 'short', 'a reload in the same tab must run the short intro');
   } finally {
     await fresh.context.close();
   }
@@ -296,7 +321,7 @@ test('C10: repeat visit runs short exit within 0.6 s without the film', async ()
     await page.waitForFunction(() => performance.getEntriesByName('intro:complete').length > 0, null, { timeout: 8000 });
     const [exitStart] = await markTime(page, 'intro:exit-start');
     const [complete] = await markTime(page, 'intro:complete');
-    assert.ok(complete - exitStart <= 600, `Short exit took ${complete - exitStart}ms`);
+    assert.ok(complete - exitStart <= 600 && complete - exitStart >= 300, `Short exit took ${complete - exitStart}ms`);
   } finally {
     await context.close();
   }
@@ -359,21 +384,39 @@ const waitForComplete = (page, timeout = 9000) =>
 const samplerInit = () => {
   window.__samples = [];
   window.__shardSeen = false;
+  window.__shardColors = {};
   const loop = () => {
     const red = document.querySelector('[data-intro-cut="red"]');
     const black = document.querySelector('[data-intro-cut="black"]');
     if (red || black) window.__shardSeen = true;
-    const u = document.querySelector('[data-intro-letter="U"]');
-    const hu = document.querySelector('[data-hero-letter="U"]');
-    if (u && hu && document.getElementById('intro-preloader')?.dataset.introState === 'exiting') {
-      const a = u.getBoundingClientRect();
-      const b = hu.getBoundingClientRect();
+    if (red) window.__shardColors.red = getComputedStyle(red).backgroundColor;
+    if (black) window.__shardColors.black = getComputedStyle(black).backgroundColor;
+    const pre = document.getElementById('intro-preloader');
+    if (pre && pre.dataset.introState === 'exiting') {
+      const letters = {};
+      for (const l of ['B', 'R', 'I', 'N', 'U']) {
+        const a = document.querySelector(`[data-intro-letter="${l}"]`);
+        const h = document.querySelector(`[data-hero-letter="${l}"]`);
+        if (!a || !h) continue;
+        const ra = a.getBoundingClientRect();
+        const rh = h.getBoundingClientRect();
+        letters[l] = {
+          opacity: Number(getComputedStyle(a).opacity),
+          dx: Math.abs(ra.left - rh.left), dy: Math.abs(ra.top - rh.top), dw: Math.abs(ra.width - rh.width), dh: Math.abs(ra.height - rh.height),
+        };
+      }
+      const header = document.getElementById('comic-nav-header');
+      const panel = document.querySelector('[data-hero-manifesto="left"]');
+      const ticker = document.querySelector('[data-hero-ticker]');
       window.__samples.push({
         t: performance.now(),
         red: red ? red.getBoundingClientRect().left : null,
         black: black ? black.getBoundingClientRect().left : null,
-        opacity: Number(getComputedStyle(u).opacity),
-        dx: Math.abs(a.left - b.left), dy: Math.abs(a.top - b.top), dw: Math.abs(a.width - b.width), dh: Math.abs(a.height - b.height),
+        preloaderOpacity: Number(getComputedStyle(pre).opacity),
+        letters,
+        headerTop: header ? header.getBoundingClientRect().top : null,
+        panelOpacity: panel ? Number(getComputedStyle(panel).opacity) : null,
+        tickerTop: ticker ? ticker.getBoundingClientRect().top : null,
       });
     }
     requestAnimationFrame(loop);
@@ -394,18 +437,32 @@ test('C4: exit timeline runs cut, letter flight and settle beats', async () => {
     assert.ok(fly - cut >= 120 && fly - cut <= 320, `flight should start ~200ms after the cut, got ${fly - cut}`);
     assert.ok(settle - fly >= 400 && settle - fly <= 650, `settle should start ~500ms after flight, got ${settle - fly}`);
 
-    const { samples, seen } = await page.evaluate(() => ({ samples: window.__samples, seen: window.__shardSeen }));
+    const { samples, seen, colors } = await page.evaluate(() => ({ samples: window.__samples, seen: window.__shardSeen, colors: window.__shardColors }));
     assert.equal(seen, true, 'the red and black polygons must appear');
+    assert.equal(colors.red, 'rgb(254, 0, 0)', 'one polygon must be the brand red');
+    assert.equal(colors.black, 'rgb(8, 8, 8)', 'the other polygon must be the brand black');
     const redXs = samples.filter((s) => s.red !== null).map((s) => s.red);
     const blackXs = samples.filter((s) => s.black !== null).map((s) => s.black);
     assert.ok(redXs.length > 3 && blackXs.length > 3, 'both polygons must be sampled while crossing');
     assert.ok(redXs[redXs.length - 1] > redXs[0], 'red polygon must travel left to right');
     assert.ok(blackXs[blackXs.length - 1] < blackXs[0], 'black polygon must travel right to left');
 
-    const flying = samples.filter((s) => s.opacity > 0.6);
-    const last = flying[flying.length - 1];
-    assert.ok(flying[0].dx + flying[0].dy + flying[0].dw > 8, 'letter must start away from its hero position');
-    assert.ok(last.dx < 4 && last.dy < 4 && last.dw < 4 && last.dh < 4, `letter must land on its hero letter, residual ${JSON.stringify(last)}`);
+    for (const letter of ['B', 'R', 'I', 'N', 'U']) {
+      const seenSamples = samples.map((s) => s.letters[letter]).filter((l) => l && l.opacity > 0.6);
+      assert.ok(seenSamples.length > 3, `${letter} must be sampled in flight`);
+      const first = seenSamples[0];
+      const last = seenSamples[seenSamples.length - 1];
+      assert.ok(first.dx + first.dy + first.dw + first.dh > 4, `${letter} must start away from its hero position`);
+      assert.ok(last.dx < 4 && last.dy < 4 && last.dw < 4 && last.dh < 4, `${letter} must land on its hero letter, residual ${JSON.stringify(last)}`);
+    }
+
+    const headerTops = samples.map((s) => s.headerTop).filter((v) => v !== null);
+    assert.ok(Math.min(...headerTops) < -20, 'the nav must start above the viewport and descend in the settle beat');
+    assert.ok(headerTops[headerTops.length - 1] > -1, 'the nav must end in place');
+    const panelOpacities = samples.map((s) => s.panelOpacity).filter((v) => v !== null);
+    assert.ok(Math.min(...panelOpacities) < 0.5 && panelOpacities[panelOpacities.length - 1] === 1, 'manifestos must fade in during the settle beat');
+    const tickerTops = samples.map((s) => s.tickerTop).filter((v) => v !== null);
+    assert.ok(tickerTops[0] < tickerTops[tickerTops.length - 1] - 20, 'the ticker must drop into place during the settle beat');
   } finally {
     await context.close();
   }
@@ -426,10 +483,16 @@ test('C5: full exit timeline lasts at most 1.4 s', async () => {
 });
 
 test('C6: hero letters end at final layout position with no residual transform', async () => {
-  const { context, page } = await openIntro();
+  const { context, page } = await openIntro({ init: samplerInit });
   try {
     await page.goto(`${baseUrl}/`, { waitUntil: 'domcontentloaded' });
     await waitForComplete(page);
+    const samples = await page.evaluate(() => window.__samples);
+    for (const letter of ['B', 'R', 'I', 'N', 'U']) {
+      const visible = samples.map((s) => s.letters[letter]).filter((l) => l && l.opacity > 0.6);
+      const last = visible[visible.length - 1];
+      assert.ok(last.dx < 4 && last.dy < 4 && last.dw < 4 && last.dh < 4, `${letter} must end beat 2 on its hero slot, residual ${JSON.stringify(last)}`);
+    }
     const letters = await page.evaluate(() =>
       [...document.querySelectorAll('[data-hero-letter]')].map((el) => {
         const cs = getComputedStyle(el);
@@ -534,6 +597,9 @@ test('C11: reduced motion uses a 200 ms crossfade without polygons or letter fli
     const [complete] = await markTime(page, 'intro:complete');
     const duration = complete - exitStart;
     assert.ok(duration >= 150 && duration <= 320, `Crossfade took ${duration}ms`);
+    const opacities = (await page.evaluate(() => window.__samples)).map((s) => s.preloaderOpacity);
+    assert.ok(opacities.some((o) => o > 0.05 && o < 0.95), 'the preloader must fade through intermediate opacities');
+    assert.ok(opacities[opacities.length - 1] < opacities[0], 'the preloader opacity must fall during the crossfade');
     assert.equal(await page.evaluate(() => window.__shardSeen), false, 'no polygons in reduced motion');
     assert.equal((await markTime(page, 'intro:beat-fly')).length, 0, 'no letter flight in reduced motion');
     assert.equal((await markTime(page, 'intro:beat-cut')).length, 0, 'no cut in reduced motion');
@@ -560,6 +626,26 @@ test('C20: locale change during the intro updates hero texts without restarting 
 });
 
 test('C21: resize during letter flight still ends with letters at final positions', async () => {
+  const measure = (pg) =>
+    pg.evaluate(() =>
+      [...document.querySelectorAll('[data-hero-letter]')].map((el) => {
+        const cs = getComputedStyle(el);
+        const r = el.getBoundingClientRect();
+        return { transform: cs.transform, visibility: cs.visibility, left: Math.round(r.left), top: Math.round(r.top), width: Math.round(r.width) };
+      }),
+    );
+
+  const reference = await openIntro({ contextOptions: { viewport: { width: 900, height: 700 } } });
+  let expected;
+  try {
+    await reference.page.goto(`${baseUrl}/`, { waitUntil: 'domcontentloaded' });
+    await waitForComplete(reference.page);
+    await reference.page.waitForTimeout(300);
+    expected = await measure(reference.page);
+  } finally {
+    await reference.context.close();
+  }
+
   const { context, page } = await openIntro();
   try {
     await page.goto(`${baseUrl}/`, { waitUntil: 'domcontentloaded' });
@@ -567,19 +653,32 @@ test('C21: resize during letter flight still ends with letters at final position
     await page.setViewportSize({ width: 900, height: 700 });
     await waitForComplete(page);
     await page.waitForTimeout(300);
-    const letters = await page.evaluate(() =>
-      [...document.querySelectorAll('[data-hero-letter]')].map((el) => {
-        const cs = getComputedStyle(el);
-        const r = el.getBoundingClientRect();
-        return { transform: cs.transform, visibility: cs.visibility, left: r.left, right: r.right, inView: r.left >= 0 && r.right <= innerWidth };
-      }),
-    );
-    for (const l of letters) {
+    const letters = await measure(page);
+    assert.equal(letters.length, 5);
+    letters.forEach((l, i) => {
       assert.ok(l.transform === 'none' || l.transform === 'matrix(1, 0, 0, 1, 0, 0)', `residual transform ${l.transform}`);
       assert.equal(l.visibility, 'visible');
-      assert.equal(l.inView, true);
-    }
-    for (let i = 1; i < letters.length; i++) assert.ok(letters[i].left >= letters[i - 1].right - 1);
+      assert.ok(Math.abs(l.left - expected[i].left) <= 2 && Math.abs(l.top - expected[i].top) <= 2 && Math.abs(l.width - expected[i].width) <= 2,
+        `letter ${i} at ${JSON.stringify(l)} should match the layout of a fresh 900x700 load ${JSON.stringify(expected[i])}`);
+    });
+  } finally {
+    await context.close();
+  }
+});
+
+test('C19: bfcache restore while the preloader is still loading finishes it instead of replaying', async () => {
+  const { context, page } = await openIntro();
+  try {
+    await page.goto(`${baseUrl}/`, { waitUntil: 'domcontentloaded' });
+    await page.waitForTimeout(250);
+    assert.equal(await page.evaluate(() => performance.getEntriesByName('intro:exit-start').length), 0, 'precondition: still loading');
+    await page.evaluate(() => window.dispatchEvent(new PageTransitionEvent('pageshow', { persisted: true })));
+    await page.waitForFunction(() => performance.getEntriesByName('intro:exit-start').length > 0, null, { timeout: 800 });
+    await waitForComplete(page);
+    const [start] = await markTime(page, 'intro:start');
+    const [complete] = await markTime(page, 'intro:complete');
+    assert.ok(complete - start < 1200, `restored page must skip the wait, took ${complete - start}ms`);
+    assert.equal((await markTime(page, 'intro:start')).length, 1);
   } finally {
     await context.close();
   }
