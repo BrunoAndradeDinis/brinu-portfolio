@@ -199,6 +199,8 @@ export interface TranslationSchema {
     indexLabel: string;
     hint: string;
     openCase: string;
+    prevAria: string;
+    nextAria: string;
   };
   contact: {
     sectionAria: string;
@@ -487,6 +489,8 @@ export const ptBrDict: TranslationSchema = {
     indexLabel: 'CARTAS //',
     hint: 'ARRASTE, USE AS SETAS E PRESSIONE ENTER PARA VIRAR A CARTA',
     openCase: 'VER CASE COMPLETO',
+    prevAria: 'Carta anterior',
+    nextAria: 'Próxima carta',
   },
   contact: {
     sectionAria: 'Contato e Envio de Propostas — Bounty Board',
@@ -781,6 +785,8 @@ export const enDict = {
     indexLabel: 'CARDS //',
     hint: 'DRAG, USE THE ARROW KEYS AND PRESS ENTER TO FLIP THE CARD',
     openCase: 'VIEW FULL CASE',
+    prevAria: 'Previous card',
+    nextAria: 'Next card',
   },
   contact: {
     sectionAria: 'Contact and Project Proposals — Bounty Board',

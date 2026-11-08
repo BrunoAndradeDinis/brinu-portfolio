@@ -14,6 +14,30 @@ const cases = getLocalizedCases("pt-br");
     {ptBrDict.lab.hint}
   </p>
 
+  <div data-arcana-controls class="arcana-controls mb-4 hidden items-center justify-end gap-3">
+    <button
+      type="button"
+      data-arcana-prev
+      class="border-2 border-paper-white bg-space-base px-3 py-1.5 font-mono text-sm font-black text-paper-white hover:bg-bebop-red focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-paper-white"
+      aria-label={ptBrDict.lab.prevAria}
+      data-i18n="lab.prevAria"
+      data-i18n-attr="aria-label"
+    >
+      ◀
+    </button>
+    <button
+      type="button"
+      data-arcana-next
+      class="border-2 border-paper-white bg-space-base px-3 py-1.5 font-mono text-sm font-black text-paper-white hover:bg-bebop-red focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-paper-white"
+      aria-label={ptBrDict.lab.nextAria}
+      data-i18n="lab.nextAria"
+      data-i18n-attr="aria-label"
+    >
+      ▶
+    </button>
+  </div>
+
+  <div data-arcana-viewport class="arcana-viewport">
   <ol data-arcana-track role="list" class="grid grid-cols-1 gap-8 md:grid-cols-2 xl:grid-cols-4">
     {
       cases.map((project, index) => (
@@ -25,30 +49,31 @@ const cases = getLocalizedCases("pt-br");
             data-arcana-card
             data-arcana-index={index}
             aria-label={`${project.arcanaCode}: ${project.title}`}
-            class="flex h-full flex-col bg-space-base text-paper-white"
+            class="arcana-card relative flex h-full flex-col bg-bebop-red text-space-base"
           >
-            <div data-arcana-front class="flex flex-col gap-3 border-b-4 border-bebop-red p-5 sm:p-6">
+            <div data-arcana-flip class="arcana-flip flex flex-1 flex-col">
+            <div data-arcana-front class="arcana-face flex flex-col gap-3 border-b-4 border-space-base bg-bebop-red p-5 sm:p-6">
               <span
                 data-arcana-code
-                class="font-mono text-[11px] sm:text-xs font-black tracking-widest text-bebop-red uppercase"
+                class="font-mono text-[11px] sm:text-xs font-black tracking-widest text-space-base uppercase"
               >
                 {project.arcanaCode}
               </span>
               <h3
                 data-arcana-title
-                class="font-display text-2xl sm:text-3xl font-black uppercase leading-[0.95] tracking-tight text-paper-white [overflow-wrap:anywhere]"
+                class="font-display text-2xl sm:text-3xl font-black uppercase leading-[0.95] tracking-tight text-space-base [overflow-wrap:anywhere]"
               >
                 {project.title}
               </h3>
               <p
                 data-arcana-category
-                class="font-mono text-[11px] sm:text-xs font-bold uppercase tracking-wider text-muted-gray"
+                class="font-mono text-[11px] sm:text-xs font-bold uppercase tracking-wider text-space-base"
               >
                 {project.category}
               </p>
             </div>
 
-            <div data-arcana-back class="flex flex-1 flex-col gap-4 bg-paper-white p-5 sm:p-6 text-space-base">
+            <div data-arcana-back class="arcana-face flex flex-1 flex-col gap-4 bg-paper-white p-5 sm:p-6 text-space-base">
               <div>
                 <h4
                   class="mb-1 font-mono text-[10px] sm:text-[11px] font-black uppercase tracking-widest text-space-base"
@@ -104,9 +129,128 @@ const cases = getLocalizedCases("pt-br");
                 </a>
               </div>
             </div>
+            </div>
+            <button
+              type="button"
+              data-arcana-toggle
+              aria-pressed="false"
+              aria-label={`${project.arcanaCode}: ${project.title}`}
+              class="arcana-toggle absolute right-3 top-3 z-30 hidden h-9 w-9 items-center justify-center border-2 border-paper-white bg-bebop-red font-mono text-base font-black text-space-base hover:bg-paper-white focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-bebop-red"
+            >
+              <span aria-hidden="true">↻</span>
+            </button>
           </P5Panel>
         </li>
       ))
     }
   </ol>
+  </div>
 </div>
+
+<style>
+  .arcana-deck.is-enhanced .arcana-viewport {
+    overflow: hidden;
+    padding: 1.5rem 0 2.5rem;
+    touch-action: pan-y;
+  }
+
+  .arcana-deck.is-enhanced [data-arcana-track] {
+    display: flex;
+    width: max-content;
+    gap: 1.5rem;
+    cursor: grab;
+  }
+
+  .arcana-deck.is-enhanced [data-arcana-track]:active {
+    cursor: grabbing;
+  }
+
+  .arcana-deck.is-enhanced [data-arcana-track] > li {
+    flex: 0 0 min(80vw, 22rem);
+  }
+
+  .arcana-deck.is-enhanced .arcana-controls {
+    display: flex;
+  }
+
+  .arcana-deck.is-enhanced .arcana-toggle {
+    display: inline-flex;
+  }
+
+  .arcana-deck.is-enhanced .arcana-card {
+    height: clamp(28rem, 72vh, 34rem);
+    perspective: 1400px;
+    transition: transform 350ms ease, opacity 350ms ease;
+  }
+
+  .arcana-deck.is-enhanced .arcana-card:not(.is-selected) {
+    transform: scale(0.9);
+    opacity: 0.75;
+  }
+
+  .arcana-deck.is-enhanced .arcana-flip {
+    position: relative;
+    display: grid;
+    flex: 1;
+    min-height: 0;
+    transform-style: preserve-3d;
+    transition: transform 600ms cubic-bezier(0.2, 0.9, 0.2, 1);
+  }
+
+  .arcana-deck.is-enhanced .arcana-card.is-flipped .arcana-flip {
+    transform: rotateY(180deg);
+  }
+
+  .arcana-deck.is-enhanced .arcana-face {
+    grid-area: 1 / 1;
+    min-height: 0;
+    overflow-y: auto;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+  }
+
+  .arcana-deck.is-enhanced [data-arcana-front] {
+    justify-content: center;
+    border-bottom: 0;
+  }
+
+  .arcana-deck.is-enhanced [data-arcana-back] {
+    transform: rotateY(180deg);
+  }
+
+  .arcana-deck.is-enhanced [data-arcana-front],
+  .arcana-deck.is-enhanced [data-arcana-back] {
+    visibility: visible;
+  }
+
+  .arcana-deck.is-enhanced [data-arcana-front][inert],
+  .arcana-deck.is-enhanced [data-arcana-back][inert] {
+    visibility: hidden;
+    transition: visibility 0s linear 300ms;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .arcana-deck.is-enhanced,
+    .arcana-deck.is-enhanced * {
+      transition: none !important;
+      animation: none !important;
+    }
+  }
+</style>
+
+<script>
+  import { initArcanaDeck } from "./arcana/deck";
+
+  function boot() {
+    document.querySelectorAll<HTMLElement>("[data-arcana-deck]").forEach((deck) => {
+      initArcanaDeck(deck);
+    });
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", boot);
+  } else {
+    boot();
+  }
+  document.addEventListener("astro:page-load", boot);
+</script>

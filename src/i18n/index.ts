@@ -229,7 +229,9 @@ export function applyDomTranslations(locale: Locale): void {
     setText('[data-arcana-category]', project.category);
     setText('[data-arcana-challenge]', project.challenge);
     setText('[data-arcana-solution]', project.solution);
-    card.setAttribute('aria-label', `${project.arcanaCode}: ${project.title}`);
+    const cardLabel = `${project.arcanaCode}: ${project.title}`;
+    card.setAttribute('aria-label', cardLabel);
+    card.querySelector('[data-arcana-toggle]')?.setAttribute('aria-label', cardLabel);
     card.querySelectorAll<HTMLElement>('[data-arcana-stack-item]').forEach((item, idx) => {
       if (project.stack[idx]) item.textContent = project.stack[idx];
     });
