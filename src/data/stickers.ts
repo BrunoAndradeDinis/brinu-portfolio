@@ -32,7 +32,7 @@ export const STICKERS: readonly StickerDefinition[] = [
   { id: 'merc-mask', file: stickerFile(16), alt: t('Máscara vermelha e preta com duas espadas cruzadas', 'Red and black mask with two crossed swords') },
   { id: 'antifascista', file: stickerFile(17), alt: t('Bandeiras vermelha e preta com o texto ANTIFASCISTA', 'Red and black flags with the text ANTIFASCISTA') },
   { id: 'cafe', file: stickerFile(18), alt: t('Xícara de café fumegante com o texto CAFÉ', 'Steaming coffee cup with the text CAFÉ') },
-  { id: 'lightning', file: stickerFile(19), alt: t('Círculo branco cortado por um raio vermelho', 'White circle split by a red lightning bolt') },
+  { id: 'lightning', file: stickerFile(19), alt: t('Retrato estilo Ziggy Stardust com mullet vermelho e raio no rosto', 'Ziggy Stardust style portrait with red mullet and lightning bolt across the face') },
   { id: 'bowie', file: stickerFile(20), alt: t('Etiqueta preta com um raio e o texto BOWIE', 'Black label with a lightning bolt and the text BOWIE') },
   { id: 'moto', file: stickerFile(21), alt: t('Moto vermelha e preta de perfil', 'Red and black motorcycle in profile') },
   { id: 'racionais', file: stickerFile(22), alt: t('Microfone com o texto RACIONAIS MC\'S', 'Microphone with the text RACIONAIS MC\'S') },

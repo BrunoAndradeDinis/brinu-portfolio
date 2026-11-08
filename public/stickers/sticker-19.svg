@@ -1,94 +1,34 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" fill="none">
-  <!-- Background P5 astral disc / glam rock medallion -->
-  <circle cx="200" cy="204" r="176" fill="#080808"/>
-  <circle cx="200" cy="204" r="162" fill="#080808" stroke="#FE0000" stroke-width="6"/>
-  <!-- Halftone/glam starburst rays in background -->
-  <polygon points="200,42 212,90 188,90" fill="#FE0000"/>
-  <polygon points="62,124 108,146 96,166" fill="#FE0000"/>
-  <polygon points="338,124 292,146 304,166" fill="#FE0000"/>
-  <polygon points="48,228 96,220 96,242" fill="#FE0000"/>
-  <polygon points="352,228 304,220 304,242" fill="#FE0000"/>
-
-  <!-- Back mullet hair locks (behind neck & shoulders) -->
-  <path d="M112 215 L82 265 L108 268 L86 322 L126 310 L115 348 L152 325 L248 325 L285 348 L274 310 L314 322 L292 268 L318 265 L288 215 Z" fill="#FE0000" stroke="#080808" stroke-width="8" stroke-linejoin="round"/>
-
-  <!-- Shoulders & Collarbones (Aladdin Sane bust) -->
-  <path d="M72 356 C96 320 142 312 172 306 L172 268 L228 268 L228 306 C258 312 304 320 328 356 C290 382 246 390 200 390 C154 390 110 382 72 356 Z" fill="#FBFAF4" stroke="#080808" stroke-width="9" stroke-linejoin="round"/>
-  <!-- Neck shadows & dramatic collarbone ink lines -->
-  <path d="M174 274 L182 326 L200 340 L172 306 Z" fill="#080808"/>
-  <path d="M226 274 L218 326 L200 340 L228 306 Z" fill="#080808"/>
-  <path d="M106 344 C138 334 168 338 194 352" stroke="#080808" stroke-width="7" stroke-linecap="round"/>
-  <path d="M294 344 C262 334 232 338 206 352" stroke="#080808" stroke-width="7" stroke-linecap="round"/>
-  <!-- Aladdin Sane collarbone liquid drop / highlight -->
-  <path d="M132 352 C146 350 162 356 170 364 C156 368 138 364 132 352 Z" fill="#FE0000" stroke="#080808" stroke-width="4"/>
-
-  <!-- Ears -->
-  <path d="M122 184 C106 182 102 206 112 224 C118 234 128 234 132 226 Z" fill="#FBFAF4" stroke="#080808" stroke-width="8" stroke-linejoin="round"/>
-  <path d="M278 184 C294 182 298 206 288 224 C282 234 272 234 268 226 Z" fill="#FBFAF4" stroke="#080808" stroke-width="8" stroke-linejoin="round"/>
-
-  <!-- Chiseled Bowie Face Silhouette -->
-  <path d="M126 126 C124 168 126 206 136 232 C146 256 174 282 200 286 C226 282 254 256 264 232 C274 206 276 168 274 126 C266 92 238 78 200 78 C162 78 134 92 126 126 Z" fill="#FBFAF4" stroke="#080808" stroke-width="9" stroke-linejoin="round"/>
-
-  <!-- High Cheekbone Comic Shading (Persona 5 ink style) -->
-  <polygon points="132,208 158,224 146,244 136,228" fill="#080808"/>
-  <polygon points="268,208 242,224 254,244 264,228" fill="#080808"/>
-
-  <!-- THE ICONIC ALADDIN SANE LIGHTNING BOLT (slashing across left-side / right eye & cheek) -->
-  <!-- Secondary dual-tone black offset stripe (representing the blue/black stripe on Aladdin Sane) -->
-  <polygon points="184,92 128,178 164,178 132,258 144,262 182,170 146,170 196,92" fill="#080808"/>
-  <!-- Primary Crimson Red Lightning Bolt -->
-  <polygon points="196,88 138,174 178,174 140,262 216,158 176,158 222,88" fill="#FE0000" stroke="#080808" stroke-width="6" stroke-linejoin="round"/>
-  <!-- Crisp inner white highlight along bolt edge -->
-  <polyline points="200,94 148,170 182,170" stroke="#FBFAF4" stroke-width="3" fill="none" stroke-linejoin="round"/>
-
-  <!-- Ziggy Stardust Astral Forehead Sphere (centered high on forehead) -->
-  <circle cx="200" cy="116" r="13" fill="#FE0000" stroke="#080808" stroke-width="5"/>
-  <circle cx="200" cy="116" r="5" fill="#FBFAF4"/>
-
-  <!-- Eyebrows & Closed Glam Eyes (Aladdin Sane cover pose) -->
-  <!-- Left eye (viewer's left, crossed by the lightning bolt) -->
-  <path d="M140 166 C154 158 174 160 186 168" stroke="#080808" stroke-width="6" stroke-linecap="round"/>
-  <path d="M144 182 C156 190 172 190 184 182" stroke="#080808" stroke-width="6" stroke-linecap="round"/>
-  <polygon points="148,184 154,196 160,186" fill="#080808"/>
-  <polygon points="162,186 166,198 172,186" fill="#080808"/>
-  <polygon points="174,184 180,195 184,182" fill="#080808"/>
-
-  <!-- Right eye (viewer's right, closed with heavy glam lashes) -->
-  <path d="M214 168 C226 160 246 158 260 166" stroke="#080808" stroke-width="6" stroke-linecap="round"/>
-  <path d="M216 182 C228 190 244 190 256 182" stroke="#080808" stroke-width="6" stroke-linecap="round"/>
-  <polygon points="216,182 220,195 226,184" fill="#080808"/>
-  <polygon points="228,186 234,198 238,186" fill="#080808"/>
-  <polygon points="240,186 246,196 252,184" fill="#080808"/>
-
-  <!-- Nose (sharp angular bridge & nostrils) -->
-  <path d="M198 168 L192 214 L200 220 L208 214" stroke="#080808" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
-  <polygon points="192,214 200,222 200,174" fill="#080808"/>
-
-  <!-- Glam Lips (Crimson Red with center parting line) -->
-  <path d="M174 242 C184 236 194 238 200 241 C206 238 216 236 226 242 C218 254 208 258 200 258 C192 258 182 254 174 242 Z" fill="#FE0000" stroke="#080808" stroke-width="5" stroke-linejoin="round"/>
-  <path d="M176 243 C190 246 210 246 224 243" stroke="#080808" stroke-width="4" stroke-linecap="round"/>
-
-  <!-- Chin dimple / shadow -->
-  <path d="M192 268 Q200 273 208 268" stroke="#080808" stroke-width="4" stroke-linecap="round"/>
-
-  <!-- ICONIC SPIKY ZIGGY STARDUST FLAMING RED MULLET CROWN & BANGS -->
-  <path d="M114 196
-           L102 156 L122 148
-           L104 108 L136 110
-           L124 64 L162 82
-           L164 34 L194 68
-           L208 24 L224 68
-           L256 38 L252 84
-           L288 68 L270 112
-           L300 114 L280 150
-           L298 162 L286 196
-           L272 152 L262 126
-           L248 106 L236 124
-           L224 96 L208 118
-           L198 92 L182 118
-           L168 96 L154 126
-           L140 112 L128 152 Z"
-        fill="#FE0000" stroke="#080808" stroke-width="8" stroke-linejoin="round"/>
-  <!-- Hair texture spikes & comic ink strands -->
-  <path d="M164 56 L180 96 M208 46 L204 92 M248 56 L230 96 M136 82 L160 108 M274 84 L246 110" stroke="#080808" stroke-width="5" stroke-linecap="round"/>
+<circle cx="200" cy="202" r="178" fill="#080808"/>
+<circle cx="200" cy="202" r="164" fill="#080808" stroke="#FE0000" stroke-width="5"/>
+<path d="M116 184 C94 212 82 248 74 284 L102 276 C94 304 86 330 80 352 L126 330 L274 330 L320 352 C314 330 306 304 298 276 L326 284 C318 248 306 212 284 184 Z" fill="#FE0000" stroke="#080808" stroke-width="8" stroke-linejoin="round"/>
+<path d="M112 234 L94 296 M128 256 L114 320 M288 234 L306 296 M272 256 L286 320" stroke="#080808" stroke-width="5" stroke-linecap="round"/>
+<path d="M66 352 C96 318 136 310 166 302 L168 248 L232 248 L234 302 C264 310 304 318 334 352 C296 380 250 392 200 392 C150 392 104 380 66 352 Z" fill="#FBFAF4" stroke="#080808" stroke-width="9" stroke-linejoin="round"/>
+<path d="M172 270 L188 334 M228 270 L212 334" stroke="#080808" stroke-width="5" stroke-linecap="round"/>
+<polygon points="186,332 200,350 214,332 200,338" fill="#080808"/>
+<path d="M98 344 C132 332 164 336 190 348" stroke="#080808" stroke-width="7" stroke-linecap="round"/>
+<path d="M302 344 C268 332 236 336 210 348" stroke="#080808" stroke-width="7" stroke-linecap="round"/>
+<polygon points="118,348 168,348 152,358" fill="#080808"/>
+<polygon points="282,348 232,348 248,358" fill="#080808"/>
+<path d="M124 176 C110 176 106 198 114 216 C120 226 128 226 132 218 Z" fill="#FBFAF4" stroke="#080808" stroke-width="8" stroke-linejoin="round"/>
+<path d="M276 176 C290 176 294 198 286 216 C280 226 272 226 268 218 Z" fill="#FBFAF4" stroke="#080808" stroke-width="8" stroke-linejoin="round"/>
+<path d="M124 124 C122 162 126 198 136 226 C146 250 176 278 200 282 C224 278 254 250 264 226 C274 198 278 162 276 124 C270 88 240 72 200 72 C160 72 130 88 124 124 Z" fill="#FBFAF4" stroke="#080808" stroke-width="9" stroke-linejoin="round"/>
+<polygon points="264,202 240,218 254,234" fill="#080808"/>
+<polygon points="134,204 148,214 142,228" fill="#080808"/>
+<polygon points="196,80 138,192 178,192 146,258 220,142 184,142 220,80" fill="#080808"/>
+<polygon points="184,80 128,192 168,192 138,258 208,142 172,142 208,80" fill="#FE0000" stroke="#080808" stroke-width="5.5" stroke-linejoin="round"/>
+<polyline points="207,83 172,142 206,142 142,252" stroke="#FBFAF4" stroke-width="2.5" fill="none" stroke-linejoin="round"/>
+<path d="M142 154 C156 146 174 146 186 154" stroke="#080808" stroke-width="5.5" stroke-linecap="round"/>
+<path d="M144 170 C156 178 174 178 184 170" stroke="#080808" stroke-width="6" stroke-linecap="round"/>
+<path d="M150 174 L147 183 M160 176 L159 186 M170 176 L171 186 M179 173 L182 182" stroke="#080808" stroke-width="4" stroke-linecap="round"/>
+<path d="M214 154 C226 146 244 146 258 154" stroke="#080808" stroke-width="5.5" stroke-linecap="round"/>
+<path d="M216 170 C226 178 244 178 256 170" stroke="#080808" stroke-width="6" stroke-linecap="round"/>
+<path d="M221 173 L218 182 M230 176 L229 186 M240 176 L241 186 M250 174 L253 183" stroke="#080808" stroke-width="4" stroke-linecap="round"/>
+<path d="M200 154 L195 206 C195 211 200 214 205 211" stroke="#080808" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M189 209 C192 213 196 214 200 213 C204 214 208 213 211 209" stroke="#080808" stroke-width="4.5" stroke-linecap="round"/>
+<path d="M174 236 C183 230 193 231 200 234 C207 231 217 230 226 236 C217 247 208 250 200 250 C192 250 183 247 174 236 Z" fill="#FE0000" stroke="#080808" stroke-width="5" stroke-linejoin="round"/>
+<path d="M176 237 C190 240 210 240 224 237" stroke="#080808" stroke-width="4" stroke-linecap="round"/>
+<path d="M193 261 Q200 265 207 261" stroke="#080808" stroke-width="3.5" stroke-linecap="round"/>
+<path d="M122 190 C108 164 104 134 112 104 L98 98 C110 74 128 54 152 42 L144 28 C168 22 188 18 206 16 L200 30 C222 20 246 24 266 36 L256 46 C278 58 292 76 302 98 L288 104 C296 134 292 164 278 190 C276 156 270 124 256 104 C242 88 222 82 200 88 C178 82 158 88 144 104 C130 124 124 156 122 190 Z" fill="#FE0000" stroke="#080808" stroke-width="8" stroke-linejoin="round"/>
+<path d="M156 50 C176 40 202 38 228 44 M134 76 C156 60 184 54 216 58 M266 76 C246 62 224 56 200 58 M120 112 C132 94 152 80 176 74 M280 112 C268 94 248 80 224 74" stroke="#080808" stroke-width="5" stroke-linecap="round"/>
 </svg>
