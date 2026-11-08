@@ -173,6 +173,11 @@ export interface TranslationSchema {
     roleHeading: string;
     bioP1: string;
     bioP2: string;
+    bioLine1: string;
+    bioLine2: string;
+    baseLine: string;
+    rankLabel: string;
+    currentMarker: string;
     portraitAlt: string;
     careerTitle: string;
     educationTitle: string;
@@ -463,6 +468,11 @@ export const ptBrDict: TranslationSchema = {
       'Desenvolvedor frontend no time da Magalu Cloud, construindo com Astro, React e Tailwind. Antes do código, foram 8 anos no ecossistema Magalu entre SAC e helpdesk — onde comecei a automatizar o próprio trabalho com extensões, dashboards e chatbots.',
     bioP2:
       'Fora do expediente, levo direção de arte para a web: interfaces angulares inspiradas em Persona 5 e Cowboy Bebop. Pai da Helena, operando de Franca / SP.',
+    bioLine1: 'Frontend na Magalu Cloud: Astro, React e Tailwind no site institucional.',
+    bioLine2: 'Antes, 8 anos de SAC e helpdesk no ecossistema Magalu, onde aprendi a automatizar o próprio trabalho.',
+    baseLine: 'Franca / SP · Remoto · Pai da Helena',
+    rankLabel: 'RANK',
+    currentMarker: 'ATUAL',
     portraitAlt: 'Retrato ilustrado de Bruno Dinis',
     careerTitle: 'TRAJETÓRIA',
     educationTitle: 'FORMAÇÃO',
@@ -759,6 +769,11 @@ export const enDict = {
       'Frontend developer on the Magalu Cloud team, building with Astro, React and Tailwind. Before code, I spent 8 years in the Magalu ecosystem between customer service and helpdesk — where I started automating my own work with extensions, dashboards and chatbots.',
     bioP2:
       'Off the clock, I bring art direction to the web: angular interfaces inspired by Persona 5 and Cowboy Bebop. Helena\'s dad, based in Franca / SP.',
+    bioLine1: 'Frontend at Magalu Cloud: Astro, React and Tailwind on the corporate website.',
+    bioLine2: 'Before that, 8 years of support and helpdesk across the Magalu ecosystem, where I learned to automate my own work.',
+    baseLine: "Franca / SP · Remote · Helena's dad",
+    rankLabel: 'RANK',
+    currentMarker: 'CURRENT',
     portraitAlt: 'Illustrated portrait of Bruno Dinis',
     careerTitle: 'CAREER',
     educationTitle: 'EDUCATION',
