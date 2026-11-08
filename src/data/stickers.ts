@@ -19,7 +19,7 @@ export const STICKERS: readonly StickerDefinition[] = [
   { id: 'space-cowboy', file: stickerFile(3), alt: t('Selo redondo com o texto SEE YOU SPACE COWBOY', 'Round seal reading SEE YOU SPACE COWBOY') },
   { id: 'avatar-duotone', file: stickerFile(4), alt: t('Retrato de Bruno em duotone vermelho e preto', 'Red and black duotone portrait of Bruno') },
   { id: 'calling-card', file: stickerFile(5), alt: t('Cartão de aviso com o retrato de Bruno e um troféu', "Calling card with Bruno's portrait and a trophy") },
-  { id: 'heart', file: stickerFile(6), alt: t('Coração vermelho com contorno preto', 'Red heart with a black outline') },
+  { id: 'heart', file: stickerFile(6), alt: t('Coração roxo com contorno preto', 'Purple heart with a black outline') },
   { id: 'star', file: stickerFile(7), alt: t('Estrela de oito pontas vermelha e preta', 'Red and black eight-point star') },
   { id: 'mask', file: stickerFile(8), alt: t('Máscara de ladrão fantasma', 'Phantom thief mask') },
   { id: 'cilada', file: stickerFile(9), alt: t('Triângulo de alerta com o texto CILADA!', 'Warning triangle reading CILADA!') },

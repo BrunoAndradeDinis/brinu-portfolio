@@ -99,7 +99,7 @@ after(async () => {
 
 
 
-const BRAND = ['#FE0000', '#080808', '#FBFAF4'];
+const BRAND = ['#FE0000', '#080808', '#FBFAF4', '#7C3AED'];
 
 test('C3: each sticker keeps at least 90% of opaque pixels in the brand palette', async () => {
   const { context, page } = await openHome('pt-br', { reducedMotion: 'reduce' });
