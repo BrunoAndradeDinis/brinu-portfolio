@@ -199,15 +199,22 @@ test('C16: hero i18n keys and strings are unchanged in pt-br and en', async () =
   }
 });
 
-test('C15: hero ticker ends in a non-horizontal diagonal cut', async () => {
+test('C15: hero ticker renders its full bottom black border stripe', async () => {
   const { context, page } = await openHome('pt-br', { reducedMotion: 'reduce' });
   try {
-    const clip = await page.locator('[data-hero-ticker]').evaluate((el) => getComputedStyle(el).clipPath);
-    assert.match(clip, /^polygon\(/, `Expected polygon clip-path, got ${clip}`);
-    const points = clip.replace(/^polygon\(|\)$/g, '').split(',').map((p) => p.trim().split(/\s+/));
-    const bottomYs = points.map((p) => parseFloat(p[1])).filter((y) => y > 50);
-    assert.ok(bottomYs.length >= 2, 'polygon needs at least two bottom points');
-    assert.ok(Math.max(...bottomYs) - Math.min(...bottomYs) > 5, `Expected a slanted bottom edge, got y values ${bottomYs}`);
+    const styles = await page.locator('[data-hero-ticker]').evaluate((el) => {
+      const cs = getComputedStyle(el);
+      return {
+        clipPath: cs.clipPath,
+        borderBottomWidth: cs.borderBottomWidth,
+        borderBottomStyle: cs.borderBottomStyle,
+        borderBottomColor: cs.borderBottomColor,
+      };
+    });
+    assert.equal(styles.clipPath, 'none', `Expected no clip-path cutting the bottom border, got ${styles.clipPath}`);
+    assert.equal(styles.borderBottomWidth, '6px');
+    assert.equal(styles.borderBottomStyle, 'solid');
+    assert.equal(styles.borderBottomColor, 'rgb(8, 8, 8)');
   } finally {
     await context.close();
   }

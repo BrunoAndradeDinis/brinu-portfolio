@@ -7,16 +7,22 @@ import P5Badge from "./p5/P5Badge.astro";
 
 <div
   data-hero-ticker
-  class="group flex h-[4.125rem] w-full items-center overflow-hidden border-t-3 border-b-6 border-space-base bg-bebop-red select-none box-border cursor-default [clip-path:polygon(0%_0%,100%_0%,100%_62%,0%_100%)]"
+  class="group flex h-[4.125rem] w-full items-center overflow-hidden border-t-3 border-b-6 border-space-base bg-bebop-red select-none box-border cursor-default"
   aria-hidden="true"
 >
   <div
     class="inline-flex shrink-0 items-center whitespace-nowrap animate-marquee font-display text-base sm:text-xl lg:text-2xl tracking-wider text-space-base transition-colors duration-300 group-hover:text-paper-white group-hover:[animation-play-state:paused] leading-none will-change-transform"
   >
-    <span class="inline-block shrink-0 whitespace-nowrap pr-12 sm:pr-16" data-i18n="hero.ticker">
+    <span
+      class="inline-block shrink-0 whitespace-nowrap pr-12 sm:pr-16"
+      data-i18n="hero.ticker"
+    >
       {ptBrDict.hero.ticker}
     </span>
-    <span class="inline-block shrink-0 whitespace-nowrap pr-12 sm:pr-16" data-i18n="hero.ticker">
+    <span
+      class="inline-block shrink-0 whitespace-nowrap pr-12 sm:pr-16"
+      data-i18n="hero.ticker"
+    >
       {ptBrDict.hero.ticker}
     </span>
   </div>
@@ -36,16 +42,31 @@ import P5Badge from "./p5/P5Badge.astro";
         class="flex w-full select-none flex-row flex-nowrap items-center justify-between whitespace-nowrap font-display text-[clamp(3rem,15vw,5.5rem)] sm:text-[clamp(4.5rem,13.5vw,7rem)] md:text-[clamp(6.5rem,13.5vw,9.5rem)] lg:text-[clamp(9.5rem,14vw,14rem)] font-black leading-[0.85] tracking-tight text-space-base"
         aria-label="BRINU"
       >
-        <span class="inline-block shrink-0 leading-[0.85]" aria-hidden="true" data-hero-letter="B">B</span>
-        <span class="inline-block shrink-0 leading-[0.85]" aria-hidden="true" data-hero-letter="R">R</span>
+        <span
+          class="inline-block shrink-0 leading-[0.85]"
+          aria-hidden="true"
+          data-hero-letter="B">B</span
+        >
+        <span
+          class="inline-block shrink-0 leading-[0.85]"
+          aria-hidden="true"
+          data-hero-letter="R">R</span
+        >
         <span
           class="inline-block shrink-0 leading-[0.85] mx-3.5 sm:mx-7 md:mx-11 lg:mx-16 text-center"
           aria-hidden="true"
-          data-hero-letter="I"
-          >I</span
+          data-hero-letter="I">I</span
         >
-        <span class="inline-block shrink-0 leading-[0.85]" aria-hidden="true" data-hero-letter="N">N</span>
-        <span class="inline-block shrink-0 leading-[0.85]" aria-hidden="true" data-hero-letter="U">U</span>
+        <span
+          class="inline-block shrink-0 leading-[0.85]"
+          aria-hidden="true"
+          data-hero-letter="N">N</span
+        >
+        <span
+          class="inline-block shrink-0 leading-[0.85]"
+          aria-hidden="true"
+          data-hero-letter="U">U</span
+        >
       </h1>
 
       <div
@@ -72,11 +93,14 @@ import P5Badge from "./p5/P5Badge.astro";
             <div
               class="relative border-2 border-space-base bg-paper-white px-2.5 py-1 sm:px-3.5 sm:py-1.5 font-display text-[9px] sm:text-xs md:text-sm font-black uppercase tracking-tight text-space-base shadow-[0_3px_0_var(--color-space-base)] sm:shadow-[0_4px_0_var(--color-space-base)] whitespace-nowrap"
             >
-              <span id="avatar-comic-text" data-i18n="hero.bubbleDefault">{ptBrDict.hero.bubbleDefault}</span>
+              <span id="avatar-comic-text" data-i18n="hero.bubbleDefault"
+                >{ptBrDict.hero.bubbleDefault}</span
+              >
               <div
                 class="absolute -bottom-1.5 sm:-bottom-2 left-1/2 -translate-x-1/2 w-0 h-0 border-l-[6px] sm:border-l-[8px] border-l-transparent border-r-[6px] sm:border-r-[8px] border-r-transparent border-t-[6px] sm:border-t-[8px] border-t-space-base"
                 aria-hidden="true"
-              ></div>
+              >
+              </div>
             </div>
           </div>
 
@@ -97,11 +121,13 @@ import P5Badge from "./p5/P5Badge.astro";
               <div
                 class="pointer-events-none absolute inset-0 bg-gradient-to-t from-space-base/30 via-transparent to-transparent mix-blend-multiply"
                 aria-hidden="true"
-              ></div>
+              >
+              </div>
               <div
                 class="pointer-events-none absolute inset-0 bg-[radial-gradient(#080808_1px,transparent_1px)] [background-size:6px_6px] opacity-10 mix-blend-overlay"
                 aria-hidden="true"
-              ></div>
+              >
+              </div>
             </div>
           </div>
 
@@ -112,13 +138,17 @@ import P5Badge from "./p5/P5Badge.astro";
               id="hero-stamp-badge"
               class="inline-flex items-center gap-1.5 -rotate-3 border-2 md:border-[0.25rem] border-space-base bg-paper-white px-2 sm:px-3 md:px-4 py-0.5 sm:py-1 font-spray text-[10px] sm:text-xs md:text-sm lg:text-base font-bold whitespace-nowrap text-space-base shadow-[0_3px_0_var(--color-space-base)] transition-all duration-200 group-hover:bg-space-base group-hover:text-paper-white"
             >
-              <span class="tracking-wider" data-i18n="hero.stamp">{ptBrDict.hero.stamp}</span>
+              <span class="tracking-wider" data-i18n="hero.stamp"
+                >{ptBrDict.hero.stamp}</span
+              >
               <svg
                 class="size-3 sm:size-3.5 md:size-4 shrink-0 fill-bebop-red stroke-space-base stroke-2 transition-transform duration-300 group-hover:scale-125"
                 aria-hidden="true"
                 viewBox="0 0 24 24"
               >
-                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+                <path
+                  d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
+                ></path>
               </svg>
             </span>
           </div>
@@ -138,9 +168,15 @@ import P5Badge from "./p5/P5Badge.astro";
         <p
           class="mb-2 sm:mb-4 font-body text-xs sm:text-base md:text-lg lg:text-2xl font-black leading-snug tracking-tight text-paper-white uppercase"
         >
-          <span data-i18n="hero.manifestoLeftLine1">{ptBrDict.hero.manifestoLeftLine1}</span><br />
-          <span data-i18n="hero.manifestoLeftLine2">{ptBrDict.hero.manifestoLeftLine2}</span><br />
-          <span data-i18n="hero.manifestoLeftLine3">{ptBrDict.hero.manifestoLeftLine3}</span>
+          <span data-i18n="hero.manifestoLeftLine1"
+            >{ptBrDict.hero.manifestoLeftLine1}</span
+          ><br />
+          <span data-i18n="hero.manifestoLeftLine2"
+            >{ptBrDict.hero.manifestoLeftLine2}</span
+          ><br />
+          <span data-i18n="hero.manifestoLeftLine3"
+            >{ptBrDict.hero.manifestoLeftLine3}</span
+          >
         </p>
         <a
           href="#works"
@@ -153,15 +189,28 @@ import P5Badge from "./p5/P5Badge.astro";
             class="inline-flex h-5 w-5 sm:h-6 sm:w-6 items-center justify-center bg-bebop-red text-space-base transition-transform duration-200 group-hover/craft:translate-y-0.5"
             aria-hidden="true"
           >
-            <svg class="size-3 sm:size-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+            <svg
+              class="size-3 sm:size-3.5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              stroke-width="2.5"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
             </svg>
           </span>
-          <span class="font-black" data-i18n="hero.craftCta">{ptBrDict.hero.craftCta}</span>
+          <span class="font-black" data-i18n="hero.craftCta"
+            >{ptBrDict.hero.craftCta}</span
+          >
         </a>
       </P5Panel>
 
-      <div class="flex flex-col items-start sm:items-end gap-4 max-w-full sm:max-w-[50%] lg:max-w-md shrink-0">
+      <div
+        class="flex flex-col items-start sm:items-end gap-4 max-w-full sm:max-w-[50%] lg:max-w-md shrink-0"
+      >
         <P5Panel
           as="div"
           cut="b"
@@ -171,9 +220,15 @@ import P5Badge from "./p5/P5Badge.astro";
           <p
             class="font-body text-xs sm:text-base md:text-lg lg:text-2xl font-black leading-snug tracking-tight text-space-base text-left sm:text-right uppercase"
           >
-            <span data-i18n="hero.manifestoRightLine1">{ptBrDict.hero.manifestoRightLine1}</span><br />
-            <span data-i18n="hero.manifestoRightLine2">{ptBrDict.hero.manifestoRightLine2}</span><br />
-            <span data-i18n="hero.manifestoRightLine3">{ptBrDict.hero.manifestoRightLine3}</span>
+            <span data-i18n="hero.manifestoRightLine1"
+              >{ptBrDict.hero.manifestoRightLine1}</span
+            ><br />
+            <span data-i18n="hero.manifestoRightLine2"
+              >{ptBrDict.hero.manifestoRightLine2}</span
+            ><br />
+            <span data-i18n="hero.manifestoRightLine3"
+              >{ptBrDict.hero.manifestoRightLine3}</span
+            >
           </p>
         </P5Panel>
         <div
@@ -185,25 +240,38 @@ import P5Badge from "./p5/P5Badge.astro";
           data-i18n-attr="aria-label"
         >
           <a
-            href={PROFILE.github.url} target="_blank" rel="noopener noreferrer"
+            href={PROFILE.github.url}
+            target="_blank"
+            rel="noopener noreferrer"
             class="group/badge focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-space-base"
             aria-label={`GitHub (${PROFILE.github.handle})`}
           >
-            <P5Badge class="inline-block bg-space-base px-3 py-1.5 sm:px-4 sm:py-2 font-mono text-[10px] sm:text-xs lg:text-sm font-bold text-paper-white transition-colors duration-150 group-hover/badge:bg-paper-white group-hover/badge:text-space-base">GITHUB</P5Badge>
+            <P5Badge
+              class="inline-block bg-space-base px-3 py-1.5 sm:px-4 sm:py-2 font-mono text-[10px] sm:text-xs lg:text-sm font-bold text-paper-white transition-colors duration-150 group-hover/badge:bg-paper-white group-hover/badge:text-space-base"
+              >GITHUB</P5Badge
+            >
           </a>
           <a
-            href={PROFILE.linkedin.url} target="_blank" rel="noopener noreferrer"
+            href={PROFILE.linkedin.url}
+            target="_blank"
+            rel="noopener noreferrer"
             class="group/badge focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-space-base"
             aria-label={`LinkedIn (${PROFILE.linkedin.handle})`}
           >
-            <P5Badge class="inline-block bg-space-base px-3 py-1.5 sm:px-4 sm:py-2 font-mono text-[10px] sm:text-xs lg:text-sm font-bold text-paper-white transition-colors duration-150 group-hover/badge:bg-paper-white group-hover/badge:text-space-base">LINKEDIN</P5Badge>
+            <P5Badge
+              class="inline-block bg-space-base px-3 py-1.5 sm:px-4 sm:py-2 font-mono text-[10px] sm:text-xs lg:text-sm font-bold text-paper-white transition-colors duration-150 group-hover/badge:bg-paper-white group-hover/badge:text-space-base"
+              >LINKEDIN</P5Badge
+            >
           </a>
           <a
             href={`mailto:${PROFILE.email}`}
             class="group/badge focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-space-base"
             aria-label={`E-mail (${PROFILE.email})`}
           >
-            <P5Badge class="inline-block bg-space-base px-3 py-1.5 sm:px-4 sm:py-2 font-mono text-[10px] sm:text-xs lg:text-sm font-bold text-paper-white transition-colors duration-150 group-hover/badge:bg-paper-white group-hover/badge:text-space-base">E-MAIL</P5Badge>
+            <P5Badge
+              class="inline-block bg-space-base px-3 py-1.5 sm:px-4 sm:py-2 font-mono text-[10px] sm:text-xs lg:text-sm font-bold text-paper-white transition-colors duration-150 group-hover/badge:bg-paper-white group-hover/badge:text-space-base"
+              >E-MAIL</P5Badge
+            >
           </a>
         </div>
       </div>
@@ -221,7 +289,13 @@ import P5Badge from "./p5/P5Badge.astro";
     const comicText = document.getElementById("avatar-comic-text");
     const stampBadge = document.getElementById("hero-stamp-badge");
 
-    if (!avatarBadge || !comicBubble || !comicText || avatarBadge.dataset.bound === "true") return;
+    if (
+      !avatarBadge ||
+      !comicBubble ||
+      !comicText ||
+      avatarBadge.dataset.bound === "true"
+    )
+      return;
     avatarBadge.dataset.bound = "true";
 
     let phraseIndex = 0;
@@ -261,7 +335,9 @@ import P5Badge from "./p5/P5Badge.astro";
   }
 
   function setupHeroScrollTransitions() {
-    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const prefersReducedMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
     if (prefersReducedMotion) return;
 
     const heroSection = document.getElementById("hero");
@@ -273,8 +349,12 @@ import P5Badge from "./p5/P5Badge.astro";
     const letterN = heroSection.querySelector('[data-hero-letter="N"]');
     const letterU = heroSection.querySelector('[data-hero-letter="U"]');
     const avatar = heroSection.querySelector("#hero-avatar-badge");
-    const manifestoLeft = heroSection.querySelector('[data-hero-manifesto="left"]');
-    const manifestoRight = heroSection.querySelector('[data-hero-manifesto="right"]');
+    const manifestoLeft = heroSection.querySelector(
+      '[data-hero-manifesto="left"]',
+    );
+    const manifestoRight = heroSection.querySelector(
+      '[data-hero-manifesto="right"]',
+    );
 
     const heroExitTl = gsap.timeline({
       scrollTrigger: {
@@ -295,7 +375,7 @@ import P5Badge from "./p5/P5Badge.astro";
           ease: "power2.inOut",
           force3D: true,
         },
-        0
+        0,
       );
     }
 
@@ -308,7 +388,7 @@ import P5Badge from "./p5/P5Badge.astro";
           ease: "power2.inOut",
           force3D: true,
         },
-        0
+        0,
       );
     }
 
@@ -321,7 +401,7 @@ import P5Badge from "./p5/P5Badge.astro";
           ease: "power2.inOut",
           force3D: true,
         },
-        0
+        0,
       );
 
       heroExitTl.to(
@@ -333,7 +413,7 @@ import P5Badge from "./p5/P5Badge.astro";
           ease: "power2.inOut",
           force3D: true,
         },
-        0
+        0,
       );
     }
 
@@ -346,7 +426,7 @@ import P5Badge from "./p5/P5Badge.astro";
           ease: "power1.inOut",
           force3D: true,
         },
-        0
+        0,
       );
     }
 
@@ -359,7 +439,7 @@ import P5Badge from "./p5/P5Badge.astro";
           ease: "power1.inOut",
           force3D: true,
         },
-        0
+        0,
       );
     }
   }
