@@ -194,6 +194,8 @@ import { ptBrDict } from "../i18n/dictionaries";
 
     logo.addEventListener("click", (e) => {
       e.preventDefault();
+      const wasTouch = logo.dataset.pointerType === "touch";
+      delete logo.dataset.pointerType;
 
       const isMenuOpen = cockpitBtn?.getAttribute("aria-expanded") === "true";
       if (isMenuOpen) {
@@ -213,7 +215,7 @@ import { ptBrDict } from "../i18n/dictionaries";
         return;
       }
 
-      if (logo.dataset.pointerType !== "touch") {
+      if (!wasTouch) {
         window.scrollTo({ top: 0, behavior: "smooth" });
       }
 

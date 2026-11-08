@@ -123,7 +123,7 @@ test('C3: each sticker keeps at least 90% of opaque pixels in the brand palette'
         for (let p = 0; p < data.length; p += 4) {
           if (data[p + 3] < 128) continue;
           opaque++;
-          if (palette.some((c) => Math.hypot(data[p] - c[0], data[p + 1] - c[1], data[p + 2] - c[2]) <= 60)) inPalette++;
+          if (palette.some((c) => Math.hypot(data[p] - c[0], data[p + 1] - c[1], data[p + 2] - c[2]) <= 30)) inPalette++;
         }
         return { opaque, share: inPalette / opaque };
       }, { url: `${baseUrl}/stickers/sticker-${n}.svg`, brand: BRAND });
@@ -136,7 +136,7 @@ test('C3: each sticker keeps at least 90% of opaque pixels in the brand palette'
 });
 
 import { STICKERS } from '../src/data/stickers.ts';
-import { ptBrDict } from '../src/i18n/dictionaries.ts';
+import { ptBrDict, enDict as DICTIONARIES_EN } from '../src/i18n/dictionaries.ts';
 
 const FILES = STICKERS.map((s) => s.file);
 const BADGE = '#comic-nav-logo [data-nav-avatar]';
@@ -164,7 +164,7 @@ test('C4: pointer enter swaps the avatar for a different library sticker each ti
   const { context, page } = await openSwap();
   try {
     const seen = [];
-    for (let i = 0; i < 8; i++) {
+    for (let i = 0; i < 10; i++) {
       await page.hover(BADGE);
       await page.waitForTimeout(80);
       const state = await stickerState(page);
@@ -177,7 +177,7 @@ test('C4: pointer enter swaps the avatar for a different library sticker each ti
       await page.waitForTimeout(60);
     }
     for (let i = 1; i < seen.length; i++) assert.notEqual(seen[i], seen[i - 1], `sticker ${i} repeated the previous one`);
-    assert.ok(new Set(seen).size >= 3, `expected variety, saw ${new Set(seen).size} different stickers`);
+    assert.ok(new Set(seen).size >= 4, `expected variety, saw ${new Set(seen).size} different stickers`);
   } finally {
     await context.close();
   }
@@ -235,16 +235,23 @@ test('C7: a tap shows a sticker for 1.2 s without scrolling and triple tap still
     await page.touchscreen.tap(x, y);
     await page.waitForTimeout(250);
     assert.equal((await stickerState(page)).active, true, 'a tap shows a sticker');
+    await page.waitForTimeout(750);
+    assert.equal((await stickerState(page)).active, true, 'the sticker is still shown about 1 s after the tap');
     assert.equal(await page.evaluate(() => scrollY), scrollBefore, 'a tap must not scroll to the top');
     assert.ok(new URL(page.url()).pathname === '/', 'a tap must not navigate');
-    await page.waitForTimeout(1300);
-    assert.equal((await stickerState(page)).active, false, 'the avatar returns after 1.2 s');
+    await page.waitForTimeout(450);
+    assert.equal((await stickerState(page)).active, false, 'the avatar is back about 1.45 s after the tap');
     for (let i = 0; i < 3; i++) {
       await page.touchscreen.tap(x, y);
       await page.waitForTimeout(120);
     }
     assert.equal(await page.evaluate(() => window.__cilada), 1, 'three quick taps open the cilada alert');
     assert.equal(await page.evaluate(() => scrollY), scrollBefore, 'the triple tap must not scroll either');
+    await page.waitForTimeout(1400);
+    await page.focus('#comic-nav-logo');
+    await page.keyboard.press('Enter');
+    await page.waitForTimeout(1500);
+    assert.ok((await page.evaluate(() => scrollY)) < 50, 'Enter on the logo after a tap must still scroll to the top (no stale touch state)');
   } finally {
     await context.close();
   }
@@ -298,25 +305,45 @@ test('C10: the logo keeps its accessible name and the sticker image is decorativ
     assert.equal(await page.locator('#comic-nav-logo').getAttribute('aria-label'), before, 'the name stays while a sticker shows');
     const img = await page.locator('[data-nav-sticker]').evaluate((el) => [el.getAttribute('alt'), el.getAttribute('aria-hidden')]);
     assert.deepEqual(img, ['', 'true']);
+    await page.mouse.move(700, 600);
+    await page.evaluate(() => document.querySelector('#nav-lang-toggle-btn').dispatchEvent(new MouseEvent('click', { bubbles: true })));
+    await page.waitForTimeout(700);
+    await page.hover(BADGE);
+    await page.waitForTimeout(80);
+    assert.equal(await page.locator('#comic-nav-logo').getAttribute('aria-label'), DICTIONARIES_EN.nav.topAria, 'the English name stays while a sticker shows');
   } finally {
     await context.close();
   }
 });
 
 test('C18: a failed sticker image keeps the avatar badge', async () => {
-  const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
-  const page = await context.newPage();
+  const { context, page } = await openSwap();
   try {
-    await page.route('**/stickers/*.svg', (route) => route.abort());
-    await page.addInitScript(() => window.localStorage.setItem('brinu_locale', 'pt-br'));
-    await page.goto(`${baseUrl}/`, { waitUntil: 'networkidle' });
-    await dismissIntroIfPresent(page);
-    await page.waitForTimeout(900);
     await page.hover(BADGE);
-    await page.waitForTimeout(150);
-    const state = await stickerState(page);
-    assert.equal(state.active, false);
-    assert.equal(state.avatarVisible, true);
+    await page.waitForTimeout(100);
+    assert.equal((await stickerState(page)).active, true, 'precondition: a sticker shows');
+    await page.evaluate(() => { document.querySelector('[data-nav-sticker]').src = '/stickers/does-not-exist.svg'; });
+    await page.waitForTimeout(400);
+    const broken = await stickerState(page);
+    assert.equal(broken.active, false, 'a sticker that fails to load must hide');
+    assert.equal(broken.avatarVisible, true);
+
+    const blocked = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+    const blockedPage = await blocked.newPage();
+    try {
+      await blockedPage.route('**/stickers/*.svg', (route) => route.abort());
+      await blockedPage.addInitScript(() => window.localStorage.setItem('brinu_locale', 'pt-br'));
+      await blockedPage.goto(`${baseUrl}/`, { waitUntil: 'networkidle' });
+      await dismissIntroIfPresent(blockedPage);
+      await blockedPage.waitForTimeout(900);
+      await blockedPage.hover(BADGE);
+      await blockedPage.waitForTimeout(150);
+      const state = await stickerState(blockedPage);
+      assert.equal(state.active, false);
+      assert.equal(state.avatarVisible, true);
+    } finally {
+      await blocked.close();
+    }
   } finally {
     await context.close();
   }
@@ -406,9 +433,11 @@ test('C11: /stickers renders the twelve stickers in manifest order with localize
 test('C12: activating a sticker downloads its svg with the same content', async () => {
   const { context, page } = await openStickers('pt-br', { reducedMotion: 'reduce' });
   try {
-    for (const index of [0, 3, 11]) {
+    for (const index of Array.from({ length: 12 }, (_, i) => i)) {
       const link = page.locator('[data-stickers-grid] [data-sticker-download]').nth(index);
-      const [download] = await Promise.all([page.waitForEvent('download'), link.click()]);
+      await link.scrollIntoViewIfNeeded();
+      await page.waitForTimeout(150);
+      const [download] = await Promise.all([page.waitForEvent('download', { timeout: 8000 }), link.click()]);
       const n = String(index + 1).padStart(2, '0');
       assert.equal(download.suggestedFilename(), `brinu-sticker-${n}.svg`);
       const saved = fs.readFileSync(await download.path(), 'utf8');
@@ -493,21 +522,34 @@ const auditText = (page) =>
       if (m) { const [r, g, b, a = 1] = m[1].split(/[,/ ]+/).filter(Boolean).map(Number); return { r, g, b, a }; }
       const c = v.match(/color\(srgb ([^)]+)\)/);
       if (c) { const [r, g, b, a = 1] = c[1].split(/[ /]+/).filter(Boolean).map(Number); return { r: r * 255, g: g * 255, b: b * 255, a }; }
-      return null;
+      throw new Error(`unsupported color format: ${v}`);
     };
+    const over = (top, base) => ({ r: top.r * top.a + base.r * (1 - top.a), g: top.g * top.a + base.g * (1 - top.a), b: top.b * top.a + base.b * (1 - top.a), a: 1 });
     const lum = ({ r, g, b }) => { const f = (x) => { const s = x / 255; return s <= 0.03928 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4; }; return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b); };
-    const bgOf = (el) => { for (let n = el; n; n = n.parentElement) { const bg = parse(getComputedStyle(n).backgroundColor); if (bg && bg.a >= 1) return bg; } return { r: 8, g: 8, b: 8, a: 1 }; };
+    const backdrop = (el) => {
+      const layers = [];
+      for (let n = el; n; n = n.parentElement) {
+        const bg = parse(getComputedStyle(n).backgroundColor);
+        if (bg.a > 0) layers.push(bg);
+        if (bg.a >= 1) break;
+      }
+      let base = { r: 8, g: 8, b: 8, a: 1 };
+      if (layers.length && layers[layers.length - 1].a >= 1) base = layers.pop();
+      return layers.reverse().reduce((acc, layer) => over(layer, acc), base);
+    };
     const out = [];
-    const walker = document.createTreeWalker(document.getElementById('main-content'), NodeFilter.SHOW_TEXT);
+    const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
     for (let node = walker.nextNode(); node; node = walker.nextNode()) {
       if (!node.textContent.trim()) continue;
       const el = node.parentElement;
+      if (['SCRIPT', 'STYLE', 'NOSCRIPT'].includes(el.tagName)) continue;
       const cs = getComputedStyle(el);
-      if (cs.visibility === 'hidden' || cs.display === 'none') continue;
+      if (cs.visibility === 'hidden' || cs.display === 'none' || el.getClientRects().length === 0) continue;
+      if (el.closest('.sr-only, [aria-hidden="true"], #p5-wipe-overlay')) continue;
       const size = parseFloat(cs.fontSize);
-      if (size >= 24) continue;
-      const fg = parse(cs.color);
-      const bg = bgOf(el);
+      if (size >= 24 || (Number(cs.fontWeight) >= 700 && size >= 18.66)) continue;
+      const bg = backdrop(el);
+      const fg = over(parse(cs.color), bg);
       const l1 = lum(fg);
       const l2 = lum(bg);
       out.push({ text: node.textContent.trim().slice(0, 30), contrast: (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05) });
