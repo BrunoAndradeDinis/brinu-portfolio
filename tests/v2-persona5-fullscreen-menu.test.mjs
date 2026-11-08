@@ -284,7 +284,7 @@ test('C5: all 6 navigation blades render with index codes and active blade track
     { id: 'hero', code: '00', label: '01 // INÍCIO & MANIFESTO' },
     { id: 'works', code: '01', label: '02 // ARQUIVO DE PROJETOS' },
     { id: 'about', code: '02', label: '03 // DOSSIÊ CONFIDANT & SKILLS' },
-    { id: 'lab', code: '03', label: '04 // CREATIVE LAB' },
+    { id: 'lab', code: '03', label: '04 // ARCANA DECK' },
     { id: 'contact', code: '04', label: '05 // ENVIAR PROPOSTA' },
     { id: 'whoami', code: '05', label: '06 // TERMINAL /WHOAMI' },
   ];
@@ -329,7 +329,7 @@ test('C5: all 6 navigation blades render with index codes and active blade track
     { id: 'hero', code: '00', label: '01 // HOME & MANIFESTO' },
     { id: 'works', code: '01', label: '02 // BOUNTY ARCHIVE (WORKS)' },
     { id: 'about', code: '02', label: '03 // CONFIDANT DOSSIER & SKILLS' },
-    { id: 'lab', code: '03', label: '04 // CREATIVE LAB' },
+    { id: 'lab', code: '03', label: '04 // ARCANA DECK' },
     { id: 'contact', code: '04', label: '05 // TRANSMIT A BOUNTY' },
     { id: 'whoami', code: '05', label: '06 // TERMINAL /WHOAMI' },
   ];
