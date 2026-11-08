@@ -264,10 +264,10 @@ test('T7: dictionaries carry the approved copy deck in both locales', () => {
   assert.deepEqual(hero(enDict), ['8 YEARS AT MAGALU', 'FROM SUPPORT', 'TO FRONTEND', 'INTERFACES', 'WITH PERSONALITY', 'AND CLEAN CODE']);
   assert.equal(ptBrDict.filmstrip.heading, 'CADA FRAME, UM PROJETO ENTREGUE');
   assert.equal(enDict.filmstrip.heading, 'EVERY FRAME, A SHIPPED PROJECT');
-  assert.match(ptBrDict.about.bioP1, /^Desenvolvedor frontend no time da Magalu Cloud/);
-  assert.match(ptBrDict.about.bioP1, /8 anos no ecossistema Magalu/);
-  assert.match(enDict.about.bioP1, /^Frontend developer on the Magalu Cloud team/);
-  assert.match(ptBrDict.about.bioP2, /Pai da Helena, operando de Franca \/ SP\.$/);
+  assert.match(ptBrDict.about.bioLine1, /^Frontend na Magalu Cloud/);
+  assert.match(ptBrDict.about.bioLine2, /8 anos de SAC e helpdesk no ecossistema Magalu/);
+  assert.match(enDict.about.bioLine1, /^Frontend at Magalu Cloud/);
+  assert.match(ptBrDict.about.baseLine, /Franca \/ SP · Remoto · Pai da Helena$/);
   assert.match(ptBrDict.meta.title, /Desenvolvedor Frontend/);
   assert.match(ptBrDict.meta.description, /Desenvolvedor Frontend/);
   assert.match(ptBrDict.hero.ticker, /DESENVOLVEDOR FRONTEND/);

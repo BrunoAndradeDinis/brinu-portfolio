@@ -598,7 +598,7 @@ test('C12: About and SkillsGrid render unified Persona 5 Confidant dossier witho
   );
   assert.ok(aboutSrc.includes('<SkillsGrid />'));
   assert.ok(aboutSrc.includes('PROFILE.location.label'));
-  assert.ok(aboutSrc.includes('data-i18n="about.bioP1"'));
+  assert.ok(aboutSrc.includes('data-i18n="about.bioLine1"'));
   assert.ok(skillsSrc.includes('data-skill-vignette'));
   assert.ok(skillsSrc.includes('data-skill-title'));
   assert.ok(skillsSrc.includes('data-skill-badge-text'));

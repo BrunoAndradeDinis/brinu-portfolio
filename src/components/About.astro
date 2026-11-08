@@ -2,12 +2,14 @@
 import SkillsGrid from "./SkillsGrid.astro";
 import { PROFILE } from "../data/profile";
 import { ptBrDict } from "../i18n/dictionaries";
-import { getLocalizedCareer, getLocalizedEducation } from "../data/career";
+import { CAREER, getLocalizedCareer, getLocalizedEducation } from "../data/career";
 import P5Title from "./p5/P5Title.astro";
 import P5Badge from "./p5/P5Badge.astro";
+import P5Panel from "./p5/P5Panel.astro";
 
 const career = getLocalizedCareer("pt-br");
 const education = getLocalizedEducation("pt-br");
+const currentId = CAREER.find((entry) => entry.end === "present")?.id;
 ---
 
 <section
@@ -56,27 +58,29 @@ const education = getLocalizedEducation("pt-br");
       data-about-avatar-panel
       class="lg:col-span-5 flex flex-col items-center lg:items-start"
     >
-      <div
-        class="relative w-full max-w-[24rem] sm:max-w-[26rem] mx-auto lg:mx-0 border-4 border-paper-white bg-space-surface-1 p-3 sm:p-4 shadow-[8px_8px_0_var(--color-bebop-red)] overflow-hidden group transition-transform duration-300 hover:-translate-y-1"
-      >
-        <div class="relative overflow-hidden border-2 border-paper-white bg-space-base">
-          <img
-            id="about-official-avatar"
-            src="/assets/brinu-avatar.jpg"
-            alt={ptBrDict.about.portraitAlt}
-            data-i18n="about.portraitAlt"
-            data-i18n-attr="alt"
-            width={341}
-            height={394}
-            class="w-full h-auto aspect-[341/394] object-cover contrast-125 transition-transform duration-500 group-hover:scale-[1.03]"
-            loading="lazy"
-            decoding="async"
-          />
+      <div class="relative w-full max-w-[24rem] sm:max-w-[26rem] mx-auto lg:mx-0 py-4">
+        <div
+          data-about-portrait-frame
+          class="relative rotate-[-4deg] bg-bebop-red p-[0.45rem] sm:p-[0.6rem] [clip-path:polygon(7%_0%,100%_5%,93%_100%,0%_95%)]"
+        >
+          <div class="relative overflow-hidden bg-space-base [clip-path:polygon(7%_0%,100%_5%,93%_100%,0%_95%)]">
+            <img
+              id="about-official-avatar"
+              src="/assets/brinu-avatar.jpg"
+              alt={ptBrDict.about.portraitAlt}
+              data-i18n="about.portraitAlt"
+              data-i18n-attr="alt"
+              width={341}
+              height={394}
+              class="w-full h-auto aspect-[341/394] object-cover contrast-125 rotate-[4deg] scale-[1.12]"
+              loading="lazy"
+              decoding="async"
+            />
+          </div>
         </div>
-
-        <div class="mt-3 flex items-center justify-between font-mono text-xs">
+        <div class="mt-4 flex items-center justify-between gap-3 font-mono text-xs">
           <span
-            class="inline-flex items-center gap-1.5 border-2 border-paper-white bg-bebop-red px-2.5 py-1 text-[11px] font-display font-black text-paper-white uppercase tracking-wide"
+            class="inline-flex items-center gap-1.5 border-2 border-paper-white bg-bebop-red px-2.5 py-1 text-[11px] font-display font-black text-space-base uppercase tracking-wider"
             data-i18n="about.operatorTag"
           >
             {ptBrDict.about.operatorTag}
@@ -88,111 +92,77 @@ const education = getLocalizedEducation("pt-br");
       </div>
     </div>
 
-    <div
-      data-about-content-panel
-      class="lg:col-span-7 flex flex-col justify-between border-4 border-paper-white bg-space-surface-1 p-6 sm:p-8 md:p-10 shadow-[8px_8px_0_var(--color-bebop-red)]"
-    >
-      <div>
-        <div class="mb-6 border-b-2 border-bebop-red pb-5">
-          <h3
-            class="font-display text-2xl sm:text-3xl md:text-4xl font-black text-paper-white leading-tight uppercase"
-            data-i18n="about.roleHeading"
-          >
-            {ptBrDict.about.roleHeading}
-          </h3>
-        </div>
+    <div data-about-content-panel class="lg:col-span-7 flex flex-col gap-6">
+      <P5Panel as="div" cut="a" data-about-card="bio" class="bg-space-surface-1 border-l-8 border-bebop-red p-6 sm:p-8 text-paper-white">
+        <p data-about-bio-line data-i18n="about.bioLine1" class="font-display text-lg sm:text-2xl font-black uppercase leading-tight">
+          {ptBrDict.about.bioLine1}
+        </p>
+        <p data-about-bio-line data-i18n="about.bioLine2" class="mt-3 font-body text-sm sm:text-base leading-relaxed text-paper-white">
+          {ptBrDict.about.bioLine2}
+        </p>
+        <p data-about-base-line data-i18n="about.baseLine" class="mt-5 inline-block bg-bebop-red px-3 py-1 font-mono text-[11px] sm:text-xs font-black uppercase tracking-wider text-space-base">
+          {ptBrDict.about.baseLine}
+        </p>
+      </P5Panel>
 
-        <div class="space-y-4 font-body text-sm sm:text-base text-paper-white/95 leading-relaxed mb-8">
-          <p data-i18n="about.bioP1">{ptBrDict.about.bioP1}</p>
-          <p data-i18n="about.bioP2">{ptBrDict.about.bioP2}</p>
-        </div>
-
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 border-2 border-paper-white bg-space-base p-4 font-mono text-xs">
-          <div class="border-b sm:border-b-0 sm:border-r border-paper-white/25 pb-2 sm:pb-0 sm:pr-3">
-            <span class="block text-bebop-red font-bold uppercase tracking-wider" data-i18n="about.stats.roleLabel">
-              {ptBrDict.about.stats.roleLabel}
-            </span>
-            <span class="text-paper-white font-semibold" data-i18n="about.stats.roleValue">
-              {ptBrDict.about.stats.roleValue}
-            </span>
-          </div>
-          <div>
-            <span class="block text-bebop-red font-bold uppercase tracking-wider" data-i18n="about.stats.baseLabel">
-              {ptBrDict.about.stats.baseLabel}
-            </span>
-            <span class="text-paper-white font-semibold" data-i18n="about.stats.baseValue">
-              {ptBrDict.about.stats.baseValue}
-            </span>
-          </div>
-          <div class="border-t border-paper-white/25 pt-2 sm:pr-3 sm:border-r">
-            <span class="block text-bebop-red font-bold uppercase tracking-wider" data-i18n="about.stats.coreLabel">
-              {ptBrDict.about.stats.coreLabel}
-            </span>
-            <span class="text-paper-white font-semibold" data-i18n="about.stats.coreValue">
-              {ptBrDict.about.stats.coreValue}
-            </span>
-          </div>
-          <div class="border-t border-paper-white/25 pt-2">
-            <span class="block text-bebop-red font-bold uppercase tracking-wider" data-i18n="about.stats.stackLabel">
-              {ptBrDict.about.stats.stackLabel}
-            </span>
-            <span class="text-paper-white font-semibold" data-i18n="about.stats.stackValue">
-              {ptBrDict.about.stats.stackValue}
-            </span>
-          </div>
-        </div>
-
-        <div data-career class="mt-8">
-          <h4 class="mb-4 font-mono text-xs font-black uppercase tracking-widest text-bebop-red" data-i18n="about.careerTitle">
-            {ptBrDict.about.careerTitle}
-          </h4>
-          <ol class="flex flex-col gap-4 border-l-4 border-bebop-red pl-4">
-            {career.map((entry) => (
-              <li id={`career-${entry.id}`} data-career-entry class="flex flex-col gap-1">
-                <span data-career-period class="font-mono text-[11px] font-bold uppercase text-muted-gray">{entry.period}</span>
-                <span class="font-display text-base sm:text-lg font-black uppercase text-paper-white">
-                  <span data-career-role>{entry.role}</span> <span class="text-bebop-red">@</span> <span data-career-org>{entry.org}</span>
+      <P5Panel as="div" cut="b" data-about-card="career" class="bg-space-surface-1 p-6 sm:p-8 text-paper-white">
+        <h4 class="mb-5 font-mono text-xs font-black uppercase tracking-widest text-bebop-red" data-i18n="about.careerTitle">
+          {ptBrDict.about.careerTitle}
+        </h4>
+        <ol data-career class="flex flex-col gap-5 border-l-4 border-bebop-red pl-4">
+          {career.map((entry, index) => (
+            <li id={`career-${entry.id}`} data-career-entry class="flex flex-col gap-1">
+              <span class="flex flex-wrap items-center gap-2 font-mono text-[11px] font-black uppercase">
+                <span data-career-rank class="bg-paper-white px-2 py-0.5 text-space-base">
+                  <span data-i18n="about.rankLabel">{ptBrDict.about.rankLabel}</span> {career.length - index}
                 </span>
-                <p data-career-summary class="font-body text-sm text-paper-white/90 leading-relaxed">{entry.summary}</p>
-                {entry.automations.length > 0 && (
-                  <div class="mt-1 flex flex-wrap items-center gap-2 font-mono text-[11px]">
-                    <span class="font-black uppercase text-bebop-red" data-i18n="about.automationsLabel">{ptBrDict.about.automationsLabel}</span>
-                    {entry.automations.map((automation) => (
-                      <a
-                        href={automation.repoUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        data-automation-link={automation.id}
-                        class="border border-paper-white px-2 py-0.5 font-bold uppercase text-paper-white transition-colors duration-150 hover:bg-paper-white hover:text-space-base"
-                      >
-                        {automation.name} ↗
-                      </a>
-                    ))}
-                  </div>
+                {entry.id === currentId && (
+                  <span data-career-current class="bg-bebop-red px-2 py-0.5 text-space-base" data-i18n="about.currentMarker">{ptBrDict.about.currentMarker}</span>
                 )}
-              </li>
-            ))}
-          </ol>
-        </div>
+                <span data-career-period class="text-paper-white/90">{entry.period}</span>
+              </span>
+              <span class="font-display text-base sm:text-lg font-black uppercase text-paper-white">
+                <span data-career-role>{entry.role}</span> <span class="text-bebop-red">@</span> <span data-career-org>{entry.org}</span>
+              </span>
+              <p data-career-summary class="font-body text-sm text-paper-white leading-relaxed">{entry.summary}</p>
+              {entry.automations.length > 0 && (
+                <div class="mt-1 flex flex-wrap items-center gap-2 font-mono text-[11px]">
+                  <span class="font-black uppercase text-bebop-red" data-i18n="about.automationsLabel">{ptBrDict.about.automationsLabel}</span>
+                  {entry.automations.map((automation) => (
+                    <a
+                      href={automation.repoUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      data-automation-link={automation.id}
+                      class="border border-paper-white px-2 py-0.5 font-bold uppercase text-paper-white transition-colors duration-150 hover:bg-paper-white hover:text-space-base focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-paper-white"
+                    >
+                      {automation.name} ↗
+                    </a>
+                  ))}
+                </div>
+              )}
+            </li>
+          ))}
+        </ol>
+      </P5Panel>
 
-        <div data-education class="mt-8">
-          <h4 class="mb-4 font-mono text-xs font-black uppercase tracking-widest text-bebop-red" data-i18n="about.educationTitle">
-            {ptBrDict.about.educationTitle}
-          </h4>
-          <ul class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {education.map((entry) => (
-              <li id={`education-${entry.id}`} data-education-entry class="border-2 border-paper-white/40 p-3">
-                <span class="block font-display text-sm font-black uppercase text-paper-white">{entry.institution}</span>
-                <span data-education-course class="block font-body text-sm text-paper-white/90">{entry.course}</span>
-                <span class="mt-1 flex flex-wrap gap-2 font-mono text-[10px] uppercase">
-                  <span data-education-period class="text-muted-gray">{entry.period}</span>
-                  <span data-education-status class="font-black text-bebop-red">{entry.status}</span>
-                </span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </div>
+      <P5Panel as="div" cut="a" data-about-card="education" class="bg-space-surface-1 p-6 sm:p-8 text-paper-white">
+        <h4 class="mb-5 font-mono text-xs font-black uppercase tracking-widest text-bebop-red" data-i18n="about.educationTitle">
+          {ptBrDict.about.educationTitle}
+        </h4>
+        <ul data-education class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {education.map((entry) => (
+            <li id={`education-${entry.id}`} data-education-entry class="border-2 border-paper-white/60 p-3">
+              <span class="block font-display text-sm font-black uppercase text-paper-white">{entry.institution}</span>
+              <span data-education-course class="block font-body text-sm text-paper-white">{entry.course}</span>
+              <span class="mt-1 flex flex-wrap gap-2 font-mono text-[10px] uppercase">
+                <span data-education-period class="text-paper-white/90">{entry.period}</span>
+                <span data-education-status class="font-black text-bebop-red">{entry.status}</span>
+              </span>
+            </li>
+          ))}
+        </ul>
+      </P5Panel>
     </div>
   </div>
 

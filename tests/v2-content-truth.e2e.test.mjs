@@ -320,10 +320,10 @@ test('C31: page does not mention fatec', async () => {
   }
 });
 
-test('C33: about shows at most two bio paragraphs and no manifesto', async () => {
+test('C33: about shows at most two bio lines and no manifesto', async () => {
   const { context, page } = await openHome();
   try {
-    assert.equal(await page.locator('#about [data-i18n^="about.bioP"]').count(), 2);
+    assert.equal(await page.locator('#about [data-i18n^="about.bioLine"]').count(), 2);
     assert.equal(await page.locator('#about [data-i18n="about.manifestoQuote"], #about blockquote').count(), 0);
     assert.doesNotMatch(await page.locator('#about').innerText(), /MANIFESTO/i);
   } finally {
