@@ -15,6 +15,8 @@ export interface TranslationSchema {
     description: string;
     whoamiTitle: string;
     whoamiDescription: string;
+    stickersTitle: string;
+    stickersDescription: string;
   };
   preloader: {
     sceneTag: string;
@@ -194,6 +196,14 @@ export interface TranslationSchema {
     prevAria: string;
     nextAria: string;
   };
+  stickers: {
+    sectionAria: string;
+    actTag: string;
+    title: string;
+    hint: string;
+    downloadLabel: string;
+    downloadAria: string;
+  };
   contact: {
     sectionAria: string;
     actTag: string;
@@ -287,6 +297,8 @@ export const ptBrDict: TranslationSchema = {
     whoamiTitle: 'Bruno Dinis // Brinu — Terminal Confidant /whoami',
     whoamiDescription:
       'Terminal interativo de Bruno Dinis (Brinu): trajetória, stack e projetos.',
+    stickersTitle: 'Stickers do Brinu // Bruno Dinis',
+    stickersDescription: 'Doze stickers originais do Brinu em SVG, para baixar e usar.',
   },
   preloader: {
     sceneTag: '[ 1996 // ATO 01 ]',
@@ -474,6 +486,14 @@ export const ptBrDict: TranslationSchema = {
     prevAria: 'Carta anterior',
     nextAria: 'Próxima carta',
   },
+  stickers: {
+    sectionAria: 'Biblioteca de stickers do Brinu',
+    actTag: '[ EXTRA // STICKERS • 12 ARQUIVOS SVG ]',
+    title: 'STICKERS',
+    hint: 'CLIQUE NUM STICKER PARA BAIXAR O SVG',
+    downloadLabel: 'BAIXAR SVG',
+    downloadAria: 'Baixar o sticker:',
+  },
   contact: {
     sectionAria: 'Contato e Envio de Propostas — Bounty Board',
     actTag: '[ ATO IV // BOUNTY BOARD • TRANSMISSÃO DIRETA ]',
@@ -573,6 +593,8 @@ export const enDict = {
     whoamiTitle: 'Bruno Dinis // Brinu — Confidant Terminal /whoami',
     whoamiDescription:
       'Interactive terminal of Bruno Dinis (Brinu): career, stack and projects.',
+    stickersTitle: 'Brinu stickers // Bruno Dinis',
+    stickersDescription: 'Twelve original Brinu stickers in SVG, free to download and use.',
   },
   preloader: {
     sceneTag: '[ 1996 // ACT 01 ]',
@@ -759,6 +781,14 @@ export const enDict = {
     openCase: 'VIEW FULL CASE',
     prevAria: 'Previous card',
     nextAria: 'Next card',
+  },
+  stickers: {
+    sectionAria: 'Brinu sticker library',
+    actTag: '[ BONUS // STICKERS • 12 SVG FILES ]',
+    title: 'STICKERS',
+    hint: 'CLICK A STICKER TO DOWNLOAD THE SVG',
+    downloadLabel: 'DOWNLOAD SVG',
+    downloadAria: 'Download the sticker:',
   },
   contact: {
     sectionAria: 'Contact and Project Proposals — Bounty Board',

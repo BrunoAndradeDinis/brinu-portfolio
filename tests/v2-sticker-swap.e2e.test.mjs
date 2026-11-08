@@ -367,3 +367,173 @@ test('C20: a second tap restarts the 1.2 s timer', async () => {
     await context.close();
   }
 });
+
+import zlib from 'node:zlib';
+import { getLocalizedStickers } from '../src/data/stickers.ts';
+import { DICTIONARIES } from '../src/i18n/dictionaries.ts';
+
+async function openStickers(locale = 'pt-br', contextOptions = {}) {
+  const context = await browser.newContext({ viewport: { width: 1440, height: 900 }, ...contextOptions });
+  const page = await context.newPage();
+  await page.addInitScript((loc) => window.localStorage.setItem('brinu_locale', loc), locale);
+  await page.goto(`${baseUrl}/stickers`, { waitUntil: 'networkidle' });
+  await dismissIntroIfPresent(page);
+  await page.waitForTimeout(800);
+  return { context, page };
+}
+
+const toggleLocale = async (page) => {
+  await page.locator('#nav-lang-toggle-btn').dispatchEvent('click');
+  await page.waitForTimeout(600);
+};
+
+test('C11: /stickers renders the twelve stickers in manifest order with localized alt', async () => {
+  for (const locale of ['pt-br', 'en']) {
+    const { context, page } = await openStickers(locale, { reducedMotion: 'reduce' });
+    try {
+      const expected = getLocalizedStickers(locale);
+      const items = await page.locator('[data-stickers-grid] [data-sticker-download]').evaluateAll((els) => els.map((el) => ({ id: el.id, href: el.getAttribute('href'), alt: el.querySelector('img').getAttribute('alt'), loaded: el.querySelector('img').complete })));
+      assert.equal(items.length, 12);
+      assert.deepEqual(items.map((i) => i.id), expected.map((e) => `sticker-${e.id}`));
+      assert.deepEqual(items.map((i) => i.href), expected.map((e) => e.file));
+      assert.deepEqual(items.map((i) => i.alt), expected.map((e) => e.alt));
+    } finally {
+      await context.close();
+    }
+  }
+});
+
+test('C12: activating a sticker downloads its svg with the same content', async () => {
+  const { context, page } = await openStickers('pt-br', { reducedMotion: 'reduce' });
+  try {
+    for (const index of [0, 3, 11]) {
+      const link = page.locator('[data-stickers-grid] [data-sticker-download]').nth(index);
+      const [download] = await Promise.all([page.waitForEvent('download'), link.click()]);
+      const n = String(index + 1).padStart(2, '0');
+      assert.equal(download.suggestedFilename(), `brinu-sticker-${n}.svg`);
+      const saved = fs.readFileSync(await download.path(), 'utf8');
+      assert.equal(saved, fs.readFileSync(`public/stickers/sticker-${n}.svg`, 'utf8'), `sticker ${n} content differs from the file`);
+    }
+  } finally {
+    await context.close();
+  }
+});
+
+test('C13: the stickers page is localized, reuses the nav swap and updates in place', async () => {
+  const { context, page } = await openStickers('pt-br');
+  try {
+    const read = () => page.evaluate(() => ({
+      title: document.title,
+      description: document.querySelector('meta[name="description"]').content,
+      h1: document.querySelector('h1').textContent.trim(),
+      hint: document.querySelector('[data-i18n="stickers.hint"]').textContent.trim(),
+      label: document.querySelector('[data-sticker-download] span').textContent.trim(),
+    }));
+    for (const locale of ['pt-br', 'en']) {
+      if (locale === 'en') {
+        await page.evaluate(() => { document.querySelectorAll('h1, [data-sticker-download]').forEach((el, i) => { el.__marker = `n${i}`; }); });
+        await toggleLocale(page);
+      }
+      const dict = DICTIONARIES[locale];
+      assert.deepEqual(await read(), { title: dict.meta.stickersTitle, description: dict.meta.stickersDescription, h1: dict.stickers.title, hint: dict.stickers.hint, label: dict.stickers.downloadLabel });
+    }
+    assert.equal(await page.evaluate(() => [...document.querySelectorAll('h1, [data-sticker-download]')].every((el) => typeof el.__marker === 'string')), true, 'the grid and heading nodes must survive a locale change');
+    const first = getLocalizedStickers('en')[0];
+    assert.equal(await page.locator(`#sticker-${first.id}`).getAttribute('aria-label'), `${DICTIONARIES.en.stickers.downloadAria} ${first.alt}`);
+    await page.waitForTimeout(900);
+    await page.hover('#comic-nav-logo [data-nav-avatar]');
+    await page.waitForTimeout(100);
+    assert.equal((await stickerState(page)).active, true, 'the logo swap works on /stickers too');
+  } finally {
+    await context.close();
+  }
+});
+
+test('C14: footer links to /stickers while the menu keeps six items', async () => {
+  for (const locale of ['pt-br', 'en']) {
+    const { context, page } = await openHome(locale, { reducedMotion: 'reduce' });
+    try {
+      const link = page.locator('[data-footer-stickers-link]');
+      assert.equal(await link.getAttribute('href'), '/stickers');
+      assert.match((await link.textContent()).trim(), /^STICKERS$/);
+      await page.locator('#cockpit-trigger-btn').dispatchEvent('click');
+      await page.locator('#cockpit-menu-overlay a[href="#lab"]').waitFor({ state: 'visible', timeout: 8000 });
+      const hrefs = await page.locator('#cockpit-menu-overlay nav a').evaluateAll((els) => els.map((el) => el.getAttribute('href')));
+      assert.deepEqual(hrefs, ['#hero', '#works', '#about', '#lab', '#contact', '/whoami']);
+    } finally {
+      await context.close();
+    }
+  }
+});
+
+test('C15: with JavaScript disabled the grid and download links work', async () => {
+  const context = await browser.newContext({ viewport: { width: 1440, height: 900 }, javaScriptEnabled: false });
+  const page = await context.newPage();
+  try {
+    await page.goto(`${baseUrl}/stickers`, { waitUntil: 'domcontentloaded' });
+    const links = await page.locator('[data-stickers-grid] [data-sticker-download]').evaluateAll((els) => els.map((el) => ({ href: el.getAttribute('href'), download: el.getAttribute('download'), visible: el.getClientRects().length > 0 })));
+    assert.equal(links.length, 12);
+    links.forEach((l, i) => {
+      const n = String(i + 1).padStart(2, '0');
+      assert.equal(l.href, `/stickers/sticker-${n}.svg`);
+      assert.equal(l.download, `brinu-sticker-${n}.svg`);
+      assert.equal(l.visible, true);
+    });
+    const [download] = await Promise.all([page.waitForEvent('download'), page.locator('[data-sticker-download]').first().click()]);
+    assert.equal(download.suggestedFilename(), 'brinu-sticker-01.svg');
+  } finally {
+    await context.close();
+  }
+});
+
+const auditText = (page) =>
+  page.evaluate(() => {
+    const parse = (v) => {
+      const m = v.match(/rgba?\(([^)]+)\)/);
+      if (m) { const [r, g, b, a = 1] = m[1].split(/[,/ ]+/).filter(Boolean).map(Number); return { r, g, b, a }; }
+      const c = v.match(/color\(srgb ([^)]+)\)/);
+      if (c) { const [r, g, b, a = 1] = c[1].split(/[ /]+/).filter(Boolean).map(Number); return { r: r * 255, g: g * 255, b: b * 255, a }; }
+      return null;
+    };
+    const lum = ({ r, g, b }) => { const f = (x) => { const s = x / 255; return s <= 0.03928 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4; }; return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b); };
+    const bgOf = (el) => { for (let n = el; n; n = n.parentElement) { const bg = parse(getComputedStyle(n).backgroundColor); if (bg && bg.a >= 1) return bg; } return { r: 8, g: 8, b: 8, a: 1 }; };
+    const out = [];
+    const walker = document.createTreeWalker(document.getElementById('main-content'), NodeFilter.SHOW_TEXT);
+    for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+      if (!node.textContent.trim()) continue;
+      const el = node.parentElement;
+      const cs = getComputedStyle(el);
+      if (cs.visibility === 'hidden' || cs.display === 'none') continue;
+      const size = parseFloat(cs.fontSize);
+      if (size >= 24) continue;
+      const fg = parse(cs.color);
+      const bg = bgOf(el);
+      const l1 = lum(fg);
+      const l2 = lum(bg);
+      out.push({ text: node.textContent.trim().slice(0, 30), contrast: (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05) });
+    }
+    return out;
+  });
+
+test('C16: /stickers has zero overflow and contrast at least 4.5:1', async () => {
+  for (const locale of ['pt-br', 'en']) {
+    for (const width of [320, 375, 768, 1440]) {
+      const { context, page } = await openStickers(locale, { reducedMotion: 'reduce', viewport: { width, height: 900 } });
+      try {
+        const m = await page.evaluate(() => ({ sw: document.documentElement.scrollWidth, cw: document.documentElement.clientWidth, bw: document.body.scrollWidth }));
+        assert.ok(m.sw <= m.cw && m.bw <= m.cw, `Overflow at ${width}px (${locale}): ${m.sw}/${m.bw} > ${m.cw}`);
+        const audit = await auditText(page);
+        assert.ok(audit.length >= 14, 'expected to audit the page text');
+        assert.deepEqual(audit.filter((r) => r.contrast < 4.5).map((r) => `${r.text} (${r.contrast.toFixed(2)})`), [], `low contrast at ${width}px (${locale})`);
+      } finally {
+        await context.close();
+      }
+    }
+  }
+});
+
+test('C17: built js stays within 190 kB gzip', () => {
+  let total = 0;
+  for (const f of fs.readdirSync('dist/_astro').filter((n) => n.endsWith('.js'))) total += zlib.gzipSync(fs.readFileSync(`dist/_astro/${f}`)).length;
+  assert.ok(total <= 190 * 1000, `client js gzip total is ${(total / 1000).toFixed(1)} kB, budget is 190 kB`);
+});

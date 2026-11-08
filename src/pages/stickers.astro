@@ -1,0 +1,58 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import P5Panel from "../components/p5/P5Panel.astro";
+import { ptBrDict } from "../i18n/dictionaries";
+import { getLocalizedStickers } from "../data/stickers";
+
+const stickers = getLocalizedStickers("pt-br");
+---
+
+<BaseLayout title={ptBrDict.meta.stickersTitle} description={ptBrDict.meta.stickersDescription}>
+  <main id="main-content" tabindex="-1" class="min-h-screen bg-space-base px-4 py-12 sm:px-8 sm:py-16 md:px-12 text-paper-white select-none focus:outline-none">
+    <section
+      class="mx-auto max-w-[110rem]"
+      aria-label={ptBrDict.stickers.sectionAria}
+      data-i18n="stickers.sectionAria"
+      data-i18n-attr="aria-label"
+    >
+      <div class="mb-10 border-b-4 border-bebop-red pb-5">
+        <span class="mb-2 block font-mono text-xs sm:text-sm font-bold tracking-widest text-bebop-red uppercase" data-i18n="stickers.actTag">
+          {ptBrDict.stickers.actTag}
+        </span>
+        <h1 class="font-display text-[clamp(1.9rem,7vw,5.5rem)] font-black uppercase leading-none tracking-tight text-paper-white" data-i18n="stickers.title">
+          {ptBrDict.stickers.title}
+        </h1>
+        <p class="mt-4 font-mono text-xs sm:text-sm font-bold uppercase tracking-wider text-paper-white" data-i18n="stickers.hint">
+          {ptBrDict.stickers.hint}
+        </p>
+      </div>
+
+      <ul data-stickers-grid role="list" class="grid grid-cols-2 gap-4 sm:grid-cols-3 sm:gap-6 lg:grid-cols-4">
+        {
+          stickers.map((sticker, index) => (
+            <li class="list-none">
+              <a
+                id={`sticker-${sticker.id}`}
+                href={sticker.file}
+                download={`brinu-sticker-${String(index + 1).padStart(2, "0")}.svg`}
+                data-sticker-download
+                aria-label={`${ptBrDict.stickers.downloadAria} ${sticker.alt}`}
+                class="group block focus-visible:outline-4 focus-visible:outline-offset-4 focus-visible:outline-bebop-red"
+              >
+                <P5Panel as="div" cut={index % 2 === 0 ? "a" : "b"} class="flex aspect-square items-center justify-center bg-paper-white p-3 transition-transform duration-150 group-hover:-translate-y-1 group-focus-visible:-translate-y-1">
+                  <img src={sticker.file} alt={sticker.alt} width="400" height="400" loading="lazy" decoding="async" class="h-full w-full object-contain" />
+                </P5Panel>
+                <span
+                  class="mt-2 inline-block bg-bebop-red px-2 py-0.5 font-mono text-[11px] font-black uppercase tracking-wider text-space-base"
+                  data-i18n="stickers.downloadLabel"
+                >
+                  {ptBrDict.stickers.downloadLabel}
+                </span>
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+  </main>
+</BaseLayout>

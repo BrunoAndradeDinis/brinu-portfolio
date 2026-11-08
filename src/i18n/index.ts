@@ -7,6 +7,7 @@ import {
 import { getLocalizedCases } from '../data/cases.ts';
 import { getArsenalCounter, getLocalizedArsenal } from '../data/arsenal.ts';
 import { getLocalizedArchive } from '../data/archive.ts';
+import { getLocalizedStickers } from '../data/stickers.ts';
 import { getLocalizedCareer, getLocalizedEducation } from '../data/career.ts';
 import { renderRansomTitleDom } from '../components/p5/ransom.ts';
 
@@ -112,10 +113,20 @@ export function applyDomTranslations(locale: Locale): void {
     typeof window !== 'undefined' &&
     window.location.pathname.includes('/whoami');
 
-  const resolvedTitle = isWhoamiRoute ? dict.meta.whoamiTitle : dict.meta.title;
+  const isStickersRoute =
+    typeof window !== 'undefined' &&
+    window.location.pathname.includes('/stickers');
+
+  const resolvedTitle = isWhoamiRoute
+    ? dict.meta.whoamiTitle
+    : isStickersRoute
+      ? dict.meta.stickersTitle
+      : dict.meta.title;
   const resolvedDesc = isWhoamiRoute
     ? dict.meta.whoamiDescription
-    : dict.meta.description;
+    : isStickersRoute
+      ? dict.meta.stickersDescription
+      : dict.meta.description;
 
   document.title = resolvedTitle;
 
@@ -242,6 +253,13 @@ export function applyDomTranslations(locale: Locale): void {
       const label = linkEl.querySelector<HTMLElement>('[data-arcana-link-label]');
       if (label) label.textContent = linkData.label;
     });
+  });
+
+  getLocalizedStickers(validLocale).forEach((sticker) => {
+    const link = document.getElementById(`sticker-${sticker.id}`);
+    if (!link) return;
+    link.setAttribute('aria-label', `${dict.stickers.downloadAria} ${sticker.alt}`);
+    link.querySelector('img')?.setAttribute('alt', sticker.alt);
   });
 
   getLocalizedArchive(validLocale).forEach((entry) => {
