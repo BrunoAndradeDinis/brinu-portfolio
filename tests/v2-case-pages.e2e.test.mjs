@@ -187,3 +187,37 @@ test('C6: case page text updates in place on locale change', async () => {
     await context.close();
   }
 });
+
+test('C5: every home card links to its case page in both locales', async () => {
+  for (const locale of LOCALES) {
+    const { context, page } = await openPath('/', { locale, reducedMotion: 'reduce' });
+    try {
+      const label = locale === 'pt-br' ? 'ABRIR CASE' : 'OPEN CASE';
+      for (const id of IDS) {
+        const link = page.locator(`#case-${id} a[data-case-open]`);
+        assert.equal(await link.count(), 1, `${id} has one open-case link`);
+        assert.equal(await link.getAttribute('href'), `/cases/${id}`);
+        assert.equal((await link.textContent()).replace(/\s+/g, ' ').trim().replace(/\s*→$/, ''), label);
+      }
+    } finally {
+      await context.close();
+    }
+  }
+});
+
+test('C13: card title and page h1 share the view transition name', async () => {
+  const { context, page } = await openPath('/', { reducedMotion: 'reduce' });
+  try {
+    for (const id of IDS) {
+      const homeName = await page.locator(`#case-${id} [data-case-title]`).evaluate((el) => getComputedStyle(el).viewTransitionName);
+      assert.equal(homeName, `case-title-${id}`);
+      const detail = await context.newPage();
+      await detail.goto(`${baseUrl}/cases/${id}`, { waitUntil: 'networkidle' });
+      const pageName = await detail.locator('h1').evaluate((el) => getComputedStyle(el).viewTransitionName);
+      assert.equal(pageName, `case-title-${id}`);
+      await detail.close();
+    }
+  } finally {
+    await context.close();
+  }
+});

@@ -6,6 +6,7 @@ import P5Title from "./p5/P5Title.astro";
 import P5Panel from "./p5/P5Panel.astro";
 import P5Badge from "./p5/P5Badge.astro";
 import { CASE_VARIANTS } from "./cases/case-variants";
+import { casePath } from "../utils/case-pages";
 
 const cases = getLocalizedCases("pt-br");
 const archive = getLocalizedArchive("pt-br");
@@ -108,6 +109,7 @@ const tracks = [
 
                 <h3
                   data-case-title
+                  style={`view-transition-name: case-title-${project.id}`}
                   class:list={["font-display text-2xl sm:text-3xl font-black uppercase leading-tight tracking-tight", track.v.title]}
                 >
                   {project.title}
@@ -158,6 +160,15 @@ const tracks = [
                 </div>
 
                 <div class:list={["flex flex-wrap items-center gap-3 pt-4", track.v.links]}>
+                  <a
+                    href={casePath(project.id)}
+                    data-case-open
+                    class:list={["inline-flex items-center gap-2 px-3.5 py-1.5 font-mono text-xs font-black uppercase transition-colors duration-100 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-space-base", track.v.link]}
+                  >
+                    <span data-p5-select-poly aria-hidden="true" class="p5-select-poly"></span>
+                    <span data-i18n="works.openCase" class="relative z-10">{ptBrDict.works.openCase}</span>
+                    <span aria-hidden="true" class="relative z-10">→</span>
+                  </a>
                   {project.links.map((link) => (
                     <a
                       href={link.url}
