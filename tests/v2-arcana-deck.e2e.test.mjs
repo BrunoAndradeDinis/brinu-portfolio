@@ -489,3 +489,90 @@ test('C18: selecting another card flips the previous one back', async () => {
     await context.close();
   }
 });
+
+const faceReport = (page) =>
+  page.evaluate(() =>
+    [...document.querySelectorAll('#lab [data-arcana-card]')].flatMap((card) =>
+      ['[data-arcana-front]', '[data-arcana-back]'].map((sel) => {
+        const face = card.querySelector(sel);
+        const cs = getComputedStyle(face);
+        const scrollable = ['auto', 'scroll'].includes(cs.overflowY);
+        return { id: card.id, face: sel, fits: face.scrollHeight <= face.clientHeight + 1, scrollable, widthOk: face.scrollWidth <= face.clientWidth + 1 };
+      }),
+    ),
+  );
+
+test('C16: zero overflow and card back never clipped at 320, 375, 768 and 1440px', async () => {
+  for (const locale of ['pt-br', 'en']) {
+    for (const width of [320, 375, 768, 1440]) {
+      const { context, page } = await openDeck({ reducedMotion: 'reduce', viewport: { width, height: 900 } }, locale);
+      try {
+        const m = await page.evaluate(() => ({ sw: document.documentElement.scrollWidth, cw: document.documentElement.clientWidth, bw: document.body.scrollWidth }));
+        assert.ok(m.sw <= m.cw && m.bw <= m.cw, `Overflow at ${width}px (${locale}): ${m.sw}/${m.bw} > ${m.cw}`);
+        for (const face of await faceReport(page)) {
+          assert.ok(face.fits || face.scrollable, `${face.id} ${face.face} is clipped at ${width}px (${locale})`);
+          assert.equal(face.widthOk, true, `${face.id} ${face.face} overflows sideways at ${width}px (${locale})`);
+        }
+      } finally {
+        await context.close();
+      }
+    }
+  }
+});
+
+test('C19: long card back scrolls inside the card', async () => {
+  const { context, page } = await openDeck({ viewport: { width: 1440, height: 900 } });
+  try {
+    const before = await page.locator('#lab [data-arcana-card].is-selected').boundingBox();
+    await page.evaluate(() => {
+      const challenge = document.querySelector('#lab [data-arcana-card].is-selected [data-arcana-challenge]');
+      challenge.textContent = Array(40).fill('Texto longo do desafio técnico que precisa rolar dentro da carta.').join(' ');
+    });
+    await toggleOf(page, 0).click();
+    await page.waitForTimeout(800);
+    const back = await page.evaluate(() => {
+      const card = document.querySelector('#lab [data-arcana-card].is-selected');
+      const face = card.querySelector('[data-arcana-back]');
+      return { overflowY: getComputedStyle(face).overflowY, scrolls: face.scrollHeight > face.clientHeight + 20, cardHeight: card.getBoundingClientRect().height, docOverflow: document.documentElement.scrollWidth > document.documentElement.clientWidth };
+    });
+    assert.equal(back.scrolls, true, 'precondition: the text is longer than the card');
+    assert.ok(['auto', 'scroll'].includes(back.overflowY), 'the back must scroll inside itself');
+    assert.ok(Math.abs(back.cardHeight - before.height) < 2, `the card must keep its height, was ${before.height} now ${back.cardHeight}`);
+    assert.equal(back.docOverflow, false);
+    await page.locator('#lab [data-arcana-card].is-selected [data-arcana-back]').evaluate((el) => { el.scrollTop = el.scrollHeight; });
+    const bottom = await page.evaluate(() => {
+      const face = document.querySelector('#lab [data-arcana-card].is-selected [data-arcana-back]');
+      return face.scrollTop + face.clientHeight >= face.scrollHeight - 2;
+    });
+    assert.equal(bottom, true, 'the end of the text must be reachable by scrolling the card');
+  } finally {
+    await context.close();
+  }
+});
+
+test('C20: front text wraps inside the card at 320px', async () => {
+  for (const locale of ['pt-br', 'en']) {
+    const { context, page } = await openDeck({ viewport: { width: 320, height: 640 } }, locale);
+    try {
+      const rows = await page.evaluate(() =>
+        [...document.querySelectorAll('#lab [data-arcana-card]')].map((card) => {
+          const cr = card.getBoundingClientRect();
+          const inside = ['[data-arcana-code]', '[data-arcana-title]', '[data-arcana-category]'].map((sel) => {
+            const el = card.querySelector(sel);
+            const range = document.createRange();
+            range.selectNodeContents(el);
+            const r = range.getBoundingClientRect();
+            return { sel, ok: r.left >= cr.left - 1 && r.right <= cr.right + 1, scrollOk: el.scrollWidth <= el.clientWidth + 1 };
+          });
+          return { id: card.id, inside };
+        }),
+      );
+      for (const row of rows) for (const item of row.inside) {
+        assert.equal(item.ok, true, `${locale} ${row.id} ${item.sel} leaves the card at 320px`);
+        assert.equal(item.scrollOk, true, `${locale} ${row.id} ${item.sel} overflows its box at 320px`);
+      }
+    } finally {
+      await context.close();
+    }
+  }
+});
