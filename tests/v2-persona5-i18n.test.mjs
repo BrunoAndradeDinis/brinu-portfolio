@@ -605,28 +605,19 @@ test('C12: About and SkillsGrid render unified Persona 5 Confidant dossier witho
   assert.equal(aboutSrc.includes('PHILOSOPHY //'), false);
 });
 
-test('T11: CreativeLab and lab islands use useLocale() and remove redundant hardware telemetry boxes', () => {
-  const labAstro = fs.readFileSync(
-    path.resolve('src/components/CreativeLab.astro'),
-    'utf8'
-  );
-  const tunerSrc = fs.readFileSync(
-    path.resolve('src/components/lab/CrtTuner.tsx'),
-    'utf8'
-  );
-  const sonarSrc = fs.readFileSync(
-    path.resolve('src/components/lab/SonarRadar.tsx'),
-    'utf8'
-  );
-  const deckSrc = fs.readFileSync(
-    path.resolve('src/components/lab/CyberDeck.tsx'),
-    'utf8'
-  );
+test('T11: CreativeLab renders the Arcana Deck with bound i18n and no hardware telemetry boxes', () => {
+  const labAstro = fs.readFileSync(path.resolve('src/components/CreativeLab.astro'), 'utf8');
+  const deckAstro = fs.readFileSync(path.resolve('src/components/ArcanaDeck.astro'), 'utf8');
+  const i18nSrc = fs.readFileSync(path.resolve('src/i18n/index.ts'), 'utf8');
 
   assert.equal(labAstro.includes('GRAPHICS SUBSYSTEM'), false);
-  assert.ok(tunerSrc.includes('useLocale()'));
-  assert.ok(sonarSrc.includes('useLocale()'));
-  assert.ok(deckSrc.includes('useLocale()'));
+  assert.ok(labAstro.includes('ArcanaDeck'));
+  assert.ok(deckAstro.includes('data-i18n="lab.hint"'));
+  assert.ok(deckAstro.includes('data-i18n="lab.openCase"'));
+  assert.ok(i18nSrc.includes('data-arcana-title') && i18nSrc.includes('data-arcana-challenge'));
+  for (const gone of ['CrtTuner', 'SonarRadar', 'CyberDeck']) {
+    assert.equal(fs.existsSync(path.resolve(`src/components/lab/${gone}.tsx`)), false, `${gone}.tsx must be removed`);
+  }
 });
 
 test('C13: zero horizontal overflow across 320px, 375px, 768px, and 1440px in pt-br and en', async () => {

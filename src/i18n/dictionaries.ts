@@ -199,60 +199,6 @@ export interface TranslationSchema {
     indexLabel: string;
     hint: string;
     openCase: string;
-    navTuner: string;
-    navSonar: string;
-    navDeck: string;
-    tuner: {
-      tag: string;
-      title: string;
-      statusLabel: string;
-      locked: string;
-      searching: string;
-      noCarrier: string;
-      scanning: string;
-      hint: string;
-      freqLabel: string;
-      dragHint: string;
-      presets: {
-        crimsonName: string;
-        crimsonDesc: string;
-        phantomName: string;
-        phantomDesc: string;
-        noirName: string;
-        noirDesc: string;
-      };
-    };
-    sonar: {
-      tag: string;
-      title: string;
-      audioOn: string;
-      audioMuted: string;
-      telemetryTag: string;
-      acquired: string;
-      contactLabel: string;
-      azimuthLabel: string;
-      distanceLabel: string;
-      specLabel: string;
-      manifestLabel: string;
-    };
-    deck: {
-      tag: string;
-      title: string;
-      audioOn: string;
-      audioMuted: string;
-      docked: string;
-      ejected: string;
-      dragHint: string;
-      dampingLabel: string;
-      ejectBtn: string;
-      reinsertBtn: string;
-      decryptedHeader: string;
-      lockedHeader: string;
-      dumpActive: string;
-      dumpLocked: string;
-      lockedCodeComment: string;
-      keyboardHint: string;
-    };
   };
   contact: {
     sectionAria: string;
@@ -541,61 +487,6 @@ export const ptBrDict: TranslationSchema = {
     indexLabel: 'CARTAS //',
     hint: 'ARRASTE, USE AS SETAS E PRESSIONE ENTER PARA VIRAR A CARTA',
     openCase: 'VER CASE COMPLETO',
-    navTuner: '01 // SINTONIZADOR CRT',
-    navSonar: '02 // RADAR SONAR',
-    navDeck: '03 // CYBER DECK 3D',
-    tuner: {
-      tag: '// EXPERIMENTO 01 • SINTONIZADOR ANALÓGICO',
-      title: 'CONTROLADOR DE FREQUÊNCIA',
-      statusLabel: 'SINAL:',
-      locked: 'SINAL TRAVADO',
-      searching: 'BUSCANDO FREQ',
-      noCarrier: 'SEM PORTADORA',
-      scanning: '• • • VARRENDO FREQUÊNCIAS ANALÓGICAS • • •',
-      hint: 'Gire o dial ou use os atalhos para sintonizar 92.4, 98.7 ou 104.2 MHz.',
-      freqLabel: 'FREQUÊNCIA ATUAL',
-      dragHint: '[ ARRASTE O DIAL OU USE AS SETAS ]',
-      presets: {
-        crimsonName: 'CRIMSON REBELLION',
-        crimsonDesc: 'Canal de Alta Tensão Vermelho Carmesim — Persona Brutalist Mode',
-        phantomName: 'STARK MONOCHROME',
-        phantomDesc: 'Canal de Contraste Puro Branco Papel sobre Preto Absoluto',
-        noirName: 'OVERDRIVE PULSE',
-        noirDesc: 'Modulação de Pulso Analógico de Alta Frequência',
-      },
-    },
-    sonar: {
-      tag: '// EXPERIMENTO 02 • RADAR DE PROJETOS',
-      title: 'VARREDURA ACÚSTICA 360°',
-      audioOn: 'ÁUDIO SONAR: ATIVO',
-      audioMuted: 'ÁUDIO SONAR: MUDO',
-      telemetryTag: 'TELEMETRIA DO ALVO //',
-      acquired: 'LOCALIZADO',
-      contactLabel: 'PROJETO IDENTIFICADO',
-      azimuthLabel: 'AZIMUTE',
-      distanceLabel: 'ALCANCE',
-      specLabel: 'ESPECIFICAÇÃO TÉCNICA',
-      manifestLabel: 'ALVOS NO RADAR (5 SISTEMAS)',
-    },
-    deck: {
-      tag: '// EXPERIMENTO 03 • ZERO-G CYBER DECK',
-      title: 'CARTUCHO 3D & EJEÇÃO MECÂNICA',
-      audioOn: 'ÁUDIO DECK: ATIVO',
-      audioMuted: 'ÁUDIO DECK: MUDO',
-      docked: 'CARTUCHO: ACOPLADO',
-      ejected: 'CARTUCHO: EJETADO',
-      dragHint: 'ARRASTE PARA GIRAR 360°',
-      dampingLabel: 'INÉRCIA ZERO-G',
-      ejectBtn: 'EJETAR CARTUCHO // DECODIFICAR CÓDIGO',
-      reinsertBtn: 'ACOPLAR CARTUCHO // TRAVAR MEMÓRIA',
-      decryptedHeader: 'MEMÓRIA DECODIFICADA //',
-      lockedHeader: 'MEMÓRIA PROTEGIDA //',
-      dumpActive: 'DUMP: ATIVO',
-      dumpLocked: 'BLOQUEADO',
-      lockedCodeComment:
-        '// [ACESSO PROTEGIDO]\n// EJETE O CARTUCHO 3D PARA INSPECIONAR O PIPELINE DE STREAMING.',
-      keyboardHint: 'TECLADO: [SETAS] GIRAR • [ESPAÇO] EJETAR',
-    },
   },
   contact: {
     sectionAria: 'Contato e Envio de Propostas — Bounty Board',
@@ -890,61 +781,6 @@ export const enDict = {
     indexLabel: 'CARDS //',
     hint: 'DRAG, USE THE ARROW KEYS AND PRESS ENTER TO FLIP THE CARD',
     openCase: 'VIEW FULL CASE',
-    navTuner: '01 // CRT TUNER',
-    navSonar: '02 // SONAR RADAR',
-    navDeck: '03 // 3D CYBER DECK',
-    tuner: {
-      tag: '// EXPERIMENT 01 • ANALOG FREQUENCY TUNER',
-      title: 'RADIO INTERFACE CONTROLLER',
-      statusLabel: 'SIGNAL:',
-      locked: 'SIGNAL LOCKED',
-      searching: 'SEARCHING FREQ',
-      noCarrier: 'NO CARRIER',
-      scanning: '• • • SCANNING ANALOG FREQUENCIES • • •',
-      hint: 'Rotate the dial or click presets to lock onto 92.4, 98.7, or 104.2 MHz.',
-      freqLabel: 'CURRENT FREQUENCY',
-      dragHint: '[ DRAG DIAL OR USE ARROW KEYS ]',
-      presets: {
-        crimsonName: 'CRIMSON REBELLION',
-        crimsonDesc: 'High-Voltage Crimson Red Channel — Persona Brutalist Mode',
-        phantomName: 'STARK MONOCHROME',
-        phantomDesc: 'Pure Paper White on Pitch Black High-Contrast Channel',
-        noirName: 'OVERDRIVE PULSE',
-        noirDesc: 'High-Frequency Analog Pulse Modulation',
-      },
-    },
-    sonar: {
-      tag: '// EXPERIMENT 02 • PROJECT SONAR RADAR',
-      title: '360° ACOUSTIC SWEEP',
-      audioOn: 'SONAR AUDIO: ON',
-      audioMuted: 'SONAR AUDIO: MUTED',
-      telemetryTag: 'TARGET TELEMETRY //',
-      acquired: 'ACQUIRED',
-      contactLabel: 'IDENTIFIED SYSTEM',
-      azimuthLabel: 'AZIMUTH',
-      distanceLabel: 'RANGE',
-      specLabel: 'TECHNICAL SPECIFICATION',
-      manifestLabel: 'RADAR TARGETS (5 SYSTEMS)',
-    },
-    deck: {
-      tag: '// EXPERIMENT 03 • ZERO-G CYBER DECK',
-      title: '3D DATA CASSETTE & MECHANICAL EJECT',
-      audioOn: 'DECK AUDIO: ON',
-      audioMuted: 'DECK AUDIO: MUTED',
-      docked: 'CARTRIDGE: DOCKED',
-      ejected: 'CARTRIDGE: EJECTED',
-      dragHint: 'DRAG TO ROTATE 360°',
-      dampingLabel: 'ZERO-G INERTIA',
-      ejectBtn: 'EJECT CARTRIDGE // DECRYPT SOURCE LOGS',
-      reinsertBtn: 'DOCK CARTRIDGE // LOCK MEMORY',
-      decryptedHeader: 'MEMORY BANK DECRYPTED //',
-      lockedHeader: 'PROTECTED CARTRIDGE MEMORY //',
-      dumpActive: 'DUMP: ACTIVE',
-      dumpLocked: 'LOCKED',
-      lockedCodeComment:
-        '// [ACCESS PROTECTED]\n// EJECT THE 3D CARTRIDGE TO INSPECT THE STREAMING PIPELINE SOURCE.',
-      keyboardHint: 'KEYBOARD: [ARROWS] ROTATE • [SPACE] EJECT',
-    },
   },
   contact: {
     sectionAria: 'Contact and Project Proposals — Bounty Board',

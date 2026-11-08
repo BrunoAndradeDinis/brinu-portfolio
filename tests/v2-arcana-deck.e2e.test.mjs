@@ -190,3 +190,48 @@ test('C15: with JavaScript disabled the four cases stay readable in the lab', as
     await context.close();
   }
 });
+
+import zlib from 'node:zlib';
+
+const distJs = () => fs.readdirSync('dist/_astro').filter((f) => f.endsWith('.js')).map((f) => `dist/_astro/${f}`);
+
+test('C2: lab experiment files and anchors are gone', () => {
+  for (const name of ['CrtTuner', 'SonarRadar', 'CyberDeck']) {
+    assert.equal(fs.existsSync(`src/components/lab/${name}.tsx`), false, `${name}.tsx must not exist`);
+  }
+  const html = fs.readFileSync('dist/index.html', 'utf8');
+  for (const anchor of ['lab-crt-tuner', 'lab-sonar-radar', 'lab-cyber-deck']) {
+    assert.ok(!html.includes(anchor), `built home still has ${anchor}`);
+  }
+  assert.ok(html.includes('id="lab"'), 'the #lab section must remain');
+  assert.equal(distJs().filter((f) => /three/i.test(f) || /CyberDeck|CrtTuner|SonarRadar/.test(f)).length, 0, 'no three or experiment chunk may be built');
+});
+
+test('C3: built js has no WebGLRenderer and stays within 190 kB gzip', () => {
+  const files = distJs();
+  assert.ok(files.length > 5, 'expected built chunks');
+  let total = 0;
+  for (const file of files) {
+    const body = fs.readFileSync(file);
+    assert.ok(!body.includes('WebGLRenderer'), `${file} still contains WebGLRenderer`);
+    total += zlib.gzipSync(body).length;
+  }
+  assert.ok(total <= 190 * 1000, `client js gzip total is ${(total / 1000).toFixed(1)} kB, budget is 190 kB`);
+});
+
+test('C14: no THREE.JS, WEBGL or SHADERS text in dictionaries or the built page', async () => {
+  const { DICTIONARIES } = await import('../src/i18n/dictionaries.ts');
+  const forbidden = /three\.js|webgl|shaders?\b/i;
+  for (const locale of ['pt-br', 'en']) {
+    assert.doesNotMatch(JSON.stringify(DICTIONARIES[locale]), forbidden, `${locale} dictionary still mentions a removed technology`);
+  }
+  const html = fs.readFileSync('dist/index.html', 'utf8').replace(/<script[\s\S]*?<\/script>/g, '').replace(/<style[\s\S]*?<\/style>/g, '');
+  assert.doesNotMatch(html, forbidden, 'built home still mentions a removed technology');
+  const { context, page } = await openHome('pt-br', { reducedMotion: 'reduce' });
+  try {
+    await toggleLocale(page);
+    assert.doesNotMatch(await page.evaluate(() => document.body.innerText), forbidden, 'the English page still mentions a removed technology');
+  } finally {
+    await context.close();
+  }
+});
