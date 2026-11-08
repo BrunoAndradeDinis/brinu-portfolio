@@ -108,6 +108,36 @@ export interface TranslationSchema {
       p6Reel: string;
       p6Title: string;
       p6Alt: string;
+      p1Headline: string;
+      p1Credits: string;
+      p1Highlight: string;
+      p1CardTitle: string;
+      p1CardSub: string;
+      p2Headline: string;
+      p2Credits: string;
+      p2Highlight: string;
+      p2CardTitle: string;
+      p2CardSub: string;
+      p3Headline: string;
+      p3Credits: string;
+      p3Highlight: string;
+      p3CardTitle: string;
+      p3CardSub: string;
+      p4Headline: string;
+      p4Credits: string;
+      p4Highlight: string;
+      p4CardTitle: string;
+      p4CardSub: string;
+      p5Headline: string;
+      p5Credits: string;
+      p5Highlight: string;
+      p5CardTitle: string;
+      p5CardSub: string;
+      p6Headline: string;
+      p6Credits: string;
+      p6Highlight: string;
+      p6CardTitle: string;
+      p6CardSub: string;
     };
     motto: {
       part1: string;
@@ -416,6 +446,36 @@ export const ptBrDict: TranslationSchema = {
       p6Reel: 'FRAME 06 // CULINÁRIA & STREET FOOD',
       p6Title: 'Izakaya & Comfort Food // Culinária Afetiva',
       p6Alt: 'Storyboard Paixão 06: Gastronomia Afetiva e Street Food',
+      p1Headline: 'MEDULLA',
+      p1Credits: 'KEOPS & RAONY // ROCK ALTERNATIVO BR',
+      p1Highlight: 'GUITARRA ALTA, LETRA COM CHÃO',
+      p1CardTitle: 'ENERGIA BRUTA',
+      p1CardSub: '// GUITARRA',
+      p2Headline: 'ONE PIECE',
+      p2Credits: 'EIICHIRO ODA // MONKEY D. LUFFY',
+      p2Highlight: 'LIBERDADE, CORAGEM & NAKAMAS',
+      p2CardTitle: 'AVENTURA EM ALTO-MAR',
+      p2CardSub: '// O TESOURO É A JORNADA',
+      p3Headline: 'COWBOY BEBOP',
+      p3Credits: 'SHINICHIRO WATANABE & YOKO KANNO',
+      p3Highlight: 'JAZZ, NOIR & ESPAÇO',
+      p3CardTitle: 'SPACE JAZZ NOIR',
+      p3CardSub: '// ESTILO ACIMA DE TUDO',
+      p4Headline: 'AKIRA',
+      p4Credits: 'KATSUHIRO OTOMO // NEO-TOKYO, 1988',
+      p4Highlight: 'VELOCIDADE, NEON & CAOS',
+      p4CardTitle: 'CYBERPUNK',
+      p4CardSub: '// 1988',
+      p5Headline: 'CAFÉ ESPECIAL',
+      p5Credits: 'HARIO V60 // EXTRAÇÃO, MOAGEM & TORRA',
+      p5Highlight: 'RITUAL DIÁRIO // 93°C // PROPORÇÃO 1:16',
+      p5CardTitle: 'POUR OVER',
+      p5CardSub: '// CLAREZA & NOTAS',
+      p6Headline: 'STREET FOOD & SOUL',
+      p6Credits: 'IZAKAYA & COMFORT FOOD // CULINÁRIA AFETIVA',
+      p6Highlight: 'ALQUIMIA DE SABORES // FOGO, TEMPO & MEMÓRIA',
+      p6CardTitle: 'UMAMI & AFETO',
+      p6CardSub: '// COMIDA QUE CONECTA',
     },
     motto: {
       part1: 'APRENDI A RESOLVER',
@@ -733,6 +793,36 @@ export const enDict = {
       p6Reel: 'FRAME 06 // GASTRONOMY & STREET FOOD',
       p6Title: 'Izakaya & Comfort Food // Soul Kitchen',
       p6Alt: 'Passion Storyboard Frame 06: Soul Food and Street Kitchen',
+      p1Headline: 'MEDULLA',
+      p1Credits: 'KEOPS & RAONY // BRAZILIAN ALT ROCK',
+      p1Highlight: 'LOUD GUITARS, GROUNDED LYRICS',
+      p1CardTitle: 'RAW ENERGY',
+      p1CardSub: '// GUITAR',
+      p2Headline: 'ONE PIECE',
+      p2Credits: 'EIICHIRO ODA // MONKEY D. LUFFY',
+      p2Highlight: 'FREEDOM, COURAGE & NAKAMA',
+      p2CardTitle: 'ADVENTURE AT SEA',
+      p2CardSub: '// THE TREASURE IS THE JOURNEY',
+      p3Headline: 'COWBOY BEBOP',
+      p3Credits: 'SHINICHIRO WATANABE & YOKO KANNO',
+      p3Highlight: 'JAZZ, NOIR & SPACE',
+      p3CardTitle: 'SPACE JAZZ NOIR',
+      p3CardSub: '// STYLE ABOVE ALL',
+      p4Headline: 'AKIRA',
+      p4Credits: 'KATSUHIRO OTOMO // NEO-TOKYO, 1988',
+      p4Highlight: 'SPEED, NEON & CHAOS',
+      p4CardTitle: 'CYBERPUNK',
+      p4CardSub: '// 1988',
+      p5Headline: 'SPECIALTY COFFEE',
+      p5Credits: 'HARIO V60 // EXTRACTION, GRIND & ROAST',
+      p5Highlight: 'DAILY RITUAL // 93°C // 1:16 RATIO',
+      p5CardTitle: 'POUR OVER',
+      p5CardSub: '// CLARITY & NOTES',
+      p6Headline: 'STREET FOOD & SOUL',
+      p6Credits: 'IZAKAYA & COMFORT FOOD // SOUL KITCHEN',
+      p6Highlight: 'FLAVOR ALCHEMY // FIRE, TIME & MEMORY',
+      p6CardTitle: 'UMAMI & AFFECTION',
+      p6CardSub: '// FOOD THAT CONNECTS',
     },
     motto: {
       part1: 'I LEARNED TO SOLVE',
