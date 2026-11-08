@@ -1,0 +1,16 @@
+---
+import SkillsGrid from "./SkillsGrid.astro";
+import { ptBrDict } from "../i18n/dictionaries";
+---
+
+<section
+  id="arsenal"
+  class="relative bg-space-base px-4 pb-16 sm:px-8 sm:pb-20 md:px-12 md:pb-24 text-paper-white select-none overflow-hidden"
+  aria-label={ptBrDict.about.skillsTitle}
+  data-i18n="about.skillsTitle"
+  data-i18n-attr="aria-label"
+>
+  <div class="mx-auto max-w-[140rem]">
+    <SkillsGrid />
+  </div>
+</section>

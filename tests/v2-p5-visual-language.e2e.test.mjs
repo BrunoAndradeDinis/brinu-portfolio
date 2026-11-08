@@ -130,7 +130,7 @@ test('C12: html background color matches the section occupying the top of the vi
 test('C14: activating an in-page anchor link stops target at least 8px below visible nav controls', async () => {
   const { context, page } = await openHome('pt-br');
   try {
-    const urianaChip = page.locator('#about a[href="#case-uriana"]').first();
+    const urianaChip = page.locator('#arsenal a[href="#case-uriana"]').first();
     await urianaChip.scrollIntoViewIfNeeded();
     await page.waitForTimeout(100);
     await urianaChip.click();

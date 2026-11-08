@@ -1,5 +1,4 @@
 ---
-import SkillsGrid from "./SkillsGrid.astro";
 import { PROFILE } from "../data/profile";
 import { ptBrDict } from "../i18n/dictionaries";
 import { CAREER, getLocalizedCareer, getLocalizedEducation } from "../data/career";
@@ -164,10 +163,6 @@ const currentId = CAREER.find((entry) => entry.end === "present")?.id;
         </ul>
       </P5Panel>
     </div>
-  </div>
-
-  <div class="mx-auto max-w-[140rem]">
-    <SkillsGrid />
   </div>
 </section>
 

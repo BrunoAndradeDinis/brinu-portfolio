@@ -596,7 +596,9 @@ test('C12: About and SkillsGrid render unified Persona 5 Confidant dossier witho
     path.resolve('src/components/SkillsGrid.astro'),
     'utf8'
   );
-  assert.ok(aboutSrc.includes('<SkillsGrid />'));
+  const arsenalSrc = fs.readFileSync(path.resolve('src/components/Arsenal.astro'), 'utf8');
+  assert.ok(arsenalSrc.includes('<SkillsGrid />'));
+  assert.equal(aboutSrc.includes('SkillsGrid'), false, 'the arsenal must live outside the dossier');
   assert.ok(aboutSrc.includes('PROFILE.location.label'));
   assert.ok(aboutSrc.includes('data-i18n="about.bioLine1"'));
   assert.ok(skillsSrc.includes('data-skill-vignette'));

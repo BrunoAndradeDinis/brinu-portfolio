@@ -249,3 +249,64 @@ test('C8: locale change updates ladder text in place', async () => {
     await context.close();
   }
 });
+
+test('C9: arsenal lives in its own section after about with three domains and fifteen skills', async () => {
+  const { context, page } = await openHome('pt-br', { reducedMotion: 'reduce' });
+  try {
+    const info = await page.evaluate(() => {
+      const about = document.getElementById('about');
+      const arsenal = document.getElementById('arsenal');
+      return {
+        exists: !!arsenal,
+        nested: !!arsenal && about.contains(arsenal),
+        aboutHasSkills: !!about.querySelector('[data-skill-vignette], [data-skills-matrix]'),
+        follows: !!arsenal && (() => { const order = [...document.querySelectorAll('#main-content > section')].map((el) => el.id); return order.indexOf('arsenal') === order.indexOf('about') + 1; })(),
+        domains: arsenal ? arsenal.querySelectorAll('[data-skill-vignette]').length : 0,
+        skills: arsenal ? arsenal.querySelectorAll('[data-skill-badge]').length : 0,
+        counter: arsenal?.querySelector('[data-arsenal-counter]')?.textContent.trim(),
+      };
+    });
+    assert.equal(info.exists, true);
+    assert.equal(info.nested, false);
+    assert.equal(info.aboutHasSkills, false);
+    assert.equal(info.follows, true, '#arsenal must directly follow #about');
+    assert.equal(info.domains, 3);
+    assert.equal(info.skills, 15);
+    assert.match(info.counter, /3 .*15/);
+  } finally {
+    await context.close();
+  }
+});
+
+test('C10: menu keeps six items without the arsenal', async () => {
+  const { context, page } = await openHome('pt-br', { reducedMotion: 'reduce' });
+  try {
+    await page.locator('#cockpit-trigger-btn').dispatchEvent('click');
+    await page.locator('#cockpit-menu-overlay a[href="#lab"]').waitFor({ state: 'visible', timeout: 8000 });
+    const hrefs = await page.locator('#cockpit-menu-overlay nav a').evaluateAll((els) => els.map((el) => el.getAttribute('href')));
+    assert.deepEqual(hrefs, ['#hero', '#works', '#about', '#lab', '#contact', '/whoami']);
+    assert.equal(hrefs.includes('#arsenal'), false);
+  } finally {
+    await context.close();
+  }
+});
+
+test('C11: arsenal evidence chip scrolls to the case below the nav', async () => {
+  const { context, page } = await openHome('pt-br');
+  try {
+    const chip = page.locator('#arsenal a[href="#case-uriana"]').first();
+    await chip.scrollIntoViewIfNeeded();
+    await page.waitForTimeout(900);
+    await chip.dispatchEvent('click');
+    await page.waitForTimeout(2200);
+    const m = await page.evaluate(() => {
+      const target = document.getElementById('case-uriana').getBoundingClientRect().top;
+      const avatar = document.querySelector('#comic-nav-logo [data-nav-avatar]');
+      const trigger = document.getElementById('cockpit-trigger-btn');
+      return { target, navBottom: Math.max(avatar.getBoundingClientRect().bottom, trigger.getBoundingClientRect().bottom) };
+    });
+    assert.ok(m.target >= m.navBottom && m.target <= m.navBottom + 90, `case top ${m.target} vs nav bottom ${m.navBottom}`);
+  } finally {
+    await context.close();
+  }
+});
