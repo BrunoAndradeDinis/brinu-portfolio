@@ -290,3 +290,200 @@ test('C17: locale change keeps the passion frame nodes', async () => {
     await context.close();
   }
 });
+
+const auditFrames = (page) =>
+  page.locator('[data-passion-slide]').evaluateAll((slides) => {
+    const parse = (value) => {
+      const m = value.match(/rgba?\(([^)]+)\)/);
+      if (m) {
+        const [r, g, b, a = 1] = m[1].split(/[,/ ]+/).filter(Boolean).map(Number);
+        return { r, g, b, a };
+      }
+      const c = value.match(/color\(srgb ([^)]+)\)/);
+      if (c) {
+        const [r, g, b, a = 1] = c[1].split(/[ /]+/).filter(Boolean).map(Number);
+        return { r: r * 255, g: g * 255, b: b * 255, a };
+      }
+      return null;
+    };
+    const lum = ({ r, g, b }) => {
+      const f = (v) => { const s = v / 255; return s <= 0.03928 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4; };
+      return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b);
+    };
+    const visible = (el) => el.getClientRects().length > 0 && getComputedStyle(el).display !== 'none';
+    return slides.map((slide, index) => {
+      const figure = slide.querySelector('figure');
+      const entries = [
+        ['tag', slide.querySelector('figcaption')],
+        ['cardTitle', slide.querySelector('[data-passion-card] > span:nth-child(1)')],
+        ['cardSub', slide.querySelector('[data-passion-card] > span:nth-child(2)')],
+        ['headline', slide.querySelector('[data-passion-headline]')],
+        ['credits', slide.querySelector('[data-passion-credits]')],
+        ['highlight', slide.querySelector('[data-passion-highlight]')],
+      ];
+      const lines = entries.filter(([, el]) => visible(el)).map(([name, el]) => {
+        let plate = el;
+        let bg = parse(getComputedStyle(plate).backgroundColor);
+        while ((!bg || bg.a < 1) && plate !== figure) {
+          plate = plate.parentElement;
+          bg = parse(getComputedStyle(plate).backgroundColor);
+        }
+        const fg = parse(getComputedStyle(el).color);
+        const l1 = lum(fg);
+        const l2 = lum(bg);
+        const contrast = (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05);
+        const target = name === 'cardTitle' || name === 'cardSub' ? plate : el;
+        let x = 0;
+        let y = 0;
+        for (let n = target; n && n !== figure; n = n.offsetParent) { x += n.offsetLeft; y += n.offsetTop; }
+        const box = { left: x, top: y, right: x + target.offsetWidth, bottom: y + target.offsetHeight };
+        return {
+          name, plateOpaque: plate !== figure && bg.a === 1, contrast,
+          box,
+          inside: box.left >= -1 && box.right <= figure.offsetWidth + 1 && box.top >= -1 && box.bottom <= figure.offsetHeight + 1,
+          overflows: el.scrollWidth > el.clientWidth + 1,
+        };
+      });
+      return { index: index + 1, lines };
+    });
+  });
+
+test('C9: every frame text line sits on an opaque plate with contrast at least 4.5:1', async () => {
+  const { context, page } = await openHome('pt-br', { reducedMotion: 'reduce' });
+  try {
+    for (const locale of ['pt-br', 'en']) {
+      if (locale === 'en') await toggleLocale(page);
+      for (const frame of await auditFrames(page)) {
+        assert.ok(frame.lines.length >= 4, `frame ${frame.index} (${locale}) shows only ${frame.lines.length} lines`);
+        for (const line of frame.lines) {
+          assert.equal(line.plateOpaque, true, `frame ${frame.index} ${line.name} (${locale}) has no opaque plate`);
+          assert.ok(line.contrast >= 4.5, `frame ${frame.index} ${line.name} (${locale}) contrast ${line.contrast.toFixed(2)}`);
+        }
+      }
+    }
+  } finally {
+    await context.close();
+  }
+});
+
+test('C10: frame text boxes do not overlap at 320, 375, 768 and 1440px', async () => {
+  for (const width of [320, 375, 768, 1440]) {
+    const { context, page } = await openHome('pt-br', { reducedMotion: 'reduce', viewport: { width, height: 900 } });
+    try {
+      for (const locale of ['pt-br', 'en']) {
+        if (locale === 'en') await toggleLocale(page);
+        for (const frame of await auditFrames(page)) {
+          const lines = frame.lines;
+          for (let i = 0; i < lines.length; i++) {
+            for (let j = i + 1; j < lines.length; j++) {
+              if (lines[i].name.startsWith('card') && lines[j].name.startsWith('card')) continue;
+              const a = lines[i].box;
+              const b = lines[j].box;
+              const overlap = a.left < b.right - 0.5 && b.left < a.right - 0.5 && a.top < b.bottom - 0.5 && b.top < a.bottom - 0.5;
+              assert.equal(overlap, false, `${width}px ${locale} frame ${frame.index}: ${lines[i].name} overlaps ${lines[j].name}`);
+            }
+          }
+        }
+      }
+    } finally {
+      await context.close();
+    }
+  }
+});
+
+test('C11: credits and side card hide at 640px or less while tag, headline and highlight stay', async () => {
+  for (const [width, expectHidden] of [[320, true], [375, true], [640, true], [641, false], [1440, false]]) {
+    const { context, page } = await openHome('pt-br', { reducedMotion: 'reduce', viewport: { width, height: 900 } });
+    try {
+      const state = await page.locator('[data-passion-slide]').evaluateAll((slides) =>
+        slides.map((s) => {
+          const shown = (sel) => s.querySelector(sel).getClientRects().length > 0 && getComputedStyle(s.querySelector(sel)).display !== 'none';
+          return { credits: shown('[data-passion-credits]'), card: shown('[data-passion-card]'), tag: shown('figcaption'), headline: shown('[data-passion-headline]'), highlight: shown('[data-passion-highlight]') };
+        }),
+      );
+      for (const s of state) {
+        assert.equal(s.credits, !expectHidden, `${width}px credits visibility`);
+        assert.equal(s.card, !expectHidden, `${width}px card visibility`);
+        assert.deepEqual([s.tag, s.headline, s.highlight], [true, true, true], `${width}px tag, headline and highlight must stay`);
+      }
+    } finally {
+      await context.close();
+    }
+  }
+});
+
+test('C12: reel keeps six frames with inverted tilt and parallax', async () => {
+  const { context, page } = await openHome('pt-br');
+  try {
+    assert.equal(await page.locator('[data-passion-slide]').count(), 6);
+    const tilt = await page.locator('[data-film-wrapper-reverse]').evaluate((el) => {
+      const cs = getComputedStyle(el);
+      const m = new DOMMatrixReadOnly(cs.transform === 'none' ? undefined : cs.transform);
+      const rotateProp = cs.rotate && cs.rotate !== 'none' ? parseFloat(cs.rotate) : 0;
+      return Math.atan2(m.b, m.a) * 180 / Math.PI + rotateProp;
+    });
+    assert.ok(tilt < -1.5 && tilt > -3.5, `expected an inverted tilt near -2.5deg, got ${tilt}`);
+    const x = () => page.locator('[data-filmstrip-parallax-reverse]').evaluate((el) => new DOMMatrixReadOnly(getComputedStyle(el).transform).m41);
+    const before = await x();
+    await page.evaluate(() => {
+      const s = document.querySelector('[data-passion-slide]');
+      window.scrollTo(0, s.getBoundingClientRect().top + scrollY - 300);
+    });
+    await page.waitForTimeout(900);
+    await page.mouse.wheel(0, 400);
+    await page.waitForTimeout(900);
+    assert.notEqual(await x(), before, 'the passion reel must move with scroll');
+  } finally {
+    await context.close();
+  }
+});
+
+test('C13: zero horizontal overflow at 320, 375, 768 and 1440px in pt-br and en', async () => {
+  for (const locale of ['pt-br', 'en']) {
+    for (const width of [320, 375, 768, 1440]) {
+      const { context, page } = await openHome(locale, { reducedMotion: 'reduce', viewport: { width, height: 900 } });
+      try {
+        const m = await page.evaluate(() => ({ sw: document.documentElement.scrollWidth, cw: document.documentElement.clientWidth, bw: document.body.scrollWidth }));
+        assert.ok(m.sw <= m.cw && m.bw <= m.cw, `Overflow at ${width}px (${locale}): ${m.sw}/${m.bw} > ${m.cw}`);
+      } finally {
+        await context.close();
+      }
+    }
+  }
+});
+
+test('C15: long headlines wrap inside their plate', async () => {
+  for (const width of [320, 1440]) {
+    const { context, page } = await openHome('pt-br', { reducedMotion: 'reduce', viewport: { width, height: 900 } });
+    try {
+      await toggleLocale(page);
+      for (const frame of await auditFrames(page)) {
+        const headline = frame.lines.find((l) => l.name === 'headline');
+        assert.equal(headline.inside, true, `${width}px frame ${frame.index} headline leaves the frame`);
+        assert.equal(headline.overflows, false, `${width}px frame ${frame.index} headline overflows its plate`);
+      }
+    } finally {
+      await context.close();
+    }
+  }
+});
+
+test('C16: failed background keeps the solid color and legible text', async () => {
+  const context = await browser.newContext({ viewport: { width: 1440, height: 900 }, reducedMotion: 'reduce' });
+  const page = await context.newPage();
+  try {
+    await page.route('**/assets/filmstrip/passion-bg-*.svg', (route) => route.abort());
+    await page.goto(`${baseUrl}/`, { waitUntil: 'networkidle' });
+    await dismissIntroIfPresent(page);
+    const solid = await page.locator('[data-passion-slide] [data-passion-bg]').evaluateAll((els) => els.map((el) => getComputedStyle(el).backgroundColor));
+    assert.equal(solid.length, 6);
+    for (const color of solid) assert.ok(['rgb(254, 0, 0)', 'rgb(8, 8, 8)'].includes(color), `solid fallback was ${color}`);
+    const broken = await page.locator('[data-passion-slide] img').evaluateAll((els) => els.filter((el) => el.complete && el.naturalWidth === 0).length);
+    assert.equal(broken, 6, 'precondition: all backgrounds failed');
+    for (const frame of await auditFrames(page)) {
+      for (const line of frame.lines) assert.ok(line.plateOpaque && line.contrast >= 4.5, `frame ${frame.index} ${line.name} lost legibility`);
+    }
+  } finally {
+    await context.close();
+  }
+});
