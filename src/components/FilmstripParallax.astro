@@ -2,6 +2,7 @@
 import { ptBrDict, enDict } from "../i18n/dictionaries";
 import { buildMottoTokens, type NarrativeToken } from "./filmstrip/motto";
 import P5Title from "./p5/P5Title.astro";
+import PassionFrame from "./PassionFrame.astro";
 
 interface FilmSlide {
   id: string;
@@ -12,15 +13,8 @@ interface FilmSlide {
 }
 
 interface PassionSlide {
-  id: string;
-  reelKey: string;
-  reelDefault: string;
-  titleKey: string;
-  titleDefault: string;
+  index: 1 | 2 | 3 | 4 | 5 | 6;
   bgColor: string;
-  imgSrc: string;
-  altKey: string;
-  altDefault: string;
 }
 
 const FILM_SLIDES: FilmSlide[] = [
@@ -46,72 +40,12 @@ const slideText = (slide: FilmSlide) => {
 };
 
 const PASSION_SLIDES: PassionSlide[] = [
-  {
-    id: "passion-medulla",
-    reelKey: "filmstrip.passionSlides.p1Reel",
-    reelDefault: ptBrDict.filmstrip.passionSlides.p1Reel,
-    titleKey: "filmstrip.passionSlides.p1Title",
-    titleDefault: ptBrDict.filmstrip.passionSlides.p1Title,
-    bgColor: "#FE0000",
-    imgSrc: "/assets/filmstrip/passion-bg-1.svg",
-    altKey: "filmstrip.passionSlides.p1Alt",
-    altDefault: ptBrDict.filmstrip.passionSlides.p1Alt,
-  },
-  {
-    id: "passion-one-piece",
-    reelKey: "filmstrip.passionSlides.p2Reel",
-    reelDefault: ptBrDict.filmstrip.passionSlides.p2Reel,
-    titleKey: "filmstrip.passionSlides.p2Title",
-    titleDefault: ptBrDict.filmstrip.passionSlides.p2Title,
-    bgColor: "#080808",
-    imgSrc: "/assets/filmstrip/passion-bg-2.svg",
-    altKey: "filmstrip.passionSlides.p2Alt",
-    altDefault: ptBrDict.filmstrip.passionSlides.p2Alt,
-  },
-  {
-    id: "passion-cowboy-bebop",
-    reelKey: "filmstrip.passionSlides.p3Reel",
-    reelDefault: ptBrDict.filmstrip.passionSlides.p3Reel,
-    titleKey: "filmstrip.passionSlides.p3Title",
-    titleDefault: ptBrDict.filmstrip.passionSlides.p3Title,
-    bgColor: "#FE0000",
-    imgSrc: "/assets/filmstrip/passion-bg-3.svg",
-    altKey: "filmstrip.passionSlides.p3Alt",
-    altDefault: ptBrDict.filmstrip.passionSlides.p3Alt,
-  },
-  {
-    id: "passion-akira",
-    reelKey: "filmstrip.passionSlides.p4Reel",
-    reelDefault: ptBrDict.filmstrip.passionSlides.p4Reel,
-    titleKey: "filmstrip.passionSlides.p4Title",
-    titleDefault: ptBrDict.filmstrip.passionSlides.p4Title,
-    bgColor: "#080808",
-    imgSrc: "/assets/filmstrip/passion-bg-4.svg",
-    altKey: "filmstrip.passionSlides.p4Alt",
-    altDefault: ptBrDict.filmstrip.passionSlides.p4Alt,
-  },
-  {
-    id: "passion-coffee",
-    reelKey: "filmstrip.passionSlides.p5Reel",
-    reelDefault: ptBrDict.filmstrip.passionSlides.p5Reel,
-    titleKey: "filmstrip.passionSlides.p5Title",
-    titleDefault: ptBrDict.filmstrip.passionSlides.p5Title,
-    bgColor: "#FE0000",
-    imgSrc: "/assets/filmstrip/passion-bg-5.svg",
-    altKey: "filmstrip.passionSlides.p5Alt",
-    altDefault: ptBrDict.filmstrip.passionSlides.p5Alt,
-  },
-  {
-    id: "passion-street-food",
-    reelKey: "filmstrip.passionSlides.p6Reel",
-    reelDefault: ptBrDict.filmstrip.passionSlides.p6Reel,
-    titleKey: "filmstrip.passionSlides.p6Title",
-    titleDefault: ptBrDict.filmstrip.passionSlides.p6Title,
-    bgColor: "#080808",
-    imgSrc: "/assets/filmstrip/passion-bg-6.svg",
-    altKey: "filmstrip.passionSlides.p6Alt",
-    altDefault: ptBrDict.filmstrip.passionSlides.p6Alt,
-  },
+  { index: 1, bgColor: "#FE0000" },
+  { index: 2, bgColor: "#080808" },
+  { index: 3, bgColor: "#FE0000" },
+  { index: 4, bgColor: "#080808" },
+  { index: 5, bgColor: "#FE0000" },
+  { index: 6, bgColor: "#080808" },
 ];
 
 const NARRATIVE_CONFIG: Record<string, NarrativeToken[][]> = {
@@ -307,35 +241,7 @@ function splitWords(text: string): string[] {
           </div>
 
           {PASSION_SLIDES.map((slide) => (
-            <div
-              data-passion-slide
-              class="relative shrink-0 bg-space-base py-3 pr-3 sm:py-5 sm:pr-5"
-            >
-              <figure
-                class="media relative media-fill min-w-[18rem] max-w-[18rem] sm:min-w-[28rem] sm:max-w-[28rem] lg:min-w-[36rem] lg:max-w-[36rem] overflow-hidden border-2 border-paper-white"
-              >
-                <div class="pt-[62%]"></div>
-                <div
-                  class="absolute inset-0"
-                  style={`background-color: ${slide.bgColor};`}
-                ></div>
-                <img
-                  src={slide.imgSrc}
-                  alt={slide.altDefault}
-                  data-i18n={slide.altKey}
-                  data-i18n-attr="alt"
-                  decoding="async"
-                  draggable="false"
-                  class="media__image is-loaded absolute inset-0 h-full w-full object-cover"
-                />
-                <figcaption class="pointer-events-none absolute top-2.5 left-2.5 z-10 flex items-center gap-1.5 border-2 border-paper-white bg-space-base/95 px-2.5 py-1 font-mono text-[9px] sm:text-[11px] font-bold tracking-wider text-paper-white uppercase">
-                  <span class="inline-block h-1.5 w-1.5 bg-bebop-red"></span>
-                  <span data-i18n={slide.reelKey}>{slide.reelDefault}</span>
-                  <span class="hidden sm:inline text-muted-gray">::</span>
-                  <span class="hidden sm:inline" data-i18n={slide.titleKey}>{slide.titleDefault}</span>
-                </figcaption>
-              </figure>
-            </div>
+            <PassionFrame index={slide.index} bgColor={slide.bgColor} />
           ))}
 
           <div class="relative -ml-2 sm:-ml-3.5 flex shrink-0 self-stretch bg-space-base py-3 sm:py-5">

@@ -1,0 +1,75 @@
+---
+import { ptBrDict } from "../i18n/dictionaries";
+
+type FrameIndex = 1 | 2 | 3 | 4 | 5 | 6;
+
+interface Props {
+  index: FrameIndex;
+  bgColor: string;
+}
+
+const { index, bgColor } = Astro.props;
+
+const slides = ptBrDict.filmstrip.passionSlides;
+const prefix = `filmstrip.passionSlides.p${index}`;
+const text = (field: "Reel" | "Title" | "Alt" | "Headline" | "Credits" | "Highlight" | "CardTitle" | "CardSub") =>
+  slides[`p${index}${field}` as keyof typeof slides];
+const imgSrc = `/assets/filmstrip/passion-bg-${index}.svg`;
+---
+
+<div
+  data-passion-slide
+  data-passion-index={index}
+  class="relative shrink-0 bg-space-base py-3 pr-3 sm:py-5 sm:pr-5"
+>
+  <figure
+    class="media relative media-fill @container min-w-[18rem] max-w-[18rem] sm:min-w-[28rem] sm:max-w-[28rem] lg:min-w-[36rem] lg:max-w-[36rem] overflow-hidden border-2 border-paper-white"
+  >
+    <div class="pt-[62%]"></div>
+    <div class="absolute inset-0" style={`background-color: ${bgColor};`}></div>
+    <img
+      src={imgSrc}
+      alt={text("Alt")}
+      data-i18n={`${prefix}Alt`}
+      data-i18n-attr="alt"
+      decoding="async"
+      draggable="false"
+      class="media__image is-loaded absolute inset-0 h-full w-full object-cover"
+    />
+
+    <figcaption
+      class="pointer-events-none absolute top-2.5 left-2.5 z-10 flex items-center gap-1.5 border-2 border-paper-white bg-space-base/95 px-2.5 py-1 font-mono text-[9px] sm:text-[11px] font-bold tracking-wider text-paper-white uppercase"
+    >
+      <span class="inline-block h-1.5 w-1.5 bg-bebop-red"></span>
+      <span data-passion-tag data-i18n={`${prefix}Reel`}>{text("Reel")}</span>
+      <span class="hidden sm:inline text-muted-gray">::</span>
+      <span class="hidden sm:inline" data-i18n={`${prefix}Title`}>{text("Title")}</span>
+    </figcaption>
+
+    <div
+      data-passion-card
+      class="pointer-events-none absolute right-[3cqw] top-[3cqw] z-10 hidden sm:flex max-w-[44cqw] rotate-[3deg] flex-col items-start bg-space-base px-[2.4cqw] py-[1.6cqw] text-paper-white"
+    >
+      <span class="font-mono text-[2.8cqw] font-black uppercase tracking-wider" data-i18n={`${prefix}CardTitle`}>{text("CardTitle")}</span>
+      <span class="font-mono text-[2.4cqw] font-bold uppercase text-paper-white" data-i18n={`${prefix}CardSub`}>{text("CardSub")}</span>
+    </div>
+
+    <div class="pointer-events-none absolute inset-x-[3cqw] bottom-[3cqw] z-10 flex flex-col items-start gap-[1.2cqw]">
+      <h3
+        data-passion-headline
+        class="max-w-full bg-space-base px-[2.4cqw] py-[1cqw] font-display text-[clamp(1.1rem,8cqw,3rem)] font-black uppercase leading-[0.95] tracking-tight text-paper-white [overflow-wrap:anywhere]"
+        data-i18n={`${prefix}Headline`}
+      >{text("Headline")}</h3>
+      <p
+        data-passion-credits
+        class="hidden sm:block max-w-full bg-paper-white px-[2cqw] py-[0.8cqw] font-mono text-[2.5cqw] font-bold uppercase leading-snug text-space-base"
+        data-i18n={`${prefix}Credits`}
+      >{text("Credits")}</p>
+      <p
+        data-passion-highlight
+        class="max-w-full bg-bebop-red px-[2cqw] py-[0.8cqw] font-mono text-[clamp(0.6rem,3.2cqw,1rem)] font-bold uppercase leading-snug text-space-base"
+        data-i18n={`${prefix}Highlight`}
+      >{text("Highlight")}</p>
+    </div>
+  </figure>
+</div>

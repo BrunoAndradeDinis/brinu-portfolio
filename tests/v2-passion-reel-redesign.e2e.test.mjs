@@ -148,3 +148,145 @@ test('C4: rendered frames show the six backgrounds in order', async () => {
     await context.close();
   }
 });
+
+import { PASSION_DECK, FORBIDDEN_PHRASES } from './fixtures/passion-reel/deck.mjs';
+
+const TAGS = {
+  'pt-br': ['FRAME 01 // BANDA MEDULLA', 'FRAME 02 // ONE PIECE', 'FRAME 03 // COWBOY BEBOP', 'FRAME 04 // AKIRA 1988', 'FRAME 05 // CAFÉ ESPECIAL', 'FRAME 06 // CULINÁRIA & STREET FOOD'],
+  en: ['FRAME 01 // MEDULLA BAND', 'FRAME 02 // ONE PIECE', 'FRAME 03 // COWBOY BEBOP', 'FRAME 04 // AKIRA 1988', 'FRAME 05 // SPECIALTY COFFEE', 'FRAME 06 // GASTRONOMY & STREET FOOD'],
+};
+
+const readFrames = (page) =>
+  page.locator('[data-passion-slide]').evaluateAll((slides) =>
+    slides.map((slide) => {
+      const t = (sel) => slide.querySelector(sel).textContent.replace(/\s+/g, ' ').trim();
+      const card = slide.querySelectorAll('[data-passion-card] > span');
+      return {
+        tag: t('[data-passion-tag]'),
+        headline: t('[data-passion-headline]'),
+        credits: t('[data-passion-credits]'),
+        highlight: t('[data-passion-highlight]'),
+        cardTitle: card[0].textContent.trim(),
+        cardSub: card[1].textContent.trim(),
+        alt: slide.querySelector('img').getAttribute('alt'),
+      };
+    }),
+  );
+
+const toggleLocale = async (page) => {
+  await page.locator('#nav-lang-toggle-btn').dispatchEvent('click');
+  await page.waitForTimeout(400);
+};
+
+test('C5: each frame renders the pt-br copy deck as HTML text', async () => {
+  const { context, page } = await openHome('pt-br', { reducedMotion: 'reduce' });
+  try {
+    const frames = await readFrames(page);
+    assert.equal(frames.length, 6);
+    frames.forEach((frame, i) => {
+      assert.equal(frame.tag, TAGS['pt-br'][i], `tag ${i + 1}`);
+      for (const field of ['headline', 'credits', 'highlight', 'cardTitle', 'cardSub']) {
+        assert.equal(frame[field], PASSION_DECK['pt-br'][i][field], `frame ${i + 1} ${field}`);
+      }
+    });
+  } finally {
+    await context.close();
+  }
+});
+
+test('C6: switching to en renders the English copy deck', async () => {
+  const { context, page } = await openHome('pt-br', { reducedMotion: 'reduce' });
+  try {
+    await toggleLocale(page);
+    assert.equal(await page.evaluate(() => localStorage.getItem('brinu_locale')), 'en');
+    const frames = await readFrames(page);
+    frames.forEach((frame, i) => {
+      assert.equal(frame.tag, TAGS.en[i], `tag ${i + 1}`);
+      for (const field of ['headline', 'credits', 'highlight', 'cardTitle', 'cardSub']) {
+        assert.equal(frame[field], PASSION_DECK.en[i][field], `frame ${i + 1} ${field}`);
+      }
+    });
+  } finally {
+    await context.close();
+  }
+});
+
+test('C7: headline uses the display font and other lines the mono font', async () => {
+  const { context, page } = await openHome('pt-br', { reducedMotion: 'reduce' });
+  try {
+    const result = await page.evaluate(() => {
+      const first = (v) => v.split(',')[0].trim().replace(/^["']|["']$/g, '').toLowerCase();
+      const root = getComputedStyle(document.documentElement);
+      const display = first(root.getPropertyValue('--font-display'));
+      const mono = first(root.getPropertyValue('--font-mono'));
+      const families = (sel) => [...document.querySelectorAll(`[data-passion-slide] ${sel}`)].map((el) => first(getComputedStyle(el).fontFamily));
+      return {
+        display, mono,
+        headline: families('[data-passion-headline]'),
+        credits: families('[data-passion-credits]'),
+        highlight: families('[data-passion-highlight]'),
+        card: families('[data-passion-card] > span'),
+      };
+    });
+    assert.ok(result.display && result.display !== 'sans-serif', `display font token was "${result.display}"`);
+    assert.ok(result.mono && result.mono !== 'sans-serif' && result.mono !== 'monospace', `mono font token was "${result.mono}"`);
+    assert.deepEqual(result.headline, Array(6).fill(result.display));
+    assert.deepEqual(result.credits, Array(6).fill(result.mono));
+    assert.deepEqual(result.highlight, Array(6).fill(result.mono));
+    assert.deepEqual(result.card, Array(12).fill(result.mono));
+  } finally {
+    await context.close();
+  }
+});
+
+test('C8: removed third-party phrases do not appear in the passion frames', async () => {
+  const { context, page } = await openHome('pt-br', { reducedMotion: 'reduce' });
+  try {
+    for (const locale of ['pt-br', 'en']) {
+      if (locale === 'en') await toggleLocale(page);
+      const text = (await page.locator('[data-passion-slide]').evaluateAll((els) => els.map((el) => el.textContent + ' ' + el.querySelector('img').alt).join(' '))).toLowerCase();
+      for (const phrase of FORBIDDEN_PHRASES) assert.ok(!text.includes(phrase), `${locale}: frames still show "${phrase}"`);
+    }
+    const html = fs.readFileSync('dist/index.html', 'utf8').toLowerCase();
+    for (const phrase of FORBIDDEN_PHRASES) {
+      const inFrames = html.split('data-passion-slide').slice(1).join(' ').includes(phrase);
+      assert.equal(inFrames, false, `built HTML frames still contain "${phrase}"`);
+    }
+  } finally {
+    await context.close();
+  }
+});
+
+test('C14: each frame image keeps a translated non-empty alt', async () => {
+  const { context, page } = await openHome('pt-br', { reducedMotion: 'reduce' });
+  try {
+    const pt = (await readFrames(page)).map((f) => f.alt);
+    await toggleLocale(page);
+    const en = (await readFrames(page)).map((f) => f.alt);
+    pt.forEach((alt, i) => {
+      assert.ok(alt && alt.trim().length > 10, `pt alt ${i + 1} empty`);
+      assert.ok(en[i] && en[i].trim().length > 10, `en alt ${i + 1} empty`);
+      assert.notEqual(alt, en[i], `alt ${i + 1} must be translated`);
+    });
+  } finally {
+    await context.close();
+  }
+});
+
+test('C17: locale change keeps the passion frame nodes', async () => {
+  const { context, page } = await openHome('pt-br', { reducedMotion: 'reduce' });
+  try {
+    await page.evaluate(() => {
+      document.querySelectorAll('[data-passion-slide], [data-passion-slide] [data-passion-headline], [data-passion-slide] img').forEach((el, i) => { el.__marker = `n${i}`; });
+    });
+    const before = await readFrames(page);
+    await toggleLocale(page);
+    const after = await readFrames(page);
+    assert.notEqual(before[4].headline, after[4].headline, 'precondition: the text did change');
+    const kept = await page.evaluate(() =>
+      [...document.querySelectorAll('[data-passion-slide], [data-passion-slide] [data-passion-headline], [data-passion-slide] img')].every((el) => typeof el.__marker === 'string'));
+    assert.equal(kept, true, 'frame nodes must survive a locale change');
+  } finally {
+    await context.close();
+  }
+});
