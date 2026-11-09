@@ -99,10 +99,12 @@ const personJsonLd = JSON.stringify(buildPersonJsonLd());
       import { initTelemetry } from "../utils/telemetry";
       import { initI18nBindings } from "../i18n/index";
       import { installRouterLifecycle, onPageReady } from "../utils/page-lifecycle";
+      import { installPageWipe } from "../utils/page-wipe";
 
       let sessionBooted = false;
 
       installRouterLifecycle();
+      installPageWipe();
       onPageReady(() => {
         if (!sessionBooted) {
           sessionBooted = true;

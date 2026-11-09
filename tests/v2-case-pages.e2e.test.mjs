@@ -446,7 +446,8 @@ test('C21: a navigation during another one ends on the latest page', async () =>
     await page.waitForFunction(() => window.location.pathname === '/cases/efood');
     await page.waitForLoadState('networkidle');
     assert.equal((await page.locator('h1').textContent()).trim(), 'eFood');
-    assert.equal(await page.evaluate(() => document.getElementById('p5-wipe-overlay').classList.contains('is-wiping')), false);
+    await page.waitForTimeout(500);
+    assert.equal(await page.evaluate(() => /is-(covering|leaving|wiping)/.test(document.getElementById('p5-wipe-overlay').className)), false);
   } finally {
     await context.close();
   }
@@ -496,6 +497,115 @@ test('C23: home sections initialize once after home to case to home', async () =
       return toggles;
     });
     assert.equal(hits, 1, 'one click opens the menu once');
+  } finally {
+    await context.close();
+  }
+});
+
+test('C8: the red and black wipe crosses during navigation', async () => {
+  const { context, page } = await freshHome({ reducedMotion: 'no-preference' });
+  try {
+    await page.keyboard.press('Escape');
+    await page.waitForFunction(() => !document.getElementById('intro-preloader'), null, { timeout: 8000 });
+    await page.waitForLoadState('networkidle');
+    await page.evaluate(() => {
+      const overlay = document.getElementById('p5-wipe-overlay');
+      const blade = overlay.querySelector('.p5-wipe-blade-red');
+      const probe = { wiping: false, coveredAtSwap: false, positions: [], swapped: false };
+      window.__wipe = probe;
+      new MutationObserver(() => {
+        if (overlay.classList.contains('is-covering') || overlay.classList.contains('is-wiping')) probe.wiping = true;
+      }).observe(overlay, { attributes: true, attributeFilter: ['class'] });
+      document.addEventListener('astro:after-swap', () => {
+        probe.swapped = true;
+        const rect = document.getElementById('p5-wipe-overlay').querySelector('.p5-wipe-blade-red').getBoundingClientRect();
+        probe.coveredAtSwap = rect.left < window.innerWidth / 2 && rect.right > window.innerWidth / 2;
+      });
+      const sample = () => {
+        const rect = blade.getBoundingClientRect();
+        probe.positions.push(Math.round(rect.left));
+        if (!probe.swapped || probe.positions.length < 400) requestAnimationFrame(sample);
+      };
+      requestAnimationFrame(sample);
+    });
+    await page.locator('#case-uriana a[data-case-open]').click();
+    await page.waitForFunction(() => window.location.pathname === '/cases/uriana' && window.__wipe.swapped);
+    await page.waitForTimeout(600);
+    const probe = await page.evaluate(() => window.__wipe);
+    assert.equal(probe.wiping, true, 'the wipe overlay was activated');
+    assert.equal(probe.coveredAtSwap, true, 'the blade covered the screen center when the new page was swapped in');
+    assert.ok(Math.min(...probe.positions) < Math.max(...probe.positions) - 300, `the blade moved across the screen (${probe.positions.slice(0, 20).join(',')})`);
+    assert.equal(await page.evaluate(() => /is-(covering|leaving|wiping)/.test(document.getElementById('p5-wipe-overlay').className)), false);
+    assert.equal((await page.locator('h1').textContent()).trim(), 'Uriana');
+  } finally {
+    await context.close();
+  }
+});
+
+test('C14: reduced motion swaps pages with no wipe', async () => {
+  const { context, page } = await freshHome({ reducedMotion: 'reduce' });
+  try {
+    await page.evaluate(() => {
+      const overlay = document.getElementById('p5-wipe-overlay');
+      const probe = { wiping: false, animations: 0, clickAt: 0, swapAt: 0 };
+      window.__reduced = probe;
+      new MutationObserver(() => {
+        if (/is-(covering|leaving|wiping)/.test(overlay.className)) probe.wiping = true;
+      }).observe(overlay, { attributes: true, attributeFilter: ['class'] });
+      document.addEventListener('click', () => { probe.clickAt = performance.now(); }, { capture: true });
+      document.addEventListener('astro:after-swap', () => { probe.swapAt = performance.now(); });
+      const sample = () => {
+        probe.animations += document.getAnimations().filter((animation) => {
+          const effect = animation.effect;
+          return effect && 'pseudoElement' in effect && String(effect.pseudoElement || '').startsWith('::view-transition');
+        }).length;
+        requestAnimationFrame(sample);
+      };
+      requestAnimationFrame(sample);
+    });
+    await page.locator('#case-uriana a[data-case-open]').click();
+    await page.waitForFunction(() => window.location.pathname === '/cases/uriana' && document.querySelector('h1')?.textContent.trim() === 'Uriana');
+    await page.waitForTimeout(500);
+    const probe = await page.evaluate(() => window.__reduced);
+    const elapsed = probe.swapAt - probe.clickAt;
+    assert.equal(probe.wiping, false, 'no wipe overlay activation');
+    assert.equal(probe.animations, 0, 'no view transition animation ran');
+    assert.ok(probe.swapAt > 0 && elapsed < 300, `the swap was immediate (${elapsed} ms)`);
+  } finally {
+    await context.close();
+  }
+});
+
+test('C24: rapid double navigation leaves the scroll unlocked', async () => {
+  const { context, page } = await freshHome({ reducedMotion: 'no-preference' });
+  try {
+    await page.keyboard.press('Escape');
+    await page.waitForFunction(() => !document.getElementById('intro-preloader'), null, { timeout: 8000 });
+    await page.waitForLoadState('networkidle');
+    await page.locator('#case-uriana a[data-case-open]').click();
+    await page.evaluate(() => {
+      const link = document.createElement('a');
+      link.href = '/stickers';
+      link.textContent = 'stickers';
+      document.body.append(link);
+      link.click();
+    });
+    await page.waitForFunction(() => window.location.pathname === '/stickers' && document.querySelector('h1')?.textContent.trim().length > 0);
+    await page.waitForTimeout(700);
+    const state = await page.evaluate(async () => {
+      window.scrollTo(0, 400);
+      await new Promise((resolve) => setTimeout(resolve, 150));
+      return {
+        wiping: /is-(covering|leaving|wiping)/.test(document.getElementById('p5-wipe-overlay').className),
+        locked: document.documentElement.classList.contains('lenis-stopped'),
+        overflow: getComputedStyle(document.documentElement).overflow,
+        scrollY: window.scrollY,
+      };
+    });
+    assert.equal(state.wiping, false);
+    assert.equal(state.locked, false);
+    assert.notEqual(state.overflow, 'hidden');
+    assert.ok(state.scrollY > 0, 'the page scrolls');
   } finally {
     await context.close();
   }

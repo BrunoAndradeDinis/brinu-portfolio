@@ -376,6 +376,21 @@ a[data-case-link]:focus .p5-select-poly {
   transform: translate3d(120%, 0, 0) skewX(-16deg);
 }
 
+#p5-wipe-overlay.is-covering,
+#p5-wipe-overlay.is-leaving {
+  opacity: 1;
+}
+
+#p5-wipe-overlay.is-covering .p5-wipe-blade-red {
+  transform: translate3d(0, 0, 0) skewX(-16deg);
+  transition: transform 0.14s cubic-bezier(0.85, 0, 0.15, 1);
+}
+
+#p5-wipe-overlay.is-leaving .p5-wipe-blade-red {
+  transform: translate3d(120%, 0, 0) skewX(-16deg);
+  transition: transform 0.2s cubic-bezier(0.85, 0, 0.15, 1);
+}
+
 /* ==========================================================================
    7. LENIS SMOOTH SCROLL INTEGRATION
    ========================================================================== */
@@ -441,4 +456,12 @@ body.cockpit-menu-open {
 ::view-transition-new(root) {
   animation: none;
   mix-blend-mode: normal;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
 }
