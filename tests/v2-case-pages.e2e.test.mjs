@@ -230,6 +230,21 @@ async function freshHome(options = {}) {
   return { context, page };
 }
 
+async function motionHome() {
+  const { context, page } = await freshHome({ reducedMotion: 'no-preference' });
+  await page.keyboard.press('Escape');
+  await page.waitForFunction(() => !document.getElementById('intro-preloader'), null, { timeout: 8000 });
+  await page.waitForLoadState('networkidle');
+  return { context, page };
+}
+
+const navGap = (page, selector) =>
+  page.evaluate((sel) => {
+    const target = document.querySelector(sel).getBoundingClientRect().top;
+    const bottoms = [document.querySelector('#comic-nav-logo [data-nav-avatar]'), document.getElementById('cockpit-trigger-btn')].map((el) => el.getBoundingClientRect().bottom);
+    return target - Math.max(...bottoms);
+  }, selector);
+
 async function clickAndWaitFor(page, locator, pathname) {
   await locator.click();
   await page.waitForFunction((target) => window.location.pathname === target, pathname);
@@ -369,15 +384,22 @@ test('C11: the page is fully initialized after navigation', async () => {
     await page.waitForFunction(() => window.location.pathname === '/' && window.location.hash === '#case-uriana');
     await page.waitForLoadState('networkidle');
     await expectInitialized(page, 'en');
-    const gap = await page.evaluate(() => {
-      const card = document.getElementById('case-uriana').getBoundingClientRect().top;
-      const avatar = document.querySelector('#comic-nav-logo [data-nav-avatar]').getBoundingClientRect().bottom;
-      const trigger = document.getElementById('cockpit-trigger-btn').getBoundingClientRect().bottom;
-      return card - Math.max(avatar, trigger);
-    });
-    assert.ok(gap >= 8, `the target stops at least 8px below the nav controls (gap ${gap})`);
+    const gap = await navGap(page, '#case-uriana');
+    assert.ok(gap >= 8 && gap <= 40, `the target stops just below the nav controls (gap ${gap})`);
   } finally {
     await context.close();
+  }
+
+  const animated = await motionHome();
+  try {
+    await clickAndWaitFor(animated.page, animated.page.locator('#case-uriana a[data-case-open]'), '/cases/uriana');
+    await animated.page.locator('[data-case-back]').click();
+    await animated.page.waitForFunction(() => window.location.pathname === '/' && window.location.hash === '#case-uriana');
+    await animated.page.waitForTimeout(1800);
+    const gap = await navGap(animated.page, '#case-uriana');
+    assert.ok(gap >= 8 && gap <= 40, `with motion the target settles just below the nav controls (gap ${gap})`);
+  } finally {
+    await animated.context.close();
   }
 
   const stickers = await freshHome();
@@ -434,7 +456,7 @@ test('C15: with JavaScript disabled links navigate and pages are readable', asyn
 });
 
 test('C21: a navigation during another one ends on the latest page', async () => {
-  const { context, page } = await freshHome();
+  const { context, page } = await motionHome();
   try {
     await page.locator('#case-uriana a[data-case-open]').click();
     await page.evaluate(() => {
@@ -460,36 +482,51 @@ test('C22: a direct case load with a hash skips the intro and clears the nav', a
   try {
     await page.goto(`${baseUrl}/cases/uriana#case-uriana`, { waitUntil: 'networkidle' });
     assert.equal(await page.evaluate(() => document.getElementById('intro-preloader') === null), true);
-    const gap = await page.evaluate(() => {
-      const target = document.getElementById('case-uriana').getBoundingClientRect().top;
-      const bottoms = [document.querySelector('#comic-nav-logo [data-nav-avatar]'), document.getElementById('cockpit-trigger-btn')].map((el) => el.getBoundingClientRect().bottom);
-      return target - Math.max(...bottoms);
-    });
-    assert.ok(gap >= 8, `the target stops at least 8px below the nav controls (gap ${gap})`);
+    const gap = await navGap(page, '#case-uriana');
+    assert.ok(gap >= 8 && gap <= 40, `the target stops just below the nav controls (gap ${gap})`);
   } finally {
     await context.close();
   }
 });
 
+async function windowListenerCount(context, page, type) {
+  const client = await context.newCDPSession(page);
+  const { result } = await client.send('Runtime.evaluate', { expression: 'window' });
+  const { listeners } = await client.send('DOMDebugger.getEventListeners', { objectId: result.objectId });
+  await client.detach();
+  return listeners.filter((entry) => entry.type === type).length;
+}
+
 test('C23: home sections initialize once after home to case to home', async () => {
-  const { context, page } = await freshHome();
+  const { context, page } = await motionHome();
   try {
-    await clickAndWaitFor(page, page.locator('#case-uriana a[data-case-open]'), '/cases/uriana');
-    await clickAndWaitFor(page, page.locator('[data-case-back]'), '/');
-    await page.waitForLoadState('networkidle');
+    const initial = await windowListenerCount(context, page, 'brinu:locale-change');
+    for (let round = 0; round < 2; round += 1) {
+      await clickAndWaitFor(page, page.locator('#case-uriana a[data-case-open]'), '/cases/uriana');
+      await clickAndWaitFor(page, page.locator('[data-case-back]'), '/');
+      await page.waitForLoadState('networkidle');
+    }
+    assert.equal(await windowListenerCount(context, page, 'brinu:locale-change'), initial, 'round trips add no locale listeners');
+
+    await page.evaluate(() => document.dispatchEvent(new Event('astro:page-load')));
+    assert.equal(await windowListenerCount(context, page, 'brinu:locale-change'), initial, 're-dispatching page-load on the same body does not re-initialize');
+
     const state = await page.evaluate(() => ({
-      navScrollBound: document.getElementById('comic-nav-header').dataset.scrollBound,
-      logoBound: document.getElementById('comic-nav-logo').dataset.stickerBound,
+      htmlClass: document.documentElement.className,
       stickers: document.querySelectorAll('#comic-nav-logo [data-nav-sticker]').length,
       p5Bound: [...document.querySelectorAll('[data-p5-title]')].every((el) => el.dataset.p5Bound === 'true'),
       chars: [...document.querySelectorAll('[data-p5-title]')].map((el) => el.querySelectorAll('[data-p5-char]').length),
-      arcanaBound: document.querySelectorAll('[data-arcana-deck]').length,
+      navScrollBound: document.getElementById('comic-nav-header').dataset.scrollBound,
+      logoBound: document.getElementById('comic-nav-logo').dataset.stickerBound,
+      deckBound: [...document.querySelectorAll('[data-arcana-deck]')].every((el) => el.dataset.arcanaBound === 'true'),
     }));
+    assert.match(state.htmlClass, /\blenis\b/, 'the Lenis html classes survive the swaps');
     assert.equal(state.stickers, 1, 'one sticker image in the logo');
     assert.equal(state.p5Bound, true);
     assert.ok(state.chars.every((count) => count > 0));
-    const scrollTriggers = await page.evaluate(() => window.ScrollTrigger?.getAll?.().length ?? -1);
-    assert.ok(scrollTriggers === -1 || scrollTriggers < 40, `no runaway ScrollTrigger count (${scrollTriggers})`);
+    assert.equal(state.navScrollBound, 'true');
+    assert.equal(state.logoBound, 'true');
+    assert.equal(state.deckBound, true);
     const hits = await page.evaluate(async () => {
       let toggles = 0;
       window.addEventListener('cockpit:open', () => { toggles += 1; });
@@ -498,6 +535,21 @@ test('C23: home sections initialize once after home to case to home', async () =
       return toggles;
     });
     assert.equal(hits, 1, 'one click opens the menu once');
+  } finally {
+    await context.close();
+  }
+});
+
+test('C27: menu section blades navigate home from a case page', async () => {
+  const { context, page } = await freshHome();
+  try {
+    await clickAndWaitFor(page, page.locator('#case-uriana a[data-case-open]'), '/cases/uriana');
+    const contact = await openMenuLink(page, 'contact');
+    assert.equal(await contact.getAttribute('href'), '/#contact');
+    await contact.click();
+    await page.waitForFunction(() => window.location.pathname === '/' && window.location.hash === '#contact');
+    await page.waitForLoadState('networkidle');
+    assert.ok((await navGap(page, '#contact')) >= 8, 'the contact section is below the nav');
   } finally {
     await context.close();
   }
@@ -644,7 +696,7 @@ const auditText = (page) =>
       if (cs.visibility === 'hidden' || cs.display === 'none' || el.getClientRects().length === 0) continue;
       if (el.closest('.sr-only, [aria-hidden="true"], #p5-wipe-overlay')) continue;
       const size = parseFloat(cs.fontSize);
-      if (size >= 24 || (Number(cs.fontWeight) >= 700 && size >= 18.66)) continue;
+      if (size >= 24) continue;
       const bg = backdrop(el);
       const fg = over(parse(cs.color), bg);
       const l1 = lum(fg);

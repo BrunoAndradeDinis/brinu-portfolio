@@ -243,9 +243,10 @@ const cases = getLocalizedCases("pt-br");
   import { initArcanaDeck } from "./arcana/deck";
 
   function boot() {
-    document.querySelectorAll<HTMLElement>("[data-arcana-deck]").forEach((deck) => {
-      initArcanaDeck(deck);
-    });
+    const handles = Array.from(document.querySelectorAll<HTMLElement>("[data-arcana-deck]"))
+      .map((deck) => initArcanaDeck(deck))
+      .filter((handle) => handle !== null);
+    return () => handles.forEach((handle) => handle.destroy());
   }
 
   onPageReady(boot);

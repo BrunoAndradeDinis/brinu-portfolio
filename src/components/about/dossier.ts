@@ -21,10 +21,10 @@ function fieldText(careerId: string, field: DecodeField, locale: Locale): string
   return entry ? entry[field] : null;
 }
 
-export function initDossier(root: HTMLElement): void {
-  if (root.dataset.dossierBound === 'true') return;
+export function initDossier(root: HTMLElement): (() => void) | null {
+  if (root.dataset.dossierBound === 'true') return null;
   root.dataset.dossierBound = 'true';
-  if (prefersReducedMotion()) return;
+  if (prefersReducedMotion()) return null;
 
   const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
 
@@ -96,7 +96,7 @@ export function initDossier(root: HTMLElement): void {
     ScrollTrigger.create({ trigger: step, start: 'top 85%', once: true, onEnter: () => decode(step) });
   });
 
-  motionQuery.addEventListener('change', () => {
+  const onMotionChange = () => {
     if (!motionQuery.matches) return;
     gsap.killTweensOf(cards);
     gsap.set(cards, { clearProps: 'clipPath' });
@@ -106,9 +106,10 @@ export function initDossier(root: HTMLElement): void {
       clearDecoding(el);
     });
     active.clear();
-  });
+  };
+  motionQuery.addEventListener('change', onMotionChange);
 
-  window.addEventListener(LOCALE_CHANGE_EVENT, () => {
+  const onLocaleChange = () => {
     const locale = getLocale();
     active.forEach((tween, el) => {
       tween.kill();
@@ -119,5 +120,13 @@ export function initDossier(root: HTMLElement): void {
       clearDecoding(el);
     });
     active.clear();
-  });
+  };
+  window.addEventListener(LOCALE_CHANGE_EVENT, onLocaleChange);
+
+  return () => {
+    motionQuery.removeEventListener('change', onMotionChange);
+    window.removeEventListener(LOCALE_CHANGE_EVENT, onLocaleChange);
+    active.forEach((tween) => tween.kill());
+    active.clear();
+  };
 }

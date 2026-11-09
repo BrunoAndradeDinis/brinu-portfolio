@@ -172,7 +172,7 @@ const currentId = CAREER.find((entry) => entry.end === "present")?.id;
 
   function boot() {
     const about = document.getElementById("about");
-    if (about) initDossier(about);
+    return about ? (initDossier(about) ?? undefined) : undefined;
   }
 
   onPageReady(boot);

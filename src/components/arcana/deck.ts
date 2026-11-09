@@ -8,6 +8,7 @@ const SELECT_DURATION_S = 0.45;
 const DRAG_SUPPRESS_CLICK_MS = 80;
 
 export interface ArcanaDeckHandle {
+  destroy(): void;
   select(index: number): void;
   readonly selectedIndex: number;
 }
@@ -168,6 +169,7 @@ export function initArcanaDeck(root: HTMLElement): ArcanaDeckHandle | null {
   requestAnimationFrame(() => select(selected, false));
 
   return {
+    destroy: () => resizeObserver.disconnect(),
     select: (index: number) => select(index),
     get selectedIndex() {
       return selected;

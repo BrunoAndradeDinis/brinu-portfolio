@@ -79,6 +79,7 @@ export const CockpitMenu: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
   const [activeBladeId, setActiveBladeId] = useState<string>('hero');
+  const [onHome, setOnHome] = useState<boolean>(true);
   const overlayRef = useRef<HTMLDivElement | null>(null);
   const slashesRef = useRef<HTMLDivElement | null>(null);
   const bladesContainerRef = useRef<HTMLElement | null>(null);
@@ -224,6 +225,7 @@ export const CockpitMenu: React.FC = () => {
       observer = null;
 
       const pathname = window.location.pathname;
+      setOnHome(pathname === '/');
       if (pathname.includes('/whoami') || pathname.startsWith('/cases/')) {
         setActiveBladeId(resolveActiveBladeId(pathname));
         return;
@@ -382,7 +384,7 @@ export const CockpitMenu: React.FC = () => {
               return (
                 <a
                   key={item.id}
-                  href={item.href}
+                  href={item.href.startsWith('#') && !onHome ? `/${item.href}` : item.href}
                   data-cockpit-link={item.id}
                   data-active-blade={isActive ? 'true' : 'false'}
                   aria-current={

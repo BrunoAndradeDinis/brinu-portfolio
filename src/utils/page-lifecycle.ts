@@ -3,6 +3,7 @@ import { applyDomTranslations, getLocale } from '../i18n/index.ts';
 
 type Teardown = () => void;
 
+const NAV_SETTLE_MS = 450;
 const BEFORE_SWAP_TEARDOWNS = new Set<Teardown>();
 let routerLifecycleInstalled = false;
 let lastNavigationType: string | null = null;
@@ -37,6 +38,14 @@ export function onPageReady(init: () => void | Teardown): void {
   }
 }
 
+function layoutTopOf(element: HTMLElement): number {
+  let top = 0;
+  for (let node: HTMLElement | null = element; node; node = node.offsetParent as HTMLElement | null) {
+    top += node.offsetTop;
+  }
+  return top;
+}
+
 export function scrollToHashBelowNav(hash: string): boolean {
   if (!hash || hash.length <= 1) return false;
   let target: HTMLElement | null = null;
@@ -46,16 +55,27 @@ export function scrollToHashBelowNav(hash: string): boolean {
     return false;
   }
   if (!target) return false;
-  jumpScrollTo(Math.max(0, window.scrollY + target.getBoundingClientRect().top - getNavClearanceOffset()));
+  jumpScrollTo(Math.max(0, layoutTopOf(target) - getNavClearanceOffset()));
   return true;
+}
+
+function holdHashBelowNav(hash: string): void {
+  let lastY = Math.round(window.scrollY);
+  const reapply = () => {
+    if (Math.abs(window.scrollY - lastY) > 2) return;
+    if (scrollToHashBelowNav(hash)) lastY = Math.round(window.scrollY);
+  };
+  ScrollTrigger.addEventListener('refresh', reapply);
+  void document.fonts?.ready.then(reapply);
+  setTimeout(reapply, NAV_SETTLE_MS);
+  setTimeout(() => ScrollTrigger.removeEventListener('refresh', reapply), 2000);
 }
 
 function settleScrollAfterNavigation(): void {
   if (lastNavigationType === 'traverse') return;
   const apply = () => {
-    if (!scrollToHashBelowNav(window.location.hash)) {
-      if (!window.location.hash) jumpScrollTo(0);
-    }
+    if (scrollToHashBelowNav(window.location.hash)) holdHashBelowNav(window.location.hash);
+    else if (!window.location.hash) jumpScrollTo(0);
   };
   if (document.getElementById('intro-preloader')) {
     window.addEventListener('intro-complete', apply, { once: true });
