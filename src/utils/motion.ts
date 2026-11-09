@@ -109,6 +109,18 @@ export function getLenis(): Lenis | null {
 }
 
 /**
+ * Salta imediatamente para a posição vertical informada, sem animação (usado após navegação entre páginas).
+ */
+export function jumpScrollTo(top: number): void {
+  if (typeof window === 'undefined') return;
+  if (lenisInstance) {
+    lenisInstance.scrollTo(top, { immediate: true, force: true });
+  } else {
+    window.scrollTo({ top, behavior: 'auto' });
+  }
+}
+
+/**
  * Pausa a física de rolagem (útil durante o intro preloader ou modais em tela cheia).
  */
 export function pauseScroll(): void {

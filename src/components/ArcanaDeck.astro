@@ -239,6 +239,7 @@ const cases = getLocalizedCases("pt-br");
 </style>
 
 <script>
+  import { onPageReady } from "../utils/page-lifecycle";
   import { initArcanaDeck } from "./arcana/deck";
 
   function boot() {
@@ -247,10 +248,5 @@ const cases = getLocalizedCases("pt-br");
     });
   }
 
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", boot);
-  } else {
-    boot();
-  }
-  document.addEventListener("astro:page-load", boot);
+  onPageReady(boot);
 </script>

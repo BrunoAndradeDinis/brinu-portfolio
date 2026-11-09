@@ -4,6 +4,7 @@ import { ptBrDict } from "../i18n/dictionaries";
 
 <header
   id="comic-nav-header"
+  transition:persist="comic-nav"
   data-cockpit-open="false"
   data-scrolled="false"
   class="fixed top-0 inset-x-0 z-[9999] flex h-[5.5rem] sm:h-[6.5rem] md:h-[7rem] w-full items-center justify-between border-b-4 border-space-base bg-bebop-red px-4 sm:px-6 md:px-8 lg:px-16 select-none box-border transition-colors duration-200"
@@ -110,6 +111,7 @@ import { ptBrDict } from "../i18n/dictionaries";
 </header>
 
 <script>
+  import { onPageReady } from "../utils/page-lifecycle";
   import { initStickerSwap } from "./nav/sticker-swap";
 
   function setupCockpitTrigger() {
@@ -227,7 +229,8 @@ import { ptBrDict } from "../i18n/dictionaries";
 
   function setupScrollWatcher() {
     const header = document.getElementById("comic-nav-header");
-    if (!header) return;
+    if (!header || header.dataset.scrollBound === "true") return;
+    header.dataset.scrollBound = "true";
 
     const onScroll = () => {
       const isScrolled = window.scrollY > 20;
@@ -253,12 +256,7 @@ import { ptBrDict } from "../i18n/dictionaries";
     setupScrollWatcher();
   }
 
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", initNav);
-  } else {
-    initNav();
-  }
-  document.addEventListener("astro:page-load", initNav);
+  onPageReady(initNav);
 </script>
 
 <style>

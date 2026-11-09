@@ -28,6 +28,9 @@ export function resolveActiveBladeId(
   if (typeof pathname === 'string' && pathname.includes('/whoami')) {
     return 'whoami';
   }
+  if (typeof pathname === 'string' && pathname.startsWith('/cases/')) {
+    return 'works';
+  }
   if (
     visibleSectionId &&
     (HOME_SECTION_IDS as readonly string[]).includes(visibleSectionId)
@@ -214,35 +217,46 @@ export const CockpitMenu: React.FC = () => {
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
-    const pathname = window.location.pathname;
-    if (pathname.includes('/whoami')) {
-      setActiveBladeId('whoami');
-      return;
-    }
+    let observer: IntersectionObserver | null = null;
 
-    const hashId = window.location.hash.replace('#', '');
-    setActiveBladeId(resolveActiveBladeId(pathname, hashId));
+    const syncActiveBlade = () => {
+      observer?.disconnect();
+      observer = null;
 
-    if (!('IntersectionObserver' in window)) return;
+      const pathname = window.location.pathname;
+      if (pathname.includes('/whoami') || pathname.startsWith('/cases/')) {
+        setActiveBladeId(resolveActiveBladeId(pathname));
+        return;
+      }
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          if (entry.isIntersecting && entry.target.id) {
-            setActiveBladeId(resolveActiveBladeId(window.location.pathname, entry.target.id));
+      const hashId = window.location.hash.replace('#', '');
+      setActiveBladeId(resolveActiveBladeId(pathname, hashId));
+
+      if (!('IntersectionObserver' in window)) return;
+
+      observer = new IntersectionObserver(
+        (entries) => {
+          for (const entry of entries) {
+            if (entry.isIntersecting && entry.target.id) {
+              setActiveBladeId(resolveActiveBladeId(window.location.pathname, entry.target.id));
+            }
           }
-        }
-      },
-      { rootMargin: '-30% 0px -55% 0px', threshold: 0.05 }
-    );
+        },
+        { rootMargin: '-30% 0px -55% 0px', threshold: 0.05 }
+      );
 
-    for (const secId of HOME_SECTION_IDS) {
-      const el = document.getElementById(secId);
-      if (el) observer.observe(el);
-    }
+      for (const secId of HOME_SECTION_IDS) {
+        const el = document.getElementById(secId);
+        if (el) observer.observe(el);
+      }
+    };
+
+    syncActiveBlade();
+    document.addEventListener('astro:page-load', syncActiveBlade);
 
     return () => {
-      observer.disconnect();
+      document.removeEventListener('astro:page-load', syncActiveBlade);
+      observer?.disconnect();
     };
   }, []);
 

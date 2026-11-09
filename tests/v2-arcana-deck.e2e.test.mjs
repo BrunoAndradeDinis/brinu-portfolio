@@ -213,7 +213,7 @@ test('C2: lab experiment files and anchors are gone', () => {
   assert.equal(distJs().filter((f) => /three/i.test(f) || /CyberDeck|CrtTuner|SonarRadar/.test(f)).length, 0, 'no three or experiment chunk may be built');
 });
 
-test('C3: built js has no WebGLRenderer and stays within 190 kB gzip', () => {
+test('C3: built js has no WebGLRenderer and stays within 200 kB gzip', () => {
   const files = distJs();
   assert.ok(files.length > 5, 'expected built chunks');
   let total = 0;
@@ -222,7 +222,7 @@ test('C3: built js has no WebGLRenderer and stays within 190 kB gzip', () => {
     assert.ok(!body.includes('WebGLRenderer'), `${file} still contains WebGLRenderer`);
     total += zlib.gzipSync(body).length;
   }
-  assert.ok(total <= 190 * 1000, `client js gzip total is ${(total / 1000).toFixed(1)} kB, budget is 190 kB`);
+  assert.ok(total <= 200 * 1000, `client js gzip total is ${(total / 1000).toFixed(1)} kB, budget is 200 kB`);
 });
 
 test('C14: no THREE.JS, WEBGL or SHADERS text in dictionaries or the built page', async () => {

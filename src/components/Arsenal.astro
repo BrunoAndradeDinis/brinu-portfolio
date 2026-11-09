@@ -16,6 +16,7 @@ import { ptBrDict } from "../i18n/dictionaries";
 </section>
 
 <script>
+  import { onPageReady } from "../utils/page-lifecycle";
   import { gsap } from "../utils/motion";
 
   function setupArsenalReveal() {
@@ -37,10 +38,5 @@ import { ptBrDict } from "../i18n/dictionaries";
     );
   }
 
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", setupArsenalReveal);
-  } else {
-    setupArsenalReveal();
-  }
-  document.addEventListener("astro:page-load", setupArsenalReveal);
+  onPageReady(setupArsenalReveal);
 </script>

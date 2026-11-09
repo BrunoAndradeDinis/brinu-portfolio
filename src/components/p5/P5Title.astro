@@ -20,6 +20,7 @@ const { text, class: className = "", ...rest } = Astro.props;
 <script>
   import { gsap, ScrollTrigger, registerP5Eases } from "../../utils/motion";
   import { renderRansomTitleDom, revealRansomTitleDom } from "./ransom";
+  import { onPageReady } from "../../utils/page-lifecycle";
 
   function initP5Titles() {
     registerP5Eases();
@@ -82,15 +83,5 @@ const { text, class: className = "", ...rest } = Astro.props;
     });
   }
 
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", initP5Titles);
-  } else {
-    initP5Titles();
-  }
-  document.addEventListener("astro:page-load", () => {
-    document.querySelectorAll<HTMLElement>("[data-p5-title]").forEach((el) => {
-      delete el.dataset.p5Bound;
-    });
-    initP5Titles();
-  });
+  onPageReady(initP5Titles);
 </script>

@@ -246,14 +246,11 @@ const tracks = [
 
 <script>
   import { gsap } from "../utils/motion";
-
-  let isWorksInitialized = false;
+  import { onPageReady } from "../utils/page-lifecycle";
 
   function setupSelectedWorksScroll() {
     const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (prefersReducedMotion) return;
-    if (isWorksInitialized) return;
-    isWorksInitialized = true;
 
     const worksSection = document.getElementById("works");
     const cards = document.querySelectorAll("[data-reel-card]");
@@ -300,13 +297,5 @@ const tracks = [
     }
   }
 
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", setupSelectedWorksScroll);
-  } else {
-    setupSelectedWorksScroll();
-  }
-  document.addEventListener("astro:page-load", () => {
-    isWorksInitialized = false;
-    setupSelectedWorksScroll();
-  });
+  onPageReady(setupSelectedWorksScroll);
 </script>

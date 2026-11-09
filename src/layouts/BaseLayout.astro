@@ -1,5 +1,6 @@
 ---
 import { Font } from "astro:assets";
+import { ClientRouter } from "astro:transitions";
 import "../styles/tokens.css";
 import "../styles/global.css";
 import IntroPreloader from "../components/IntroPreloader.astro";
@@ -14,6 +15,7 @@ interface Props {
   description?: string;
   ogImage?: string;
   canonicalPath?: string;
+  intro?: boolean;
 }
 
 const {
@@ -21,6 +23,7 @@ const {
   description = ptBrDict.meta.description,
   ogImage = "/assets/brinu-avatar.jpg",
   canonicalPath,
+  intro = false,
 } = Astro.props;
 
 const personJsonLd = JSON.stringify(buildPersonJsonLd());
@@ -33,6 +36,7 @@ const personJsonLd = JSON.stringify(buildPersonJsonLd());
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="generator" content={Astro.generator} />
+    <ClientRouter />
 
     <Font cssVariable="--font-syne" preload />
     <Font cssVariable="--font-archivo" preload />
@@ -74,9 +78,9 @@ const personJsonLd = JSON.stringify(buildPersonJsonLd());
       {ptBrDict.a11y.skipToContent}
     </a>
 
-    <IntroPreloader />
+    {intro && <IntroPreloader />}
 
-    <div id="p5-wipe-overlay" aria-hidden="true">
+    <div id="p5-wipe-overlay" aria-hidden="true" transition:persist="p5-wipe-overlay">
       <div class="p5-wipe-blade-red"></div>
     </div>
 
@@ -86,30 +90,28 @@ const personJsonLd = JSON.stringify(buildPersonJsonLd());
       <slot />
     </div>
 
-    <CockpitMenu client:load />
-    <CiladaAlert client:load />
+    <div transition:persist="cockpit-menu"><CockpitMenu client:load /></div>
+    <div transition:persist="cilada-alert"><CiladaAlert client:load /></div>
 
     <script>
       import { initMotionCoordinator } from "../utils/motion";
       import { audioSynth } from "../utils/audio";
       import { initTelemetry } from "../utils/telemetry";
       import { initI18nBindings } from "../i18n/index";
+      import { installRouterLifecycle, onPageReady } from "../utils/page-lifecycle";
 
-      function bootstrapRuntime() {
-        if (typeof window !== "undefined") {
+      let sessionBooted = false;
+
+      installRouterLifecycle();
+      onPageReady(() => {
+        if (!sessionBooted) {
+          sessionBooted = true;
           (window as unknown as { bebopAudio: typeof audioSynth }).bebopAudio = audioSynth;
           initTelemetry();
-          initI18nBindings();
         }
+        initI18nBindings();
         initMotionCoordinator();
-      }
-
-      if (document.readyState === "loading") {
-        document.addEventListener("DOMContentLoaded", bootstrapRuntime);
-      } else {
-        bootstrapRuntime();
-      }
-      document.addEventListener("astro:page-load", bootstrapRuntime);
+      });
     </script>
   </body>
 </html>

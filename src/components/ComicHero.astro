@@ -280,6 +280,7 @@ import P5Badge from "./p5/P5Badge.astro";
 </section>
 
 <script>
+  import { onPageReady } from "../utils/page-lifecycle";
   import { gsap } from "../utils/motion";
   import { getDictionary, getLocale } from "../i18n/index";
 
@@ -449,10 +450,5 @@ import P5Badge from "./p5/P5Badge.astro";
     setupHeroScrollTransitions();
   }
 
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", initComicHero);
-  } else {
-    initComicHero();
-  }
-  document.addEventListener("astro:page-load", initComicHero);
+  onPageReady(initComicHero);
 </script>

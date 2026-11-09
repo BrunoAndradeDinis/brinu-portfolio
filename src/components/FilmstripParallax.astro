@@ -262,6 +262,7 @@ function splitWords(text: string): string[] {
 </section>
 
 <script>
+  import { onPageReady } from "../utils/page-lifecycle";
   import { gsap, ScrollTrigger } from "../utils/motion";
   import { LOCALE_CHANGE_EVENT, type Locale, getLocale } from "../i18n";
   import { ptBrDict, enDict } from "../i18n/dictionaries";
@@ -494,12 +495,13 @@ function splitWords(text: string): string[] {
     };
   }
 
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", initFilmstripParallax);
-  } else {
+  onPageReady(() => {
     initFilmstripParallax();
-  }
-  document.addEventListener("astro:page-load", initFilmstripParallax);
+    return () => {
+      cleanupFilmstrip?.();
+      cleanupFilmstrip = null;
+    };
+  });
 </script>
 
 <style>

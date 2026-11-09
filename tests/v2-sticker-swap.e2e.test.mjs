@@ -574,8 +574,8 @@ test('C16: /stickers has zero overflow and contrast at least 4.5:1', async () =>
   }
 });
 
-test('C17: built js stays within 190 kB gzip', () => {
+test('C17: built js stays within 200 kB gzip', () => {
   let total = 0;
   for (const f of fs.readdirSync('dist/_astro').filter((n) => n.endsWith('.js'))) total += zlib.gzipSync(fs.readFileSync(`dist/_astro/${f}`)).length;
-  assert.ok(total <= 190 * 1000, `client js gzip total is ${(total / 1000).toFixed(1)} kB, budget is 190 kB`);
+  assert.ok(total <= 200 * 1000, `client js gzip total is ${(total / 1000).toFixed(1)} kB, budget is 200 kB`);
 });

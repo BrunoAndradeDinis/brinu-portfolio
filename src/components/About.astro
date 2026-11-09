@@ -167,6 +167,7 @@ const currentId = CAREER.find((entry) => entry.end === "present")?.id;
 </section>
 
 <script>
+  import { onPageReady } from "../utils/page-lifecycle";
   import { initDossier } from "./about/dossier";
 
   function boot() {
@@ -174,10 +175,5 @@ const currentId = CAREER.find((entry) => entry.end === "present")?.id;
     if (about) initDossier(about);
   }
 
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", boot);
-  } else {
-    boot();
-  }
-  document.addEventListener("astro:page-load", boot);
+  onPageReady(boot);
 </script>

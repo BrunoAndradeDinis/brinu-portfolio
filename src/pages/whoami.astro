@@ -83,6 +83,7 @@ import { PROFILE } from "../data/profile";
   <script>
     import { audioSynth } from "../utils/audio";
     import { getDictionary, getLocale, LOCALE_CHANGE_EVENT } from "../i18n/index";
+    import { onPageReady } from "../utils/page-lifecycle";
 
     interface CommandStep {
       command: string;
@@ -126,112 +127,121 @@ import { PROFILE } from "../data/profile";
       ];
     }
 
-    const terminalEl = document.getElementById("terminal-output");
-    const skipBtn = document.getElementById("skip-typing-btn");
+    function bootWhoami(): () => void {
+      const terminalEl = document.getElementById("terminal-output");
+      const skipBtn = document.getElementById("skip-typing-btn");
 
-    let isSkipped = false;
+      let isSkipped = false;
 
-    function renderAllInstant(): void {
-      if (!terminalEl) return;
-      isSkipped = true;
-      terminalEl.innerHTML = "";
+      function renderAllInstant(): void {
+        if (!terminalEl) return;
+        isSkipped = true;
+        terminalEl.innerHTML = "";
 
-      const t = getDictionary(getLocale());
-      const steps = buildCommandSteps();
+        const t = getDictionary(getLocale());
+        const steps = buildCommandSteps();
 
-      steps.forEach((step) => {
-        const block = document.createElement("div");
-        block.className = "space-y-1.5";
-        block.innerHTML = `
-          <div class="flex items-center gap-2 text-bebop-red font-bold">
-            <span class="text-paper-white">&gt;</span>
-            <span>${step.command}</span>
-          </div>
-          <div class="pl-4 border-l-2 border-bebop-red ${step.highlightClass || "text-paper-white"} whitespace-pre-line">
-            ${step.output}
-          </div>
-        `;
-        terminalEl.appendChild(block);
-      });
+        steps.forEach((step) => {
+          const block = document.createElement("div");
+          block.className = "space-y-1.5";
+          block.innerHTML = `
+            <div class="flex items-center gap-2 text-bebop-red font-bold">
+              <span class="text-paper-white">&gt;</span>
+              <span>${step.command}</span>
+            </div>
+            <div class="pl-4 border-l-2 border-bebop-red ${step.highlightClass || "text-paper-white"} whitespace-pre-line">
+              ${step.output}
+            </div>
+          `;
+          terminalEl.appendChild(block);
+        });
 
-      const sessionComplete = document.createElement("div");
-      sessionComplete.className = "pt-4 text-xs font-bold text-paper-white tracking-wider uppercase flex items-center gap-2 border-t border-paper-white/30 mt-6";
-      sessionComplete.innerHTML = `<span class="w-2 h-2 bg-bebop-red"></span> <span>${t.whoami.sessionComplete}</span>`;
-      terminalEl.appendChild(sessionComplete);
-    }
+        const sessionComplete = document.createElement("div");
+        sessionComplete.className = "pt-4 text-xs font-bold text-paper-white tracking-wider uppercase flex items-center gap-2 border-t border-paper-white/30 mt-6";
+        sessionComplete.innerHTML = `<span class="w-2 h-2 bg-bebop-red"></span> <span>${t.whoami.sessionComplete}</span>`;
+        terminalEl.appendChild(sessionComplete);
+      }
 
-    async function runTypingSimulator(): Promise<void> {
-      if (!terminalEl) return;
-      terminalEl.innerHTML = "";
+      async function runTypingSimulator(): Promise<void> {
+        if (!terminalEl) return;
+        terminalEl.innerHTML = "";
 
-      const steps = buildCommandSteps();
-      const t = getDictionary(getLocale());
+        const steps = buildCommandSteps();
+        const t = getDictionary(getLocale());
 
-      for (const step of steps) {
-        if (isSkipped) return;
+        for (const step of steps) {
+          if (isSkipped) return;
 
-        const block = document.createElement("div");
-        block.className = "space-y-1.5";
+          const block = document.createElement("div");
+          block.className = "space-y-1.5";
 
-        const promptLine = document.createElement("div");
-        promptLine.className = "flex items-center gap-2 text-bebop-red font-bold";
-        promptLine.innerHTML = `<span class="text-paper-white">&gt;</span> <span class="typed-command"></span><span class="cursor inline-block w-2 h-4 bg-bebop-red animate-pulse"></span>`;
-        block.appendChild(promptLine);
-        terminalEl.appendChild(block);
+          const promptLine = document.createElement("div");
+          promptLine.className = "flex items-center gap-2 text-bebop-red font-bold";
+          promptLine.innerHTML = `<span class="text-paper-white">&gt;</span> <span class="typed-command"></span><span class="cursor inline-block w-2 h-4 bg-bebop-red animate-pulse"></span>`;
+          block.appendChild(promptLine);
+          terminalEl.appendChild(block);
 
-        const commandSpan = promptLine.querySelector(".typed-command");
-        const cursorEl = promptLine.querySelector(".cursor");
+          const commandSpan = promptLine.querySelector(".typed-command");
+          const cursorEl = promptLine.querySelector(".cursor");
 
-        for (let i = 0; i < step.command.length; i++) {
+          for (let i = 0; i < step.command.length; i++) {
+            if (isSkipped) {
+              renderAllInstant();
+              return;
+            }
+            if (commandSpan) commandSpan.textContent += step.command[i];
+            if (!audioSynth.isMuted()) {
+              audioSynth.playKeypressBeep(800 + Math.random() * 200, 0.03, 0.08);
+            }
+            await new Promise((r) => setTimeout(r, 30));
+          }
+
+          if (cursorEl) cursorEl.remove();
+
+          await new Promise((r) => setTimeout(r, 140));
           if (isSkipped) {
             renderAllInstant();
             return;
           }
-          if (commandSpan) commandSpan.textContent += step.command[i];
-          if (!audioSynth.isMuted()) {
-            audioSynth.playKeypressBeep(800 + Math.random() * 200, 0.03, 0.08);
-          }
-          await new Promise((r) => setTimeout(r, 30));
+
+          const outputLine = document.createElement("div");
+          outputLine.className = `pl-4 border-l-2 border-bebop-red ${step.highlightClass || "text-paper-white"} whitespace-pre-line`;
+          outputLine.textContent = step.output;
+          block.appendChild(outputLine);
+
+          terminalEl.scrollTop = terminalEl.scrollHeight;
+
+          await new Promise((r) => setTimeout(r, 240));
         }
 
-        if (cursorEl) cursorEl.remove();
+        const sessionComplete = document.createElement("div");
+        sessionComplete.className = "pt-4 text-xs font-bold text-paper-white tracking-wider uppercase flex items-center gap-2 border-t border-paper-white/30 mt-6";
+        sessionComplete.innerHTML = `<span class="w-2 h-2 bg-bebop-red"></span> <span>${t.whoami.sessionComplete}</span>`;
+        terminalEl.appendChild(sessionComplete);
+      }
 
-        await new Promise((r) => setTimeout(r, 140));
-        if (isSkipped) {
+      const onSkipClick = () => renderAllInstant();
+      const onKeyDown = (e: KeyboardEvent) => {
+        if (!isSkipped && e.key !== "Tab") {
           renderAllInstant();
-          return;
         }
+      };
+      const onLocaleChange = () => renderAllInstant();
 
-        const outputLine = document.createElement("div");
-        outputLine.className = `pl-4 border-l-2 border-bebop-red ${step.highlightClass || "text-paper-white"} whitespace-pre-line`;
-        outputLine.textContent = step.output;
-        block.appendChild(outputLine);
+      skipBtn?.addEventListener("click", onSkipClick);
+      window.addEventListener("keydown", onKeyDown);
+      window.addEventListener(LOCALE_CHANGE_EVENT, onLocaleChange);
 
-        terminalEl.scrollTop = terminalEl.scrollHeight;
+      void runTypingSimulator();
 
-        await new Promise((r) => setTimeout(r, 240));
-      }
-
-      const sessionComplete = document.createElement("div");
-      sessionComplete.className = "pt-4 text-xs font-bold text-paper-white tracking-wider uppercase flex items-center gap-2 border-t border-paper-white/30 mt-6";
-      sessionComplete.innerHTML = `<span class="w-2 h-2 bg-bebop-red"></span> <span>${t.whoami.sessionComplete}</span>`;
-      terminalEl.appendChild(sessionComplete);
+      return () => {
+        isSkipped = true;
+        skipBtn?.removeEventListener("click", onSkipClick);
+        window.removeEventListener("keydown", onKeyDown);
+        window.removeEventListener(LOCALE_CHANGE_EVENT, onLocaleChange);
+      };
     }
 
-    if (skipBtn) {
-      skipBtn.addEventListener("click", () => renderAllInstant());
-    }
-
-    window.addEventListener("keydown", (e) => {
-      if (!isSkipped && e.key !== "Tab") {
-        renderAllInstant();
-      }
-    });
-
-    window.addEventListener(LOCALE_CHANGE_EVENT, () => {
-      renderAllInstant();
-    });
-
-    runTypingSimulator();
+    onPageReady(bootWhoami);
   </script>
 </BaseLayout>
