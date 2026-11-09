@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import http from 'node:http';
+import zlib from 'node:zlib';
 import { chromium } from 'playwright';
 
 const MIME_TYPES = {
@@ -609,4 +610,71 @@ test('C24: rapid double navigation leaves the scroll unlocked', async () => {
   } finally {
     await context.close();
   }
+});
+
+const auditText = (page) =>
+  page.evaluate(() => {
+    const parse = (v) => {
+      const m = v.match(/rgba?\(([^)]+)\)/);
+      if (m) { const [r, g, b, a = 1] = m[1].split(/[,/ ]+/).filter(Boolean).map(Number); return { r, g, b, a }; }
+      const c = v.match(/color\(srgb ([^)]+)\)/);
+      if (c) { const [r, g, b, a = 1] = c[1].split(/[ /]+/).filter(Boolean).map(Number); return { r: r * 255, g: g * 255, b: b * 255, a }; }
+      throw new Error(`unsupported color format: ${v}`);
+    };
+    const over = (top, base) => ({ r: top.r * top.a + base.r * (1 - top.a), g: top.g * top.a + base.g * (1 - top.a), b: top.b * top.a + base.b * (1 - top.a), a: 1 });
+    const lum = ({ r, g, b }) => { const f = (x) => { const s = x / 255; return s <= 0.03928 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4; }; return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b); };
+    const backdrop = (el) => {
+      const layers = [];
+      for (let n = el; n; n = n.parentElement) {
+        const bg = parse(getComputedStyle(n).backgroundColor);
+        if (bg.a > 0) layers.push(bg);
+        if (bg.a >= 1) break;
+      }
+      let base = { r: 8, g: 8, b: 8, a: 1 };
+      if (layers.length && layers[layers.length - 1].a >= 1) base = layers.pop();
+      return layers.reverse().reduce((acc, layer) => over(layer, acc), base);
+    };
+    const out = [];
+    const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+    for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+      if (!node.textContent.trim()) continue;
+      const el = node.parentElement;
+      if (['SCRIPT', 'STYLE', 'NOSCRIPT'].includes(el.tagName)) continue;
+      const cs = getComputedStyle(el);
+      if (cs.visibility === 'hidden' || cs.display === 'none' || el.getClientRects().length === 0) continue;
+      if (el.closest('.sr-only, [aria-hidden="true"], #p5-wipe-overlay')) continue;
+      const size = parseFloat(cs.fontSize);
+      if (size >= 24 || (Number(cs.fontWeight) >= 700 && size >= 18.66)) continue;
+      const bg = backdrop(el);
+      const fg = over(parse(cs.color), bg);
+      const l1 = lum(fg);
+      const l2 = lum(bg);
+      out.push({ text: node.textContent.trim().slice(0, 30), contrast: (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05) });
+    }
+    return out;
+  });
+
+test('C16: case pages have zero overflow and contrast at least 4.5:1', async () => {
+  for (const id of IDS) {
+    for (const locale of LOCALES) {
+      for (const width of [320, 375, 768, 1440]) {
+        const { context, page } = await openPath(`/cases/${id}`, { locale, reducedMotion: 'reduce', viewport: { width, height: 900 } });
+        try {
+          const m = await page.evaluate(() => ({ sw: document.documentElement.scrollWidth, cw: document.documentElement.clientWidth, bw: document.body.scrollWidth }));
+          assert.ok(m.sw <= m.cw && m.bw <= m.cw, `Overflow at ${width}px (${id}, ${locale}): ${m.sw}/${m.bw} > ${m.cw}`);
+          const audit = await auditText(page);
+          assert.ok(audit.length >= 14, `expected to audit the page text (${audit.length})`);
+          assert.deepEqual(audit.filter((r) => r.contrast < 4.5).map((r) => `${r.text} (${r.contrast.toFixed(2)})`), [], `low contrast at ${width}px (${id}, ${locale})`);
+        } finally {
+          await context.close();
+        }
+      }
+    }
+  }
+});
+
+test('C17: built js stays within 200 kB gzip', () => {
+  let total = 0;
+  for (const f of fs.readdirSync('dist/_astro').filter((n) => n.endsWith('.js'))) total += zlib.gzipSync(fs.readFileSync(`dist/_astro/${f}`)).length;
+  assert.ok(total <= 200 * 1000, `client js gzip total is ${(total / 1000).toFixed(1)} kB, budget is 200 kB`);
 });
