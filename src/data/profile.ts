@@ -74,8 +74,8 @@ export const PROFILE = {
     en: "Helena's Dad & Devoted Fiancé",
   },
   stampLabel: {
-    'pt-br': 'PAI DA HELENA',
-    en: "HELENA'S DAD",
+    'pt-br': 'Brinu!',
+    en: 'Brinu!',
   },
   email: 'bruno.a.dinis96@gmail.com',
   github: {
