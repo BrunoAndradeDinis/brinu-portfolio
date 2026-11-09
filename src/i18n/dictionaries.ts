@@ -166,6 +166,12 @@ export interface TranslationSchema {
     archiveTitle: string;
     openCase: string;
   };
+  notFound: {
+    actTag: string;
+    title: string;
+    hint: string;
+    back: string;
+  };
   casePage: {
     sectionAria: string;
     actTag: string;
@@ -463,6 +469,12 @@ export const ptBrDict: TranslationSchema = {
     archiveTag: '// ARQUIVO • PROJETOS MENORES COM DEMO',
     archiveTitle: 'ARQUIVO',
     openCase: 'ABRIR CASE',
+  },
+  notFound: {
+    actTag: '[ ERRO 404 // SINAL PERDIDO ]',
+    title: 'PÁGINA NÃO ENCONTRADA',
+    hint: 'Este endereço não existe neste portfólio.',
+    back: '← VOLTAR AO INÍCIO',
   },
   casePage: {
     sectionAria: 'Página do case',
@@ -767,6 +779,12 @@ export const enDict = {
     archiveTag: '// ARCHIVE • SMALLER PROJECTS WITH DEMOS',
     archiveTitle: 'ARCHIVE',
     openCase: 'OPEN CASE',
+  },
+  notFound: {
+    actTag: '[ ERROR 404 // SIGNAL LOST ]',
+    title: 'PAGE NOT FOUND',
+    hint: 'This address does not exist in this portfolio.',
+    back: '← BACK TO START',
   },
   casePage: {
     sectionAria: 'Case page',

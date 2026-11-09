@@ -1,0 +1,13 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { ptBrDict } from "../i18n/dictionaries";
+---
+
+<BaseLayout title={`${ptBrDict.notFound.title} // Bruno Dinis`} description={ptBrDict.notFound.hint}>
+  <main id="main-content" tabindex="-1" class="flex min-h-screen flex-col items-start justify-center bg-space-base px-4 py-16 sm:px-8 md:px-12 text-paper-white focus:outline-none">
+    <span class="mb-3 block font-mono text-xs sm:text-sm font-bold tracking-widest text-bebop-red uppercase" data-i18n="notFound.actTag">{ptBrDict.notFound.actTag}</span>
+    <h1 class="font-display text-[clamp(1.5rem,7vw,5rem)] font-black uppercase leading-none tracking-tight break-words" data-i18n="notFound.title">{ptBrDict.notFound.title}</h1>
+    <p class="mt-4 font-mono text-xs sm:text-sm font-bold uppercase tracking-wider" data-i18n="notFound.hint">{ptBrDict.notFound.hint}</p>
+    <a href="/" data-not-found-home data-i18n="notFound.back" class="mt-8 border-2 border-bebop-red bg-bebop-red px-4 py-2 font-mono text-xs font-black uppercase tracking-wider text-space-base hover:bg-paper-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-paper-white">{ptBrDict.notFound.back}</a>
+  </main>
+</BaseLayout>

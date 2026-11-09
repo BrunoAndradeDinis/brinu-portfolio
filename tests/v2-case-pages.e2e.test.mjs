@@ -89,6 +89,11 @@ test('C1b: the build generates exactly four case pages and unknown ids return 40
   try {
     const response = await page.goto(`${baseUrl}/cases/does-not-exist`);
     assert.equal(response.status(), 404);
+    assert.equal(fs.existsSync(path.resolve('dist/cases/does-not-exist')), false);
+    assert.ok(fs.existsSync(path.resolve('dist/404.html')), 'the build emits the site 404 page');
+    const notFound = fs.readFileSync(path.resolve('dist/404.html'), 'utf8');
+    assert.match(notFound, /data-not-found-home/);
+    assert.match(notFound, /<h1[^>]*>[^<]*P[^<]*NÃO ENCONTRADA/);
   } finally {
     await context.close();
   }
@@ -549,7 +554,9 @@ test('C27: menu section blades navigate home from a case page', async () => {
     await contact.click();
     await page.waitForFunction(() => window.location.pathname === '/' && window.location.hash === '#contact');
     await page.waitForLoadState('networkidle');
-    assert.ok((await navGap(page, '#contact')) >= 8, 'the contact section is below the nav');
+    await page.waitForTimeout(900);
+    const gap = await navGap(page, '#contact');
+    assert.ok(gap >= 8 && gap <= 40, `the contact section settles just below the nav (gap ${gap})`);
   } finally {
     await context.close();
   }
