@@ -26,6 +26,7 @@ const {
   intro = false,
 } = Astro.props;
 
+const canonicalHref = canonicalPath ? (Astro.site ? new URL(canonicalPath, Astro.site).href : canonicalPath) : undefined;
 const personJsonLd = JSON.stringify(buildPersonJsonLd());
 ---
 
@@ -51,8 +52,8 @@ const personJsonLd = JSON.stringify(buildPersonJsonLd());
     <meta property="og:type" content="website" />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
-    {canonicalPath && <link rel="canonical" href={canonicalPath} />}
-    {canonicalPath && <meta property="og:url" content={canonicalPath} />}
+    {canonicalHref && <link rel="canonical" href={canonicalHref} />}
+    {canonicalHref && <meta property="og:url" content={canonicalHref} />}
     <meta property="og:image" content={ogImage} />
     <meta property="og:locale" content="pt_BR" />
 
