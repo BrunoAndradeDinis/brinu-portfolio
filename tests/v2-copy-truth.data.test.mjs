@@ -11,7 +11,8 @@ import { ARSENAL_DECK, CAREER_DECK, EDUCATION_DECK, KNOWN_TECH, SOURCES } from '
 
 const LOCALES = ['pt-br', 'en'];
 const has = (text, token) => text.toLowerCase().includes(token.toLowerCase());
-const techIn = (text) => KNOWN_TECH.filter((term) => has(text, term));
+const escapeRe = (term) => term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+const techIn = (text) => KNOWN_TECH.filter((term) => new RegExp(`(^|[^\\p{L}\\p{N}])${escapeRe(term)}(?=$|[^\\p{L}\\p{N}])`, 'iu').test(text));
 
 test('TRUTH-01: the source deck lists every career and education entry', () => {
   assert.deepEqual(CAREER.map((entry) => entry.id).sort(), Object.keys(CAREER_DECK).sort());
@@ -41,6 +42,14 @@ test('TRUTH-03: duties paraphrase a deck sentence', () => {
         deck.duties.filter((duty) => duty.tokens[locale].every((token) => has(detail, token))).map((duty) => duty.id)
       );
       matched.forEach((ids, index) => assert.equal(ids.length, 1, `${locale} ${entry.id} duty ${index} matches ${ids.length} deck duties`));
+      entry.details.forEach((detail, index) => {
+        const duty = deck.duties.find((item) => item.id === matched[index][0]);
+        assert.equal(detail, duty.approved[locale], `${locale} ${entry.id} duty ${index} differs from the approved sentence for "${duty.ref.slice(0, 40)}…"`);
+        const own = duty.tokens[locale];
+        for (const term of techIn(detail)) {
+          assert.ok(own.some((token) => has(token, term)) || deck.allowedStack.includes(term), `${locale} ${entry.id} duty ${index} adds "${term}" the source does not give it`);
+        }
+      });
       assert.deepEqual(matched.flat().sort(), deck.duties.map((duty) => duty.id).sort(), `${locale} ${entry.id} covers every deck duty once`);
       for (const term of techIn(entry.summary)) {
         assert.ok(deck.allowedStack.includes(term), `${locale} ${entry.id} summary names "${term}", absent from the deck`);
@@ -82,6 +91,16 @@ test('TRUTH-06: pt-br and en dossier lists have equal length', () => {
       for (const item of entry.text[key]) assert.ok(item['pt-br'] && item.en, `${entry.id} ${key} has both locales`);
     }
   }
+  const ptEducation = getLocalizedEducation('pt-br');
+  const enEducation = getLocalizedEducation('en');
+  assert.equal(ptEducation.length, enEducation.length);
+  ptEducation.forEach((pt, index) => {
+    assert.equal(pt.id, enEducation[index].id);
+    for (const key of ['institution', 'course', 'period', 'status']) assert.ok(pt[key] && enEducation[index][key], `education ${pt.id} ${key} has both locales`);
+  });
+  for (const key of Object.keys(DICTIONARIES['pt-br'].about)) {
+    assert.equal(typeof DICTIONARIES.en.about[key], typeof DICTIONARIES['pt-br'].about[key], `about.${key} has the same shape`);
+  }
 });
 
 function flatten(value, prefix = '') {
@@ -112,14 +131,23 @@ test('TXT-02: location reads Franca / SP everywhere', () => {
 
 test('TXT-03: no fact sentence repeats across sections', () => {
   for (const locale of LOCALES) {
+    const strings = [
+      ...flatten(DICTIONARIES[locale]),
+      ...getLocalizedCareer(locale).flatMap((entry) => [
+        [`career.${entry.id}.summary`, entry.summary],
+        ...entry.details.map((detail, index) => [`career.${entry.id}.details[${index}]`, detail]),
+      ]),
+    ];
     const seen = new Map();
-    for (const [key, text] of flatten(DICTIONARIES[locale])) {
-      const normal = text.replace(/\s+/g, ' ').trim().toLowerCase();
-      if (normal.length < 25) continue;
+    for (const [key, text] of strings) {
       const section = key.split('.')[0];
-      const first = seen.get(normal);
-      if (first && first.section !== section) assert.fail(`${locale}: "${normal}" appears in ${first.key} and ${key}`);
-      if (!first) seen.set(normal, { section, key });
+      for (const sentence of text.split(/(?<=[.!?])\s+/)) {
+        const normal = sentence.replace(/\s+/g, ' ').trim().toLowerCase();
+        if (normal.length < 25) continue;
+        const first = seen.get(normal);
+        if (first && first.section !== section) assert.fail(`${locale}: "${normal}" appears in ${first.key} and ${key}`);
+        if (!first) seen.set(normal, { section, key });
+      }
     }
   }
 });
