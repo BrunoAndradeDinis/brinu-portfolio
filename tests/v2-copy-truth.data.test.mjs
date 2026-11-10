@@ -110,6 +110,20 @@ test('TXT-02: location reads Franca / SP everywhere', () => {
   }
 });
 
+test('TXT-03: no fact sentence repeats across sections', () => {
+  for (const locale of LOCALES) {
+    const seen = new Map();
+    for (const [key, text] of flatten(DICTIONARIES[locale])) {
+      const normal = text.replace(/\s+/g, ' ').trim().toLowerCase();
+      if (normal.length < 25) continue;
+      const section = key.split('.')[0];
+      const first = seen.get(normal);
+      if (first && first.section !== section) assert.fail(`${locale}: "${normal}" appears in ${first.key} and ${key}`);
+      if (!first) seen.set(normal, { section, key });
+    }
+  }
+});
+
 test('ARS-01: each arsenal skill resolves an evidence ref', () => {
   for (const domain of ARSENAL) {
     for (const skill of domain.skills) {

@@ -47,7 +47,6 @@ export interface TranslationSchema {
     audioLabel: string;
     audioOn: string;
     audioMuted: string;
-    baseLabel: string;
     escHint: string;
   };
   hero: {
@@ -345,7 +344,6 @@ export const ptBrDict: TranslationSchema = {
     audioLabel: 'SÍNTESE DE ÁUDIO WEB',
     audioOn: 'ÁUDIO: ATIVO',
     audioMuted: 'ÁUDIO: MUDO',
-    baseLabel: `BASE: ${PROFILE.location.remoteLabel['pt-br'].toUpperCase()}`,
     escHint: 'PRESSIONE [ESC] OU SELECIONE UM DESTINO',
   },
   hero: {
@@ -467,8 +465,8 @@ export const ptBrDict: TranslationSchema = {
     domainLabel: 'FRONTEND EM PRODUÇÃO :: FULLSTACK TYPESCRIPT :: CREATIVE DEV',
     challengeLabel: '// DESAFIO TÉCNICO',
     solutionLabel: ':: SOLUÇÃO ARQUITETURAL',
-    metricLabel: '[ IMPACTO ]',
-    archiveTag: '// ARQUIVO • PROJETOS MENORES COM DEMO',
+    metricLabel: '[ ENTREGA ]',
+    archiveTag: '// ARQUIVO • PROJETOS MENORES E ESTUDOS',
     archiveTitle: 'ARQUIVO',
     openCase: 'ABRIR CASE',
   },
@@ -507,7 +505,7 @@ export const ptBrDict: TranslationSchema = {
     hardSkillsLabel: 'HARD SKILLS',
     softSkillsLabel: 'SOFT SKILLS',
     skillsTag: '// MATRIZ DE HABILIDADES • CONFIDANT RANKS',
-    skillsTitle: 'ARSENAL TÉCNICO // 3 DOMÍNIOS',
+    skillsTitle: 'ARSENAL TÉCNICO',
   },
   lab: {
     sectionAria: 'Arcana Deck: Baralho de Projetos Selecionados',
@@ -565,7 +563,7 @@ export const ptBrDict: TranslationSchema = {
     codenameKey: 'REMETENTE:',
     frequencyKey: 'E-MAIL:',
     statusKey: 'DESTINO:',
-    statusValue: `${PROFILE.email} (${PROFILE.location.label})`,
+    statusValue: PROFILE.email,
     timestampKey: 'CARIMBO:',
     sendEmailCopy: 'ABRIR NO CLIENTE DE E-MAIL',
     newTransmission: 'NOVA MENSAGEM',
@@ -577,9 +575,9 @@ export const ptBrDict: TranslationSchema = {
     backToTop: 'VOLTAR AO TOPO',
     backToTopAria: 'Voltar suavemente ao topo da página',
     copyright: '© 2026 BRUNO DE ANDRADE DINIS (BRINU) // TODOS OS DIREITOS RESERVADOS.',
-    engineeredIn: `PROJETADO & ENGENHEIRADO EM ${PROFILE.location.label.toUpperCase()}`,
+    engineeredIn: `PROJETADO & DESENVOLVIDO EM ${PROFILE.location.label.toUpperCase()}`,
     stackLine: 'ASTRO 7 • REACT 19 • TAILWIND V4 • GSAP • SOLID',
-    privacyLine: 'ZERO COOKIES • ZERO RASTREAMENTO • ALTA PERFORMANCE',
+    privacyLine: 'ZERO COOKIES • ZERO RASTREAMENTO',
   },
   cilada: {
     dialogAria: 'Alerta de emergência: É uma cilada, Brinu!',
@@ -657,7 +655,6 @@ export const enDict = {
     audioLabel: 'WEB AUDIO SYNTHESIS',
     audioOn: 'AUDIO: ON',
     audioMuted: 'AUDIO: MUTED',
-    baseLabel: `BASE: ${PROFILE.location.remoteLabel.en.toUpperCase()}`,
     escHint: 'PRESS [ESC] OR SELECT A DESTINATION',
   },
   hero: {
@@ -779,8 +776,8 @@ export const enDict = {
     domainLabel: 'PRODUCTION FRONTEND :: FULLSTACK TYPESCRIPT :: CREATIVE DEV',
     challengeLabel: '// TECHNICAL CHALLENGE',
     solutionLabel: ':: ARCHITECTURAL SOLUTION',
-    metricLabel: '[ IMPACT ]',
-    archiveTag: '// ARCHIVE • SMALLER PROJECTS WITH DEMOS',
+    metricLabel: '[ DELIVERED ]',
+    archiveTag: '// ARCHIVE • SMALLER PROJECTS AND STUDIES',
     archiveTitle: 'ARCHIVE',
     openCase: 'OPEN CASE',
   },
@@ -819,7 +816,7 @@ export const enDict = {
     hardSkillsLabel: 'HARD SKILLS',
     softSkillsLabel: 'SOFT SKILLS',
     skillsTag: '// SKILL MATRIX • CONFIDANT RANKS',
-    skillsTitle: 'TECHNICAL ARSENAL // 3 DOMAINS',
+    skillsTitle: 'TECHNICAL ARSENAL',
   },
   lab: {
     sectionAria: 'Arcana Deck: Selected Projects Card Deck',
@@ -844,7 +841,7 @@ export const enDict = {
   contact: {
     sectionAria: 'Contact and Project Proposals — Bounty Board',
     actTag: '[ ACT IV // BOUNTY BOARD • DIRECT TRANSMISSION ]',
-    title: 'TRANSMIT A BOUNTY',
+    title: 'LET’S TALK',
     availableBadge: 'AVAILABLE FOR HIGH-IMPACT CONTRACTS',
     leadText:
       'Have a product that needs a fast, accessible frontend with personality? Let’s talk.',
@@ -877,7 +874,7 @@ export const enDict = {
     codenameKey: 'SENDER:',
     frequencyKey: 'EMAIL:',
     statusKey: 'TARGET:',
-    statusValue: `${PROFILE.email} (${PROFILE.location.label})`,
+    statusValue: PROFILE.email,
     timestampKey: 'TIMESTAMP:',
     sendEmailCopy: 'OPEN IN EMAIL CLIENT',
     newTransmission: 'NEW TRANSMISSION',
@@ -889,9 +886,9 @@ export const enDict = {
     backToTop: 'BACK TO TOP',
     backToTopAria: 'Scroll smoothly back to top',
     copyright: '© 2026 BRUNO DE ANDRADE DINIS (BRINU) // ALL RIGHTS RESERVED.',
-    engineeredIn: `DESIGNED & ENGINEERED IN ${PROFILE.location.label.toUpperCase()}`,
+    engineeredIn: `DESIGNED & BUILT IN ${PROFILE.location.label.toUpperCase()}`,
     stackLine: 'ASTRO 7 • REACT 19 • TAILWIND V4 • GSAP • SOLID',
-    privacyLine: 'NO COOKIES • ZERO TRACKING • PURE BRUTALIST PERFORMANCE',
+    privacyLine: 'NO COOKIES • ZERO TRACKING',
   },
   cilada: {
     dialogAria: "Emergency alert: It's a trap, Brinu!",
