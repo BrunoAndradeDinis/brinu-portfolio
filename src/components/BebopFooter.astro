@@ -29,32 +29,7 @@ import { ptBrDict } from "../i18n/dictionaries";
   </div>
 
   <div class="mx-auto max-w-[140rem] px-4 py-16 sm:px-8 sm:py-24 md:px-12 md:py-28">
-    <div
-      data-footer-signature
-      class="relative border-4 border-paper-white bg-space-surface-1 p-8 sm:p-12 md:p-16 text-center shadow-[10px_10px_0_var(--color-bebop-red)] overflow-hidden group"
-    >
-      <div class="relative z-10 inline-flex items-center gap-2 px-3 py-1.5 border-2 border-paper-white bg-bebop-red mb-6 sm:mb-8 font-mono text-[11px] sm:text-xs text-paper-white uppercase tracking-widest -skew-x-6">
-        <span class="w-2 h-2 bg-paper-white animate-pulse"></span>
-        <span data-i18n="footer.badge">{ptBrDict.footer.badge}</span>
-      </div>
-
-      <h2
-        data-footer-signature-text
-        data-i18n="footer.signature"
-        class="relative z-10 font-display text-[clamp(2rem,6.5vw,6.8rem)] font-black tracking-tight text-paper-white uppercase leading-none"
-      >
-        {ptBrDict.footer.signature}
-      </h2>
-
-      <p
-        class="relative z-10 mt-4 sm:mt-6 font-mono text-xs sm:text-sm md:text-base tracking-[0.2em] text-bebop-red uppercase font-bold"
-        data-i18n="footer.subtitle"
-      >
-        {ptBrDict.footer.subtitle}
-      </p>
-    </div>
-
-    <div class="mt-12 sm:mt-16 pt-8 border-t-2 border-bebop-red flex flex-col md:flex-row items-center justify-between gap-6">
+    <div class="pt-8 border-t-2 border-bebop-red flex flex-col md:flex-row items-center justify-between gap-6">
       <div class="flex flex-wrap items-center justify-center md:justify-start gap-3 sm:gap-4 font-mono text-xs">
         <a
           href={PROFILE.github.url}

@@ -260,9 +260,6 @@ export interface TranslationSchema {
   footer: {
     sectionAria: string;
     ticker: string;
-    badge: string;
-    signature: string;
-    subtitle: string;
     backToTop: string;
     backToTopAria: string;
     copyright: string;
@@ -567,9 +564,6 @@ export const ptBrDict: TranslationSchema = {
     sectionAria: 'Rodapé do Portfólio e Encerramento',
     ticker:
       '• SEE YOU SPACE COWBOY • 2026 BRINU.DEV • FRANCA / SP • DESENVOLVEDOR FRONTEND • PERSONA BRUTALIST UI •',
-    badge: 'TRANSMISSÃO CONCLUÍDA // PROTOCOLO BRINU V2',
-    signature: '"SEE YOU SPACE COWBOY…"',
-    subtitle: "YOU'RE GONNA CARRY THAT WEIGHT.",
     backToTop: 'VOLTAR AO TOPO',
     backToTopAria: 'Voltar suavemente ao topo da página',
     copyright: '© 2026 BRUNO DE ANDRADE DINIS (BRINU) // TODOS OS DIREITOS RESERVADOS.',
@@ -877,9 +871,6 @@ export const enDict = {
     sectionAria: 'Portfolio Footer and Sign-off',
     ticker:
       '• SEE YOU SPACE COWBOY • 2026 BRINU.DEV • FRANCA / SP • FRONTEND DEVELOPER • PERSONA BRUTALIST UI •',
-    badge: 'TRANSMISSION COMPLETE // BRINU V2 PROTOCOL',
-    signature: '"SEE YOU SPACE COWBOY…"',
-    subtitle: "YOU'RE GONNA CARRY THAT WEIGHT.",
     backToTop: 'BACK TO TOP',
     backToTopAria: 'Scroll smoothly back to top',
     copyright: '© 2026 BRUNO DE ANDRADE DINIS (BRINU) // ALL RIGHTS RESERVED.',
