@@ -144,7 +144,7 @@ test('TAB-05: first view types each line in order and ends on the approved text'
     const want = expected('pt-br', 'luizalabs').details;
     await tab(page, 'luizalabs', 'details').click();
     const first = await detailTexts(page, 'luizalabs');
-    assert.ok(first.some((text) => text.length < want.join('').length), 'text is still being typed right after the click');
+    assert.ok(first[first.length - 1].length < want[want.length - 1].length, 'the last line is still being typed right after the click');
     let sawPartial = false;
     for (let i = 0; i < 80; i += 1) {
       await page.waitForTimeout(100);
@@ -177,6 +177,9 @@ test('TAB-07: a locale change stops typing and shows the new text in full', asyn
     assert.deepEqual(await detailTexts(page, 'luizalabs'), expected('en', 'luizalabs').details);
     await page.waitForTimeout(1500);
     assert.deepEqual(await detailTexts(page, 'luizalabs'), expected('en', 'luizalabs').details, 'stays stable afterwards');
+    const skills = (selector) => page.locator(`#career-luizalabs ${selector}`).evaluateAll((els) => els.map((el) => el.textContent));
+    assert.deepEqual(await skills('[data-career-hard]'), expected('en', 'luizalabs').hardSkills);
+    assert.deepEqual(await skills('[data-career-soft]'), expected('en', 'luizalabs').softSkills);
   });
 });
 
@@ -233,5 +236,46 @@ test('TAB-E3: an entry without automations shows the summary only', async () => 
     assert.equal(await page.locator('#career-magalu-cloud [data-automation-link]').count(), 0);
     assert.equal((await page.locator('#career-magalu-cloud [data-career-summary]').textContent()).trim(), expected('pt-br', 'magalu-cloud').summary);
     assert.equal(await page.locator('#career-luizalabs [data-automation-link]').count(), 3);
+    const infoText = (await panel(page, 'magalu-cloud', 'info').innerText()).replace(/\s+/g, ' ').trim();
+    assert.equal(infoText, expected('pt-br', 'magalu-cloud').summary, 'the INFO panel holds the summary and nothing else');
   });
+});
+
+test('TAB-E4: the INFO summary types on the first view and settles on the approved text', async () => {
+  await withAbout('pt-br', {}, async (page) => {
+    const want = expected('pt-br', 'magazine-luiza').summary;
+    await page.evaluate(() => {
+      window.__lengths = [];
+      setInterval(() => window.__lengths.push(document.querySelector('#career-magazine-luiza [data-career-summary]').textContent.length), 15);
+      document.querySelector('#career-magazine-luiza').scrollIntoView({ block: 'center' });
+    });
+    await page.waitForTimeout(3500);
+    const lengths = await page.evaluate(() => window.__lengths);
+    assert.ok(lengths.some((length) => length > 0 && length < want.length), 'a partial summary was observed');
+    assert.equal(lengths[lengths.length - 1], want.length);
+    assert.equal((await page.locator('#career-magazine-luiza [data-career-summary]').textContent()).trim(), want);
+  });
+});
+
+test('TXT-04: zero horizontal overflow from 320 to 2560 with every tab open', async () => {
+  for (const locale of ['pt-br', 'en']) {
+    for (const width of [320, 375, 768, 1024, 1440, 1920, 2560]) {
+      await withAbout(locale, { ...REDUCED, viewport: { width, height: 900 } }, async (page) => {
+        for (const id of IDS) {
+          for (const key of ['details', 'learned', 'info']) await tab(page, id, key).click();
+        }
+        await page.waitForTimeout(200);
+        for (const key of ['details', 'learned']) {
+          for (const id of IDS) await tab(page, id, key).click();
+          const m = await page.evaluate(() => ({
+            sw: document.documentElement.scrollWidth,
+            cw: document.documentElement.clientWidth,
+            out: [...document.querySelectorAll('#about *')].filter((el) => el.getBoundingClientRect().right > document.documentElement.clientWidth + 1).length,
+          }));
+          assert.ok(m.sw <= m.cw, `${locale} ${width}px ${key}: scrollWidth ${m.sw} > ${m.cw}`);
+          assert.equal(m.out, 0, `${locale} ${width}px ${key}: ${m.out} dossier elements leave the viewport`);
+        }
+      });
+    }
+  }
 });
