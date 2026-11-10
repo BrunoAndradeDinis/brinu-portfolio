@@ -13,7 +13,7 @@ export const CASE_VARIANTS = {
     metric: "bg-paper-white text-space-base border-2 border-space-base",
     stack: "border-2 border-space-base bg-paper-white text-space-base",
     links: "border-t-4 border-space-base",
-    link: "relative overflow-hidden border-2 border-space-base bg-space-base text-paper-white hover:text-space-base focus:text-space-base focus-visible:text-space-base",
+    link: "relative overflow-hidden border-2 border-space-base bg-space-base text-paper-white hover:text-paper-white focus:text-paper-white focus-visible:text-paper-white",
   },
   black: {
     card: "bg-space-base text-paper-white border-4 border-space-base shadow-[8px_8px_0_var(--color-bebop-red)] hover:-translate-x-1 hover:-translate-y-1",
@@ -29,6 +29,6 @@ export const CASE_VARIANTS = {
     metric: "bg-space-surface-1 text-paper-white border-2 border-bebop-red",
     stack: "border-2 border-paper-white bg-space-base text-paper-white",
     links: "border-t-4 border-bebop-red",
-    link: "relative overflow-hidden border-2 border-paper-white bg-space-surface-1 text-paper-white hover:text-space-base focus:text-space-base focus-visible:text-space-base",
+    link: "relative overflow-hidden border-2 border-paper-white bg-space-surface-1 text-paper-white hover:text-paper-white focus:text-paper-white focus-visible:text-paper-white",
   },
 } as const;
