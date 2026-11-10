@@ -342,6 +342,27 @@ test('C17: hovering or focusing a case link reveals the P5 selection polygon wit
       afterFocus >= 0.9,
       `Selection polygon must appear within 150ms on keyboard focus, got opacity=${afterFocus}`
     );
+
+    const openCaseLink = page.locator('#works a[data-case-open]').first();
+    await openCaseLink.hover();
+    await page.waitForTimeout(130);
+    const openCaseHover = await openCaseLink.evaluate((el) => {
+      const poly = el.querySelector('[data-p5-select-poly]');
+      const label = el.querySelector('[data-i18n="works.openCase"]');
+      return {
+        opacity: poly ? Number(window.getComputedStyle(poly).opacity) : 0,
+        color: label ? window.getComputedStyle(label).color : null,
+      };
+    });
+    assert.ok(
+      openCaseHover.opacity >= 0.9,
+      `[data-case-open] selection polygon must appear on hover, got opacity=${openCaseHover.opacity}`
+    );
+    assert.equal(
+      openCaseHover.color,
+      'rgb(251, 250, 244)',
+      `Expected case link text to stay paper-white on hover, got ${openCaseHover.color}`
+    );
   } finally {
     await context.close();
   }

@@ -358,7 +358,7 @@ export const ptBrDict: TranslationSchema = {
       'É uma cilada, Brinu!',
       PROFILE.role['pt-br'],
       'Base: Franca / SP • Remoto',
-      'Astro, React & motion de autor',
+      'Astro, React & motion de autoridade',
     ],
     manifestoLeftLine1: '8 ANOS DE MAGALU',
     manifestoLeftLine2: 'DO ATENDIMENTO',

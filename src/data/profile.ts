@@ -53,7 +53,7 @@ export const PROFILE = {
     en: 'Frontend Developer & Creative Developer',
   },
   tagline: {
-    'pt-br': 'Astro & React • Motion de autor • Interfaces expressivas',
+    'pt-br': 'Astro & React • Motion de autoridade • Interfaces expressivas',
     en: 'Astro & React • Signature motion • Expressive interfaces',
   },
   location: {
