@@ -195,6 +195,11 @@ export interface TranslationSchema {
     careerTitle: string;
     educationTitle: string;
     automationsLabel: string;
+    tabInfo: string;
+    tabDetails: string;
+    tabLearned: string;
+    hardSkillsLabel: string;
+    softSkillsLabel: string;
     skillsTag: string;
     skillsTitle: string;
   };
@@ -496,6 +501,11 @@ export const ptBrDict: TranslationSchema = {
     careerTitle: 'TRAJETÓRIA',
     educationTitle: 'FORMAÇÃO',
     automationsLabel: 'AUTOMAÇÕES',
+    tabInfo: 'INFO',
+    tabDetails: 'FUNÇÕES',
+    tabLearned: 'APRENDIZADOS',
+    hardSkillsLabel: 'HARD SKILLS',
+    softSkillsLabel: 'SOFT SKILLS',
     skillsTag: '// MATRIZ DE HABILIDADES • CONFIDANT RANKS',
     skillsTitle: 'ARSENAL TÉCNICO // 3 DOMÍNIOS',
   },
@@ -803,6 +813,11 @@ export const enDict = {
     careerTitle: 'CAREER',
     educationTitle: 'EDUCATION',
     automationsLabel: 'AUTOMATIONS',
+    tabInfo: 'INFO',
+    tabDetails: 'DUTIES',
+    tabLearned: 'LEARNED',
+    hardSkillsLabel: 'HARD SKILLS',
+    softSkillsLabel: 'SOFT SKILLS',
     skillsTag: '// SKILL MATRIX • CONFIDANT RANKS',
     skillsTitle: 'TECHNICAL ARSENAL // 3 DOMAINS',
   },

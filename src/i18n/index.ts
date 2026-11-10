@@ -291,6 +291,13 @@ export function applyDomTranslations(locale: Locale): void {
     if (role) role.textContent = entry.role;
     if (period) period.textContent = entry.period;
     if (summary) summary.textContent = entry.summary;
+    const bindList = (selector: string, values: string[]) =>
+      item.querySelectorAll<HTMLElement>(selector).forEach((el, idx) => {
+        if (values[idx] !== undefined) el.textContent = values[idx];
+      });
+    bindList('[data-career-detail]', entry.details);
+    bindList('[data-career-hard]', entry.hardSkills);
+    bindList('[data-career-soft]', entry.softSkills);
   });
 
   getLocalizedEducation(validLocale).forEach((entry) => {

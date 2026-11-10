@@ -5,6 +5,7 @@ import { CAREER, getLocalizedCareer, getLocalizedEducation } from "../data/caree
 import P5Title from "./p5/P5Title.astro";
 import P5Badge from "./p5/P5Badge.astro";
 import P5Panel from "./p5/P5Panel.astro";
+import CareerIcon from "./about/CareerIcon.astro";
 
 const career = getLocalizedCareer("pt-br");
 const education = getLocalizedEducation("pt-br");
@@ -110,36 +111,93 @@ const currentId = CAREER.find((entry) => entry.end === "present")?.id;
         </h4>
         <ol data-career class="flex flex-col gap-5 border-l-4 border-bebop-red pl-4">
           {career.map((entry, index) => (
-            <li id={`career-${entry.id}`} data-career-entry class="flex flex-col gap-1">
-              <span class="flex flex-wrap items-center gap-2 font-mono text-[11px] font-black uppercase">
-                <span data-career-rank class="bg-paper-white px-2 py-0.5 text-space-base">
-                  <span data-i18n="about.rankLabel">{ptBrDict.about.rankLabel}</span> {career.length - index}
+            <li id={`career-${entry.id}`} data-career-entry class="flex flex-col gap-2">
+              <div class="flex items-start gap-3">
+                <span data-career-icon-wrap class="mt-0.5 flex h-11 w-11 shrink-0 items-center justify-center border-2 border-paper-white bg-space-base text-bebop-red">
+                  <CareerIcon id={entry.id} />
                 </span>
-                {entry.id === currentId && (
-                  <span data-career-current class="bg-bebop-red px-2 py-0.5 text-space-base" data-i18n="about.currentMarker">{ptBrDict.about.currentMarker}</span>
-                )}
-                <span data-career-period class="text-paper-white">{entry.period}</span>
-              </span>
-              <span class="font-display text-base sm:text-lg font-black uppercase text-paper-white">
-                <span data-career-role>{entry.role}</span> <span class="text-bebop-red">@</span> <span data-career-org>{entry.org}</span>
-              </span>
-              <p data-career-summary class="font-body text-sm text-paper-white leading-relaxed">{entry.summary}</p>
-              {entry.automations.length > 0 && (
-                <div class="mt-1 flex flex-wrap items-center gap-2 font-mono text-[11px]">
-                  <span class="font-black uppercase text-bebop-red" data-i18n="about.automationsLabel">{ptBrDict.about.automationsLabel}</span>
-                  {entry.automations.map((automation) => (
-                    <a
-                      href={automation.repoUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      data-automation-link={automation.id}
-                      class="border border-paper-white px-2 py-0.5 font-bold uppercase text-paper-white transition-colors duration-150 hover:bg-paper-white hover:text-space-base focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-paper-white"
-                    >
-                      {automation.name} ↗
-                    </a>
-                  ))}
+                <div class="flex min-w-0 flex-col gap-1">
+                  <span class="flex flex-wrap items-center gap-2 font-mono text-[11px] font-black uppercase">
+                    <span data-career-rank class="bg-paper-white px-2 py-0.5 text-space-base">
+                      <span data-i18n="about.rankLabel">{ptBrDict.about.rankLabel}</span> {career.length - index}
+                    </span>
+                    {entry.id === currentId && (
+                      <span data-career-current class="bg-bebop-red px-2 py-0.5 text-space-base" data-i18n="about.currentMarker">{ptBrDict.about.currentMarker}</span>
+                    )}
+                    <span data-career-period class="text-paper-white">{entry.period}</span>
+                  </span>
+                  <span class="font-display text-base sm:text-lg font-black uppercase text-paper-white [overflow-wrap:anywhere]">
+                    <span data-career-role>{entry.role}</span> <span class="text-bebop-red">@</span> <span data-career-org>{entry.org}</span>
+                  </span>
                 </div>
-              )}
+              </div>
+
+              <div role="tablist" aria-label={ptBrDict.about.careerTitle} data-i18n="about.careerTitle" data-i18n-attr="aria-label" class="flex flex-wrap gap-2 font-mono text-[11px] font-black uppercase">
+                {(["info", "details", "learned"] as const).map((key, tabIndex) => (
+                  <button
+                    type="button"
+                    role="tab"
+                    id={`career-${entry.id}-tab-${key}`}
+                    aria-controls={`career-${entry.id}-panel-${key}`}
+                    aria-selected={tabIndex === 0 ? "true" : "false"}
+                    tabindex={tabIndex === 0 ? 0 : -1}
+                    data-career-tab={key}
+                    data-i18n={`about.tab${key === "info" ? "Info" : key === "details" ? "Details" : "Learned"}`}
+                    class="border-2 border-paper-white px-2.5 py-1 text-paper-white transition-colors duration-150 aria-selected:bg-paper-white aria-selected:text-space-base hover:bg-bebop-red hover:text-space-base focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-paper-white"
+                  >
+                    {key === "info" ? ptBrDict.about.tabInfo : key === "details" ? ptBrDict.about.tabDetails : ptBrDict.about.tabLearned}
+                  </button>
+                ))}
+              </div>
+
+              <div role="tabpanel" id={`career-${entry.id}-panel-info`} aria-labelledby={`career-${entry.id}-tab-info`} data-career-panel="info" class="flex flex-col gap-2">
+                <p data-career-summary data-typed class="font-body text-sm text-paper-white leading-relaxed">{entry.summary}</p>
+                {entry.automations.length > 0 && (
+                  <div class="flex flex-wrap items-center gap-2 font-mono text-[11px]">
+                    <span class="font-black uppercase text-bebop-red" data-i18n="about.automationsLabel">{ptBrDict.about.automationsLabel}</span>
+                    {entry.automations.map((automation) => (
+                      <a
+                        href={automation.repoUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        data-automation-link={automation.id}
+                        class="border border-paper-white px-2 py-0.5 font-bold uppercase text-paper-white transition-colors duration-150 hover:bg-paper-white hover:text-space-base focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-paper-white"
+                      >
+                        {automation.name} ↗
+                      </a>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div role="tabpanel" id={`career-${entry.id}-panel-details`} aria-labelledby={`career-${entry.id}-tab-details`} data-career-panel="details" class="flex flex-col gap-2">
+                <ul class="flex list-disc flex-col gap-1 pl-5 font-body text-sm leading-relaxed text-paper-white marker:text-bebop-red">
+                  {entry.details.map((detail) => (
+                    <li data-career-detail data-typed>{detail}</li>
+                  ))}
+                </ul>
+              </div>
+
+              <div role="tabpanel" id={`career-${entry.id}-panel-learned`} aria-labelledby={`career-${entry.id}-tab-learned`} data-career-panel="learned" class="flex flex-col gap-3">
+                <div>
+                  <span class="font-mono text-[11px] font-black uppercase text-bebop-red" data-i18n="about.hardSkillsLabel">{ptBrDict.about.hardSkillsLabel}</span>
+                  <ul class="mt-1 flex list-disc flex-col gap-1 pl-5 font-body text-sm leading-relaxed text-paper-white marker:text-bebop-red">
+                    {entry.hardSkills.map((skill) => (
+                      <li data-career-hard data-typed>{skill}</li>
+                    ))}
+                  </ul>
+                </div>
+                {entry.softSkills.length > 0 && (
+                <div>
+                  <span class="font-mono text-[11px] font-black uppercase text-bebop-red" data-i18n="about.softSkillsLabel">{ptBrDict.about.softSkillsLabel}</span>
+                  <ul class="mt-1 flex list-disc flex-col gap-1 pl-5 font-body text-sm leading-relaxed text-paper-white marker:text-bebop-red">
+                    {entry.softSkills.map((skill) => (
+                      <li data-career-soft data-typed>{skill}</li>
+                    ))}
+                  </ul>
+                </div>
+                )}
+              </div>
             </li>
           ))}
         </ol>
@@ -169,10 +227,17 @@ const currentId = CAREER.find((entry) => entry.end === "present")?.id;
 <script>
   import { onPageReady } from "../utils/page-lifecycle";
   import { initDossier } from "./about/dossier";
+  import { initCareerTabs } from "./about/career-tabs";
 
   function boot() {
     const about = document.getElementById("about");
-    return about ? (initDossier(about) ?? undefined) : undefined;
+    if (!about) return undefined;
+    const stopDossier = initDossier(about);
+    const stopTabs = initCareerTabs(about);
+    return () => {
+      stopDossier?.();
+      stopTabs();
+    };
   }
 
   onPageReady(boot);
