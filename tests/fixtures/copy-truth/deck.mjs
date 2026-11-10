@@ -92,7 +92,7 @@ export const ARSENAL_DECK = {
   'Node.js / Express': { sources: ['github'] },
   'PostgreSQL + Prisma': { sources: ['linkedin', 'github'] },
   MongoDB: { sources: ['linkedin', 'github'] },
-  'Object Storage S3': { sources: ['github'] },
+  'Object Storage': { sources: ['github'] },
   'FFmpeg / streaming': { unproven: true },
   Jest: { sources: ['github'] },
   Playwright: { unproven: true },

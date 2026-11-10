@@ -293,8 +293,8 @@ test('C30: education lists the four approved entries with status', async () => {
       assert.deepEqual(statuses.map((s) => s.trim().toUpperCase()), expected[locale].map((s) => s.toUpperCase()));
       const courses = await page.locator('#about [data-education-course]').allInnerTexts();
       const expectedCourses = {
-        'pt-br': ['CST em Desenvolvimento Web', 'Engenheiro de Front-end', 'Developer Fullstack', 'Formação técnica em programação'],
-        en: ['Associate Degree in Web Development', 'Frontend Engineer', 'Fullstack Developer', 'Technical programming track'],
+        'pt-br': ['Desenvolvimento Web', 'Engenheiro de Front-end', 'Developer Fullstack', 'Formação técnica em programação'],
+        en: ['Web Development', 'Frontend Engineer', 'Fullstack Developer', 'Technical programming track'],
       };
       assert.deepEqual(courses.map((c) => c.trim()), expectedCourses[locale]);
       const periods = await page.locator('#about [data-education-period]').allInnerTexts();

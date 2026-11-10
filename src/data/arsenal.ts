@@ -47,7 +47,7 @@ export const ARSENAL: readonly ArsenalDomain[] = [
       { name: 'Node.js / Express', evidence: ['archive:quake-log-parser'] },
       { name: 'PostgreSQL + Prisma', evidence: ['case:uriana'] },
       { name: 'MongoDB', evidence: ['archive:quake-log-parser'] },
-      { name: 'Object Storage S3', evidence: ['case:aurastream'] },
+      { name: 'Object Storage', evidence: ['case:aurastream'] },
       { name: 'FFmpeg / streaming', evidence: ['case:aurastream'] },
     ],
   },

@@ -96,11 +96,11 @@ export const CAREER: readonly CareerEntry[] = [
         t('Correção de NFs, reprocessamento de pedidos e atualização de cadastros no Oracle.', 'Invoice corrections, order reprocessing and record updates in Oracle.'),
         t('Criei duas extensões de navegador: consulta de CNPJ pela API da CNPJA e consulta de dados e jornada de colaboradores internos.', 'Built two browser extensions: CNPJ lookup through the CNPJA API and a lookup of internal employee data and work-shift status.'),
         t('Colaborei em dashboards no Looker Studio com BigQuery e Google Sheets, e numa tabela interativa em Apps Script.', 'Contributed to Looker Studio dashboards backed by BigQuery and Google Sheets, and to an interactive Apps Script table.'),
-        t('Criei um chatbot interno no Dialogflow para os processos do dia a dia e ensinei outros colaboradores a mantê-lo.', 'Built an internal Dialogflow chatbot for day-to-day processes and taught other colleagues how to maintain it.'),
+        t('Criei um chatbot interno no Dialogflow para os processos do dia a dia e repassei o uso a outros colaboradores.', 'Built an internal Dialogflow chatbot for day-to-day processes and handed its use over to other colleagues.'),
         t('Ponto focal para dúvidas sobre processos de venda em erros sistêmicos.', 'Go-to contact for questions about sales processes during systemic errors.'),
       ],
       hardSkills: [t('Zendesk', 'Zendesk'), t('Google Workspace', 'Google Workspace'), t('Google Sheets e Apps Script', 'Google Sheets and Apps Script'), t('Looker Studio e BigQuery', 'Looker Studio and BigQuery'), t('Dialogflow', 'Dialogflow'), t('Extensões de navegador', 'Browser extensions')],
-      softSkills: [t('Foco em resolver no primeiro contato', 'Focus on first-contact resolution'), t('Ponto focal para dúvidas de processo', 'Go-to contact for process questions'), t('Ensinar o que construí a outros colaboradores', 'Teaching colleagues what I built')],
+      softSkills: [t('Foco em resolver no primeiro contato', 'Focus on first-contact resolution'), t('Ponto focal para dúvidas de processo', 'Go-to contact for process questions'), t('Repassar o que construí a outros colaboradores', 'Handing what I built over to colleagues')],
     },
   },
   {
@@ -134,7 +134,7 @@ export const EDUCATION: readonly EducationEntry[] = [
     start: '2023-05',
     end: '2024-12',
     completed: true,
-    text: { course: t('CST em Desenvolvimento Web', 'Associate Degree in Web Development') },
+    text: { course: t('Desenvolvimento Web', 'Web Development') },
   },
   {
     id: 'ebac',
