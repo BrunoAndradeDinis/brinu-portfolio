@@ -154,7 +154,7 @@ test('T3: archive holds the eight approved entries with their links', () => {
     }
   }
   assert.deepEqual(ARCHIVE.filter((e) => e.inProgress).map((e) => e.id), ['doutor-agenda']);
-  assert.equal(getLocalizedArchive('pt-br').find((e) => e.id === 'doutor-agenda').status, 'Em construção');
+  assert.equal(getLocalizedArchive('pt-br').find((e) => e.id === 'doutor-agenda').status, 'Em andamento');
   assert.equal(getLocalizedArchive('en').find((e) => e.id === 'doutor-agenda').status, 'In progress');
   assert.equal(getLocalizedArchive('en').find((e) => e.id === 'jokenpo').status, null);
 });

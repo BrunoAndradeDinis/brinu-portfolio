@@ -163,7 +163,7 @@ test('C26: archive entries show repo and only real demo links', async () => {
 });
 
 test('C27: doutor agenda shows its in progress status in both locales', async () => {
-  for (const [locale, expected] of [['pt-br', 'Em construção'], ['en', 'In progress']]) {
+  for (const [locale, expected] of [['pt-br', 'Em andamento'], ['en', 'In progress']]) {
     const { context, page } = await openHome(locale);
     try {
       const status = page.locator('#archive-doutor-agenda [data-archive-status]');

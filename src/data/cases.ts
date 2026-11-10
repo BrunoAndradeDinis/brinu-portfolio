@@ -231,7 +231,7 @@ export const MAIN_CASES: readonly CaseDefinition[] = [
       category: t('STREAMING & NUVEM', 'STREAMING & CLOUD'),
       badge: t('TRANSMISSÃO 24/7', '24/7 BROADCAST'),
       title: t('AuraStream Engine & Painel-Stream', 'AuraStream Engine & Painel-Stream'),
-      subtitle: t('Projeto autoral • Magalu Cloud', 'Personal project • Magalu Cloud'),
+      subtitle: t('Projeto autoral • usa o Object Storage da Magalu Cloud', 'Personal project • uses Magalu Cloud Object Storage'),
       status: t('Em produção', 'In production'),
       description: t(
         'Motor de transmissão 24/7 para o YouTube e o painel que gerencia o acervo, rodando numa VM da Magalu Cloud.',

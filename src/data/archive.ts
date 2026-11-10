@@ -38,7 +38,7 @@ export interface LocalizedArchiveEntry {
 
 const REPO = t('REPO', 'REPO');
 const DEMO = t('DEMO', 'DEMO');
-const IN_PROGRESS = t('Em construção', 'In progress');
+const IN_PROGRESS = t('Em andamento', 'In progress');
 
 export const ARCHIVE: readonly ArchiveEntry[] = [
   {
