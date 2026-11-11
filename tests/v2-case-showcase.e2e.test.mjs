@@ -273,6 +273,29 @@ test('SHOW-08: a broken video or no JavaScript keeps the poster and links usable
   }
 });
 
+test('MOB-03: the video stays inline and never goes fullscreen by itself', async () => {
+  for (const id of ['magalu-cloud', 'uriana', 'efood']) {
+    const { context, page } = await openPath(`/cases/${id}`, { viewport: { width: 390, height: 844 } });
+    try {
+      await waitPlaying(page, true);
+      await page.waitForTimeout(600);
+      const state = await page.locator('[data-showcase-video]').evaluate((video) => ({
+        inline: video.playsInline,
+        controls: video.hasAttribute('controls'),
+        fullscreen: document.fullscreenElement !== null || video.webkitDisplayingFullscreen === true,
+      }));
+      assert.deepEqual(state, { inline: true, controls: false, fullscreen: false }, id);
+      await page.locator('[data-showcase-toggle]').click();
+      await waitPlaying(page, false);
+      await page.locator('[data-showcase-toggle]').click();
+      await waitPlaying(page, true);
+      assert.equal(await page.evaluate(() => document.fullscreenElement === null), true, `${id} fullscreen after toggling`);
+    } finally {
+      await context.close();
+    }
+  }
+});
+
 test('MOB-04: Save-Data keeps the video from autoplaying or downloading', async () => {
   const context = await browser.newContext({ viewport: { width: 390, height: 844 } });
   const page = await context.newPage();

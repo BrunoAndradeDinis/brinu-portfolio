@@ -35,7 +35,7 @@ test('SHOW-02: unknown id yields no showcase navigation', async () => {
 const showcaseData = () => import('../src/data/showcase.ts');
 const publicFile = (src) => new URL(`../public${src}`, import.meta.url);
 
-test('SHOW-10: every main case has a media record with existing files and bilingual alt', async () => {
+test('SHOW-10: every case has media files and bilingual alt texts', async () => {
   const { SHOWCASE_MEDIA } = await showcaseData();
   const { existsSync } = await import('node:fs');
   assert.deepEqual(Object.keys(SHOWCASE_MEDIA).sort(), [...IDS].sort());
@@ -137,7 +137,7 @@ test('STK-01: the library lists 56 stickers and the logo swap pool uses all of t
   assert.deepEqual(STICKERS.map((sticker) => sticker.file), STICKER_FILES);
 });
 
-test('STK-04: every sticker has a unique id, an existing svg of at most 20 kB and bilingual alt', async () => {
+test('STK-04: every sticker has a unique id, a small svg and bilingual alt', async () => {
   const { STICKERS } = await import('../src/data/stickers.ts');
   const { existsSync, statSync } = await import('node:fs');
   assert.equal(new Set(STICKERS.map((sticker) => sticker.id)).size, STICKERS.length, 'unique ids');
@@ -148,4 +148,11 @@ test('STK-04: every sticker has a unique id, an existing svg of at most 20 kB an
     assert.ok(statSync(file).size <= 20 * 1024, `${sticker.id} is ${statSync(file).size} bytes`);
     for (const locale of ['pt-br', 'en']) assert.ok(sticker.alt[locale].trim().length > 0, `${sticker.id} alt ${locale}`);
   }
+});
+
+test('MOB-04: save-data disables autoplay', async () => {
+  const { shouldAutoplay, initialVideoState } = await videoRules();
+  assert.equal(shouldAutoplay({ reducedMotion: false, saveData: true }), false);
+  assert.equal(initialVideoState(shouldAutoplay({ reducedMotion: false, saveData: true })).status, 'idle');
+  assert.equal(shouldAutoplay({ reducedMotion: false, saveData: false }), true);
 });
