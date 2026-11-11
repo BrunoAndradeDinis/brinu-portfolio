@@ -115,6 +115,7 @@ const barButton =
           src={media.screenshot.src}
           width={media.screenshot.width}
           height={media.screenshot.height}
+          data-showcase-alt
           alt={media.screenshot.alt["pt-br"]}
           decoding="async"
         />
@@ -123,10 +124,10 @@ const barButton =
 
     {media.highlight && !media.video ? (
       <div data-showcase-card="second" data-showcase-highlight class="flex flex-col justify-center gap-3 border-4 border-space-base bg-space-base p-6 text-paper-white">
-        <p class="font-mono text-[11px] font-black tracking-widest uppercase">{media.highlight.label["pt-br"]}</p>
+        <p data-showcase-highlight-label class="font-mono text-[11px] font-black tracking-widest uppercase">{media.highlight.label["pt-br"]}</p>
         <p class="font-display text-[clamp(3rem,10vw,5rem)] leading-none font-black text-bebop-red">{media.highlight.value}</p>
         <p class="font-mono text-xs font-bold break-words">{media.highlight.flow}</p>
-        <p class="font-mono text-xs font-bold uppercase">{media.highlight.note["pt-br"]}</p>
+        <p data-showcase-highlight-note class="font-mono text-xs font-bold uppercase">{media.highlight.note["pt-br"]}</p>
       </div>
     ) : (
       <figure data-showcase-card="second" class="relative m-0 border-4 border-space-base bg-space-base">
@@ -135,6 +136,7 @@ const barButton =
           src={media.screenshot.src}
           width={media.screenshot.width}
           height={media.screenshot.height}
+          data-showcase-alt
           alt={media.screenshot.alt["pt-br"]}
           loading="lazy"
           decoding="async"
@@ -180,7 +182,7 @@ const barButton =
           loading="lazy"
           decoding="async"
         />
-        <span class="block px-2 py-1.5 font-mono text-[11px] font-black tracking-wider uppercase break-words">
+        <span data-showcase-tile-title={tile.id} class="block px-2 py-1.5 font-mono text-[11px] font-black tracking-wider uppercase break-words">
           {String(tile.index).padStart(2, "0")} · {tile.title}
         </span>
       </a>

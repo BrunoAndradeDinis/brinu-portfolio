@@ -306,3 +306,58 @@ test('SHOW-05: restoring the page from the back-forward cache recomputes the sta
     await context.close();
   }
 });
+
+test('SHOW-09: showcase text updates in place on locale change', async () => {
+  const { SHOWCASE_MEDIA } = await import('../src/data/showcase.ts');
+  const { getLocalizedCases } = await import('../src/data/cases.ts');
+  const { DICTIONARIES } = await import('../src/i18n/dictionaries.ts');
+  const english = DICTIONARIES.en.showcase;
+  const enCases = getLocalizedCases('en');
+
+  for (const id of ['magalu-cloud', 'aurastream']) {
+    const media = SHOWCASE_MEDIA[id];
+    const { context, page } = await openPath(`/cases/${id}`, { locale: 'pt-br', reducedMotion: 'reduce' });
+    try {
+      await page.evaluate(() => { window.__marker = 'kept'; });
+      await page.locator('[data-lang-toggle]').first().click();
+      await page.waitForFunction(() => document.querySelector('[data-showcase-site]').textContent.includes('LIVE SITE'));
+      const text = (selector) => page.locator(selector).first().textContent().then((value) => value.trim());
+      assert.equal(await page.evaluate(() => window.__marker), 'kept', `${id} no reload`);
+      assert.equal(await text('[data-showcase-position]'), `${english.caseLabel} ${await page.evaluate(() => document.querySelector('[data-showcase-position]').textContent.trim().split(' ').slice(1).join(' '))}`);
+      assert.equal(await page.locator('[data-showcase-prev]').getAttribute('aria-label'), english.prevAria);
+      assert.equal(await page.locator('[data-showcase-next]').getAttribute('aria-label'), english.nextAria);
+      assert.equal(await page.locator('[data-showcase-tiles]').getAttribute('aria-label'), english.tilesAria);
+      assert.equal(await page.locator('[data-showcase-card="media"] img, [data-showcase-video]').first().evaluate((node) => node.getAttribute('alt') ?? node.getAttribute('aria-label')), media.video ? media.video.poster.alt.en : media.screenshot.alt.en);
+      const imageAlts = await page.locator('[data-showcase-card] img').evaluateAll((nodes) => nodes.map((node) => node.getAttribute('alt')));
+      assert.ok(imageAlts.every((alt) => alt === media.screenshot.alt.en), `${id} screenshot alts ${imageAlts}`);
+      if (media.video) assert.equal(await text('[data-showcase-tag]'), media.video.tag.en);
+      if (media.highlight) {
+        assert.equal(await text('[data-showcase-highlight-label]'), media.highlight.label.en);
+        assert.equal(await text('[data-showcase-highlight-note]'), media.highlight.note.en);
+      }
+      const tileTitles = await page.locator('[data-showcase-tiles] [data-showcase-tile-title]').allTextContents();
+      assert.deepEqual(tileTitles.map((title) => title.trim().replace(/^\d+ · /, '')), IDS.map((other) => enCases.find((c) => c.id === other).title));
+    } finally {
+      await context.close();
+    }
+  }
+});
+
+test('SHOW-09: switching the locale does not change the video state', async () => {
+  const { context, page } = await openPath('/cases/magalu-cloud', { locale: 'pt-br' });
+  try {
+    await waitPlaying(page, true);
+    await page.locator('[data-lang-toggle]').first().click();
+    await page.waitForFunction(() => document.querySelector('[data-showcase-site]').textContent.includes('LIVE SITE'));
+    assert.equal(await playing(page), true);
+    await page.locator('[data-showcase-toggle]').click();
+    await waitPlaying(page, false);
+    await page.locator('[data-lang-toggle]').first().click();
+    await page.waitForFunction(() => document.querySelector('[data-showcase-site]').textContent.includes('SITE NO AR'));
+    await page.waitForTimeout(400);
+    assert.equal(await playing(page), false);
+    assert.equal(await page.locator('[data-showcase-toggle]').getAttribute('aria-pressed'), 'false');
+  } finally {
+    await context.close();
+  }
+});
