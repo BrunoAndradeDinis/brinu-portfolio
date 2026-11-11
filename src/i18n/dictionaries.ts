@@ -180,8 +180,6 @@ export interface TranslationSchema {
     controlsAria: string;
     play: string;
     pause: string;
-    playAria: string;
-    pauseAria: string;
     tilesAria: string;
     stackAria: string;
   };
@@ -499,8 +497,6 @@ export const ptBrDict: TranslationSchema = {
     controlsAria: 'Navegação entre cases',
     play: 'PLAY',
     pause: 'PAUSE',
-    playAria: 'Reproduzir o vídeo',
-    pauseAria: 'Pausar o vídeo',
     tilesAria: 'Todos os cases',
     stackAria: 'Tecnologias do case',
   },
@@ -824,8 +820,6 @@ export const enDict = {
     controlsAria: 'Case navigation',
     play: 'PLAY',
     pause: 'PAUSE',
-    playAria: 'Play the video',
-    pauseAria: 'Pause the video',
     tilesAria: 'All cases',
     stackAria: 'Case technologies',
   },

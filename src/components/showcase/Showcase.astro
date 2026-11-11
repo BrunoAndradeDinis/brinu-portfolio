@@ -88,7 +88,7 @@ const barButton =
           width={media.video.width}
           height={media.video.height}
           poster={media.video.poster.src}
-          preload="metadata"
+          preload="none"
           muted
           loop
           playsinline
@@ -97,8 +97,15 @@ const barButton =
           <source src={media.video.webm} type="video/webm" />
           <source src={media.video.mp4} type="video/mp4" />
         </video>
-        <figcaption data-showcase-tag class="bg-space-base px-3 py-2 font-mono text-[11px] font-black tracking-widest text-paper-white uppercase">
-          {media.video.tag["pt-br"]}
+        <figcaption class="flex items-center justify-between gap-3 bg-space-base px-3 py-2 text-paper-white">
+          <span data-showcase-tag class="font-mono text-[11px] font-black tracking-widest uppercase">{media.video.tag["pt-br"]}</span>
+          <button
+            type="button"
+            data-showcase-toggle
+            aria-pressed="false"
+            hidden
+            class="inline-flex h-11 min-w-11 items-center justify-center border-2 border-paper-white px-3 font-mono text-[11px] font-black tracking-widest uppercase hover:bg-paper-white hover:text-space-base focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-bebop-red"
+          ><span data-i18n="showcase.play">{text.play}</span> · <span data-i18n="showcase.pause">{text.pause}</span></button>
         </figcaption>
       </figure>
     ) : (
@@ -180,3 +187,13 @@ const barButton =
     ))}
   </nav>
 </section>
+
+<script>
+  import { onPageReady } from "../../utils/page-lifecycle";
+  import { initShowcaseVideo } from "./showcase-video-bind";
+
+  onPageReady(() => {
+    const showcase = document.querySelector<HTMLElement>("[data-showcase]");
+    return showcase ? initShowcaseVideo(showcase) : undefined;
+  });
+</script>

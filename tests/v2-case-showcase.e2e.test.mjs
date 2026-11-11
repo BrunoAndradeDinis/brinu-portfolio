@@ -165,3 +165,144 @@ test('SHOW-08: without JavaScript the poster, texts and links are present with d
     }
   }
 });
+
+const playing = (page) => page.locator('[data-showcase-video]').evaluate((video) => !video.paused && !video.ended);
+const waitPlaying = (page, expected) =>
+  page.waitForFunction(
+    (want) => {
+      const video = document.querySelector('[data-showcase-video]');
+      return video && (!video.paused && !video.ended) === want;
+    },
+    expected,
+    { timeout: 8000 }
+  );
+
+test('SHOW-04: the video is muted, looping, inline and autoplays with a poster', async () => {
+  const { context, page } = await openPath('/cases/magalu-cloud');
+  try {
+    await waitPlaying(page, true);
+    const props = await page.locator('[data-showcase-video]').evaluate((video) => ({
+      muted: video.muted,
+      loop: video.loop,
+      inline: video.playsInline,
+      poster: video.getAttribute('poster'),
+    }));
+    assert.deepEqual({ muted: props.muted, loop: props.loop, inline: props.inline }, { muted: true, loop: true, inline: true });
+    assert.match(props.poster, /^\/assets\/showcase\/magalu-cloud\/.+\.webp$/);
+    assert.equal((await page.request.get(`${baseUrl}${props.poster}`)).status(), 200);
+  } finally {
+    await context.close();
+  }
+});
+
+test('SHOW-05: the play button toggles the video and exposes its state', async () => {
+  const { context, page } = await openPath('/cases/uriana');
+  try {
+    const button = page.locator('[data-showcase-toggle]');
+    await waitPlaying(page, true);
+    assert.equal(await button.isVisible(), true);
+    assert.equal(await button.getAttribute('aria-pressed'), 'true');
+    assert.match((await button.innerText()).trim(), /PLAY\s*·\s*PAUSE/);
+    await button.click();
+    await waitPlaying(page, false);
+    assert.equal(await button.getAttribute('aria-pressed'), 'false');
+    await button.click();
+    await waitPlaying(page, true);
+    assert.equal(await button.getAttribute('aria-pressed'), 'true');
+    assert.ok((await button.evaluate((node) => node.getAttribute('aria-label') ?? node.textContent)).trim().length > 0);
+  } finally {
+    await context.close();
+  }
+});
+
+test('SHOW-06: reduced motion keeps the video paused on the poster', async () => {
+  const { context, page } = await openPath('/cases/efood', { reducedMotion: 'reduce' });
+  try {
+    await page.waitForTimeout(800);
+    assert.equal(await playing(page), false);
+    assert.equal(await page.locator('[data-showcase-toggle]').getAttribute('aria-pressed'), 'false');
+    assert.ok(await page.locator('[data-showcase-video]').getAttribute('poster'));
+    await page.locator('[data-showcase-toggle]').click();
+    await waitPlaying(page, true);
+  } finally {
+    await context.close();
+  }
+});
+
+test('SHOW-07: the video pauses off screen and resumes only if it was playing', async () => {
+  const { context, page } = await openPath('/cases/magalu-cloud');
+  try {
+    const away = () => page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+    const back = () => page.evaluate(() => document.querySelector('[data-showcase-card="media"]').scrollIntoView({ block: 'center' }));
+    await waitPlaying(page, true);
+    await away();
+    await waitPlaying(page, false);
+    await back();
+    await waitPlaying(page, true);
+
+    await page.locator('[data-showcase-toggle]').click();
+    await waitPlaying(page, false);
+    await away();
+    await page.waitForTimeout(500);
+    await back();
+    await page.waitForTimeout(800);
+    assert.equal(await playing(page), false);
+  } finally {
+    await context.close();
+  }
+});
+
+test('SHOW-08: a broken video or no JavaScript keeps the poster and links usable', async () => {
+  const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+  const page = await context.newPage();
+  const errors = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+  await page.route(/\.(webm|mp4)$/, (route) => route.abort());
+  try {
+    await page.goto(`${baseUrl}/cases/efood`, { waitUntil: 'networkidle' });
+    await page.waitForTimeout(600);
+    assert.equal(await playing(page), false);
+    assert.ok(await page.locator('[data-showcase-video]').getAttribute('poster'));
+    assert.equal(await page.locator('[data-showcase-site]').isVisible(), true);
+    assert.equal(await page.locator('h1').isVisible(), true);
+    assert.equal(await page.locator('[data-showcase-tiles] a').count(), 4);
+    assert.deepEqual(errors, []);
+  } finally {
+    await context.close();
+  }
+});
+
+test('MOB-04: Save-Data keeps the video from autoplaying or downloading', async () => {
+  const context = await browser.newContext({ viewport: { width: 390, height: 844 } });
+  const page = await context.newPage();
+  const media = [];
+  page.on('request', (request) => {
+    if (/\.(webm|mp4)$/.test(request.url())) media.push(request.url());
+  });
+  await page.addInitScript(() => {
+    Object.defineProperty(navigator, 'connection', { value: { saveData: true }, configurable: true });
+  });
+  try {
+    await page.goto(`${baseUrl}/cases/uriana`, { waitUntil: 'networkidle' });
+    await page.waitForTimeout(600);
+    assert.equal(await playing(page), false);
+    assert.deepEqual(media, []);
+    assert.equal(await page.locator('[data-showcase-video]').evaluate((video) => video.playsInline && !document.fullscreenElement), true);
+  } finally {
+    await context.close();
+  }
+});
+
+test('SHOW-05: restoring the page from the back-forward cache recomputes the state', async () => {
+  const { context, page } = await openPath('/cases/uriana');
+  try {
+    await waitPlaying(page, true);
+    await page.locator('[data-showcase-toggle]').click();
+    await waitPlaying(page, false);
+    await page.evaluate(() => window.dispatchEvent(new PageTransitionEvent('pageshow', { persisted: true })));
+    await waitPlaying(page, true);
+    assert.equal(await page.locator('[data-showcase-toggle]').getAttribute('aria-pressed'), 'true');
+  } finally {
+    await context.close();
+  }
+});

@@ -69,7 +69,7 @@ test('SHOW-10: video and poster come together, only on the cases that have a vid
 
 const SHOWCASE_KEYS = [
   'caseLabel', 'liveSite', 'site', 'prevAria', 'nextAria', 'controlsAria',
-  'play', 'pause', 'playAria', 'pauseAria', 'tilesAria', 'stackAria',
+  'play', 'pause', 'tilesAria', 'stackAria',
 ];
 
 test('SHOW-09: showcase dictionary has the same non-empty keys in pt-br and en', async () => {
