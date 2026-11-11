@@ -203,3 +203,46 @@ test('CKP-04: the open menu shows socials, language toggle and cases link', asyn
     await context.close();
   }
 });
+
+test('CKP-05: the open menu columns and overflow match each breakpoint', async () => {
+  const columns = (page, selector) =>
+    page.locator(selector).evaluateAll((nodes) => {
+      const tops = nodes.map((node) => Math.round(node.getBoundingClientRect().top));
+      return tops.filter((top) => top === tops[0]).length;
+    });
+  for (const locale of ['pt-br', 'en']) {
+    for (const width of [320, 390, 768, 1024, 1440, 2560]) {
+      const label = `${locale} ${width}px`;
+      const { context, page } = await openPath('/', { locale, viewport: { width, height: 900 }, reducedMotion: 'reduce' });
+      try {
+        await openCockpit(page);
+        const m = await page.evaluate(() => {
+          const overlay = document.getElementById('cockpit-menu-overlay');
+          return { sw: overlay.scrollWidth, cw: overlay.clientWidth, dw: document.documentElement.scrollWidth, dcw: document.documentElement.clientWidth };
+        });
+        assert.ok(m.sw <= m.cw && m.dw <= m.dcw, `${label} overflow ${JSON.stringify(m)}`);
+        const bladeColumns = await columns(page, '#cockpit-menu-overlay [data-cockpit-link]');
+        const barColumns = await columns(page, '#cockpit-menu-overlay [data-cockpit-lang="pt-br"], #cockpit-menu-overlay [data-cockpit-cases], #cockpit-menu-overlay #cockpit-audio-toggle');
+        if (width >= 768) {
+          assert.equal(bladeColumns, 2, `${label} blades in two columns`);
+        } else {
+          assert.equal(bladeColumns, 1, `${label} blades in one column`);
+        }
+        const barRow = await page.evaluate(() => {
+          const cells = [document.querySelector('#cockpit-menu-overlay [data-cockpit-lang="pt-br"]').closest('div.border-3'), document.querySelector('#cockpit-menu-overlay [data-cockpit-cases]'), document.querySelector('#cockpit-menu-overlay #cockpit-audio-toggle').closest('div.border-3')];
+          const tops = cells.map((cell) => Math.round(cell.getBoundingClientRect().top));
+          return tops.filter((top) => top === tops[0]).length;
+        });
+        assert.equal(barRow, width >= 768 ? 3 : 1, `${label} bottom bar columns (${barColumns})`);
+        const small = await page.evaluate(() =>
+          [...document.querySelectorAll('#cockpit-menu-overlay a, #cockpit-menu-overlay button, #cockpit-trigger-btn')]
+            .map((node) => ({ name: node.getAttribute('data-cockpit-link') ?? node.getAttribute('data-cockpit-lang') ?? node.getAttribute('data-cockpit-social') ?? node.id ?? node.tagName, h: Math.round(node.getBoundingClientRect().height), w: Math.round(node.getBoundingClientRect().width) }))
+            .filter((box) => box.h < 44 || box.w < 44)
+        );
+        assert.deepEqual(small, [], `${label} controls under 44px`);
+      } finally {
+        await context.close();
+      }
+    }
+  }
+});

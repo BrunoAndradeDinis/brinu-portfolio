@@ -440,7 +440,7 @@ export const CockpitMenu: React.FC = () => {
         </ul>
 
         {/* System Controls: Language Switch & Audio Synth */}
-        <div ref={controlsRef} className="grid grid-cols-1 md:grid-cols-2 gap-4 border-t-4 border-paper-white pt-6">
+        <div ref={controlsRef} className="grid grid-cols-1 md:grid-cols-[1.5fr_1fr_1fr] gap-4 border-t-4 border-paper-white pt-6">
           {/* Language Switcher Box */}
           <div className="flex items-center justify-between border-3 border-paper-white bg-space-surface-1 px-5 py-3.5 shadow-[4px_4px_0_var(--color-bebop-red)]">
             <span className="font-mono text-xs sm:text-sm font-bold uppercase tracking-widest text-paper-white">
@@ -452,7 +452,7 @@ export const CockpitMenu: React.FC = () => {
                 data-cockpit-lang="pt-br"
                 aria-pressed={locale === 'pt-br'}
                 onClick={() => setLocale('pt-br')}
-                className={`px-3.5 py-1.5 font-mono text-xs font-black uppercase border-2 cursor-pointer transition-colors ${
+                className={`min-h-11 min-w-11 px-3.5 py-1.5 font-mono text-xs font-black uppercase border-2 cursor-pointer transition-colors ${
                   locale === 'pt-br'
                     ? 'border-paper-white bg-bebop-red text-paper-white'
                     : 'border-paper-white/40 bg-space-base text-muted-gray hover:text-paper-white'
@@ -465,7 +465,7 @@ export const CockpitMenu: React.FC = () => {
                 data-cockpit-lang="en"
                 aria-pressed={locale === 'en'}
                 onClick={() => setLocale('en')}
-                className={`px-3.5 py-1.5 font-mono text-xs font-black uppercase border-2 cursor-pointer transition-colors ${
+                className={`min-h-11 min-w-11 px-3.5 py-1.5 font-mono text-xs font-black uppercase border-2 cursor-pointer transition-colors ${
                   locale === 'en'
                     ? 'border-paper-white bg-bebop-red text-paper-white'
                     : 'border-paper-white/40 bg-space-base text-muted-gray hover:text-paper-white'
@@ -498,7 +498,7 @@ export const CockpitMenu: React.FC = () => {
               id="cockpit-audio-toggle"
               aria-pressed={!isMuted}
               onClick={handleToggleAudio}
-              className={`px-3.5 py-1.5 font-mono text-xs font-black uppercase border-2 cursor-pointer transition-colors ${
+              className={`min-h-11 min-w-11 px-3.5 py-1.5 font-mono text-xs font-black uppercase border-2 cursor-pointer transition-colors ${
                 !isMuted
                   ? 'border-paper-white bg-bebop-red text-paper-white animate-pulse'
                   : 'border-paper-white/40 bg-space-base text-muted-gray hover:text-paper-white'
