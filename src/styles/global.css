@@ -340,6 +340,12 @@ h3 {
     transform 110ms cubic-bezier(0.18, 1.28, 0.36, 1);
 }
 
+a[data-case-open]:hover,
+a[data-case-open]:focus,
+a[data-case-open]:focus-visible {
+  color: var(--color-paper-white);
+}
+
 a[data-case-open]:hover .p5-select-poly,
 a[data-case-open]:focus-visible .p5-select-poly,
 a[data-case-open]:focus .p5-select-poly,
