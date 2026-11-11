@@ -66,3 +66,19 @@ test('SHOW-10: video and poster come together, only on the cases that have a vid
   }
   assert.equal(SHOWCASE_MEDIA.aurastream.video, undefined);
 });
+
+const SHOWCASE_KEYS = [
+  'caseLabel', 'liveSite', 'site', 'prevAria', 'nextAria', 'controlsAria',
+  'play', 'pause', 'playAria', 'pauseAria', 'tilesAria', 'stackAria',
+];
+
+test('SHOW-09: showcase dictionary has the same non-empty keys in pt-br and en', async () => {
+  const { DICTIONARIES } = await import('../src/i18n/dictionaries.ts');
+  for (const locale of ['pt-br', 'en']) {
+    const block = DICTIONARIES[locale].showcase;
+    assert.ok(block, `${locale} showcase block`);
+    assert.deepEqual(Object.keys(block).sort(), [...SHOWCASE_KEYS].sort(), `${locale} keys`);
+    for (const key of SHOWCASE_KEYS) assert.ok(block[key].trim().length > 0, `${locale}.${key}`);
+  }
+  assert.notEqual(DICTIONARIES.en.showcase.liveSite, DICTIONARIES['pt-br'].showcase.liveSite);
+});

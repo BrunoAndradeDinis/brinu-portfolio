@@ -171,6 +171,20 @@ export interface TranslationSchema {
     hint: string;
     back: string;
   };
+  showcase: {
+    caseLabel: string;
+    liveSite: string;
+    site: string;
+    prevAria: string;
+    nextAria: string;
+    controlsAria: string;
+    play: string;
+    pause: string;
+    playAria: string;
+    pauseAria: string;
+    tilesAria: string;
+    stackAria: string;
+  };
   casePage: {
     sectionAria: string;
     actTag: string;
@@ -475,6 +489,20 @@ export const ptBrDict: TranslationSchema = {
     title: 'PÁGINA NÃO ENCONTRADA',
     hint: 'Este endereço não existe neste portfólio.',
     back: '← VOLTAR AO INÍCIO',
+  },
+  showcase: {
+    caseLabel: 'CASE',
+    liveSite: 'SITE NO AR',
+    site: 'SITE',
+    prevAria: 'Case anterior',
+    nextAria: 'Próximo case',
+    controlsAria: 'Navegação entre cases',
+    play: 'PLAY',
+    pause: 'PAUSE',
+    playAria: 'Reproduzir o vídeo',
+    pauseAria: 'Pausar o vídeo',
+    tilesAria: 'Todos os cases',
+    stackAria: 'Tecnologias do case',
   },
   casePage: {
     sectionAria: 'Página do case',
@@ -786,6 +814,20 @@ export const enDict = {
     title: 'PAGE NOT FOUND',
     hint: 'This address does not exist in this portfolio.',
     back: '← BACK TO START',
+  },
+  showcase: {
+    caseLabel: 'CASE',
+    liveSite: 'LIVE SITE',
+    site: 'SITE',
+    prevAria: 'Previous case',
+    nextAria: 'Next case',
+    controlsAria: 'Case navigation',
+    play: 'PLAY',
+    pause: 'PAUSE',
+    playAria: 'Play the video',
+    pauseAria: 'Pause the video',
+    tilesAria: 'All cases',
+    stackAria: 'Case technologies',
   },
   casePage: {
     sectionAria: 'Case page',
