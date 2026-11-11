@@ -128,3 +128,24 @@ test('SHOW-08: a failed play returns to idle and never resumes by itself', async
   assert.equal(state.status, 'idle');
   assert.equal(nextVideoState(state, 'visible').status, 'idle');
 });
+
+test('STK-01: the library lists 56 stickers and the logo swap pool uses all of them', async () => {
+  const { STICKERS } = await import('../src/data/stickers.ts');
+  const { STICKER_COUNT, STICKER_FILES } = await import('../src/data/sticker-files.ts');
+  assert.equal(STICKERS.length, 56);
+  assert.equal(STICKER_COUNT, 56);
+  assert.deepEqual(STICKERS.map((sticker) => sticker.file), STICKER_FILES);
+});
+
+test('STK-04: every sticker has a unique id, an existing svg of at most 20 kB and bilingual alt', async () => {
+  const { STICKERS } = await import('../src/data/stickers.ts');
+  const { existsSync, statSync } = await import('node:fs');
+  assert.equal(new Set(STICKERS.map((sticker) => sticker.id)).size, STICKERS.length, 'unique ids');
+  assert.equal(new Set(STICKERS.map((sticker) => sticker.file)).size, STICKERS.length, 'unique files');
+  for (const sticker of STICKERS) {
+    const file = publicFile(sticker.file);
+    assert.ok(existsSync(file), `${sticker.id} file ${sticker.file}`);
+    assert.ok(statSync(file).size <= 20 * 1024, `${sticker.id} is ${statSync(file).size} bytes`);
+    for (const locale of ['pt-br', 'en']) assert.ok(sticker.alt[locale].trim().length > 0, `${sticker.id} alt ${locale}`);
+  }
+});

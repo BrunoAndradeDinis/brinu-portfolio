@@ -1,4 +1,4 @@
-export const STICKER_COUNT = 32;
+export const STICKER_COUNT = 56;
 
 export function stickerFile(position: number): string {
   return `/stickers/sticker-${String(position).padStart(2, '0')}.svg`;
