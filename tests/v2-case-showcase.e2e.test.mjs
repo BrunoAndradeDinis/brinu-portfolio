@@ -451,3 +451,51 @@ test('TAB-03: 768px controls are at least 44px', async () => {
     await context.close();
   }
 });
+
+test('MOB-01: the 390px and 320px showcase has zero horizontal overflow', async () => {
+  for (const width of [390, 320]) {
+    for (const id of IDS) {
+      for (const locale of ['pt-br', 'en']) {
+        const label = `${id} ${locale} ${width}px`;
+        const { context, page } = await openPath(`/cases/${id}`, { locale, viewport: { width, height: 844 }, reducedMotion: 'reduce' });
+        try {
+          const m = await page.evaluate(() => ({ sw: document.documentElement.scrollWidth, cw: document.documentElement.clientWidth, bw: document.body.scrollWidth }));
+          assert.ok(m.sw <= m.cw && m.bw <= m.cw, `${label} overflow ${m.sw}/${m.bw} > ${m.cw}`);
+          assert.equal(Math.round((await rectOf(page, '[data-showcase-bar]')).height), 64, `${label} bar height`);
+          const unbroken = await page.locator('[data-showcase] h1').evaluate((node) => {
+            node.style.overflowWrap = 'normal';
+            node.style.wordBreak = 'normal';
+            return node.scrollWidth - node.clientWidth;
+          });
+          assert.ok(unbroken <= 0, `${label} a title word does not fit (${unbroken}px)`);
+          const stage = await rectOf(page, '[data-showcase-stage]');
+          const media = await rectOf(page, '[data-showcase-card="media"]');
+          const sticker = await rectOf(page, '[data-showcase-sticker]');
+          assert.ok(media.x >= stage.x && media.right <= stage.right, `${label} media card inside the stage`);
+          if (width === 390 && EXPECTED[id].video) assert.ok(Math.abs(media.width - 330) <= 1, `${label} video card ${media.width}px`);
+          assert.ok(sticker.x >= stage.x && sticker.right <= stage.right, `${label} sticker inside the stage`);
+          const tiles = await page.locator('[data-showcase-tiles] a').evaluateAll((nodes) => nodes.map((node) => { const { x, y } = node.getBoundingClientRect(); return { x: Math.round(x), y: Math.round(y) }; }));
+          assert.ok(tiles[0].y === tiles[1].y && tiles[2].y === tiles[3].y && tiles[2].y > tiles[0].y && tiles[0].x === tiles[2].x, `${label} tiles 2x2`);
+          const site = (await page.locator('[data-showcase-site]').innerText()).trim();
+          assert.ok(/^SITE\s*↗$/.test(site), `${label} compact site label "${site}"`);
+        } finally {
+          await context.close();
+        }
+      }
+    }
+  }
+});
+
+test('MOB-02: 390px controls are at least 44px', async () => {
+  const { context, page } = await openPath('/cases/magalu-cloud', { viewport: { width: 390, height: 844 } });
+  try {
+    const selectors = ['[data-showcase-prev]', '[data-showcase-next]', '[data-showcase-site]', '[data-showcase-toggle]'];
+    const boxes = [];
+    for (const selector of selectors) boxes.push([selector, await rectOf(page, selector)]);
+    const tiles = await page.locator('[data-showcase-tiles] a').evaluateAll((nodes) => nodes.map((node) => { const { width, height } = node.getBoundingClientRect(); return { width, height }; }));
+    tiles.forEach((box, index) => boxes.push([`tile ${index + 1}`, box]));
+    for (const [name, box] of boxes) assert.ok(box.width >= 44 && box.height >= 44, `${name} ${box.width}x${box.height}`);
+  } finally {
+    await context.close();
+  }
+});

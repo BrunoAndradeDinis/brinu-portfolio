@@ -38,7 +38,7 @@ const barButton =
     aria-label={text.controlsAria}
     data-i18n="showcase.controlsAria"
     data-i18n-attr="aria-label"
-    class="flex flex-wrap items-center gap-3 border-b-4 border-space-base px-4 py-3 sm:px-8 md:h-20 md:flex-nowrap md:px-9 md:py-0 lg:h-24"
+    class="flex h-16 flex-nowrap items-center gap-2 border-b-4 border-space-base px-4 sm:gap-3 sm:px-8 md:h-20 md:px-9 lg:h-24"
   >
     <a
       data-showcase-prev
@@ -56,25 +56,25 @@ const barButton =
       data-i18n-attr="aria-label"
       class={barButton}
     ><span aria-hidden="true">→</span></a>
-    <p data-showcase-position class="font-mono text-sm font-black tracking-widest uppercase">
-      <span data-i18n="showcase.caseLabel">{text.caseLabel}</span> {position}
+    <p data-showcase-position class="font-mono text-xs font-black tracking-wider whitespace-nowrap uppercase sm:text-sm sm:tracking-widest">
+      <span data-i18n="showcase.caseLabel" class="max-sm:sr-only">{text.caseLabel}</span> {position}
     </p>
     <a
       data-showcase-site
       href={siteLink.url}
       target="_blank"
       rel="noopener noreferrer"
-      class="ml-auto inline-flex h-11 items-center gap-2 border-2 border-space-base bg-bebop-red px-4 font-mono text-sm font-black text-space-base uppercase hover:bg-space-base hover:text-paper-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-space-base"
-    ><span data-i18n="showcase.liveSite">{text.liveSite}</span> <span aria-hidden="true">↗</span></a>
+      class="ml-auto inline-flex h-11 items-center gap-1 border-2 border-space-base bg-bebop-red px-3 font-mono text-xs whitespace-nowrap sm:gap-2 sm:px-4 sm:text-sm font-black text-space-base uppercase hover:bg-space-base hover:text-paper-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-space-base"
+    ><span data-i18n="showcase.liveSite" class="max-sm:hidden">{text.liveSite}</span><span data-i18n="showcase.site" class="sm:hidden">{text.site}</span> <span aria-hidden="true">↗</span></a>
   </div>
 
   <h1
     data-case-title
     style={`view-transition-name: case-title-${project.id}`}
-    class="border-b-4 border-space-base bg-bebop-red px-4 pt-6 pb-5 font-display text-[clamp(1.75rem,8vw,3.5rem)] leading-[0.92] font-black tracking-tight text-space-base uppercase break-words sm:px-8 md:px-9 md:pt-7 md:text-[clamp(2.25rem,6.6vw,5.25rem)] lg:text-[clamp(3rem,5vw,5.25rem)]"
+    class="border-b-4 border-space-base bg-bebop-red px-4 pt-6 pb-5 font-display text-[clamp(1.25rem,6.8vw,3.5rem)] leading-[0.92] font-black tracking-tight text-space-base uppercase break-words sm:px-8 md:px-9 md:pt-7 md:text-[clamp(2.25rem,6.6vw,5.25rem)] lg:text-[clamp(3rem,5vw,5.25rem)]"
   >{project.title}</h1>
 
-  <div data-showcase-stage class="relative border-b-4 border-space-base px-4 py-6 sm:px-8 md:py-10 md:pr-0 md:pl-9 lg:pr-9">
+  <div data-showcase-stage class="relative border-b-4 border-space-base py-6 pr-0 pl-4 sm:pl-8 md:py-10 md:pl-9 lg:pr-9">
     <div
       data-showcase-track
       tabindex="0"
@@ -82,10 +82,10 @@ const barButton =
       aria-label={text.stageAria}
       data-i18n="showcase.stageAria"
       data-i18n-attr="aria-label"
-      class="grid gap-6 md:flex md:snap-x md:snap-mandatory md:gap-9 md:overflow-x-auto md:overscroll-x-contain md:pt-6 md:pr-9 md:pb-4 md:[scroll-padding-inline:0] lg:grid lg:grid-cols-2 lg:overflow-visible lg:pt-0 lg:pr-0 lg:pb-0"
+      class="flex snap-x snap-mandatory gap-5 overflow-x-auto overscroll-x-contain pt-5 pr-4 pb-3 md:gap-9 md:pt-6 md:pr-9 md:pb-4 lg:grid lg:grid-cols-2 lg:gap-6 lg:overflow-visible lg:pt-0 lg:pr-0 lg:pb-0"
     >
     {media.video ? (
-      <figure data-showcase-card="media" class="relative m-0 border-4 border-space-base bg-space-base md:w-[640px] md:shrink-0 md:snap-start lg:w-auto lg:shrink">
+      <figure data-showcase-card="media" class="relative m-0 border-4 border-space-base bg-space-base w-[min(330px,calc(100vw-3rem))] shrink-0 snap-start md:w-[640px] lg:w-auto lg:shrink">
         <video
           data-showcase-video
           class="block h-auto w-full"
@@ -113,7 +113,7 @@ const barButton =
         </figcaption>
       </figure>
     ) : (
-      <figure data-showcase-card="media" class="relative m-0 border-4 border-space-base bg-space-base md:w-[640px] md:shrink-0 md:snap-start lg:w-auto lg:shrink">
+      <figure data-showcase-card="media" class="relative m-0 border-4 border-space-base bg-space-base w-[min(330px,calc(100vw-3rem))] shrink-0 snap-start md:w-[640px] lg:w-auto lg:shrink">
         <img
           class="block h-auto w-full"
           src={media.screenshot.src}
@@ -127,14 +127,14 @@ const barButton =
     )}
 
     {media.highlight && !media.video ? (
-      <div data-showcase-card="second" data-showcase-highlight class="flex flex-col justify-center gap-3 border-4 border-space-base bg-space-base p-6 text-paper-white md:w-[420px] md:shrink-0 md:snap-start lg:w-auto lg:shrink">
+      <div data-showcase-card="second" data-showcase-highlight class="flex flex-col justify-center gap-3 border-4 border-space-base bg-space-base p-6 text-paper-white w-[260px] shrink-0 snap-start md:w-[420px] lg:w-auto lg:shrink">
         <p data-showcase-highlight-label class="font-mono text-[11px] font-black tracking-widest uppercase">{media.highlight.label["pt-br"]}</p>
         <p class="font-display text-[clamp(3rem,10vw,5rem)] leading-none font-black text-bebop-red">{media.highlight.value}</p>
         <p class="font-mono text-xs font-bold break-words">{media.highlight.flow}</p>
         <p data-showcase-highlight-note class="font-mono text-xs font-bold uppercase">{media.highlight.note["pt-br"]}</p>
       </div>
     ) : (
-      <figure data-showcase-card="second" class="relative m-0 border-4 border-space-base bg-space-base md:w-[420px] md:shrink-0 md:snap-start lg:w-auto lg:shrink">
+      <figure data-showcase-card="second" class="relative m-0 border-4 border-space-base bg-space-base w-[260px] shrink-0 snap-start md:w-[420px] lg:w-auto lg:shrink">
         <img
           class="block h-auto w-full"
           src={media.screenshot.src}
@@ -151,7 +151,7 @@ const barButton =
 
     <img
       data-showcase-sticker
-      class="pointer-events-none absolute -top-4 right-4 z-10 w-24 rotate-[10deg] sm:w-32 md:top-2.5 md:right-auto md:left-[560px] md:w-[120px] lg:top-0 lg:right-[44%] lg:left-auto lg:w-32"
+      class="pointer-events-none absolute top-1.5 right-8 z-10 w-[84px] rotate-[10deg] sm:w-24 md:top-2.5 md:right-auto md:left-[560px] md:w-[120px] lg:top-0 lg:right-[44%] lg:left-auto lg:w-32"
       src={media.sticker.src}
       width="150"
       height="150"
@@ -186,7 +186,7 @@ const barButton =
         ]}
       >
         <img
-          class="block h-28 w-full object-cover object-top md:h-32 lg:h-36"
+          class="block h-24 w-full object-cover object-top md:h-32 lg:h-36"
           src={tile.image.src}
           width={tile.image.width}
           height={tile.image.height}
