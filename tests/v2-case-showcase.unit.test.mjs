@@ -82,3 +82,49 @@ test('SHOW-09: showcase dictionary has the same non-empty keys in pt-br and en',
   }
   assert.notEqual(DICTIONARIES.en.showcase.liveSite, DICTIONARIES['pt-br'].showcase.liveSite);
 });
+
+const videoRules = () => import('../src/utils/showcase-video.ts');
+
+test('SHOW-06: autoplay is allowed only without reduced motion and without Save-Data', async () => {
+  const { shouldAutoplay } = await videoRules();
+  assert.equal(shouldAutoplay({ reducedMotion: false, saveData: false }), true);
+  assert.equal(shouldAutoplay({ reducedMotion: true, saveData: false }), false);
+  assert.equal(shouldAutoplay({ reducedMotion: false, saveData: true }), false);
+  assert.equal(shouldAutoplay({ reducedMotion: true, saveData: true }), false);
+});
+
+test('SHOW-05: the toggle alternates between playing and paused', async () => {
+  const { initialVideoState, nextVideoState } = await videoRules();
+  let state = initialVideoState(false);
+  assert.equal(state.status, 'idle');
+  state = nextVideoState(state, 'toggle');
+  assert.equal(state.status, 'playing');
+  state = nextVideoState(state, 'toggle');
+  assert.equal(state.status, 'paused');
+  state = nextVideoState(state, 'toggle');
+  assert.equal(state.status, 'playing');
+  assert.equal(initialVideoState(true).status, 'playing');
+});
+
+test('SHOW-07: leaving the viewport pauses and resumes only a video that was playing', async () => {
+  const { initialVideoState, nextVideoState } = await videoRules();
+  let state = nextVideoState(initialVideoState(true), 'hidden');
+  assert.equal(state.status, 'paused');
+  state = nextVideoState(state, 'visible');
+  assert.equal(state.status, 'playing');
+
+  state = nextVideoState(nextVideoState(initialVideoState(true), 'toggle'), 'hidden');
+  assert.equal(state.status, 'paused');
+  assert.equal(nextVideoState(state, 'visible').status, 'paused');
+
+  const idle = initialVideoState(false);
+  assert.equal(nextVideoState(nextVideoState(idle, 'hidden'), 'visible').status, 'idle');
+});
+
+test('SHOW-08: a failed play returns to idle and never resumes by itself', async () => {
+  const { initialVideoState, nextVideoState } = await videoRules();
+  let state = nextVideoState(initialVideoState(true), 'hidden');
+  state = nextVideoState(state, 'failed');
+  assert.equal(state.status, 'idle');
+  assert.equal(nextVideoState(state, 'visible').status, 'idle');
+});
