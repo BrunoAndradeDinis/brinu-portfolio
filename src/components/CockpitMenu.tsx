@@ -402,10 +402,10 @@ export const CockpitMenu: React.FC = () => {
                   }}
                   className={`group relative flex items-center justify-between border-4 border-paper-white px-5 sm:px-7 py-4 sm:py-5 font-display text-lg sm:text-2xl font-black uppercase tracking-wider transition-all duration-150 -skew-x-6 sm:-skew-x-12 ${
                     isActive
-                      ? 'bg-bebop-red text-paper-white shadow-[8px_8px_0_var(--color-paper-white)] scale-[1.01]'
+                      ? 'bg-bebop-red text-space-base shadow-[8px_8px_0_var(--color-paper-white)] scale-[1.01]'
                       : isEven
-                        ? 'bg-space-base text-paper-white hover:bg-bebop-red hover:text-paper-white shadow-[6px_6px_0_var(--color-bebop-red)]'
-                        : 'bg-paper-white text-space-base hover:bg-bebop-red hover:text-paper-white shadow-[6px_6px_0_var(--color-bebop-red)]'
+                        ? 'bg-space-base text-paper-white hover:bg-bebop-red hover:text-space-base shadow-[6px_6px_0_var(--color-bebop-red)]'
+                        : 'bg-paper-white text-space-base hover:bg-bebop-red hover:text-space-base shadow-[6px_6px_0_var(--color-bebop-red)]'
                   } hover:-translate-y-1`}
                 >
                   <span className="truncate pr-3 skew-x-6 sm:skew-x-12">{label}</span>
@@ -454,7 +454,7 @@ export const CockpitMenu: React.FC = () => {
                 onClick={() => setLocale('pt-br')}
                 className={`min-h-11 min-w-11 px-3.5 py-1.5 font-mono text-xs font-black uppercase border-2 cursor-pointer transition-colors ${
                   locale === 'pt-br'
-                    ? 'border-paper-white bg-bebop-red text-paper-white'
+                    ? 'border-paper-white bg-bebop-red text-space-base'
                     : 'border-paper-white/40 bg-space-base text-muted-gray hover:text-paper-white'
                 }`}
               >
@@ -467,7 +467,7 @@ export const CockpitMenu: React.FC = () => {
                 onClick={() => setLocale('en')}
                 className={`min-h-11 min-w-11 px-3.5 py-1.5 font-mono text-xs font-black uppercase border-2 cursor-pointer transition-colors ${
                   locale === 'en'
-                    ? 'border-paper-white bg-bebop-red text-paper-white'
+                    ? 'border-paper-white bg-bebop-red text-space-base'
                     : 'border-paper-white/40 bg-space-base text-muted-gray hover:text-paper-white'
                 }`}
               >
@@ -483,7 +483,7 @@ export const CockpitMenu: React.FC = () => {
               audioSynth.playKeypressBeep(740, 0.025, 0.06);
               closeMenu();
             }}
-            className="inline-flex min-h-11 items-center justify-center gap-2 border-3 border-paper-white bg-bebop-red px-3.5 py-3.5 font-mono text-xs sm:text-sm font-black uppercase tracking-widest text-paper-white shadow-[4px_4px_0_var(--color-bebop-red)] transition-colors hover:bg-paper-white hover:text-space-base focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-paper-white"
+            className="inline-flex min-h-11 items-center justify-center gap-2 border-3 border-paper-white bg-bebop-red px-3.5 py-3.5 font-mono text-xs sm:text-sm font-black uppercase tracking-widest text-space-base shadow-[4px_4px_0_var(--color-bebop-red)] transition-colors hover:bg-paper-white hover:text-space-base focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-paper-white"
           >
             {t.menu.casesCta}
           </a>
@@ -500,7 +500,7 @@ export const CockpitMenu: React.FC = () => {
               onClick={handleToggleAudio}
               className={`min-h-11 min-w-11 px-3.5 py-1.5 font-mono text-xs font-black uppercase border-2 cursor-pointer transition-colors ${
                 !isMuted
-                  ? 'border-paper-white bg-bebop-red text-paper-white animate-pulse'
+                  ? 'border-paper-white bg-bebop-red text-space-base animate-pulse'
                   : 'border-paper-white/40 bg-space-base text-muted-gray hover:text-paper-white'
               }`}
             >

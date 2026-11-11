@@ -2,6 +2,7 @@ import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
+import zlib from 'node:zlib';
 import http from 'node:http';
 import { chromium } from 'playwright';
 
@@ -495,6 +496,178 @@ test('MOB-02: 390px controls are at least 44px', async () => {
     const tiles = await page.locator('[data-showcase-tiles] a').evaluateAll((nodes) => nodes.map((node) => { const { width, height } = node.getBoundingClientRect(); return { width, height }; }));
     tiles.forEach((box, index) => boxes.push([`tile ${index + 1}`, box]));
     for (const [name, box] of boxes) assert.ok(box.width >= 44 && box.height >= 44, `${name} ${box.width}x${box.height}`);
+  } finally {
+    await context.close();
+  }
+});
+
+const auditText = (page, rootSelector = 'body') =>
+  page.evaluate((rootSelector) => {
+    const parse = (v) => {
+      const m = v.match(/rgba?\(([^)]+)\)/);
+      if (m) { const [r, g, b, a = 1] = m[1].split(/[,/ ]+/).filter(Boolean).map(Number); return { r, g, b, a }; }
+      const c = v.match(/color\(srgb ([^)]+)\)/);
+      if (c) { const [r, g, b, a = 1] = c[1].split(/[ /]+/).filter(Boolean).map(Number); return { r: r * 255, g: g * 255, b: b * 255, a }; }
+      const ok = v.match(/oklab\(([^)]+)\)/);
+      if (ok) {
+        const [L, A, B, al = 1] = ok[1].split(/[ /]+/).filter(Boolean).map((x) => (x.endsWith('%') ? parseFloat(x) / 100 : Number(x)));
+        const l = (L + 0.3963377774 * A + 0.2158037573 * B) ** 3;
+        const m = (L - 0.1055613458 * A - 0.0638541728 * B) ** 3;
+        const sx = (L - 0.0894841775 * A - 1.291485548 * B) ** 3;
+        const lin = [4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * sx, -1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * sx, -0.0041960863 * l - 0.7034186147 * m + 1.707614701 * sx];
+        const enc = (x) => 255 * Math.min(1, Math.max(0, x <= 0.0031308 ? 12.92 * x : 1.055 * x ** (1 / 2.4) - 0.055));
+        return { r: enc(lin[0]), g: enc(lin[1]), b: enc(lin[2]), a: al };
+      }
+      throw new Error(`unsupported color format: ${v}`);
+    };
+    const over = (top, base) => ({ r: top.r * top.a + base.r * (1 - top.a), g: top.g * top.a + base.g * (1 - top.a), b: top.b * top.a + base.b * (1 - top.a), a: 1 });
+    const lum = ({ r, g, b }) => { const f = (x) => { const s = x / 255; return s <= 0.03928 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4; }; return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b); };
+    const backdrop = (el) => {
+      const layers = [];
+      for (let n = el; n; n = n.parentElement) {
+        const bg = parse(getComputedStyle(n).backgroundColor);
+        if (bg.a > 0) layers.push(bg);
+        if (bg.a >= 1) break;
+      }
+      let base = { r: 8, g: 8, b: 8, a: 1 };
+      if (layers.length && layers[layers.length - 1].a >= 1) base = layers.pop();
+      return layers.reverse().reduce((acc, layer) => over(layer, acc), base);
+    };
+    const out = [];
+    const walker = document.createTreeWalker(document.querySelector(rootSelector), NodeFilter.SHOW_TEXT);
+    for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+      if (!node.textContent.trim()) continue;
+      const el = node.parentElement;
+      if (['SCRIPT', 'STYLE', 'NOSCRIPT'].includes(el.tagName)) continue;
+      const cs = getComputedStyle(el);
+      if (cs.visibility === 'hidden' || cs.display === 'none' || el.getClientRects().length === 0) continue;
+      if (el.closest('.sr-only, [aria-hidden="true"], #p5-wipe-overlay')) continue;
+      const size = parseFloat(cs.fontSize);
+      if (size >= 24) continue;
+      const bg = backdrop(el);
+      const fg = over(parse(cs.color), bg);
+      const l1 = lum(fg);
+      const l2 = lum(bg);
+      out.push({ text: node.textContent.trim().slice(0, 30), contrast: (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05) });
+    }
+    return out;
+  }, rootSelector);
+
+
+test('QUA-01: contrast is at least 4.5:1 on showcase, cockpit and stickers', async () => {
+  const screens = [
+    ['showcase video case', '/cases/magalu-cloud', null],
+    ['showcase highlight case', '/cases/aurastream', null],
+    ['cockpit open', '/', async (page) => {
+      await page.locator('#cockpit-trigger-btn').click();
+      await page.waitForFunction(() => document.getElementById('cockpit-menu-overlay').getAttribute('aria-hidden') === 'false');
+    }],
+    ['stickers', '/stickers', null],
+  ];
+  const roots = { 'cockpit open': '#cockpit-menu-overlay' };
+  for (const [name, route, prepare] of screens) {
+    for (const locale of ['pt-br', 'en']) {
+      for (const width of [390, 768, 1440]) {
+        const { context, page } = await openPath(route, { locale, viewport: { width, height: 900 }, reducedMotion: 'reduce' });
+        try {
+          if (prepare) await prepare(page);
+          const audit = await auditText(page, roots[name] ?? 'body');
+          assert.ok(audit.length >= 5, `${name}: expected to audit text (${audit.length})`);
+          assert.deepEqual(audit.filter((row) => row.contrast < 4.5).map((row) => `${row.text} (${row.contrast.toFixed(2)})`), [], `${name} ${locale} ${width}px low contrast`);
+        } finally {
+          await context.close();
+        }
+      }
+    }
+  }
+});
+
+test('QUA-02: built js stays within 200 kB gzip', () => {
+  let total = 0;
+  for (const file of fs.readdirSync('dist/_astro').filter((name) => name.endsWith('.js'))) total += zlib.gzipSync(fs.readFileSync(`dist/_astro/${file}`)).length;
+  assert.ok(total <= 200 * 1000, `client js gzip total is ${(total / 1000).toFixed(1)} kB, budget is 200 kB`);
+});
+
+test('QUA-03: showcase media declares its dimensions', async () => {
+  for (const id of IDS) {
+    const { context, page } = await openPath(`/cases/${id}`, { reducedMotion: 'reduce' });
+    try {
+      const missing = await page.locator('[data-showcase] img, [data-showcase] video').evaluateAll((nodes) =>
+        nodes.filter((node) => !(Number(node.getAttribute('width')) > 0 && Number(node.getAttribute('height')) > 0)).map((node) => node.getAttribute('src') ?? node.getAttribute('poster'))
+      );
+      assert.deepEqual(missing, [], `${id} media without width and height`);
+    } finally {
+      await context.close();
+    }
+  }
+});
+
+test('EDGE-1: rapid next clicks end on the last requested case', async () => {
+  const { context, page } = await openPath('/cases/magalu-cloud', { reducedMotion: 'no-preference' });
+  try {
+    for (let i = 0; i < 3; i++) await page.locator('[data-showcase-next]').click({ noWaitAfter: true, force: true }).catch(() => {});
+    await page.waitForFunction(() => location.pathname === '/cases/aurastream' || location.pathname === '/cases/efood', null, { timeout: 15000 }).catch(() => {});
+    await page.waitForTimeout(1500);
+    const state = await page.evaluate(() => ({
+      path: location.pathname,
+      wiping: !!document.querySelector('#p5-wipe-overlay[data-wiping="true"], html[data-p5-wiping]'),
+      locked: document.documentElement.classList.contains('lenis-stopped'),
+      title: document.querySelector('[data-showcase] h1')?.textContent.trim(),
+    }));
+    const { getLocalizedCases } = await import('../src/data/cases.ts');
+    const reached = getLocalizedCases('pt-br').find((entry) => `/cases/${entry.id}` === state.path);
+    assert.ok(reached && reached.id !== 'magalu-cloud', `ended on ${state.path}`);
+    assert.equal(state.title, reached.title, 'the page content matches its route');
+    assert.equal(state.wiping, false);
+    assert.equal(state.locked, false);
+  } finally {
+    await context.close();
+  }
+});
+
+test('EDGE-2: switching locale keeps a paused video paused', async () => {
+  const { context, page } = await openPath('/cases/efood', { locale: 'pt-br' });
+  try {
+    await waitPlaying(page, true);
+    await page.locator('[data-showcase-toggle]').click();
+    await waitPlaying(page, false);
+    await page.evaluate(() => window.scrollTo(0, 0));
+    await page.locator('[data-lang-toggle]').first().click();
+    await page.waitForFunction(() => document.querySelector('[data-showcase-site]').textContent.includes('LIVE SITE'));
+    await page.waitForTimeout(500);
+    assert.equal(await playing(page), false);
+    assert.equal(await page.locator('[data-showcase-toggle]').getAttribute('aria-pressed'), 'false');
+  } finally {
+    await context.close();
+  }
+});
+
+test('EDGE-3: back navigation re-evaluates playback rules', async () => {
+  const { context, page } = await openPath('/cases/uriana');
+  try {
+    await waitPlaying(page, true);
+    await page.locator('[data-showcase-toggle]').click();
+    await waitPlaying(page, false);
+    await page.evaluate(() => window.dispatchEvent(new PageTransitionEvent('pageshow', { persisted: true })));
+    await waitPlaying(page, true);
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.evaluate(() => window.dispatchEvent(new PageTransitionEvent('pageshow', { persisted: true })));
+    await waitPlaying(page, false);
+    assert.equal(await page.locator('[data-showcase-toggle]').getAttribute('aria-pressed'), 'false');
+  } finally {
+    await context.close();
+  }
+});
+
+test('EDGE-4: scrolling the stage track does not scroll the page', async () => {
+  const { context, page } = await openPath('/cases/magalu-cloud', { viewport: { width: 768, height: 1024 }, reducedMotion: 'reduce' });
+  try {
+    const before = await page.evaluate(() => ({ x: window.scrollX, sw: document.documentElement.scrollWidth }));
+    await page.locator('[data-showcase-track]').evaluate((node) => { node.scrollLeft = node.scrollWidth; });
+    await page.waitForTimeout(200);
+    const after = await page.evaluate(() => ({ x: window.scrollX, sw: document.documentElement.scrollWidth, track: document.querySelector('[data-showcase-track]').scrollLeft }));
+    assert.ok(after.track > 0, 'the track scrolled');
+    assert.deepEqual({ x: after.x, sw: after.sw }, before);
   } finally {
     await context.close();
   }
