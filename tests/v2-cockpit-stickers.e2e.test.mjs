@@ -173,3 +173,33 @@ test('CKP-06: reduced motion opens and closes the menu without a tween', async (
   assert.equal(await closeDelay('reduce'), false, 'reduced motion closes at once');
   assert.equal(await closeDelay('no-preference'), true, 'full motion still tweens');
 });
+
+test('CKP-04: the open menu shows socials, language toggle and cases link', async () => {
+  const { PROFILE } = await import('../src/data/profile.ts');
+  const { context, page } = await openPath('/');
+  try {
+    await openCockpit(page);
+    const overlay = page.locator('#cockpit-menu-overlay');
+    for (const [name, url] of [['linkedin', PROFILE.linkedin.url], ['github', PROFILE.github.url]]) {
+      const link = overlay.locator(`[data-cockpit-social="${name}"]`);
+      assert.equal(await link.getAttribute('href'), url, `${name} url`);
+      assert.equal(await link.getAttribute('target'), '_blank');
+      assert.equal(await link.getAttribute('rel'), 'noopener noreferrer');
+      assert.ok((await link.getAttribute('aria-label')).trim().length > 0, `${name} label`);
+    }
+    const pressed = () => overlay.locator('[data-cockpit-lang]').evaluateAll((nodes) => nodes.map((node) => [node.getAttribute('data-cockpit-lang'), node.getAttribute('aria-pressed')]));
+    assert.deepEqual(await pressed(), [['pt-br', 'true'], ['en', 'false']]);
+    const cases = overlay.locator('[data-cockpit-cases]');
+    assert.equal((await cases.textContent()).trim(), 'CASES →');
+    await overlay.locator('[data-cockpit-lang="en"]').click();
+    await page.waitForFunction(() => document.querySelector('[data-cockpit-lang="en"]').getAttribute('aria-pressed') === 'true');
+    assert.deepEqual(await pressed(), [['pt-br', 'false'], ['en', 'true']]);
+    assert.ok((await overlay.locator('[data-cockpit-social="github"]').getAttribute('aria-label')).includes('GitHub'));
+    assert.equal((await cases.textContent()).trim(), 'CASES →');
+    await cases.click();
+    await waitClosed(page);
+    assert.equal(new URL(page.url()).hash, '#works');
+  } finally {
+    await context.close();
+  }
+});

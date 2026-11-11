@@ -47,6 +47,10 @@ export interface TranslationSchema {
     audioLabel: string;
     audioOn: string;
     audioMuted: string;
+    casesCta: string;
+    socialsAria: string;
+    linkedinAria: string;
+    githubAria: string;
     escHint: string;
   };
   hero: {
@@ -357,6 +361,10 @@ export const ptBrDict: TranslationSchema = {
     audioLabel: 'SÍNTESE DE ÁUDIO WEB',
     audioOn: 'ÁUDIO: ATIVO',
     audioMuted: 'ÁUDIO: MUDO',
+    casesCta: 'CASES →',
+    socialsAria: 'Redes de Bruno Dinis',
+    linkedinAria: 'Abrir o LinkedIn de Bruno Dinis (abre em nova aba)',
+    githubAria: 'Abrir o GitHub de Bruno Dinis (abre em nova aba)',
     escHint: 'PRESSIONE [ESC] OU SELECIONE UM DESTINO',
   },
   hero: {
@@ -681,6 +689,10 @@ export const enDict = {
     audioLabel: 'WEB AUDIO SYNTHESIS',
     audioOn: 'AUDIO: ON',
     audioMuted: 'AUDIO: MUTED',
+    casesCta: 'CASES →',
+    socialsAria: 'Bruno Dinis on the web',
+    linkedinAria: "Open Bruno Dinis's LinkedIn (opens in new tab)",
+    githubAria: "Open Bruno Dinis's GitHub (opens in new tab)",
     escHint: 'PRESS [ESC] OR SELECT A DESTINATION',
   },
   hero: {

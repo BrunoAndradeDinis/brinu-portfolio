@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { gsap } from 'gsap';
 import { useLocale } from '../i18n/index.ts';
 import { audioSynth } from '../utils/audio.ts';
+import { PROFILE } from '../data/profile.ts';
 
 export interface CockpitNavItem {
   id: string;
@@ -417,6 +418,27 @@ export const CockpitMenu: React.FC = () => {
           </nav>
         </div>
 
+        <ul aria-label={t.menu.socialsAria} className="mb-6 flex flex-wrap gap-4 list-none p-0">
+          {[
+            { id: 'linkedin', url: PROFILE.linkedin.url, label: 'LINKEDIN', aria: t.menu.linkedinAria },
+            { id: 'github', url: PROFILE.github.url, label: 'GITHUB', aria: t.menu.githubAria },
+          ].map((social) => (
+            <li key={social.id}>
+              <a
+                href={social.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={social.aria}
+                data-cockpit-social={social.id}
+                className="inline-flex min-h-11 items-center gap-2 border-3 border-paper-white bg-space-base px-4 py-2.5 font-mono text-xs sm:text-sm font-black uppercase tracking-widest text-paper-white shadow-[4px_4px_0_var(--color-bebop-red)] transition-colors hover:bg-paper-white hover:text-space-base focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-bebop-red"
+              >
+                <span>{social.label}</span>
+                <span aria-hidden="true">↗</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+
         {/* System Controls: Language Switch & Audio Synth */}
         <div ref={controlsRef} className="grid grid-cols-1 md:grid-cols-2 gap-4 border-t-4 border-paper-white pt-6">
           {/* Language Switcher Box */}
@@ -453,6 +475,18 @@ export const CockpitMenu: React.FC = () => {
               </button>
             </div>
           </div>
+
+          <a
+            href="/#works"
+            data-cockpit-cases
+            onClick={() => {
+              audioSynth.playKeypressBeep(740, 0.025, 0.06);
+              closeMenu();
+            }}
+            className="inline-flex min-h-11 items-center justify-center gap-2 border-3 border-paper-white bg-bebop-red px-3.5 py-3.5 font-mono text-xs sm:text-sm font-black uppercase tracking-widest text-paper-white shadow-[4px_4px_0_var(--color-bebop-red)] transition-colors hover:bg-paper-white hover:text-space-base focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-paper-white"
+          >
+            {t.menu.casesCta}
+          </a>
 
           {/* Audio Synthesizer Control */}
           <div className="flex items-center justify-between border-3 border-paper-white bg-space-surface-1 px-5 py-3.5 shadow-[4px_4px_0_var(--color-bebop-red)]">
