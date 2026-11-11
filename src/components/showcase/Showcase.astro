@@ -1,0 +1,182 @@
+---
+import { getLocalizedCases, MAIN_CASES } from "../../data/cases";
+import { SHOWCASE_MEDIA } from "../../data/showcase";
+import { ptBrDict } from "../../i18n/dictionaries";
+import { casePath } from "../../utils/case-pages";
+import { showcaseNeighbors, showcasePosition, showcaseTiles } from "../../utils/showcase-nav";
+
+interface Props {
+  caseId: string;
+}
+
+const { caseId: requestedId } = Astro.props;
+const caseId = MAIN_CASES.find((definition) => definition.id === requestedId)?.id;
+if (!caseId) throw new Error(`Unknown case: ${requestedId}`);
+const cases = getLocalizedCases("pt-br");
+const project = cases.find((entry) => entry.id === caseId);
+const neighbors = showcaseNeighbors(caseId);
+const position = showcasePosition(caseId);
+if (!project || !neighbors || !position) throw new Error(`Unknown case: ${caseId}`);
+
+const media = SHOWCASE_MEDIA[caseId];
+const text = ptBrDict.showcase;
+const siteLink = project.links.find((link) => link.type === "demo") ?? project.links[0];
+const tiles = showcaseTiles(caseId).map((tile) => ({
+  ...tile,
+  title: cases.find((entry) => entry.id === tile.id)?.title ?? tile.id,
+  image: SHOWCASE_MEDIA[tile.id].screenshot,
+}));
+
+const barButton =
+  "inline-flex h-11 min-w-11 items-center justify-center border-2 border-space-base bg-paper-white px-3 font-mono text-sm font-black text-space-base hover:bg-space-base hover:text-paper-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-bebop-red";
+---
+
+<section data-showcase class="bg-paper-white text-space-base">
+  <div
+    data-showcase-bar
+    role="group"
+    aria-label={text.controlsAria}
+    data-i18n="showcase.controlsAria"
+    data-i18n-attr="aria-label"
+    class="flex flex-wrap items-center gap-3 border-b-4 border-space-base px-4 py-3 sm:px-8"
+  >
+    <a
+      data-showcase-prev
+      href={casePath(neighbors.prev)}
+      aria-label={text.prevAria}
+      data-i18n="showcase.prevAria"
+      data-i18n-attr="aria-label"
+      class={barButton}
+    ><span aria-hidden="true">←</span></a>
+    <a
+      data-showcase-next
+      href={casePath(neighbors.next)}
+      aria-label={text.nextAria}
+      data-i18n="showcase.nextAria"
+      data-i18n-attr="aria-label"
+      class={barButton}
+    ><span aria-hidden="true">→</span></a>
+    <p data-showcase-position class="font-mono text-sm font-black tracking-widest uppercase">
+      <span data-i18n="showcase.caseLabel">{text.caseLabel}</span> {position}
+    </p>
+    <ul aria-label={text.stackAria} data-i18n="showcase.stackAria" data-i18n-attr="aria-label" class="flex min-w-0 flex-1 flex-wrap gap-2 font-mono text-[11px] font-bold uppercase">
+      {project.stack.map((tech) => (
+        <li data-case-stack-item class="border-2 border-space-base bg-paper-white px-2 py-0.5">{tech}</li>
+      ))}
+    </ul>
+    <a
+      data-showcase-site
+      href={siteLink.url}
+      target="_blank"
+      rel="noopener noreferrer"
+      class="inline-flex h-11 items-center gap-2 border-2 border-space-base bg-bebop-red px-4 font-mono text-sm font-black text-space-base uppercase hover:bg-space-base hover:text-paper-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-space-base"
+    ><span data-i18n="showcase.liveSite">{text.liveSite}</span> <span aria-hidden="true">↗</span></a>
+  </div>
+
+  <h1
+    data-case-title
+    style={`view-transition-name: case-title-${project.id}`}
+    class="px-4 pt-6 font-display text-[clamp(1.75rem,8vw,3.5rem)] leading-none font-black tracking-tight uppercase break-words sm:px-8"
+  >{project.title}</h1>
+
+  <div data-showcase-stage class="relative grid gap-6 px-4 py-6 sm:px-8 lg:grid-cols-2">
+    {media.video ? (
+      <figure data-showcase-card="media" class="relative m-0 border-4 border-space-base bg-space-base">
+        <video
+          data-showcase-video
+          class="block h-auto w-full"
+          width={media.video.width}
+          height={media.video.height}
+          poster={media.video.poster.src}
+          preload="metadata"
+          muted
+          loop
+          playsinline
+          aria-label={media.video.poster.alt["pt-br"]}
+        >
+          <source src={media.video.webm} type="video/webm" />
+          <source src={media.video.mp4} type="video/mp4" />
+        </video>
+        <figcaption data-showcase-tag class="bg-space-base px-3 py-2 font-mono text-[11px] font-black tracking-widest text-paper-white uppercase">
+          {media.video.tag["pt-br"]}
+        </figcaption>
+      </figure>
+    ) : (
+      <figure data-showcase-card="media" class="relative m-0 border-4 border-space-base bg-space-base">
+        <img
+          class="block h-auto w-full"
+          src={media.screenshot.src}
+          width={media.screenshot.width}
+          height={media.screenshot.height}
+          alt={media.screenshot.alt["pt-br"]}
+          decoding="async"
+        />
+      </figure>
+    )}
+
+    {media.highlight && !media.video ? (
+      <div data-showcase-card="second" data-showcase-highlight class="flex flex-col justify-center gap-3 border-4 border-space-base bg-space-base p-6 text-paper-white">
+        <p class="font-mono text-[11px] font-black tracking-widest uppercase">{media.highlight.label["pt-br"]}</p>
+        <p class="font-display text-[clamp(3rem,10vw,5rem)] leading-none font-black text-bebop-red">{media.highlight.value}</p>
+        <p class="font-mono text-xs font-bold break-words">{media.highlight.flow}</p>
+        <p class="font-mono text-xs font-bold uppercase">{media.highlight.note["pt-br"]}</p>
+      </div>
+    ) : (
+      <figure data-showcase-card="second" class="relative m-0 border-4 border-space-base bg-space-base">
+        <img
+          class="block h-auto w-full"
+          src={media.screenshot.src}
+          width={media.screenshot.width}
+          height={media.screenshot.height}
+          alt={media.screenshot.alt["pt-br"]}
+          loading="lazy"
+          decoding="async"
+        />
+      </figure>
+    )}
+
+    <img
+      data-showcase-sticker
+      class="pointer-events-none absolute -top-4 right-4 w-24 rotate-[10deg] sm:w-32 lg:right-[44%]"
+      src={media.sticker.src}
+      width="150"
+      height="150"
+      alt=""
+      aria-hidden="true"
+    />
+  </div>
+
+  <p data-case-description class="px-4 pb-6 font-body text-base leading-relaxed font-medium sm:px-8 sm:text-lg">{project.description}</p>
+
+  <nav
+    data-showcase-tiles
+    aria-label={text.tilesAria}
+    data-i18n="showcase.tilesAria"
+    data-i18n-attr="aria-label"
+    class="grid grid-cols-2 gap-3 border-t-4 border-space-base px-4 py-6 sm:px-8 lg:grid-cols-4"
+  >
+    {tiles.map((tile) => (
+      <a
+        href={tile.href}
+        aria-current={tile.current ? "page" : undefined}
+        class:list={[
+          "block border-4 border-space-base bg-paper-white text-space-base focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-bebop-red",
+          tile.current ? "bg-bebop-red" : "hover:bg-space-base hover:text-paper-white",
+        ]}
+      >
+        <img
+          class="block h-auto w-full"
+          src={tile.image.src}
+          width={tile.image.width}
+          height={tile.image.height}
+          alt=""
+          loading="lazy"
+          decoding="async"
+        />
+        <span class="block px-2 py-1.5 font-mono text-[11px] font-black tracking-wider uppercase break-words">
+          {String(tile.index).padStart(2, "0")} · {tile.title}
+        </span>
+      </a>
+    ))}
+  </nav>
+</section>

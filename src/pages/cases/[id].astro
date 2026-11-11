@@ -2,6 +2,7 @@
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import P5Panel from "../../components/p5/P5Panel.astro";
 import P5Badge from "../../components/p5/P5Badge.astro";
+import Showcase from "../../components/showcase/Showcase.astro";
 import { CASE_VARIANTS } from "../../components/cases/case-variants";
 import { getLocalizedCases } from "../../data/cases";
 import { ptBrDict } from "../../i18n/dictionaries";
@@ -37,6 +38,7 @@ const nextId = nextCaseId(project.id) ?? project.id;
         data-i18n-attr="aria-label"
         class:list={["relative flex flex-col", v.card]}
       >
+        <Showcase caseId={project.id} />
         <div class="relative z-10 p-6 sm:p-10">
           <div class:list={["mb-4 flex flex-wrap items-center justify-between gap-2 pb-3 font-mono text-xs font-black uppercase", v.head, v.meta]}>
             <span data-case-reel>[ {project.reelNumber} ] // {project.category}</span>
@@ -45,16 +47,7 @@ const nextId = nextCaseId(project.id) ?? project.id;
             </P5Badge>
           </div>
 
-          <h1
-            data-case-title
-            style={`view-transition-name: case-title-${project.id}`}
-            class:list={["font-display text-[clamp(1.3rem,6vw,4rem)] font-black uppercase leading-tight tracking-tight break-words", v.title]}
-          >
-            {project.title}
-          </h1>
-          <p data-case-subtitle class:list={["font-mono text-xs font-bold uppercase mb-3", v.subtitle]}>{project.subtitle}</p>
-          <p data-case-description class:list={["font-body text-base sm:text-lg leading-relaxed mb-6", v.body]}>{project.description}</p>
-
+          <p data-case-subtitle class:list={["font-mono text-xs font-bold uppercase mb-6", v.subtitle]}>{project.subtitle}</p>
           <div class:list={["space-y-4 p-4 mb-6 font-mono text-xs leading-relaxed", v.block]}>
             <div>
               <span data-i18n="works.challengeLabel" class:list={["block font-black text-[11px] uppercase tracking-widest mb-1", v.label1]}>
@@ -73,12 +66,6 @@ const nextId = nextCaseId(project.id) ?? project.id;
           <div class:list={["mb-6 flex items-start gap-2 px-3 py-2 font-mono text-xs font-bold", v.metric]}>
             <span class="font-black shrink-0" data-i18n="works.metricLabel">{ptBrDict.works.metricLabel}</span>
             <span data-case-metric>{project.metric}</span>
-          </div>
-
-          <div class="mb-6 flex flex-wrap gap-2 font-mono text-[10px] sm:text-xs uppercase">
-            {project.stack.map((tech) => (
-              <span data-case-stack-item class:list={["px-2.5 py-1 font-bold", v.stack]}>{tech}</span>
-            ))}
           </div>
 
           <div class:list={["flex flex-wrap items-center gap-3 pt-4", v.links]}>
