@@ -22,9 +22,9 @@ const nextId = nextCaseId(project.id) ?? project.id;
 ---
 
 <BaseLayout title={meta.title} description={meta.description} canonicalPath={casePath(project.id)}>
-  <main id="main-content" tabindex="-1" class="min-h-screen bg-space-base px-4 py-12 sm:px-8 sm:py-16 md:px-12 text-paper-white focus:outline-none">
+  <main id="main-content" tabindex="-1" class="min-h-screen bg-space-base px-4 py-12 sm:px-8 sm:py-16 md:px-0 md:py-12 lg:px-12 lg:py-16 text-paper-white focus:outline-none">
     <div class="mx-auto max-w-[70rem]">
-      <span class="mb-4 block font-mono text-xs sm:text-sm font-bold tracking-widest text-bebop-red uppercase" data-i18n="casePage.actTag">
+      <span class="mb-4 block md:px-9 lg:px-0 font-mono text-xs sm:text-sm font-bold tracking-widest text-bebop-red uppercase" data-i18n="casePage.actTag">
         {ptBrDict.casePage.actTag}
       </span>
 
@@ -87,7 +87,7 @@ const nextId = nextCaseId(project.id) ?? project.id;
         </div>
       </P5Panel>
 
-      <nav aria-label={ptBrDict.casePage.sectionAria} data-i18n="casePage.sectionAria" data-i18n-attr="aria-label" class="mt-8 flex flex-wrap items-center justify-between gap-4 font-mono text-xs font-black uppercase tracking-wider">
+      <nav aria-label={ptBrDict.casePage.sectionAria} data-i18n="casePage.sectionAria" data-i18n-attr="aria-label" class="mt-8 flex flex-wrap items-center justify-between gap-4 md:px-9 lg:px-0 font-mono text-xs font-black uppercase tracking-wider">
         <a
           href={`/#case-${project.id}`}
           data-case-back

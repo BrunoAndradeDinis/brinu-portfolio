@@ -352,11 +352,101 @@ test('SHOW-09: switching the locale does not change the video state', async () =
     assert.equal(await playing(page), true);
     await page.locator('[data-showcase-toggle]').click();
     await waitPlaying(page, false);
+    await page.evaluate(() => window.scrollTo(0, 0));
     await page.locator('[data-lang-toggle]').first().click();
     await page.waitForFunction(() => document.querySelector('[data-showcase-site]').textContent.includes('SITE NO AR'));
     await page.waitForTimeout(400);
     assert.equal(await playing(page), false);
     assert.equal(await page.locator('[data-showcase-toggle]').getAttribute('aria-pressed'), 'false');
+  } finally {
+    await context.close();
+  }
+});
+
+const TABLET = { width: 768, height: 1024 };
+const rectOf = (page, selector) =>
+  page.locator(selector).first().evaluate((node) => {
+    const { x, y, width, height, right, bottom } = node.getBoundingClientRect();
+    return { x, y, width, height, right, bottom };
+  });
+
+test('TAB-01: the 768px showcase stacks in order with no horizontal overflow', async () => {
+  for (const id of IDS) {
+    for (const locale of ['pt-br', 'en']) {
+      const { context, page } = await openPath(`/cases/${id}`, { locale, viewport: TABLET, reducedMotion: 'reduce' });
+      try {
+        const bar = await rectOf(page, '[data-showcase-bar]');
+        const title = await rectOf(page, '[data-showcase] h1');
+        const stage = await rectOf(page, '[data-showcase-stage]');
+        const text = await rectOf(page, '[data-showcase] [data-case-description]');
+        const tiles = await rectOf(page, '[data-showcase-tiles]');
+        const label = `${id} ${locale}`;
+        assert.equal(Math.round(bar.height), 80, `${label} bar height`);
+        assert.ok(bar.bottom <= title.y + 1 && title.bottom <= stage.y + 1 && stage.bottom <= text.y + 1 && text.bottom <= tiles.y + 1, `${label} order`);
+        const grid = await page.locator('[data-showcase-tiles] a').evaluateAll((nodes) =>
+          nodes.map((node) => {
+            const { x, y } = node.getBoundingClientRect();
+            return { x: Math.round(x), y: Math.round(y) };
+          })
+        );
+        assert.equal(grid[0].y, grid[1].y, `${label} row 1`);
+        assert.equal(grid[2].y, grid[3].y, `${label} row 2`);
+        assert.ok(grid[2].y > grid[0].y, `${label} two rows`);
+        assert.equal(grid[0].x, grid[2].x, `${label} column 1`);
+        assert.equal(grid[1].x, grid[3].x, `${label} column 2`);
+        const m = await page.evaluate(() => ({ sw: document.documentElement.scrollWidth, cw: document.documentElement.clientWidth, bw: document.body.scrollWidth }));
+        assert.ok(m.sw <= m.cw && m.bw <= m.cw, `${label} overflow ${m.sw}/${m.bw} > ${m.cw}`);
+        const unbrokenOverflow = await page.locator('[data-showcase] h1').evaluate((node) => {
+          node.style.overflowWrap = 'normal';
+          node.style.wordBreak = 'normal';
+          return node.scrollWidth - node.clientWidth;
+        });
+        assert.ok(unbrokenOverflow <= 0, `${label} a title word does not fit its line (${unbrokenOverflow}px)`);
+      } finally {
+        await context.close();
+      }
+    }
+  }
+});
+
+test('TAB-02: the 768px stage scrolls its own track and keeps the sticker inside', async () => {
+  for (const id of IDS) {
+    const { context, page } = await openPath(`/cases/${id}`, { viewport: TABLET, reducedMotion: 'reduce' });
+    try {
+      const stage = await rectOf(page, '[data-showcase-stage]');
+      const media = await rectOf(page, '[data-showcase-card="media"]');
+      const second = await rectOf(page, '[data-showcase-card="second"]');
+      assert.ok(media.x >= stage.x && media.right <= stage.right, `${id} media card fully inside the stage`);
+      if (EXPECTED[id].video) assert.ok(Math.abs(media.width - 640) <= 1, `${id} video card width ${media.width}`);
+      const trackBox = await rectOf(page, '[data-showcase-track]');
+      const visible = Math.min(second.right, trackBox.right) - Math.max(second.x, trackBox.x);
+      assert.ok(visible >= 24 && visible < second.width - 24, `${id} second card shows ${visible}px of ${second.width}px`);
+      const track = await page.locator('[data-showcase-track]').evaluate((node) => ({
+        overflowX: getComputedStyle(node).overflowX,
+        snap: getComputedStyle(node).scrollSnapType,
+        scrollable: node.scrollWidth > node.clientWidth,
+      }));
+      assert.ok(['auto', 'scroll'].includes(track.overflowX) && track.snap.includes('x'), `${id} track ${JSON.stringify(track)}`);
+      assert.equal(track.scrollable, true, `${id} track scrolls`);
+      const sticker = await rectOf(page, '[data-showcase-sticker]');
+      assert.ok(sticker.x >= stage.x && sticker.right <= stage.right && sticker.y >= stage.y && sticker.bottom <= stage.bottom, `${id} sticker inside the stage`);
+      const before = await page.evaluate(() => document.documentElement.scrollWidth);
+      await page.locator('[data-showcase-track]').evaluate((node) => { node.scrollLeft = node.scrollWidth; });
+      const after = await page.evaluate(() => ({ sw: document.documentElement.scrollWidth, x: window.scrollX }));
+      assert.deepEqual(after, { sw: before, x: 0 }, `${id} page does not move`);
+    } finally {
+      await context.close();
+    }
+  }
+});
+
+test('TAB-03: 768px controls are at least 44px', async () => {
+  const { context, page } = await openPath('/cases/magalu-cloud', { viewport: TABLET });
+  try {
+    for (const selector of ['[data-showcase-prev]', '[data-showcase-next]', '[data-showcase-site]', '[data-showcase-toggle]']) {
+      const box = await rectOf(page, selector);
+      assert.ok(box.width >= 44 && box.height >= 44, `${selector} ${box.width}x${box.height}`);
+    }
   } finally {
     await context.close();
   }

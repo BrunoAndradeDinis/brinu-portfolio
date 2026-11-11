@@ -182,6 +182,7 @@ export interface TranslationSchema {
     pause: string;
     tilesAria: string;
     stackAria: string;
+    stageAria: string;
   };
   casePage: {
     sectionAria: string;
@@ -499,6 +500,7 @@ export const ptBrDict: TranslationSchema = {
     pause: 'PAUSE',
     tilesAria: 'Todos os cases',
     stackAria: 'Tecnologias do case',
+    stageAria: 'Mídia do case',
   },
   casePage: {
     sectionAria: 'Página do case',
@@ -822,6 +824,7 @@ export const enDict = {
     pause: 'PAUSE',
     tilesAria: 'All cases',
     stackAria: 'Case technologies',
+    stageAria: 'Case media',
   },
   casePage: {
     sectionAria: 'Case page',
