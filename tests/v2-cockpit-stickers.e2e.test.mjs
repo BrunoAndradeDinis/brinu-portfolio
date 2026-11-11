@@ -246,3 +246,85 @@ test('CKP-05: the open menu columns and overflow match each breakpoint', async (
     }
   }
 });
+
+const stickerData = async () => {
+  const { STICKERS } = await import('../src/data/stickers.ts');
+  const { DICTIONARIES } = await import('../src/i18n/dictionaries.ts');
+  return { STICKERS, DICTIONARIES };
+};
+
+test('STK-01: the library shows 56 downloads in 2, 3 and 4 columns', async () => {
+  const { STICKERS } = await stickerData();
+  for (const [width, expectedColumns] of [[390, 2], [768, 3], [1440, 4]]) {
+    const { context, page } = await openPath('/stickers', { viewport: { width, height: 900 }, reducedMotion: 'reduce' });
+    try {
+      const links = await page.locator('a[data-sticker-download]').evaluateAll((nodes) =>
+        nodes.map((node) => ({ href: node.getAttribute('href'), download: node.getAttribute('download'), top: Math.round(node.getBoundingClientRect().top) }))
+      );
+      assert.equal(links.length, 56, `${width}px count`);
+      assert.deepEqual(links.map((link) => link.href), STICKERS.map((sticker) => sticker.file), `${width}px order`);
+      assert.deepEqual(links.map((link) => link.download), STICKERS.map((_, index) => `brinu-sticker-${String(index + 1).padStart(2, '0')}.svg`), `${width}px file names`);
+      assert.equal(links.filter((link) => link.top === links[0].top).length, expectedColumns, `${width}px columns`);
+    } finally {
+      await context.close();
+    }
+  }
+});
+
+test('STK-02: stickers have no overflow and follow the locale', async () => {
+  const { STICKERS, DICTIONARIES } = await stickerData();
+  for (const locale of ['pt-br', 'en']) {
+    for (const width of [320, 390, 768, 1024, 1440, 2560]) {
+      const { context, page } = await openPath('/stickers', { locale, viewport: { width, height: 900 }, reducedMotion: 'reduce' });
+      try {
+        const m = await page.evaluate(() => ({ sw: document.documentElement.scrollWidth, cw: document.documentElement.clientWidth, bw: document.body.scrollWidth }));
+        assert.ok(m.sw <= m.cw && m.bw <= m.cw, `${locale} ${width}px overflow ${m.sw}/${m.bw} > ${m.cw}`);
+        if (width === 390) {
+          const prefix = DICTIONARIES[locale].stickers.downloadAria;
+          for (const index of [0, 31, 32, 55]) {
+            const link = page.locator('a[data-sticker-download]').nth(index);
+            const alt = STICKERS[index].alt[locale];
+            assert.equal(await link.getAttribute('aria-label'), `${prefix} ${alt}`, `${locale} aria-label ${index}`);
+            assert.equal(await link.locator('img').getAttribute('alt'), alt, `${locale} alt ${index}`);
+          }
+        }
+      } finally {
+        await context.close();
+      }
+    }
+  }
+  const { context, page } = await openPath('/stickers', { locale: 'pt-br', reducedMotion: 'reduce' });
+  try {
+    await page.evaluate(() => { window.__marker = 'kept'; });
+    await page.locator('[data-lang-toggle]').first().click();
+    await page.waitForFunction((alt) => document.querySelector('a[data-sticker-download] img').getAttribute('alt') === alt, STICKERS[0].alt.en);
+    assert.equal(await page.evaluate(() => window.__marker), 'kept');
+    assert.equal(await page.locator('a[data-sticker-download]').first().getAttribute('aria-label'), `${DICTIONARIES.en.stickers.downloadAria} ${STICKERS[0].alt.en}`);
+  } finally {
+    await context.close();
+  }
+});
+
+test('STK-03: a focused sticker shows an outline and lifts', async () => {
+  const { context, page } = await openPath('/stickers', { reducedMotion: 'no-preference' });
+  try {
+    const panelOf = (index) => page.locator('a[data-sticker-download]').nth(index).locator('.p5-panel');
+    assert.equal(await panelOf(0).evaluate((node) => getComputedStyle(node).translate), 'none');
+    for (let i = 0; i < 40; i++) {
+      await page.keyboard.press('Tab');
+      if (await page.evaluate(() => document.activeElement?.hasAttribute('data-sticker-download'))) break;
+    }
+    assert.equal(await page.evaluate(() => document.activeElement?.hasAttribute('data-sticker-download')), true, 'Tab reaches a sticker');
+    await page.waitForTimeout(300);
+    const focused = await page.evaluate(() => {
+      const link = document.activeElement;
+      const style = getComputedStyle(link);
+      return { outlineStyle: style.outlineStyle, outlineWidth: parseFloat(style.outlineWidth), panel: getComputedStyle(link.querySelector('.p5-panel')).translate };
+    });
+    assert.notEqual(focused.outlineStyle, 'none');
+    assert.ok(focused.outlineWidth >= 2, `outline ${focused.outlineWidth}px`);
+    assert.match(focused.panel, /^0(px)? -[1-9]/, `panel lifted: ${focused.panel}`);
+  } finally {
+    await context.close();
+  }
+});
