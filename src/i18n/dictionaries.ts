@@ -321,9 +321,9 @@ export const ptBrDict: TranslationSchema = {
     labNavAria: 'Cartas do Arcana Deck',
   },
   meta: {
-    title: 'Bruno Dinis // Brinu — Desenvolvedor Frontend & Creative Developer',
+    title: 'Bruno Dinis // Brinu — Desenvolvedor Frontend & Full Stack, Creative Developer',
     description:
-      'Portfólio de Bruno de Andrade Dinis (Brinu), Desenvolvedor Frontend na Magalu Cloud: Astro, React, TypeScript e motion com GSAP, em Franca / SP.',
+      'Portfólio de Bruno de Andrade Dinis (Brinu), Desenvolvedor Frontend na Magalu Cloud com projetos full stack: Astro, React, Next.js, Node.js, TypeScript e motion com GSAP, em Franca / SP.',
     whoamiTitle: 'Bruno Dinis // Brinu — Terminal Confidant /whoami',
     whoamiDescription:
       'Terminal interativo de Bruno Dinis (Brinu): trajetória, stack e projetos.',
@@ -647,9 +647,9 @@ export const enDict = {
     labNavAria: 'Arcana Deck cards',
   },
   meta: {
-    title: 'Bruno Dinis // Brinu — Frontend Developer & Creative Developer',
+    title: 'Bruno Dinis // Brinu — Frontend & Full Stack Developer, Creative Developer',
     description:
-      'Portfolio of Bruno de Andrade Dinis (Brinu), Frontend Developer at Magalu Cloud: Astro, React, TypeScript and GSAP motion, based in Franca / SP, Brazil.',
+      'Portfolio of Bruno de Andrade Dinis (Brinu), Frontend Developer at Magalu Cloud with full stack projects: Astro, React, Next.js, Node.js, TypeScript and GSAP motion, based in Franca / SP, Brazil.',
     whoamiTitle: 'Bruno Dinis // Brinu — Confidant Terminal /whoami',
     whoamiDescription:
       'Interactive terminal of Bruno Dinis (Brinu): career, stack and projects.',

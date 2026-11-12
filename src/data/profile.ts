@@ -49,8 +49,8 @@ export const PROFILE = {
   birthYear: 1996,
   operatorId: 'BD-1996',
   role: {
-    'pt-br': 'Desenvolvedor Frontend & Creative Developer',
-    en: 'Frontend Developer & Creative Developer',
+    'pt-br': 'Desenvolvedor Frontend & Full Stack',
+    en: 'Frontend & Full Stack Developer',
   },
   tagline: {
     'pt-br': 'Astro & React • Motion de autoridade • Interfaces expressivas',
@@ -101,8 +101,27 @@ export interface PersonJsonLdContract {
     readonly addressRegion: 'SP';
     readonly addressCountry: 'BR';
   };
+  readonly worksFor: {
+    readonly '@type': 'Organization';
+    readonly name: string;
+    readonly url: string;
+  };
+  readonly knowsAbout: readonly string[];
   readonly sameAs: readonly string[];
 }
+
+const KNOWS_ABOUT = [
+  'Frontend development',
+  'Full stack development',
+  'React',
+  'Next.js',
+  'Astro',
+  'TypeScript',
+  'Node.js',
+  'PostgreSQL',
+  'Tailwind CSS',
+  'GSAP',
+] as const;
 
 export function buildPersonJsonLd(): PersonJsonLdContract {
   return {
@@ -118,6 +137,12 @@ export function buildPersonJsonLd(): PersonJsonLdContract {
       addressRegion: PROFILE.location.state,
       addressCountry: 'BR',
     },
+    worksFor: {
+      '@type': 'Organization',
+      name: 'Magalu Cloud',
+      url: 'https://magalu.cloud/',
+    },
+    knowsAbout: KNOWS_ABOUT,
     sameAs: [PROFILE.github.url, PROFILE.linkedin.url],
   };
 }

@@ -241,14 +241,16 @@ test('T5: arsenal counter and localized evidence labels come from the data', () 
 
 const { PROFILE, buildPersonJsonLd } = await import('../src/data/profile.ts');
 
-test('C1: profile role is frontend developer and creative developer', () => {
-  assert.equal(PROFILE.role['pt-br'], 'Desenvolvedor Frontend & Creative Developer');
-  assert.equal(PROFILE.role.en, 'Frontend Developer & Creative Developer');
+test('C1: profile role is frontend and full stack developer', () => {
+  assert.equal(PROFILE.role['pt-br'], 'Desenvolvedor Frontend & Full Stack');
+  assert.equal(PROFILE.role.en, 'Frontend & Full Stack Developer');
 });
 
-test('C4: json-ld job title is the en role and has no birth date', () => {
+test('C4: json-ld job title is the en role, names the employer and has no birth date', () => {
   const jsonLd = buildPersonJsonLd();
-  assert.equal(jsonLd.jobTitle, 'Frontend Developer & Creative Developer');
+  assert.equal(jsonLd.jobTitle, 'Frontend & Full Stack Developer');
+  assert.equal(jsonLd.worksFor.name, 'Magalu Cloud');
+  assert.ok(jsonLd.knowsAbout.includes('Node.js'));
   assert.equal('birthDate' in jsonLd, false);
   assert.doesNotMatch(JSON.stringify(jsonLd), /1996-|"1996"/);
 });
