@@ -1,6 +1,7 @@
 ---
 import { getLocalizedCases, MAIN_CASES } from "../../data/cases";
 import { SHOWCASE_MEDIA } from "../../data/showcase";
+import { SHOWCASE_LAYOUT } from "../../data/showcase-layout";
 import { ptBrDict } from "../../i18n/dictionaries";
 import { casePath } from "../../utils/case-pages";
 import { showcaseNeighbors, showcasePosition, showcaseTiles } from "../../utils/showcase-nav";
@@ -12,33 +13,48 @@ interface Props {
 const { caseId: requestedId } = Astro.props;
 const caseId = MAIN_CASES.find((definition) => definition.id === requestedId)?.id;
 if (!caseId) throw new Error(`Unknown case: ${requestedId}`);
-const cases = getLocalizedCases("pt-br");
-const project = cases.find((entry) => entry.id === caseId);
+const project = getLocalizedCases("pt-br").find((entry) => entry.id === caseId);
 const neighbors = showcaseNeighbors(caseId);
 const position = showcasePosition(caseId);
 if (!project || !neighbors || !position) throw new Error(`Unknown case: ${caseId}`);
 
 const media = SHOWCASE_MEDIA[caseId];
+const { copy } = media;
+const layout = SHOWCASE_LAYOUT[caseId];
 const text = ptBrDict.showcase;
 const siteLink = project.links.find((link) => link.type === "demo") ?? project.links[0];
 const tiles = showcaseTiles(caseId).map((tile) => ({
   ...tile,
-  title: cases.find((entry) => entry.id === tile.id)?.title ?? tile.id,
+  name: SHOWCASE_LAYOUT[tile.id].name,
   image: SHOWCASE_MEDIA[tile.id].screenshot,
 }));
+const compactPosition = position.replace(/ /g, "");
 
-const barButton =
-  "inline-flex h-11 min-w-11 items-center justify-center border-2 border-space-base bg-paper-white px-3 font-mono text-sm font-black text-space-base hover:bg-space-base hover:text-paper-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-bebop-red";
+const barArrow =
+  "flex w-14 items-center justify-center border-r-4 border-space-base text-2xl font-extrabold hover:bg-space-base hover:text-paper-white focus-visible:outline-2 focus-visible:-outline-offset-4 focus-visible:outline-bebop-red md:w-20 md:text-3xl lg:w-32 lg:text-[40px]";
+const nameClass =
+  "font-display font-extrabold leading-[0.88] tracking-[-0.02em] uppercase";
+const polygon = "[clip-path:polygon(0_1.5%,3%_0,100%_.8%,99.4%_100%,2%_99%)]";
+const card = `relative shrink-0 snap-start overflow-hidden border-[5px] border-space-base bg-space-base ${polygon}`;
+const sizeFirst = "h-[250px] w-[min(330px,calc(100vw-2rem))] md:h-[440px] md:w-[640px] lg:h-[520px] lg:w-[820px]";
+const sizeSecond = "h-[250px] w-[260px] md:h-[440px] md:w-[420px] lg:h-[520px] lg:w-[560px]";
+const tag =
+  "absolute top-5 left-[22px] max-w-[calc(100%-44px)] bg-space-base px-3 py-1.5 font-mono text-xs font-bold tracking-[0.1em] text-paper-white uppercase";
 ---
 
-<section data-showcase class="bg-paper-white text-space-base">
+<section id={`case-${caseId}`} data-showcase={caseId} class="bg-paper-white text-space-base">
+  <h1
+    data-case-title
+    class="sr-only"
+  >{project.title}</h1>
+
   <div
     data-showcase-bar
     role="group"
     aria-label={text.controlsAria}
     data-i18n="showcase.controlsAria"
     data-i18n-attr="aria-label"
-    class="flex h-16 flex-nowrap items-center gap-2 border-b-4 border-space-base px-4 sm:gap-3 sm:px-8 md:h-20 md:px-9 lg:h-24"
+    class="flex h-16 flex-nowrap items-stretch border-b-4 border-space-base bg-paper-white md:h-20 lg:h-24"
   >
     <a
       data-showcase-prev
@@ -46,7 +62,7 @@ const barButton =
       aria-label={text.prevAria}
       data-i18n="showcase.prevAria"
       data-i18n-attr="aria-label"
-      class={barButton}
+      class={barArrow}
     ><span aria-hidden="true">←</span></a>
     <a
       data-showcase-next
@@ -54,119 +70,141 @@ const barButton =
       aria-label={text.nextAria}
       data-i18n="showcase.nextAria"
       data-i18n-attr="aria-label"
-      class={barButton}
+      class={barArrow}
     ><span aria-hidden="true">→</span></a>
-    <p data-showcase-position class="font-mono text-xs font-black tracking-wider whitespace-nowrap uppercase sm:text-sm sm:tracking-widest">
-      <span data-i18n="showcase.caseLabel" class="max-sm:sr-only">{text.caseLabel}</span> {position}
+    <p data-showcase-position class="flex w-[76px] items-center justify-center font-mono text-[11px] font-bold tracking-[0.08em] whitespace-nowrap uppercase md:w-[140px] md:border-r-4 md:border-space-base md:text-sm lg:w-[220px] lg:text-lg">
+      <span><span data-i18n="showcase.caseLabel" class="max-lg:sr-only">{text.caseLabel}</span> <span class="max-md:hidden">{position}</span><span aria-hidden="true" class="md:hidden">{compactPosition}</span></span>
     </p>
+    <ul aria-label={text.stackAria} data-i18n="showcase.stackAria" data-i18n-attr="aria-label" class="m-0 hidden min-w-[300px] list-none flex-col justify-center gap-1 border-r-4 border-space-base px-7 font-mono text-sm font-bold tracking-[0.08em] uppercase lg:flex">
+      {layout.barStack.map((tech) => (<li data-showcase-bar-stack>■ {tech}</li>))}
+    </ul>
     <a
       data-showcase-site
+      data-prototype-contrast
       href={siteLink.url}
       target="_blank"
       rel="noopener noreferrer"
-      class="ml-auto inline-flex h-11 items-center gap-1 border-2 border-space-base bg-bebop-red px-3 font-mono text-xs whitespace-nowrap sm:gap-2 sm:px-4 sm:text-sm font-black text-space-base uppercase hover:bg-space-base hover:text-paper-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-space-base"
-    ><span data-i18n="showcase.liveSite" class="max-sm:hidden">{text.liveSite}</span><span data-i18n="showcase.site" class="sm:hidden">{text.site}</span> <span aria-hidden="true">↗</span></a>
+      class={`ml-auto flex items-center gap-1 bg-bebop-red px-3.5 font-display text-[13px] font-extrabold whitespace-nowrap text-paper-white uppercase hover:bg-space-base focus-visible:outline-2 focus-visible:-outline-offset-4 focus-visible:outline-space-base md:gap-2.5 md:px-7 md:text-lg lg:px-10 lg:text-[22px] [clip-path:polygon(8%_0,100%_0,100%_100%,0_100%)]`}
+    ><span data-showcase-cta data-showcase-cta-full class="max-md:hidden">{copy.cta["pt-br"]}</span><span data-showcase-cta data-showcase-cta-short class="md:hidden">{layout.ctaShort}</span><span aria-hidden="true">↗</span></a>
   </div>
 
-  <h1
-    data-case-title
-    style={`view-transition-name: case-title-${project.id}`}
-    class="border-b-4 border-space-base bg-bebop-red px-4 pt-6 pb-5 font-display text-[clamp(1.25rem,6.8vw,3.5rem)] leading-[0.92] font-black tracking-tight text-space-base uppercase break-words sm:px-8 md:px-9 md:pt-7 md:text-[clamp(2.25rem,6.6vw,5.25rem)] lg:text-[clamp(3rem,5vw,5.25rem)]"
-  >{project.title}</h1>
-
-  <div data-showcase-stage class="relative border-b-4 border-space-base py-6 pr-0 pl-4 sm:pl-8 md:py-10 md:pl-9 lg:pr-9">
-    <div
-      data-showcase-track
-      tabindex="0"
-      role="region"
-      aria-label={text.stageAria}
-      data-i18n="showcase.stageAria"
-      data-i18n-attr="aria-label"
-      class="flex snap-x snap-mandatory gap-5 overflow-x-auto overscroll-x-contain pt-5 pr-4 pb-3 md:gap-9 md:pt-6 md:pr-9 md:pb-4 lg:grid lg:grid-cols-2 lg:gap-6 lg:overflow-visible lg:pt-0 lg:pr-0 lg:pb-0"
-    >
-    {media.video ? (
-      <figure data-showcase-card="media" class="relative m-0 border-4 border-space-base bg-space-base w-[min(330px,calc(100vw-3rem))] shrink-0 snap-start md:w-[640px] lg:w-auto lg:shrink">
-        <video
-          data-showcase-video
-          class="block h-auto w-full"
-          width={media.video.width}
-          height={media.video.height}
-          poster={media.video.poster.src}
-          preload="none"
-          muted
-          loop
-          playsinline
-          aria-label={media.video.poster.alt["pt-br"]}
-        >
-          <source src={media.video.webm} type="video/webm" />
-          <source src={media.video.mp4} type="video/mp4" />
-        </video>
-        <figcaption class="flex items-center justify-between gap-3 bg-space-base px-3 py-2 text-paper-white">
-          <span data-showcase-tag class="font-mono text-[11px] font-black tracking-widest uppercase">{media.video.tag["pt-br"]}</span>
-          <button
-            type="button"
-            data-showcase-toggle
-            aria-pressed="false"
-            hidden
-            class="inline-flex h-11 min-w-11 items-center justify-center border-2 border-paper-white px-3 font-mono text-[11px] font-black tracking-widest uppercase hover:bg-paper-white hover:text-space-base focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-bebop-red"
-          ><span data-i18n="showcase.play">{text.play}</span> · <span data-i18n="showcase.pause">{text.pause}</span></button>
-        </figcaption>
-      </figure>
-    ) : (
-      <figure data-showcase-card="media" class="relative m-0 border-4 border-space-base bg-space-base w-[min(330px,calc(100vw-3rem))] shrink-0 snap-start md:w-[640px] lg:w-auto lg:shrink">
-        <img
-          class="block h-auto w-full"
-          src={media.screenshot.src}
-          width={media.screenshot.width}
-          height={media.screenshot.height}
-          data-showcase-alt
-          alt={media.screenshot.alt["pt-br"]}
-          decoding="async"
-        />
-      </figure>
-    )}
-
-    {media.highlight && !media.video ? (
-      <div data-showcase-card="second" data-showcase-highlight class="flex flex-col justify-center gap-3 border-4 border-space-base bg-space-base p-6 text-paper-white w-[260px] shrink-0 snap-start md:w-[420px] lg:w-auto lg:shrink">
-        <p data-showcase-highlight-label class="font-mono text-[11px] font-black tracking-widest uppercase">{media.highlight.label["pt-br"]}</p>
-        <p class="font-display text-[clamp(3rem,10vw,5rem)] leading-none font-black text-bebop-red">{media.highlight.value}</p>
-        <p class="font-mono text-xs font-bold break-words">{media.highlight.flow}</p>
-        <p data-showcase-highlight-note class="font-mono text-xs font-bold uppercase">{media.highlight.note["pt-br"]}</p>
-      </div>
-    ) : (
-      <figure data-showcase-card="second" class="relative m-0 border-4 border-space-base bg-space-base w-[260px] shrink-0 snap-start md:w-[420px] lg:w-auto lg:shrink">
-        <img
-          class="block h-auto w-full"
-          src={media.screenshot.src}
-          width={media.screenshot.width}
-          height={media.screenshot.height}
-          data-showcase-alt
-          alt={media.screenshot.alt["pt-br"]}
-          loading="lazy"
-          decoding="async"
-        />
-      </figure>
-    )}
-    </div>
-
-    <img
-      data-showcase-sticker
-      class="pointer-events-none absolute top-1.5 right-8 z-10 w-[84px] rotate-[10deg] sm:w-24 md:top-2.5 md:right-auto md:left-[560px] md:w-[120px] lg:top-0 lg:right-[44%] lg:left-auto lg:w-32"
-      src={media.sticker.src}
-      width="150"
-      height="150"
-      alt=""
+  <div class="@container border-b-4 border-space-base bg-bebop-red px-4 pt-5 pb-4 md:px-9 md:pt-7 md:pb-[22px] lg:hidden">
+    <p
+      data-showcase-name
       aria-hidden="true"
-    />
+      style={`view-transition-name: case-title-${project.id}; --name-em: ${layout.nameEm}`}
+      class={`${nameClass} text-[length:min(44px,calc(100cqw/var(--name-em)))] md:text-[length:min(84px,calc(100cqw/var(--name-em)))]`}
+    >{layout.name}</p>
   </div>
 
-  <div class="px-4 pt-6 pb-6 sm:px-8 md:px-9 md:pt-8">
-    <p data-case-description class="font-body text-base leading-relaxed font-medium sm:text-lg md:text-[19px]">{project.description}</p>
-  <ul aria-label={text.stackAria} data-i18n="showcase.stackAria" data-i18n-attr="aria-label" class="mt-4 flex flex-wrap gap-2.5 font-mono text-[11px] font-bold uppercase md:text-[13px]">
-    {project.stack.map((tech) => (
-      <li data-case-stack-item class="border-[3px] border-space-base bg-paper-white px-2 py-1 md:px-3 md:py-1.5">{tech}</li>
-    ))}
-  </ul>
+  <div data-showcase-stage class="flex h-[330px] border-b-4 border-space-base bg-paper-white md:h-[540px] lg:h-[620px]">
+    <div data-showcase-rail class="hidden w-32 shrink-0 items-center justify-center border-r-4 border-space-base bg-bebop-red lg:flex">
+      <span
+        data-showcase-name
+        aria-hidden="true"
+        style={`view-transition-name: case-title-${project.id}`}
+        class={`${nameClass} rotate-180 text-[45px] whitespace-nowrap [writing-mode:vertical-rl]`}
+      >{layout.name}</span>
+    </div>
+    <div class="relative min-w-0 flex-1 overflow-hidden">
+      <div
+        data-showcase-track
+        tabindex="0"
+        role="region"
+        aria-label={text.stageAria}
+        data-i18n="showcase.stageAria"
+        data-i18n-attr="aria-label"
+        class="flex h-full scroll-pl-4 snap-x snap-mandatory items-start md:scroll-pl-9 gap-5 overflow-x-auto overscroll-x-contain pt-7 pl-4 [scrollbar-width:none] md:gap-9 md:pt-10 md:pl-9 lg:gap-11 [&::-webkit-scrollbar]:hidden"
+      >
+        {media.video ? (
+          <figure data-showcase-card="media" class={`${card} m-0 ${sizeFirst}`}>
+            <video
+              data-showcase-video
+              class="block h-full w-full object-cover object-top"
+              width={media.video.width}
+              height={media.video.height}
+              poster={media.video.poster.src}
+              preload="none"
+              muted
+              loop
+              playsinline
+              aria-label={media.video.poster.alt["pt-br"]}
+            >
+              <source src={media.video.webm} type="video/webm" />
+              <source src={media.video.mp4} type="video/mp4" />
+            </video>
+            <figcaption data-showcase-tag class={tag}>{media.video.tag["pt-br"]}</figcaption>
+            <button
+              type="button"
+              data-showcase-toggle
+              data-prototype-contrast
+              aria-pressed="false"
+              hidden
+              class="absolute bottom-[22px] left-[22px] inline-flex min-h-11 min-w-11 -rotate-3 items-center justify-center border-[3px] border-space-base bg-bebop-red px-4 py-2 font-mono text-sm font-bold tracking-[0.1em] text-paper-white uppercase hover:bg-space-base focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-bebop-red"
+            ><span aria-hidden="true">▶&nbsp;</span><span data-i18n="showcase.play">{text.play}</span>&nbsp;·&nbsp;<span data-i18n="showcase.pause">{text.pause}</span></button>
+          </figure>
+        ) : (
+          <figure data-showcase-card="media" class={`${card} m-0 ${sizeFirst}`}>
+            <img
+              class="block h-full w-full object-cover object-top"
+              src={media.screenshot.src}
+              width={media.screenshot.width}
+              height={media.screenshot.height}
+              data-showcase-alt
+              alt={media.screenshot.alt["pt-br"]}
+              decoding="async"
+            />
+            {media.highlight && (<figcaption data-showcase-highlight-label class={tag}>{media.highlight.label["pt-br"]}</figcaption>)}
+          </figure>
+        )}
+
+        {media.highlight && !media.video ? (
+          <div data-showcase-card="second" data-showcase-highlight class={`${card} flex flex-col justify-end gap-2.5 bg-space-base p-9 text-paper-white ${sizeSecond}`}>
+            <p class={`${nameClass} text-[54px] text-bebop-red`}>{media.highlight.value}</p>
+            <p class="font-mono text-[15px] tracking-[0.08em] break-words uppercase">{media.highlight.flow}</p>
+            <p data-showcase-highlight-note class="font-mono text-[13px] tracking-[0.08em] uppercase opacity-70">{media.highlight.note["pt-br"]}</p>
+          </div>
+        ) : (
+          <figure data-showcase-card="second" class={`${card} m-0 ${sizeSecond}`}>
+            <img
+              class="block h-full w-full object-cover object-top"
+              src={media.screenshot.src}
+              width={media.screenshot.width}
+              height={media.screenshot.height}
+              data-showcase-alt
+              alt={media.screenshot.alt["pt-br"]}
+              loading="lazy"
+              decoding="async"
+            />
+          </figure>
+        )}
+        <span aria-hidden="true" class="w-4 shrink-0 md:w-9"></span>
+      </div>
+
+      <img
+        data-showcase-sticker
+        class="pointer-events-none absolute top-1.5 left-[min(268px,calc(100%-92px))] z-[3] w-[84px] rotate-[10deg] [filter:drop-shadow(4px_4px_0_#080808)] md:top-2.5 md:left-[560px] md:w-[120px] lg:left-[760px] lg:w-[150px]"
+        src={media.sticker.src}
+        width="150"
+        height="150"
+        alt=""
+        aria-hidden="true"
+      />
+    </div>
+  </div>
+
+  <div class="px-4 pt-6 md:px-9 md:pt-8 lg:flex lg:h-[236px] lg:gap-12 lg:pt-9 lg:pr-12 lg:pl-44">
+    <div class="lg:flex-[1.2]">
+      <p aria-hidden="true" class={`${nameClass} hidden text-[56px] lg:block`}>{layout.name}</p>
+      <p data-showcase-kicker data-prototype-contrast class="font-mono text-[11px] font-bold tracking-[0.08em] text-bebop-red uppercase md:text-[13px] lg:mt-3.5 lg:text-sm">{copy.kicker?.["pt-br"] ?? project.subtitle.replace("•", "·")}</p>
+    </div>
+    <div class="lg:flex-1">
+      <p data-showcase-lead class="mt-2 text-base leading-[1.4] font-medium md:mt-2.5 md:text-[19px] lg:mt-0">{copy.lead["pt-br"]}</p>
+      <ul class="mt-3.5 flex list-none flex-wrap gap-2 p-0 font-mono text-[11px] font-bold tracking-[0.06em] uppercase md:mt-[18px] md:gap-2.5 md:text-[13px] lg:hidden">
+        {layout.barStack.map((tech) => (<li data-showcase-chip class="border-[3px] border-space-base bg-paper-white px-2 py-1 md:px-3 md:py-1.5">{tech}</li>))}
+      </ul>
+      <p class="mt-3.5 font-mono text-[11px] font-bold tracking-[0.08em] uppercase md:mt-[18px] md:text-[13px] lg:mt-3.5"><span aria-hidden="true">▸&nbsp;</span><span data-showcase-note>{copy.note["pt-br"]}</span></p>
+    </div>
   </div>
 
   <nav
@@ -174,19 +212,19 @@ const barButton =
     aria-label={text.tilesAria}
     data-i18n="showcase.tilesAria"
     data-i18n-attr="aria-label"
-    class="grid grid-cols-2 gap-3 border-t-4 border-space-base px-4 py-6 sm:px-8 md:gap-4 md:px-9 md:py-7 lg:grid-cols-4"
+    class="grid grid-cols-2 gap-3 px-4 py-[22px] md:gap-4 md:px-9 md:py-7 lg:flex lg:h-[150px] lg:gap-5 lg:py-0 lg:pr-12 lg:pl-44"
   >
     {tiles.map((tile) => (
       <a
         href={tile.href}
         aria-current={tile.current ? "page" : undefined}
         class:list={[
-          "block border-4 border-space-base bg-paper-white text-space-base focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-bebop-red",
-          tile.current ? "bg-bebop-red" : "hover:bg-space-base hover:text-paper-white",
+          "group relative block h-24 overflow-hidden border-4 bg-space-base focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-bebop-red md:h-32 lg:h-[130px] lg:flex-1",
+          tile.current ? "border-bebop-red shadow-[6px_6px_0_#080808]" : "border-space-base",
         ]}
       >
         <img
-          class="block h-24 w-full object-cover object-top md:h-32 lg:h-36"
+          class:list={["block h-full w-full object-cover object-top", tile.current ? "opacity-100" : "opacity-55 group-hover:opacity-100"]}
           src={tile.image.src}
           width={tile.image.width}
           height={tile.image.height}
@@ -194,9 +232,8 @@ const barButton =
           loading="lazy"
           decoding="async"
         />
-        <span data-showcase-tile-title={tile.id} class="block px-2 py-1.5 font-mono text-[11px] font-black tracking-wider uppercase break-words">
-          {String(tile.index).padStart(2, "0")} · {tile.title}
-        </span>
+        <b data-prototype-contrast class="absolute top-0 left-0 bg-bebop-red px-3 py-1 font-display text-base font-extrabold text-paper-white">{String(tile.index).padStart(2, "0")}</b>
+        <i class="absolute bottom-2 left-2.5 font-mono text-xs font-bold tracking-[0.08em] text-paper-white uppercase not-italic [text-shadow:0_0_6px_#080808]">{tile.name}</i>
       </a>
     ))}
   </nav>

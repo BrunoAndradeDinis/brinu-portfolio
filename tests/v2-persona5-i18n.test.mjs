@@ -444,7 +444,7 @@ test('T6a: CockpitMenu defines all 6 canonical Persona 5 navigation blades and s
   assert.ok(source.includes("cockpitBtn.setAttribute('aria-expanded', String(isOpen))"));
 });
 
-test('T6b: CockpitMenu.tsx wires cockpit:open event, Escape key handler, and language/audio controls', () => {
+test('T6b: CockpitMenu.tsx wires cockpit:open event, Escape key handler, and language and résumé controls', () => {
   const source = fs.readFileSync(
     path.resolve('src/components/CockpitMenu.tsx'),
     'utf8'
@@ -454,7 +454,7 @@ test('T6b: CockpitMenu.tsx wires cockpit:open event, Escape key handler, and lan
   assert.ok(source.includes('id="cockpit-menu-overlay"'));
   assert.ok(source.includes('data-cockpit-lang="pt-br"'));
   assert.ok(source.includes('data-cockpit-lang="en"'));
-  assert.ok(source.includes('id="cockpit-audio-toggle"'));
+  assert.ok(source.includes('data-cockpit-cv'));
 });
 
 test('C10: clicking #cockpit-trigger-btn opens CockpitMenu with aria-expanded=true and controls', async () => {
@@ -499,7 +499,7 @@ test('C10: clicking #cockpit-trigger-btn opens CockpitMenu with aria-expanded=tr
     1
   );
   assert.equal(
-    await page.locator('#cockpit-menu-overlay #cockpit-audio-toggle').count(),
+    await page.locator('#cockpit-menu-overlay [data-cockpit-cv]').count(),
     1
   );
 

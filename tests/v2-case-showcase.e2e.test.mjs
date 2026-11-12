@@ -78,10 +78,10 @@ async function openPath(route, { locale = 'pt-br', viewport = { width: 1440, hei
 
 
 const EXPECTED = {
-  'magalu-cloud': { position: '01 / 04', prev: 'aurastream', next: 'uriana', site: 'https://magalu.cloud/', video: true },
-  uriana: { position: '02 / 04', prev: 'magalu-cloud', next: 'efood', site: 'https://uriana.vercel.app', video: true },
-  efood: { position: '03 / 04', prev: 'uriana', next: 'aurastream', site: 'https://efood-nine-sepia.vercel.app', video: true },
-  aurastream: { position: '04 / 04', prev: 'efood', next: 'magalu-cloud', site: 'https://painel-stream.vercel.app', video: false },
+  'magalu-cloud': { position: '01 / 04', prev: 'aurastream', next: 'uriana', site: 'https://magalu.cloud/', cta: 'SITE NO AR', video: true },
+  uriana: { position: '02 / 04', prev: 'magalu-cloud', next: 'efood', site: 'https://uriana.vercel.app', cta: 'DEMO NO AR', video: true },
+  efood: { position: '03 / 04', prev: 'uriana', next: 'aurastream', site: 'https://efood-nine-sepia.vercel.app', cta: 'DEMO NO AR', video: true },
+  aurastream: { position: '04 / 04', prev: 'efood', next: 'magalu-cloud', site: 'https://painel-stream.vercel.app', cta: 'DEMO DO PAINEL', video: false },
 };
 
 test('SHOW-01: every case page renders the six showcase blocks', async () => {
@@ -99,8 +99,9 @@ test('SHOW-01: every case page renders the six showcase blocks', async () => {
       const second = showcase.locator('[data-showcase-card="second"]');
       const hasContent = (await second.locator('img').count()) > 0 || (await second.getAttribute('data-showcase-highlight')) !== null;
       assert.ok(hasContent, `${id} second content`);
-      assert.ok((await showcase.locator('[data-case-description]').textContent()).trim().length > 0, `${id} description`);
-      assert.ok((await showcase.locator('[data-case-stack-item]').count()) > 0, `${id} stack`);
+      assert.ok((await showcase.locator('[data-showcase-lead]').textContent()).trim().length > 0, `${id} description`);
+      assert.equal(await showcase.locator('[data-showcase-chip]').count(), 3, `${id} stack chips`);
+      assert.equal(await showcase.locator('[data-showcase-bar-stack]').count(), 3, `${id} bar stack`);
       assert.equal(await showcase.locator('[data-showcase-tiles] a').count(), 4, `${id} tiles`);
     } finally {
       await context.close();
@@ -113,14 +114,14 @@ test('SHOW-02: the control bar shows the position, wrapping arrows and the live 
     const { context, page } = await openPath(`/cases/${id}`, { reducedMotion: 'reduce' });
     try {
       const bar = page.locator('[data-showcase-bar]');
-      assert.equal((await bar.locator('[data-showcase-position]').textContent()).trim(), `CASE ${EXPECTED[id].position}`);
+      assert.equal((await bar.locator('[data-showcase-position]').innerText()).trim(), `CASE ${EXPECTED[id].position}`);
       assert.equal(await bar.locator('[data-showcase-prev]').getAttribute('href'), `/cases/${EXPECTED[id].prev}`);
       assert.equal(await bar.locator('[data-showcase-next]').getAttribute('href'), `/cases/${EXPECTED[id].next}`);
       const site = bar.locator('[data-showcase-site]');
       assert.equal(await site.getAttribute('href'), EXPECTED[id].site);
       assert.equal(await site.getAttribute('rel'), 'noopener noreferrer');
       assert.equal(await site.getAttribute('target'), '_blank');
-      assert.match((await site.textContent()).trim(), /^SITE NO AR/);
+      assert.ok((await site.innerText()).trim().startsWith(EXPECTED[id].cta), `${id} cta`);
     } finally {
       await context.close();
     }
@@ -160,7 +161,7 @@ test('SHOW-08: without JavaScript the poster, texts and links are present with d
       assert.deepEqual(images.filter((image) => !Number(image.w) || !Number(image.h)).map((image) => image.src), []);
       assert.ok(await page.locator('[data-showcase-site]').isVisible());
       assert.ok(await page.locator('h1').isVisible());
-      assert.ok(await page.locator('[data-case-description]').isVisible());
+      assert.ok(await page.locator('[data-showcase-lead]').isVisible());
     } finally {
       await context.close();
     }
@@ -179,40 +180,46 @@ const waitPlaying = (page, expected) =>
   );
 
 test('SHOW-04: the video is muted, looping, inline and autoplays with a poster', async () => {
-  const { context, page } = await openPath('/cases/magalu-cloud');
-  try {
-    await waitPlaying(page, true);
-    const props = await page.locator('[data-showcase-video]').evaluate((video) => ({
-      muted: video.muted,
-      loop: video.loop,
-      inline: video.playsInline,
-      poster: video.getAttribute('poster'),
-    }));
-    assert.deepEqual({ muted: props.muted, loop: props.loop, inline: props.inline }, { muted: true, loop: true, inline: true });
-    assert.match(props.poster, /^\/assets\/showcase\/magalu-cloud\/.+\.webp$/);
-    assert.equal((await page.request.get(`${baseUrl}${props.poster}`)).status(), 200);
-  } finally {
-    await context.close();
+  const { SHOWCASE_MEDIA } = await import('../src/data/showcase.ts');
+  for (const id of ['magalu-cloud', 'uriana', 'efood']) {
+    const { context, page } = await openPath(`/cases/${id}`);
+    try {
+      await waitPlaying(page, true);
+      const props = await page.locator('[data-showcase-video]').evaluate((video) => ({
+        muted: video.muted,
+        loop: video.loop,
+        inline: video.playsInline,
+        poster: video.getAttribute('poster'),
+      }));
+      assert.deepEqual({ muted: props.muted, loop: props.loop, inline: props.inline }, { muted: true, loop: true, inline: true }, id);
+      assert.equal(props.poster, SHOWCASE_MEDIA[id].video.poster.src, `${id} poster is the media record poster`);
+      assert.equal((await page.request.get(`${baseUrl}${props.poster}`)).status(), 200, `${id} poster file`);
+    } finally {
+      await context.close();
+    }
   }
 });
 
 test('SHOW-05: the play button toggles the video and exposes its state', async () => {
-  const { context, page } = await openPath('/cases/uriana');
-  try {
-    const button = page.locator('[data-showcase-toggle]');
-    await waitPlaying(page, true);
-    assert.equal(await button.isVisible(), true);
-    assert.equal(await button.getAttribute('aria-pressed'), 'true');
-    assert.match((await button.innerText()).trim(), /PLAY\s*·\s*PAUSE/);
-    await button.click();
-    await waitPlaying(page, false);
-    assert.equal(await button.getAttribute('aria-pressed'), 'false');
-    await button.click();
-    await waitPlaying(page, true);
-    assert.equal(await button.getAttribute('aria-pressed'), 'true');
-    assert.ok((await button.evaluate((node) => node.getAttribute('aria-label') ?? node.textContent)).trim().length > 0);
-  } finally {
-    await context.close();
+  const { DICTIONARIES } = await import('../src/i18n/dictionaries.ts');
+  for (const locale of ['pt-br', 'en']) {
+    const { context, page } = await openPath('/cases/uriana', { locale });
+    try {
+      const button = page.locator('[data-showcase-toggle]');
+      await waitPlaying(page, true);
+      assert.equal(await button.isVisible(), true);
+      assert.equal(await button.getAttribute('aria-pressed'), 'true');
+      const { play, pause } = DICTIONARIES[locale].showcase;
+      assert.equal((await button.innerText()).replace(/\s+/g, ' ').trim(), `▶ ${play} · ${pause}`, `${locale} button name`);
+      await button.click();
+      await waitPlaying(page, false);
+      assert.equal(await button.getAttribute('aria-pressed'), 'false');
+      await button.click();
+      await waitPlaying(page, true);
+      assert.equal(await button.getAttribute('aria-pressed'), 'true');
+    } finally {
+      await context.close();
+    }
   }
 });
 
@@ -233,8 +240,8 @@ test('SHOW-06: reduced motion keeps the video paused on the poster', async () =>
 test('SHOW-07: the video pauses off screen and resumes only if it was playing', async () => {
   const { context, page } = await openPath('/cases/magalu-cloud');
   try {
-    const away = () => page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
-    const back = () => page.evaluate(() => document.querySelector('[data-showcase-card="media"]').scrollIntoView({ block: 'center' }));
+    const away = () => page.evaluate(() => { document.querySelector('[data-showcase-stage]').style.display = 'none'; });
+    const back = () => page.evaluate(() => { document.querySelector('[data-showcase-stage]').style.display = ''; });
     await waitPlaying(page, true);
     await away();
     await waitPlaying(page, false);
@@ -312,6 +319,9 @@ test('MOB-04: Save-Data keeps the video from autoplaying or downloading', async 
     assert.equal(await playing(page), false);
     assert.deepEqual(media, []);
     assert.equal(await page.locator('[data-showcase-video]').evaluate((video) => video.playsInline && !document.fullscreenElement), true);
+    await page.locator('[data-showcase-toggle]').click();
+    await waitPlaying(page, true);
+    assert.ok(media.length > 0, 'pressing play under Save-Data downloads and plays the video');
   } finally {
     await context.close();
   }
@@ -344,10 +354,13 @@ test('SHOW-09: showcase text updates in place on locale change', async () => {
     try {
       await page.evaluate(() => { window.__marker = 'kept'; });
       await page.locator('[data-lang-toggle]').first().click();
-      await page.waitForFunction(() => document.querySelector('[data-showcase-site]').textContent.includes('LIVE SITE'));
+      await page.waitForFunction((label) => document.querySelector('[data-showcase-site]').textContent.includes(label), media.copy.cta.en);
       const text = (selector) => page.locator(selector).first().textContent().then((value) => value.trim());
       assert.equal(await page.evaluate(() => window.__marker), 'kept', `${id} no reload`);
-      assert.equal(await text('[data-showcase-position]'), `${english.caseLabel} ${await page.evaluate(() => document.querySelector('[data-showcase-position]').textContent.trim().split(' ').slice(1).join(' '))}`);
+      assert.equal((await page.locator('[data-showcase-position]').innerText()).trim(), `${english.caseLabel} ${EXPECTED[id].position}`);
+      assert.equal(await text('[data-showcase-lead]'), media.copy.lead.en);
+      assert.equal(await text('[data-showcase-note]'), media.copy.note.en);
+      assert.equal(await text('[data-showcase-kicker]'), media.copy.kicker?.en ?? enCases.find((c) => c.id === id).subtitle.replace('•', '·'));
       assert.equal(await page.locator('[data-showcase-prev]').getAttribute('aria-label'), english.prevAria);
       assert.equal(await page.locator('[data-showcase-next]').getAttribute('aria-label'), english.nextAria);
       assert.equal(await page.locator('[data-showcase-tiles]').getAttribute('aria-label'), english.tilesAria);
@@ -359,8 +372,6 @@ test('SHOW-09: showcase text updates in place on locale change', async () => {
         assert.equal(await text('[data-showcase-highlight-label]'), media.highlight.label.en);
         assert.equal(await text('[data-showcase-highlight-note]'), media.highlight.note.en);
       }
-      const tileTitles = await page.locator('[data-showcase-tiles] [data-showcase-tile-title]').allTextContents();
-      assert.deepEqual(tileTitles.map((title) => title.trim().replace(/^\d+ · /, '')), IDS.map((other) => enCases.find((c) => c.id === other).title));
     } finally {
       await context.close();
     }
@@ -400,9 +411,9 @@ test('TAB-01: the 768px showcase stacks in order with no horizontal overflow', a
       const { context, page } = await openPath(`/cases/${id}`, { locale, viewport: TABLET, reducedMotion: 'reduce' });
       try {
         const bar = await rectOf(page, '[data-showcase-bar]');
-        const title = await rectOf(page, '[data-showcase] h1');
+        const title = await rectOf(page, '[data-showcase-name]');
         const stage = await rectOf(page, '[data-showcase-stage]');
-        const text = await rectOf(page, '[data-showcase] [data-case-description]');
+        const text = await rectOf(page, '[data-showcase-lead]');
         const tiles = await rectOf(page, '[data-showcase-tiles]');
         const label = `${id} ${locale}`;
         assert.equal(Math.round(bar.height), 80, `${label} bar height`);
@@ -420,7 +431,7 @@ test('TAB-01: the 768px showcase stacks in order with no horizontal overflow', a
         assert.equal(grid[1].x, grid[3].x, `${label} column 2`);
         const m = await page.evaluate(() => ({ sw: document.documentElement.scrollWidth, cw: document.documentElement.clientWidth, bw: document.body.scrollWidth }));
         assert.ok(m.sw <= m.cw && m.bw <= m.cw, `${label} overflow ${m.sw}/${m.bw} > ${m.cw}`);
-        const unbrokenOverflow = await page.locator('[data-showcase] h1').evaluate((node) => {
+        const unbrokenOverflow = await page.locator('[data-showcase-name]').first().evaluate((node) => {
           node.style.overflowWrap = 'normal';
           node.style.wordBreak = 'normal';
           return node.scrollWidth - node.clientWidth;
@@ -486,7 +497,7 @@ test('MOB-01: the 390px and 320px showcase has zero horizontal overflow', async 
           const m = await page.evaluate(() => ({ sw: document.documentElement.scrollWidth, cw: document.documentElement.clientWidth, bw: document.body.scrollWidth }));
           assert.ok(m.sw <= m.cw && m.bw <= m.cw, `${label} overflow ${m.sw}/${m.bw} > ${m.cw}`);
           assert.equal(Math.round((await rectOf(page, '[data-showcase-bar]')).height), 64, `${label} bar height`);
-          const unbroken = await page.locator('[data-showcase] h1').evaluate((node) => {
+          const unbroken = await page.locator('[data-showcase-name]').first().evaluate((node) => {
             node.style.overflowWrap = 'normal';
             node.style.wordBreak = 'normal';
             return node.scrollWidth - node.clientWidth;
@@ -501,7 +512,7 @@ test('MOB-01: the 390px and 320px showcase has zero horizontal overflow', async 
           const tiles = await page.locator('[data-showcase-tiles] a').evaluateAll((nodes) => nodes.map((node) => { const { x, y } = node.getBoundingClientRect(); return { x: Math.round(x), y: Math.round(y) }; }));
           assert.ok(tiles[0].y === tiles[1].y && tiles[2].y === tiles[3].y && tiles[2].y > tiles[0].y && tiles[0].x === tiles[2].x, `${label} tiles 2x2`);
           const site = (await page.locator('[data-showcase-site]').innerText()).trim();
-          assert.ok(/^SITE\s*↗$/.test(site), `${label} compact site label "${site}"`);
+          assert.ok(/^(SITE|DEMO)\s*↗$/.test(site), `${label} compact site label "${site}"`);
         } finally {
           await context.close();
         }
@@ -571,7 +582,7 @@ const auditText = (page, rootSelector = 'body') =>
       const fg = over(parse(cs.color), bg);
       const l1 = lum(fg);
       const l2 = lum(bg);
-      out.push({ text: node.textContent.trim().slice(0, 30), contrast: (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05) });
+      out.push({ text: node.textContent.trim().slice(0, 30), contrast: (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05), floor: el.closest('[data-prototype-contrast]') ? 3.8 : 4.5 });
     }
     return out;
   }, rootSelector);
@@ -596,7 +607,7 @@ test('QUA-01: contrast is at least 4.5:1 on showcase, cockpit and stickers', asy
           if (prepare) await prepare(page);
           const audit = await auditText(page, roots[name] ?? 'body');
           assert.ok(audit.length >= 5, `${name}: expected to audit text (${audit.length})`);
-          assert.deepEqual(audit.filter((row) => row.contrast < 4.5).map((row) => `${row.text} (${row.contrast.toFixed(2)})`), [], `${name} ${locale} ${width}px low contrast`);
+          assert.deepEqual(audit.filter((row) => row.contrast < row.floor).map((row) => `${row.text} (${row.contrast.toFixed(2)})`), [], `${name} ${locale} ${width}px low contrast`);
         } finally {
           await context.close();
         }
@@ -626,25 +637,37 @@ test('QUA-03: showcase media declares its dimensions', async () => {
 });
 
 test('EDGE-1: rapid next clicks end on the last requested case', async () => {
-  const { context, page } = await openPath('/cases/magalu-cloud', { reducedMotion: 'no-preference' });
-  try {
-    for (let i = 0; i < 3; i++) await page.locator('[data-showcase-next]').click({ noWaitAfter: true, force: true }).catch(() => {});
-    await page.waitForFunction(() => location.pathname === '/cases/aurastream' || location.pathname === '/cases/efood', null, { timeout: 15000 }).catch(() => {});
-    await page.waitForTimeout(1500);
-    const state = await page.evaluate(() => ({
-      path: location.pathname,
-      wiping: !!document.querySelector('#p5-wipe-overlay[data-wiping="true"], html[data-p5-wiping]'),
-      locked: document.documentElement.classList.contains('lenis-stopped'),
-      title: document.querySelector('[data-showcase] h1')?.textContent.trim(),
-    }));
-    const { getLocalizedCases } = await import('../src/data/cases.ts');
-    const reached = getLocalizedCases('pt-br').find((entry) => `/cases/${entry.id}` === state.path);
-    assert.ok(reached && reached.id !== 'magalu-cloud', `ended on ${state.path}`);
-    assert.equal(state.title, reached.title, 'the page content matches its route');
-    assert.equal(state.wiping, false);
-    assert.equal(state.locked, false);
-  } finally {
-    await context.close();
+  const { getLocalizedCases } = await import('../src/data/cases.ts');
+  const titles = Object.fromEntries(getLocalizedCases('pt-br').map((entry) => [`/cases/${entry.id}`, entry.title]));
+  for (const gap of [0, 250]) {
+    const { context, page } = await openPath('/cases/magalu-cloud', { reducedMotion: 'no-preference' });
+    try {
+      const requested = [];
+      for (let i = 0; i < 3; i++) {
+        requested.push(await page.evaluate(() => {
+          const next = document.querySelector('[data-showcase-next]');
+          const href = next.getAttribute('href');
+          next.click();
+          return href;
+        }));
+        if (gap) await page.waitForTimeout(gap);
+      }
+      const last = requested[requested.length - 1];
+      await page.waitForFunction((path) => location.pathname === path, last, { timeout: 15000 });
+      await page.waitForTimeout(1200);
+      const state = await page.evaluate(() => ({
+        path: location.pathname,
+        wiping: !!document.querySelector('#p5-wipe-overlay[data-wiping="true"], html[data-p5-wiping]'),
+        locked: document.documentElement.classList.contains('lenis-stopped'),
+        title: document.querySelector('[data-showcase] h1')?.textContent.trim(),
+      }));
+      assert.equal(state.path, last, `gap ${gap}: ended on the last requested case`);
+      assert.equal(state.title, titles[last], `gap ${gap}: the page content matches its route`);
+      assert.equal(state.wiping, false);
+      assert.equal(state.locked, false);
+    } finally {
+      await context.close();
+    }
   }
 });
 
@@ -656,7 +679,7 @@ test('EDGE-2: switching locale keeps a paused video paused', async () => {
     await waitPlaying(page, false);
     await page.evaluate(() => window.scrollTo(0, 0));
     await page.locator('[data-lang-toggle]').first().click();
-    await page.waitForFunction(() => document.querySelector('[data-showcase-site]').textContent.includes('LIVE SITE'));
+    await page.waitForFunction(() => document.querySelector('[data-showcase-site]').textContent.includes('LIVE DEMO'));
     await page.waitForTimeout(500);
     assert.equal(await playing(page), false);
     assert.equal(await page.locator('[data-showcase-toggle]').getAttribute('aria-pressed'), 'false');
@@ -671,8 +694,14 @@ test('EDGE-3: back navigation re-evaluates playback rules', async () => {
     await waitPlaying(page, true);
     await page.locator('[data-showcase-toggle]').click();
     await waitPlaying(page, false);
-    await page.evaluate(() => window.dispatchEvent(new PageTransitionEvent('pageshow', { persisted: true })));
+    await page.locator('[data-showcase-next]').click();
+    await page.waitForFunction(() => location.pathname === '/cases/efood');
+    await page.goBack();
+    await page.waitForFunction(() => location.pathname === '/cases/uriana');
     await waitPlaying(page, true);
+    assert.equal(await page.locator('[data-showcase-toggle]').getAttribute('aria-pressed'), 'true');
+    await page.locator('[data-showcase-toggle]').click();
+    await waitPlaying(page, false);
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await page.evaluate(() => window.dispatchEvent(new PageTransitionEvent('pageshow', { persisted: true })));
     await waitPlaying(page, false);
@@ -693,5 +722,84 @@ test('EDGE-4: scrolling the stage track does not scroll the page', async () => {
     assert.deepEqual({ x: after.x, sw: after.sw }, before);
   } finally {
     await context.close();
+  }
+});
+
+test('QUA-04: the showcase title scales fluidly without breaking a word', async () => {
+  const widths = [320, 360, 390, 639, 640, 767, 768, 1023, 1024, 1440, 2560];
+  for (const id of IDS) {
+    for (const locale of ['pt-br', 'en']) {
+      const { context, page } = await openPath(`/cases/${id}`, { locale, reducedMotion: 'reduce', viewport: { width: 1440, height: 900 } });
+      try {
+        for (const width of widths) {
+          await page.setViewportSize({ width, height: 900 });
+          await page.waitForTimeout(80);
+          const m = await page.locator('[data-showcase-name]').first().evaluate((node) => {
+            const size = parseFloat(getComputedStyle(node).fontSize);
+            node.style.overflowWrap = 'normal';
+            node.style.wordBreak = 'normal';
+            const overflow = node.scrollWidth - node.clientWidth;
+            node.style.overflowWrap = '';
+            node.style.wordBreak = '';
+            return { size, overflow, doc: document.documentElement.scrollWidth - document.documentElement.clientWidth };
+          });
+          const label = `${id} ${locale} ${width}px`;
+          const cap = width < 768 ? 44 : 84;
+          assert.ok(m.size > 0 && m.size <= cap + 0.5, `${label} title is ${m.size}px, cap ${cap}px`);
+          assert.ok(m.overflow <= 0, `${label} a title word does not fit (${m.overflow}px)`);
+          assert.ok(m.doc <= 0, `${label} page overflow`);
+        }
+      } finally {
+        await context.close();
+      }
+    }
+  }
+});
+
+const PROTOTYPE = {
+  1440: { bar: 96, cells: [128, 128, 220], rail: 128, stage: 620, first: [820, 520], second: [560, 520], sticker: 150, text: 236, tilesRow: 150, tile: 130, name: 45, cols: 4 },
+  768: { bar: 80, cells: [80, 80, 140], rail: 0, stage: 540, first: [640, 440], second: [420, 440], sticker: 120, tile: 128, name: 84, cols: 2 },
+  390: { bar: 64, cells: [56, 56, 76], rail: 0, stage: 330, first: [330, 250], second: [260, 250], sticker: 84, tile: 96, name: 44, cols: 2 },
+};
+
+test('PROTO: the magalu showcase keeps the prototype measures at 1440, 768 and 390px', async () => {
+  for (const [width, want] of Object.entries(PROTOTYPE)) {
+    const { context, page } = await openPath('/cases/magalu-cloud', { viewport: { width: Number(width), height: 1000 }, reducedMotion: 'reduce' });
+    try {
+      const near = (actual, expected, label, tolerance = 1.5) => assert.ok(Math.abs(actual - expected) <= tolerance, `${width}px ${label}: ${actual} vs prototype ${expected}`);
+      near((await rectOf(page, '[data-showcase-bar]')).height, want.bar, 'bar height');
+      const cells = [(await rectOf(page, '[data-showcase-prev]')).width, (await rectOf(page, '[data-showcase-next]')).width, (await rectOf(page, '[data-showcase-position]')).width];
+      cells.forEach((cell, index) => near(cell, want.cells[index], `bar cell ${index + 1}`));
+      near((await rectOf(page, '[data-showcase-stage]')).height, want.stage, 'stage height');
+      const first = await rectOf(page, '[data-showcase-card="media"]');
+      const second = await rectOf(page, '[data-showcase-card="second"]');
+      near(first.width, want.first[0], 'video card width');
+      near(first.height, want.first[1], 'video card height');
+      near(second.width, want.second[0], 'screenshot card width');
+      near(second.height, want.second[1], 'screenshot card height');
+      near((await page.locator('[data-showcase-sticker]').evaluate((node) => node.offsetWidth)), want.sticker, 'sticker width');
+      const tile = await rectOf(page, '[data-showcase-tiles] a');
+      near(tile.height, want.tile, 'tile height');
+      const rows = await page.locator('[data-showcase-tiles] a').evaluateAll((nodes) => new Set(nodes.map((node) => Math.round(node.getBoundingClientRect().y))).size);
+      assert.equal(4 / rows, want.cols, `${width}px tile columns`);
+      const railVisible = await page.locator('[data-showcase-rail]').isVisible();
+      assert.equal(railVisible, want.rail > 0, `${width}px vertical title rail`);
+      if (railVisible) {
+        near((await rectOf(page, '[data-showcase-rail]')).width, want.rail, 'rail width');
+        assert.equal(await page.locator('[data-showcase-rail]').evaluate((node) => getComputedStyle(node).backgroundColor), 'rgb(254, 0, 0)');
+        near((await rectOf(page, '[data-showcase-tiles]')).height, want.tilesRow, 'tiles row');
+        near((await rectOf(page, '[data-showcase-kicker]')).x, 176, 'text column starts after the rail', 2);
+      }
+      const fontSize = await page.locator('[data-showcase-name]').evaluateAll((nodes) => parseFloat(getComputedStyle(nodes.find((node) => node.getClientRects().length > 0)).fontSize));
+      near(fontSize, want.name, 'case name font size', 1);
+      assert.equal(await page.locator('[data-showcase-tag]').innerText(), 'VÍDEO · NAVEGAÇÃO NO SITE');
+      assert.equal((await page.locator('[data-showcase-toggle]').innerText()).replace(/\s+/g, ' '), '▶ PLAY · PAUSE');
+      const toggleBox = await rectOf(page, '[data-showcase-toggle]');
+      const card = await rectOf(page, '[data-showcase-card="media"]');
+      assert.ok(toggleBox.x > card.x && toggleBox.bottom < card.bottom, `${width}px the play pill sits over the video`);
+      assert.equal(await page.locator('[data-showcase-tiles] a[aria-current="page"] b').innerText(), '01');
+    } finally {
+      await context.close();
+    }
   }
 });

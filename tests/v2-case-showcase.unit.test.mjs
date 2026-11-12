@@ -68,7 +68,7 @@ test('SHOW-10: video and poster come together, only on the cases that have a vid
 });
 
 const SHOWCASE_KEYS = [
-  'caseLabel', 'liveSite', 'site', 'prevAria', 'nextAria', 'controlsAria',
+  'caseLabel', 'prevAria', 'nextAria', 'controlsAria',
   'play', 'pause', 'tilesAria', 'stackAria', 'stageAria',
 ];
 
@@ -80,7 +80,23 @@ test('SHOW-09: showcase dictionary has the same non-empty keys in pt-br and en',
     assert.deepEqual(Object.keys(block).sort(), [...SHOWCASE_KEYS].sort(), `${locale} keys`);
     for (const key of SHOWCASE_KEYS) assert.ok(block[key].trim().length > 0, `${locale}.${key}`);
   }
-  assert.notEqual(DICTIONARIES.en.showcase.liveSite, DICTIONARIES['pt-br'].showcase.liveSite);
+});
+
+test('SHOW-09: every case carries the prototype copy in both locales', async () => {
+  const { SHOWCASE_MEDIA } = await import('../src/data/showcase.ts');
+  const { SHOWCASE_LAYOUT: layout } = await import('../src/data/showcase-layout.ts');
+  for (const [id, media] of Object.entries(SHOWCASE_MEDIA)) {
+    const { copy } = media;
+    assert.ok(layout[id].name.length > 0 && layout[id].nameEm > 0, `${id} name`);
+    assert.equal(layout[id].barStack.length, 3, `${id} bar stack`);
+    for (const key of ['cta', 'lead', 'note']) {
+      for (const locale of ['pt-br', 'en']) assert.ok(copy[key][locale].trim().length > 0, `${id} ${key} ${locale}`);
+    }
+  }
+  assert.equal(SHOWCASE_MEDIA.aurastream.copy.kicker.en, 'Personal project · Magalu Cloud Object Storage');
+  assert.equal(SHOWCASE_MEDIA['magalu-cloud'].copy.cta['pt-br'], 'SITE NO AR');
+  assert.equal(SHOWCASE_MEDIA['magalu-cloud'].copy.cta.en, 'LIVE SITE');
+  assert.equal(SHOWCASE_MEDIA.aurastream.copy.cta['pt-br'], 'DEMO DO PAINEL');
 });
 
 const videoRules = () => import('../src/utils/showcase-video.ts');

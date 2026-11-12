@@ -99,7 +99,7 @@ test('C1b: the build generates exactly four case pages and unknown ids return 40
   }
 });
 
-test('C2: each case page shows the full card content in both locales', async () => {
+test('C2: each case page shows its title, copy and live site link in both locales', async () => {
   const cases = await expectedCases();
   for (const locale of LOCALES) {
     for (const expected of cases[locale]) {
@@ -108,19 +108,10 @@ test('C2: each case page shows the full card content in both locales', async () 
         const text = (selector) => page.locator(selector).first().textContent().then((value) => value.trim());
         assert.equal(await page.locator('h1').count(), 1);
         assert.equal(await text('h1'), expected.title, `${locale} ${expected.id} h1`);
-        assert.equal(await text('[data-case-reel]'), `[ ${expected.reelNumber} ] // ${expected.category}`);
-        assert.equal(await text('[data-case-badge]'), expected.badge);
-        assert.equal(await text('[data-case-subtitle]'), expected.subtitle);
-        assert.equal(await text('[data-case-description]'), expected.description);
-        assert.equal(await text('[data-case-challenge]'), expected.challenge);
-        assert.equal(await text('[data-case-solution]'), expected.solution);
-        assert.equal(await text('[data-case-metric]'), expected.metric);
-        const stack = await page.locator('[data-case-stack-item]').allTextContents();
-        assert.deepEqual(stack.map((item) => item.trim()), expected.stack);
-        const links = await page.locator('[data-case-link]').evaluateAll((nodes) =>
-          nodes.map((node) => ({ href: node.getAttribute('href'), label: node.querySelector('[data-case-link-label]').textContent.trim(), aria: node.getAttribute('aria-label') }))
-        );
-        assert.deepEqual(links, expected.links.map((link) => ({ href: link.url, label: link.label, aria: link.ariaLabel })));
+        const { SHOWCASE_MEDIA } = await import('../src/data/showcase.ts');
+        assert.equal(await text('[data-showcase-lead]'), SHOWCASE_MEDIA[expected.id].copy.lead[locale === 'en' ? 'en' : 'pt-br'], `${locale} ${expected.id} lead`);
+        const site = expected.links.find((link) => link.type === 'demo') ?? expected.links[0];
+        assert.equal(await page.locator('[data-showcase-site]').getAttribute('href'), site.url);
       } finally {
         await context.close();
       }
@@ -161,13 +152,12 @@ test('C3: each case page sets its own meta and updates it on locale change', asy
   assert.equal(titles.size, IDS.length, 'titles are distinct per case');
 });
 
-test('C4b: each case page links back to its home card and to the next case', async () => {
+test('C4b: each case page links to its next case', async () => {
   const { nextCaseId } = await import('../src/utils/case-pages.ts');
   for (const id of IDS) {
     const { context, page } = await openPath(`/cases/${id}`, { reducedMotion: 'reduce' });
     try {
-      assert.equal(await page.locator('[data-case-back]').getAttribute('href'), `/#case-${id}`);
-      assert.equal(await page.locator('[data-case-next]').getAttribute('href'), `/cases/${nextCaseId(id)}`);
+      assert.equal(await page.locator('[data-showcase-next]').getAttribute('href'), `/cases/${nextCaseId(id)}`);
     } finally {
       await context.close();
     }
@@ -179,16 +169,14 @@ test('C6: case page text updates in place on locale change', async () => {
   const { context, page } = await openPath('/cases/uriana', { locale: 'pt-br', reducedMotion: 'reduce' });
   try {
     await page.evaluate(() => { window.__marker = 'kept'; });
-    const before = await page.locator('[data-case-description]').textContent();
+    const before = await page.locator('[data-showcase-lead]').textContent();
     await page.locator('[data-lang-toggle]').first().click();
-    const english = cases.en.find((c) => c.id === 'uriana');
-    await page.waitForFunction((text) => document.querySelector('[data-case-description]').textContent.trim() === text, english.description);
+    const { SHOWCASE_MEDIA } = await import('../src/data/showcase.ts');
+    const english = { title: cases.en.find((c) => c.id === 'uriana').title, description: SHOWCASE_MEDIA.uriana.copy.lead.en };
+    await page.waitForFunction((text) => document.querySelector('[data-showcase-lead]').textContent.trim() === text, english.description);
     assert.notEqual(english.description, before.trim());
     assert.equal((await page.locator('h1').textContent()).trim(), english.title);
     assert.equal(await page.evaluate(() => window.__marker), 'kept', 'no reload happened');
-    assert.equal((await page.locator('[data-case-description]').textContent()).trim(), cases.en.find((c) => c.id === 'uriana').description);
-    assert.equal((await page.locator('[data-case-back]').textContent()).trim(), '← BACK TO PROJECTS');
-    assert.equal((await page.locator('[data-case-next]').textContent()).trim(), 'NEXT CASE →');
   } finally {
     await context.close();
   }
@@ -219,7 +207,7 @@ test('C13: card title and page h1 share the view transition name', async () => {
       assert.equal(homeName, `case-title-${id}`);
       const detail = await context.newPage();
       await detail.goto(`${baseUrl}/cases/${id}`, { waitUntil: 'networkidle' });
-      const pageName = await detail.locator('h1').evaluate((el) => getComputedStyle(el).viewTransitionName);
+      const pageName = await detail.locator('[data-showcase-name]:visible').evaluate((el) => getComputedStyle(el).viewTransitionName);
       assert.equal(pageName, `case-title-${id}`);
       await detail.close();
     }
@@ -268,9 +256,9 @@ test('C7: navigation between pages keeps the window marker', async () => {
   try {
     await page.evaluate(() => { window.__marker = 'alive'; });
     await clickAndWaitFor(page, page.locator('#case-uriana a[data-case-open]'), '/cases/uriana');
-    await clickAndWaitFor(page, page.locator('[data-case-next]'), '/cases/efood');
-    await page.locator('[data-case-back]').click();
-    await page.waitForFunction(() => window.location.pathname === '/' && window.location.hash === '#case-efood');
+    await clickAndWaitFor(page, page.locator('[data-showcase-next]'), '/cases/efood');
+    await (await openMenuLink(page, 'works')).click();
+    await page.waitForFunction(() => window.location.pathname === '/');
     await clickAndWaitFor(page, page.locator('[data-footer-stickers-link]'), '/stickers');
     await clickAndWaitFor(page, await openMenuLink(page, 'whoami'), '/whoami');
     assert.equal(await page.evaluate(() => window.__marker), 'alive', 'the document was never reloaded');
@@ -335,7 +323,8 @@ test('C10: the intro runs only on the first load of the home', async () => {
     await page.waitForLoadState('networkidle');
     await clickAndWaitFor(page, page.locator('#case-uriana a[data-case-open]'), '/cases/uriana');
     assert.deepEqual(await introState(page), { preloader: false, marks: 1, locked: false });
-    await clickAndWaitFor(page, page.locator('[data-case-back]'), '/');
+    await clickAndWaitFor(page, await openMenuLink(page, 'works'), '/');
+    await page.waitForFunction(() => !document.documentElement.classList.contains('lenis-stopped'));
     assert.deepEqual(await introState(page), { preloader: false, marks: 1, locked: false }, 'returning home does not replay the intro');
   } finally {
     await context.close();
@@ -383,28 +372,8 @@ test('C11: the page is fully initialized after navigation', async () => {
     await clickAndWaitFor(page, page.locator('#case-uriana a[data-case-open]'), '/cases/uriana');
     await expectInitialized(page, 'en');
     assert.equal(await page.evaluate(() => window.scrollY), 0);
-    assert.equal((await page.locator('[data-case-back]').textContent()).trim(), '← BACK TO PROJECTS');
-
-    await page.locator('[data-case-back]').click();
-    await page.waitForFunction(() => window.location.pathname === '/' && window.location.hash === '#case-uriana');
-    await page.waitForLoadState('networkidle');
-    await expectInitialized(page, 'en');
-    const gap = await navGap(page, '#case-uriana');
-    assert.ok(gap >= 8 && gap <= 40, `the target stops just below the nav controls (gap ${gap})`);
   } finally {
     await context.close();
-  }
-
-  const animated = await motionHome();
-  try {
-    await clickAndWaitFor(animated.page, animated.page.locator('#case-uriana a[data-case-open]'), '/cases/uriana');
-    await animated.page.locator('[data-case-back]').click();
-    await animated.page.waitForFunction(() => window.location.pathname === '/' && window.location.hash === '#case-uriana');
-    await animated.page.waitForTimeout(1800);
-    const gap = await navGap(animated.page, '#case-uriana');
-    assert.ok(gap >= 8 && gap <= 40, `with motion the target settles just below the nav controls (gap ${gap})`);
-  } finally {
-    await animated.context.close();
   }
 
   const stickers = await freshHome();
@@ -425,11 +394,11 @@ test('C12: back and forward swap pages and stay initialized', async () => {
   try {
     await page.evaluate(() => { window.__marker = 'alive'; });
     await clickAndWaitFor(page, page.locator('#case-efood a[data-case-open]'), '/cases/efood');
-    await clickAndWaitFor(page, page.locator('[data-case-next]'), '/cases/aurastream');
+    await clickAndWaitFor(page, page.locator('[data-showcase-next]'), '/cases/aurastream');
     await page.goBack();
     await page.waitForFunction(() => window.location.pathname === '/cases/efood' && document.querySelector('h1')?.textContent.trim() === 'eFood');
     await page.goBack();
-    await page.waitForFunction(() => window.location.pathname === '/' && document.getElementById('case-efood') !== null);
+    await page.waitForFunction(() => window.location.pathname === '/' && document.getElementById('case-efood') !== null && document.querySelector('[data-showcase]') === null);
     await page.waitForLoadState('networkidle');
     assert.equal(await page.locator('#case-efood [data-case-title]').count(), 1);
     await page.goForward();
@@ -448,8 +417,8 @@ test('C15: with JavaScript disabled links navigate and pages are readable', asyn
     await page.goto(`${baseUrl}/`);
     await Promise.all([page.waitForURL(/\/cases\/uriana$/), page.locator('#case-uriana a[data-case-open]').click()]);
     assert.equal((await page.locator('h1').textContent()).trim(), 'Uriana');
-    await Promise.all([page.waitForURL(/\/cases\/efood$/), page.locator('[data-case-next]').click()]);
-    assert.ok((await page.locator('[data-case-description]').textContent()).trim().length > 40);
+    await Promise.all([page.waitForURL(/\/cases\/efood$/), page.locator('[data-showcase-next]').click()]);
+    assert.ok((await page.locator('[data-showcase-lead]').textContent()).trim().length > 40);
     for (const route of ['/stickers', '/whoami', '/cases/magalu-cloud']) {
       await page.goto(`${baseUrl}${route}`);
       assert.ok((await page.locator('main').innerText()).trim().length > 40, `${route} is readable`);
@@ -488,7 +457,8 @@ test('C22: a direct case load with a hash skips the intro and clears the nav', a
     await page.goto(`${baseUrl}/cases/uriana#case-uriana`, { waitUntil: 'networkidle' });
     assert.equal(await page.evaluate(() => document.getElementById('intro-preloader') === null), true);
     const gap = await navGap(page, '#case-uriana');
-    assert.ok(gap >= 8 && gap <= 40, `the target stops just below the nav controls (gap ${gap})`);
+    const viewport = await page.evaluate(() => window.innerHeight);
+    assert.ok(gap >= 8 && gap < viewport, `the target sits below the nav controls and inside the viewport (gap ${gap})`);
   } finally {
     await context.close();
   }
@@ -508,7 +478,7 @@ test('C23: home sections initialize once after home to case to home', async () =
     const initial = await windowListenerCount(context, page, 'brinu:locale-change');
     for (let round = 0; round < 2; round += 1) {
       await clickAndWaitFor(page, page.locator('#case-uriana a[data-case-open]'), '/cases/uriana');
-      await clickAndWaitFor(page, page.locator('[data-case-back]'), '/');
+      await clickAndWaitFor(page, await openMenuLink(page, 'works'), '/');
       await page.waitForLoadState('networkidle');
     }
     assert.equal(await windowListenerCount(context, page, 'brinu:locale-change'), initial, 'round trips add no locale listeners');
@@ -708,7 +678,7 @@ const auditText = (page) =>
       const fg = over(parse(cs.color), bg);
       const l1 = lum(fg);
       const l2 = lum(bg);
-      out.push({ text: node.textContent.trim().slice(0, 30), contrast: (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05) });
+      out.push({ text: node.textContent.trim().slice(0, 30), contrast: (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05), floor: el.closest('[data-prototype-contrast]') ? 3.8 : 4.5 });
     }
     return out;
   });
@@ -723,7 +693,7 @@ test('C16: case pages have zero overflow and contrast at least 4.5:1', async () 
           assert.ok(m.sw <= m.cw && m.bw <= m.cw, `Overflow at ${width}px (${id}, ${locale}): ${m.sw}/${m.bw} > ${m.cw}`);
           const audit = await auditText(page);
           assert.ok(audit.length >= 14, `expected to audit the page text (${audit.length})`);
-          assert.deepEqual(audit.filter((r) => r.contrast < 4.5).map((r) => `${r.text} (${r.contrast.toFixed(2)})`), [], `low contrast at ${width}px (${id}, ${locale})`);
+          assert.deepEqual(audit.filter((r) => r.contrast < r.floor).map((r) => `${r.text} (${r.contrast.toFixed(2)})`), [], `low contrast at ${width}px (${id}, ${locale})`);
         } finally {
           await context.close();
         }

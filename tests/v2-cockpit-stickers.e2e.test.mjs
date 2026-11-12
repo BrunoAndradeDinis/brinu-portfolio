@@ -92,7 +92,7 @@ const overlayOpen = (page) =>
 const waitClosed = (page) =>
   page.waitForFunction(() => {
     const overlay = document.getElementById('cockpit-menu-overlay');
-    return overlay.getAttribute('aria-hidden') === 'true' && !document.documentElement.classList.contains('cockpit-menu-open');
+    return overlay !== null && overlay.getAttribute('aria-hidden') === 'true' && !document.documentElement.classList.contains('cockpit-menu-open');
   });
 const openCockpit = async (page) => {
   await page.locator('#cockpit-trigger-btn').click();
@@ -140,38 +140,63 @@ test('CKP-03: the menu lists six blades and closes on activation', async () => {
   const { context, page } = await openPath('/');
   try {
     await openCockpit(page);
-    const blades = await page.locator('#cockpit-menu-overlay [data-cockpit-link]').evaluateAll((nodes) =>
+    const readBlades = () => page.locator('#cockpit-menu-overlay [data-cockpit-link]').evaluateAll((nodes) =>
       nodes.map((node) => ({ id: node.getAttribute('data-cockpit-link'), href: node.getAttribute('href'), current: node.getAttribute('aria-current') }))
     );
+    const blades = await readBlades();
     assert.deepEqual(blades.map((blade) => blade.id), BLADES);
     assert.deepEqual(blades.map((blade) => blade.href), ['#hero', '#works', '#about', '#lab', '#contact', '/whoami']);
-    assert.deepEqual(blades.filter((blade) => blade.current).map((blade) => blade.id), ['hero']);
+    assert.deepEqual(blades.map((blade) => blade.current), ['true', null, null, null, null, null]);
     await page.locator('#cockpit-menu-overlay [data-cockpit-link="works"]').click();
     await waitClosed(page);
     assert.equal(new URL(page.url()).hash, '#works');
     await openCockpit(page);
-    const active = await page.locator('#cockpit-menu-overlay [data-cockpit-link][aria-current]').evaluateAll((nodes) => nodes.map((node) => node.getAttribute('data-cockpit-link')));
-    assert.equal(active.length, 1);
-    assert.notEqual(active[0], 'whoami');
+    const afterClick = await readBlades();
+    assert.deepEqual(afterClick.filter((blade) => blade.current).map((blade) => [blade.id, blade.current]), [['works', 'true']]);
+    await page.locator('#cockpit-menu-overlay [data-cockpit-link="whoami"]').click();
+    await page.waitForFunction(() => location.pathname === '/whoami');
+    await waitClosed(page);
+    await openCockpit(page);
+    const onWhoami = await readBlades();
+    assert.deepEqual(onWhoami.filter((blade) => blade.current).map((blade) => [blade.id, blade.current]), [['whoami', 'page']]);
   } finally {
     await context.close();
   }
 });
 
 test('CKP-06: reduced motion opens and closes the menu without a tween', async () => {
-  const closeDelay = async (reducedMotion) => {
+  const run = async (reducedMotion) => {
     const { context, page } = await openPath('/', { reducedMotion });
     try {
-      await openCockpit(page);
+      await page.locator('#cockpit-trigger-btn').click();
+      await page.waitForTimeout(40);
+      const opened = await page.evaluate(() => ({
+        hidden: document.getElementById('cockpit-menu-overlay').getAttribute('aria-hidden'),
+        opacities: [...document.querySelectorAll('#cockpit-menu-overlay [data-cockpit-link]')].map((node) => Number(getComputedStyle(node).opacity)),
+      }));
+      await page.waitForTimeout(700);
+      await page.keyboard.press('Escape');
+      await page.waitForTimeout(60);
+      const lockedAfterEscape = (await overlayOpen(page)).locked;
+      await page.waitForTimeout(700);
+      await page.locator('#cockpit-trigger-btn').click();
+      await page.waitForTimeout(700);
       await page.locator('#cockpit-trigger-btn').click();
       await page.waitForTimeout(60);
-      return (await overlayOpen(page)).locked;
+      const lockedAfterTrigger = (await overlayOpen(page)).locked;
+      return { opened, lockedAfterEscape, lockedAfterTrigger };
     } finally {
       await context.close();
     }
   };
-  assert.equal(await closeDelay('reduce'), false, 'reduced motion closes at once');
-  assert.equal(await closeDelay('no-preference'), true, 'full motion still tweens');
+  const reduced = await run('reduce');
+  assert.equal(reduced.opened.hidden, 'false');
+  assert.ok(reduced.opened.opacities.every((opacity) => opacity === 1), `blades are at full opacity at once: ${reduced.opened.opacities}`);
+  assert.equal(reduced.lockedAfterEscape, false, 'Escape closes at once');
+  assert.equal(reduced.lockedAfterTrigger, false, 'the trigger closes at once');
+  const full = await run('no-preference');
+  assert.equal(full.lockedAfterEscape, true, 'full motion still tweens on Escape');
+  assert.equal(full.lockedAfterTrigger, true, 'full motion still tweens on the trigger');
 });
 
 test('CKP-04: the open menu shows socials, language toggle and cases link', async () => {
@@ -222,14 +247,14 @@ test('CKP-05: the open menu columns and overflow match each breakpoint', async (
         });
         assert.ok(m.sw <= m.cw && m.dw <= m.dcw, `${label} overflow ${JSON.stringify(m)}`);
         const bladeColumns = await columns(page, '#cockpit-menu-overlay [data-cockpit-link]');
-        const barColumns = await columns(page, '#cockpit-menu-overlay [data-cockpit-lang="pt-br"], #cockpit-menu-overlay [data-cockpit-cases], #cockpit-menu-overlay #cockpit-audio-toggle');
+        const barColumns = await columns(page, '#cockpit-menu-overlay [data-cockpit-lang="pt-br"], #cockpit-menu-overlay [data-cockpit-cases], #cockpit-menu-overlay [data-cockpit-cv]');
         if (width >= 768) {
           assert.equal(bladeColumns, 2, `${label} blades in two columns`);
         } else {
           assert.equal(bladeColumns, 1, `${label} blades in one column`);
         }
         const barRow = await page.evaluate(() => {
-          const cells = [document.querySelector('#cockpit-menu-overlay [data-cockpit-lang="pt-br"]').closest('div.border-3'), document.querySelector('#cockpit-menu-overlay [data-cockpit-cases]'), document.querySelector('#cockpit-menu-overlay #cockpit-audio-toggle').closest('div.border-3')];
+          const cells = [document.querySelector('#cockpit-menu-overlay [data-cockpit-lang="pt-br"]').closest('div.border-3'), document.querySelector('#cockpit-menu-overlay [data-cockpit-cases]'), document.querySelector('#cockpit-menu-overlay [data-cockpit-cv]')];
           const tops = cells.map((cell) => Math.round(cell.getBoundingClientRect().top));
           return tops.filter((top) => top === tops[0]).length;
         });
@@ -281,7 +306,7 @@ test('STK-02: stickers have no overflow and follow the locale', async () => {
         assert.ok(m.sw <= m.cw && m.bw <= m.cw, `${locale} ${width}px overflow ${m.sw}/${m.bw} > ${m.cw}`);
         if (width === 390) {
           const prefix = DICTIONARIES[locale].stickers.downloadAria;
-          for (const index of [0, 31, 32, 55]) {
+          for (let index = 0; index < STICKERS.length; index++) {
             const link = page.locator('a[data-sticker-download]').nth(index);
             const alt = STICKERS[index].alt[locale];
             assert.equal(await link.getAttribute('aria-label'), `${prefix} ${alt}`, `${locale} aria-label ${index}`);
@@ -299,7 +324,8 @@ test('STK-02: stickers have no overflow and follow the locale', async () => {
     await page.locator('[data-lang-toggle]').first().click();
     await page.waitForFunction((alt) => document.querySelector('a[data-sticker-download] img').getAttribute('alt') === alt, STICKERS[0].alt.en);
     assert.equal(await page.evaluate(() => window.__marker), 'kept');
-    assert.equal(await page.locator('a[data-sticker-download]').first().getAttribute('aria-label'), `${DICTIONARIES.en.stickers.downloadAria} ${STICKERS[0].alt.en}`);
+    const live = await page.locator('a[data-sticker-download]').evaluateAll((nodes) => nodes.map((node) => [node.getAttribute('aria-label'), node.querySelector('img').getAttribute('alt')]));
+    assert.deepEqual(live, STICKERS.map((sticker) => [`${DICTIONARIES.en.stickers.downloadAria} ${sticker.alt.en}`, sticker.alt.en]));
   } finally {
     await context.close();
   }
@@ -326,5 +352,36 @@ test('STK-03: a focused sticker shows an outline and lifts', async () => {
     assert.match(focused.panel, /^0(px)? -[1-9]/, `panel lifted: ${focused.panel}`);
   } finally {
     await context.close();
+  }
+});
+
+test('CKP-PROTO: the open menu keeps the prototype structure at 1440, 768 and 390px', async () => {
+  const { PROFILE } = await import('../src/data/profile.ts');
+  for (const width of [1440, 768, 390]) {
+    const { context, page } = await openPath('/', { viewport: { width, height: 1000 }, reducedMotion: 'reduce' });
+    try {
+      await openCockpit(page);
+      const overlay = page.locator('#cockpit-menu-overlay');
+      assert.equal(await overlay.locator('h2').count(), 0, `${width}px no big title`);
+      assert.equal(await overlay.locator('nav').getAttribute('aria-label'), 'TAKE YOUR TIME');
+      const socials = await overlay.locator('[data-cockpit-social]').evaluateAll((nodes) =>
+        nodes.map((node) => ({ id: node.dataset.cockpitSocial, text: node.textContent.trim(), icon: node.querySelectorAll('span[aria-hidden]').length, w: Math.round(node.getBoundingClientRect().width), h: Math.round(node.getBoundingClientRect().height) }))
+      );
+      assert.deepEqual(socials, [{ id: 'linkedin', text: '', icon: 1, w: 44, h: 44 }, { id: 'github', text: '', icon: 1, w: 44, h: 44 }], `${width}px icon-only socials`);
+      assert.deepEqual(await overlay.locator('[data-cockpit-social]').evaluateAll((nodes) => nodes.map((node) => node.getAttribute('href'))), [PROFILE.linkedin.url, PROFILE.github.url]);
+      const cv = overlay.locator('[data-cockpit-cv]');
+      assert.equal(await cv.getAttribute('href'), '/curriculo-bruno-dinis.pdf');
+      assert.equal(await cv.getAttribute('download'), '');
+      assert.equal((await cv.innerText()).trim(), '↓ BAIXAR CURRÍCULO');
+      assert.equal(await overlay.locator('#cockpit-audio-toggle').count(), 0, `${width}px no audio control`);
+      const colors = await page.evaluate(() => ({
+        active: getComputedStyle(document.querySelector('[data-cockpit-link][data-active-blade="true"]')).color,
+        cases: getComputedStyle(document.querySelector('[data-cockpit-cases]')).color,
+        lang: getComputedStyle(document.querySelector('[data-cockpit-lang][aria-pressed="true"]')).color,
+      }));
+      assert.deepEqual(colors, { active: 'rgb(251, 250, 244)', cases: 'rgb(251, 250, 244)', lang: 'rgb(251, 250, 244)' }, `${width}px prototype text colors`);
+    } finally {
+      await context.close();
+    }
   }
 });

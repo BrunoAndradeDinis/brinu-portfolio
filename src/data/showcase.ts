@@ -1,5 +1,8 @@
 import type { MainCaseId } from './cases.ts';
-import { t, type Localized } from './localized.ts';
+import type { Localized } from './localized.ts';
+import { SHOWCASE_TEXT, type ShowcaseCopy } from './showcase-text.ts';
+
+export type { ShowcaseCopy };
 
 export interface ShowcaseImage {
   readonly src: string;
@@ -25,6 +28,7 @@ export interface ShowcaseHighlight {
 }
 
 export interface ShowcaseMedia {
+  readonly copy: ShowcaseCopy;
   readonly screenshot: ShowcaseImage;
   readonly sticker: { readonly src: string };
   readonly video?: ShowcaseVideo;
@@ -34,80 +38,34 @@ export interface ShowcaseMedia {
 const ROOT = '/assets/showcase';
 const SCREEN = { width: 1280, height: 800 } as const;
 const VIDEO = { width: 1024, height: 650 } as const;
+const HIGHLIGHT = { value: '24/7', flow: 'Puppeteer → Xvfb → FFmpeg → RTMP' } as const;
 
-function files(id: MainCaseId) {
-  return {
-    screenshot: `${ROOT}/${id}/${id}-screenshot.webp`,
-    sticker: `${ROOT}/${id}/${id}-sticker.svg`,
-    poster: `${ROOT}/${id}/${id}-poster.webp`,
-    mp4: `${ROOT}/${id}/${id}.mp4`,
-    webm: `${ROOT}/${id}/${id}.webm`,
+function mediaFor(id: MainCaseId): ShowcaseMedia {
+  const text = SHOWCASE_TEXT[id];
+  const base = `${ROOT}/${id}/${id}`;
+  const media = {
+    copy: text.copy,
+    screenshot: { src: `${base}-screenshot.webp`, ...SCREEN, alt: text.alt },
+    sticker: { src: `${base}-sticker.svg` },
   };
-}
-
-function video(id: MainCaseId, tag: Localized<string>, posterAlt: Localized<string>): ShowcaseVideo {
-  const file = files(id);
-  return {
-    mp4: file.mp4,
-    webm: file.webm,
-    ...VIDEO,
-    poster: { src: file.poster, ...SCREEN, alt: posterAlt },
-    tag,
-  };
-}
-
-function screenshot(id: MainCaseId, alt: Localized<string>): ShowcaseImage {
-  return { src: files(id).screenshot, ...SCREEN, alt };
+  if (text.tag && text.posterAlt) {
+    return {
+      ...media,
+      video: {
+        mp4: `${base}.mp4`,
+        webm: `${base}.webm`,
+        ...VIDEO,
+        poster: { src: `${base}-poster.webp`, ...SCREEN, alt: text.posterAlt },
+        tag: text.tag,
+      },
+    };
+  }
+  return text.highlight ? { ...media, highlight: { ...HIGHLIGHT, ...text.highlight } } : media;
 }
 
 export const SHOWCASE_MEDIA: Readonly<Record<MainCaseId, ShowcaseMedia>> = {
-  'magalu-cloud': {
-    screenshot: screenshot(
-      'magalu-cloud',
-      t('Página inicial do site da Magalu Cloud.', 'Home page of the Magalu Cloud website.')
-    ),
-    sticker: { src: files('magalu-cloud').sticker },
-    video: video(
-      'magalu-cloud',
-      t('VÍDEO · NAVEGAÇÃO NO SITE', 'VIDEO · SITE WALKTHROUGH'),
-      t('Primeiro quadro da navegação no site da Magalu Cloud.', 'First frame of the Magalu Cloud website walkthrough.')
-    ),
-  },
-  uriana: {
-    screenshot: screenshot(
-      'uriana',
-      t('Dashboard do Uriana com indicadores de vendas.', 'Uriana dashboard with sales indicators.')
-    ),
-    sticker: { src: files('uriana').sticker },
-    video: video(
-      'uriana',
-      t('VÍDEO · DASHBOARD, PRODUTOS, VENDAS', 'VIDEO · DASHBOARD, PRODUCTS, SALES'),
-      t('Primeiro quadro da navegação pelo Uriana.', 'First frame of the Uriana walkthrough.')
-    ),
-  },
-  efood: {
-    screenshot: screenshot(
-      'efood',
-      t('Lista de restaurantes do eFood.', 'Restaurant list in eFood.')
-    ),
-    sticker: { src: files('efood').sticker },
-    video: video(
-      'efood',
-      t('VÍDEO · NAVEGAÇÃO NO APP', 'VIDEO · APP WALKTHROUGH'),
-      t('Primeiro quadro da navegação pelo eFood.', 'First frame of the eFood walkthrough.')
-    ),
-  },
-  aurastream: {
-    screenshot: screenshot(
-      'aurastream',
-      t('Painel-Stream, o painel de acervo da AuraStream.', 'Painel-Stream, the AuraStream library panel.')
-    ),
-    sticker: { src: files('aurastream').sticker },
-    highlight: {
-      label: t('PAINEL · ACESSO COM LOGIN', 'PANEL · LOGIN REQUIRED'),
-      value: '24/7',
-      flow: 'Puppeteer → Xvfb → FFmpeg → RTMP',
-      note: t('Engine + painel no ar, sem OBS', 'Engine + panel live, no OBS'),
-    },
-  },
+  'magalu-cloud': mediaFor('magalu-cloud'),
+  uriana: mediaFor('uriana'),
+  efood: mediaFor('efood'),
+  aurastream: mediaFor('aurastream'),
 };

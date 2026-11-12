@@ -5,7 +5,7 @@ import {
   type TranslationSchema,
 } from './dictionaries.ts';
 import { getLocalizedCases, type MainCaseId } from '../data/cases.ts';
-import { SHOWCASE_MEDIA } from '../data/showcase.ts';
+import { SHOWCASE_TEXT } from '../data/showcase-text.ts';
 import { getArsenalCounter, getLocalizedArsenal } from '../data/arsenal.ts';
 import { getLocalizedArchive } from '../data/archive.ts';
 import { getLocalizedCareer, getLocalizedEducation } from '../data/career.ts';
@@ -101,29 +101,29 @@ export function resolveTranslationKey(
   return typeof cursor === 'string' ? cursor : keyPath;
 }
 
-function bindShowcaseMedia(card: HTMLElement, caseId: string, locale: Locale): void {
-  const media = SHOWCASE_MEDIA[caseId as MainCaseId];
-  if (!media) return;
-  const setText = (selector: string, value: string) => {
-    const node = card.querySelector<HTMLElement>(selector);
-    if (node) node.textContent = value;
+function bindShowcaseMedia(caseId: string, locale: Locale, subtitle: string): void {
+  const showcase = document.querySelector<HTMLElement>(`[data-showcase="${caseId}"]`);
+  const text = SHOWCASE_TEXT[caseId as MainCaseId];
+  if (!showcase || !text) return;
+  const setText = (selector: string, value: string | undefined) => {
+    if (value === undefined) return;
+    showcase.querySelectorAll<HTMLElement>(selector).forEach((node) => {
+      node.textContent = value;
+    });
   };
-  card
+  showcase
     .querySelectorAll<HTMLImageElement>('[data-showcase-alt]')
-    .forEach((image) => image.setAttribute('alt', media.screenshot.alt[locale]));
-  if (media.video) {
-    setText('[data-showcase-tag]', media.video.tag[locale]);
-    card
-      .querySelector<HTMLElement>('[data-showcase-video]')
-      ?.setAttribute('aria-label', media.video.poster.alt[locale]);
+    .forEach((image) => image.setAttribute('alt', text.alt[locale]));
+  if (text.posterAlt) {
+    showcase.querySelector<HTMLElement>('[data-showcase-video]')?.setAttribute('aria-label', text.posterAlt[locale]);
   }
-  if (media.highlight) {
-    setText('[data-showcase-highlight-label]', media.highlight.label[locale]);
-    setText('[data-showcase-highlight-note]', media.highlight.note[locale]);
-  }
-  getLocalizedCases(locale).forEach((entry, index) => {
-    setText(`[data-showcase-tile-title="${entry.id}"]`, `${String(index + 1).padStart(2, '0')} · ${entry.title}`);
-  });
+  setText('[data-showcase-tag]', text.tag?.[locale]);
+  setText('[data-showcase-highlight-label]', text.highlight?.label[locale]);
+  setText('[data-showcase-highlight-note]', text.highlight?.note[locale]);
+  setText('[data-showcase-cta-full]', text.copy.cta[locale]);
+  setText('[data-showcase-kicker]', text.copy.kicker?.[locale] ?? subtitle.replace('•', '·'));
+  setText('[data-showcase-lead]', text.copy.lead[locale]);
+  setText('[data-showcase-note]', text.copy.note[locale]);
 }
 
 export function applyDomTranslations(locale: Locale): void {
@@ -233,6 +233,8 @@ export function applyDomTranslations(locale: Locale): void {
   // Update localized project case cards
   const cases = getLocalizedCases(validLocale);
   cases.forEach((project) => {
+    bindShowcaseMedia(project.id, validLocale, project.subtitle);
+    document.querySelector<HTMLElement>(`[data-showcase="${project.id}"] [data-case-title]`)?.replaceChildren(project.title);
     const card = document.getElementById(`case-${project.id}`);
     if (!card) return;
     const bindField = (selector: string, val: string) => {
@@ -255,7 +257,6 @@ export function applyDomTranslations(locale: Locale): void {
       }
     });
 
-    bindShowcaseMedia(card, project.id, validLocale);
 
     const linkItems = card.querySelectorAll<HTMLAnchorElement>('[data-case-link]');
     linkItems.forEach((linkEl, idx) => {

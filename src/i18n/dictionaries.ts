@@ -44,7 +44,7 @@ export interface TranslationSchema {
       whoami: string;
     };
     languageLabel: string;
-    audioLabel: string;
+    downloadCvLabel: string;
     audioOn: string;
     audioMuted: string;
     casesCta: string;
@@ -177,8 +177,6 @@ export interface TranslationSchema {
   };
   showcase: {
     caseLabel: string;
-    liveSite: string;
-    site: string;
     prevAria: string;
     nextAria: string;
     controlsAria: string;
@@ -358,7 +356,7 @@ export const ptBrDict: TranslationSchema = {
       whoami: '06 // TERMINAL /WHOAMI',
     },
     languageLabel: 'IDIOMA DA INTERFACE',
-    audioLabel: 'SÍNTESE DE ÁUDIO WEB',
+    downloadCvLabel: '↓ BAIXAR CURRÍCULO',
     audioOn: 'ÁUDIO: ATIVO',
     audioMuted: 'ÁUDIO: MUDO',
     casesCta: 'CASES →',
@@ -499,8 +497,6 @@ export const ptBrDict: TranslationSchema = {
   },
   showcase: {
     caseLabel: 'CASE',
-    liveSite: 'SITE NO AR',
-    site: 'SITE',
     prevAria: 'Case anterior',
     nextAria: 'Próximo case',
     controlsAria: 'Navegação entre cases',
@@ -686,7 +682,7 @@ export const enDict = {
       whoami: '06 // TERMINAL /WHOAMI',
     },
     languageLabel: 'INTERFACE LANGUAGE',
-    audioLabel: 'WEB AUDIO SYNTHESIS',
+    downloadCvLabel: '↓ DOWNLOAD RÉSUMÉ',
     audioOn: 'AUDIO: ON',
     audioMuted: 'AUDIO: MUTED',
     casesCta: 'CASES →',
@@ -827,8 +823,6 @@ export const enDict = {
   },
   showcase: {
     caseLabel: 'CASE',
-    liveSite: 'LIVE SITE',
-    site: 'SITE',
     prevAria: 'Previous case',
     nextAria: 'Next case',
     controlsAria: 'Case navigation',

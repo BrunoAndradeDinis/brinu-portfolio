@@ -78,7 +78,6 @@ export function syncCockpitTriggerDom(isOpen: boolean): void {
 export const CockpitMenu: React.FC = () => {
   const { locale, dict: t, setLocale } = useLocale();
   const [isOpen, setIsOpen] = useState(false);
-  const [isMuted, setIsMuted] = useState(true);
   const [activeBladeId, setActiveBladeId] = useState<string>('hero');
   const [onHome, setOnHome] = useState<boolean>(true);
   const overlayRef = useRef<HTMLDivElement | null>(null);
@@ -172,8 +171,6 @@ export const CockpitMenu: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    setIsMuted(audioSynth.isMuted());
-
     const initialTrigger = document.getElementById('cockpit-trigger-btn');
     if (!isOpen && initialTrigger?.getAttribute('aria-expanded') === 'true') {
       openMenu();
@@ -189,13 +186,6 @@ export const CockpitMenu: React.FC = () => {
       }
     };
 
-    const handleAudioMuteChange = (e: Event) => {
-      const detail = (e as CustomEvent<{ muted: boolean }>).detail;
-      if (detail && typeof detail.muted === 'boolean') {
-        setIsMuted(detail.muted);
-      }
-    };
-
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && isOpen) {
         e.preventDefault();
@@ -206,12 +196,10 @@ export const CockpitMenu: React.FC = () => {
     };
 
     window.addEventListener('cockpit:open', handleCockpitEvent);
-    window.addEventListener('bebop:audio-mute-change', handleAudioMuteChange);
     window.addEventListener('keydown', handleKeyDown);
 
     return () => {
       window.removeEventListener('cockpit:open', handleCockpitEvent);
-      window.removeEventListener('bebop:audio-mute-change', handleAudioMuteChange);
       window.removeEventListener('keydown', handleKeyDown);
     };
   }, [isOpen, openMenu, closeMenu]);
@@ -325,14 +313,6 @@ export const CockpitMenu: React.FC = () => {
     };
   }, [isOpen, isReducedMotion]);
 
-  const handleToggleAudio = () => {
-    const nextMuted = audioSynth.toggleMute();
-    setIsMuted(nextMuted);
-    if (!nextMuted) {
-      audioSynth.playSonarBlip(880, 0.06, 0.12);
-    }
-  };
-
   return (
     <div
       ref={overlayRef}
@@ -370,11 +350,7 @@ export const CockpitMenu: React.FC = () => {
       <div className="relative z-10 w-full min-h-full box-border flex flex-col justify-between pt-20 sm:pt-24 md:pt-28 pb-6 sm:pb-8 px-4 sm:px-8 md:px-12 lg:px-20 max-w-7xl mx-auto">
         <div>
           {/* Header Row */}
-          <div className="relative border-b-4 border-paper-white pb-5 mb-8">
-            <h2 className="font-display text-3xl sm:text-5xl lg:text-6xl font-black uppercase tracking-tight text-paper-white leading-none">
-              {t.menu.title}
-            </h2>
-          </div>
+          <div className="relative border-b-4 border-paper-white pb-5 mb-8" />
 
           {/* Oversized Persona 5 Navigation Blades */}
           <nav ref={bladesContainerRef} aria-label={t.menu.title} className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mb-10">
@@ -388,6 +364,7 @@ export const CockpitMenu: React.FC = () => {
                   href={item.href.startsWith('#') && !onHome ? `/${item.href}` : item.href}
                   data-cockpit-link={item.id}
                   data-active-blade={isActive ? 'true' : 'false'}
+                  data-prototype-contrast={isActive ? '' : undefined}
                   aria-current={
                     isActive
                       ? item.href === '/whoami'
@@ -402,10 +379,10 @@ export const CockpitMenu: React.FC = () => {
                   }}
                   className={`group relative flex items-center justify-between border-4 border-paper-white px-5 sm:px-7 py-4 sm:py-5 font-display text-lg sm:text-2xl font-black uppercase tracking-wider transition-all duration-150 -skew-x-6 sm:-skew-x-12 ${
                     isActive
-                      ? 'bg-bebop-red text-space-base shadow-[8px_8px_0_var(--color-paper-white)] scale-[1.01]'
+                      ? 'bg-bebop-red text-paper-white shadow-[8px_8px_0_var(--color-paper-white)] scale-[1.01]'
                       : isEven
-                        ? 'bg-space-base text-paper-white hover:bg-bebop-red hover:text-space-base shadow-[6px_6px_0_var(--color-bebop-red)]'
-                        : 'bg-paper-white text-space-base hover:bg-bebop-red hover:text-space-base shadow-[6px_6px_0_var(--color-bebop-red)]'
+                        ? 'bg-space-base text-paper-white hover:bg-bebop-red hover:text-paper-white shadow-[6px_6px_0_var(--color-bebop-red)]'
+                        : 'bg-paper-white text-space-base hover:bg-bebop-red hover:text-paper-white shadow-[6px_6px_0_var(--color-bebop-red)]'
                   } hover:-translate-y-1`}
                 >
                   <span className="truncate pr-3 skew-x-6 sm:skew-x-12">{label}</span>
@@ -418,10 +395,10 @@ export const CockpitMenu: React.FC = () => {
           </nav>
         </div>
 
-        <ul aria-label={t.menu.socialsAria} className="mb-6 flex flex-wrap gap-4 list-none p-0">
+        <ul aria-label={t.menu.socialsAria} className="mb-4 flex list-none items-center justify-center gap-2.5 p-0">
           {[
-            { id: 'linkedin', url: PROFILE.linkedin.url, label: 'LINKEDIN', aria: t.menu.linkedinAria },
-            { id: 'github', url: PROFILE.github.url, label: 'GITHUB', aria: t.menu.githubAria },
+            { id: 'linkedin', url: PROFILE.linkedin.url, aria: t.menu.linkedinAria },
+            { id: 'github', url: PROFILE.github.url, aria: t.menu.githubAria },
           ].map((social) => (
             <li key={social.id}>
               <a
@@ -430,10 +407,9 @@ export const CockpitMenu: React.FC = () => {
                 rel="noopener noreferrer"
                 aria-label={social.aria}
                 data-cockpit-social={social.id}
-                className="inline-flex min-h-11 items-center gap-2 border-3 border-paper-white bg-space-base px-4 py-2.5 font-mono text-xs sm:text-sm font-black uppercase tracking-widest text-paper-white shadow-[4px_4px_0_var(--color-bebop-red)] transition-colors hover:bg-paper-white hover:text-space-base focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-bebop-red"
+                className="inline-flex h-11 w-11 items-center justify-center border-2 border-paper-white bg-space-base text-paper-white transition-colors hover:bg-bebop-red focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-bebop-red"
               >
-                <span>{social.label}</span>
-                <span aria-hidden="true">↗</span>
+                <span aria-hidden="true" className="block size-[22px] bg-current" style={{ maskImage: `url(/icons/${social.id}.svg)`, WebkitMaskImage: `url(/icons/${social.id}.svg)`, maskSize: 'contain', WebkitMaskSize: 'contain' }} />
               </a>
             </li>
           ))}
@@ -450,11 +426,12 @@ export const CockpitMenu: React.FC = () => {
               <button
                 type="button"
                 data-cockpit-lang="pt-br"
+                data-prototype-contrast={locale === 'pt-br' ? '' : undefined}
                 aria-pressed={locale === 'pt-br'}
                 onClick={() => setLocale('pt-br')}
                 className={`min-h-11 min-w-11 px-3.5 py-1.5 font-mono text-xs font-black uppercase border-2 cursor-pointer transition-colors ${
                   locale === 'pt-br'
-                    ? 'border-paper-white bg-bebop-red text-space-base'
+                    ? 'border-paper-white bg-bebop-red text-paper-white'
                     : 'border-paper-white/40 bg-space-base text-muted-gray hover:text-paper-white'
                 }`}
               >
@@ -463,11 +440,12 @@ export const CockpitMenu: React.FC = () => {
               <button
                 type="button"
                 data-cockpit-lang="en"
+                data-prototype-contrast={locale === 'en' ? '' : undefined}
                 aria-pressed={locale === 'en'}
                 onClick={() => setLocale('en')}
                 className={`min-h-11 min-w-11 px-3.5 py-1.5 font-mono text-xs font-black uppercase border-2 cursor-pointer transition-colors ${
                   locale === 'en'
-                    ? 'border-paper-white bg-bebop-red text-space-base'
+                    ? 'border-paper-white bg-bebop-red text-paper-white'
                     : 'border-paper-white/40 bg-space-base text-muted-gray hover:text-paper-white'
                 }`}
               >
@@ -479,34 +457,24 @@ export const CockpitMenu: React.FC = () => {
           <a
             href="/#works"
             data-cockpit-cases
+            data-prototype-contrast
             onClick={() => {
               audioSynth.playKeypressBeep(740, 0.025, 0.06);
               closeMenu();
             }}
-            className="inline-flex min-h-11 items-center justify-center gap-2 border-3 border-paper-white bg-bebop-red px-3.5 py-3.5 font-mono text-xs sm:text-sm font-black uppercase tracking-widest text-space-base shadow-[4px_4px_0_var(--color-bebop-red)] transition-colors hover:bg-paper-white hover:text-space-base focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-paper-white"
+            className="inline-flex min-h-11 items-center justify-center gap-2 border-3 border-paper-white bg-bebop-red px-3.5 py-3.5 font-mono text-xs sm:text-sm font-black uppercase tracking-widest text-paper-white shadow-[4px_4px_0_var(--color-bebop-red)] transition-colors hover:bg-paper-white hover:text-space-base focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-paper-white"
           >
             {t.menu.casesCta}
           </a>
 
-          {/* Audio Synthesizer Control */}
-          <div className="flex items-center justify-between border-3 border-paper-white bg-space-surface-1 px-5 py-3.5 shadow-[4px_4px_0_var(--color-bebop-red)]">
-            <span className="font-mono text-xs sm:text-sm font-bold uppercase tracking-widest text-paper-white">
-              {t.menu.audioLabel}
-            </span>
-            <button
-              type="button"
-              id="cockpit-audio-toggle"
-              aria-pressed={!isMuted}
-              onClick={handleToggleAudio}
-              className={`min-h-11 min-w-11 px-3.5 py-1.5 font-mono text-xs font-black uppercase border-2 cursor-pointer transition-colors ${
-                !isMuted
-                  ? 'border-paper-white bg-bebop-red text-space-base animate-pulse'
-                  : 'border-paper-white/40 bg-space-base text-muted-gray hover:text-paper-white'
-              }`}
-            >
-              {!isMuted ? 'ONLINE' : 'MUTED'}
-            </button>
-          </div>
+          <a
+            href="/curriculo-bruno-dinis.pdf"
+            download
+            data-cockpit-cv
+            className="inline-flex min-h-11 items-center justify-center gap-2 border-3 border-paper-white bg-space-base px-3.5 py-3.5 font-mono text-xs sm:text-sm font-black uppercase tracking-widest text-paper-white shadow-[4px_4px_0_var(--color-bebop-red)] transition-colors hover:bg-paper-white hover:text-space-base focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-bebop-red"
+          >
+            {t.menu.downloadCvLabel}
+          </a>
         </div>
       </div>
     </div>
