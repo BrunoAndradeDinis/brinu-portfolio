@@ -37,6 +37,9 @@ const initialEases = registerP5Eases();
 export const p5Snap: gsap.EaseFunction = initialEases.p5Snap;
 export const p5Overshoot: gsap.EaseFunction = initialEases.p5Overshoot;
 
+export const MOTION_EASE = { enter: 'p5Snap', fade: 'power2.out' } as const;
+export const MOTION_DURATION = { seconds: 0.5, ms: 500 } as const;
+
 // Estado singleton
 let lenisInstance: Lenis | null = null;
 let tickerCallback: ((time: number) => void) | null = null;
