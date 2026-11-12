@@ -395,7 +395,9 @@ export const CockpitMenu: React.FC = () => {
           </nav>
         </div>
 
-        <ul aria-label={t.menu.socialsAria} className="mb-4 flex list-none items-center justify-center gap-2.5 p-0">
+        {/* System Controls: Language Switch & Audio Synth */}
+        <div ref={controlsRef}>
+        <ul aria-label={t.menu.socialsAria} className="mb-2 flex list-none items-center justify-center gap-2.5 p-0">
           {[
             { id: 'linkedin', url: PROFILE.linkedin.url, aria: t.menu.linkedinAria },
             { id: 'github', url: PROFILE.github.url, aria: t.menu.githubAria },
@@ -414,9 +416,7 @@ export const CockpitMenu: React.FC = () => {
             </li>
           ))}
         </ul>
-
-        {/* System Controls: Language Switch & Audio Synth */}
-        <div ref={controlsRef} className="grid grid-cols-1 md:grid-cols-[1.5fr_1fr_1fr] gap-4 border-t-4 border-paper-white pt-6">
+          <div className="grid grid-cols-1 md:grid-cols-[1.5fr_1fr_1fr] gap-4 border-t-4 border-paper-white pt-[1.75rem]">
           {/* Language Switcher Box */}
           <div className="flex items-center justify-between border-3 border-paper-white bg-space-surface-1 px-5 py-3.5 shadow-[4px_4px_0_var(--color-bebop-red)]">
             <span className="font-mono text-xs sm:text-sm font-bold uppercase tracking-widest text-paper-white">
@@ -475,6 +475,7 @@ export const CockpitMenu: React.FC = () => {
           >
             {t.menu.downloadCvLabel}
           </a>
+          </div>
         </div>
       </div>
     </div>

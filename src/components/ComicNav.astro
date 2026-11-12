@@ -195,9 +195,7 @@ import { ptBrDict } from "../i18n/dictionaries";
     let timer: ReturnType<typeof setTimeout> | null = null;
 
     logo.addEventListener("click", (e) => {
-      e.preventDefault();
-      const wasTouch = logo.dataset.pointerType === "touch";
-      delete logo.dataset.pointerType;
+      const isHome = window.location.pathname === "/" || window.location.pathname === "";
 
       const isMenuOpen = cockpitBtn?.getAttribute("aria-expanded") === "true";
       if (isMenuOpen) {
@@ -207,6 +205,14 @@ import { ptBrDict } from "../i18n/dictionaries";
           })
         );
       }
+
+      if (!isHome) {
+        return;
+      }
+
+      e.preventDefault();
+      const wasTouch = logo.dataset.pointerType === "touch";
+      delete logo.dataset.pointerType;
 
       clickCount++;
       if (timer) clearTimeout(timer);
@@ -218,6 +224,9 @@ import { ptBrDict } from "../i18n/dictionaries";
       }
 
       if (!wasTouch) {
+        if (window.location.hash) {
+          history.pushState(null, "", "/");
+        }
         window.scrollTo({ top: 0, behavior: "smooth" });
       }
 
@@ -316,12 +325,6 @@ import { ptBrDict } from "../i18n/dictionaries";
     pointer-events: none;
   }
 
-  #comic-nav-header[data-scrolled="true"] {
-    height: auto !important;
-    padding-top: 0.5rem !important;
-    padding-bottom: 0.5rem !important;
-    align-items: flex-start !important;
-  }
 
   :global(html.cockpit-menu-open) #comic-nav-header,
   #comic-nav-header[data-cockpit-open="true"] {

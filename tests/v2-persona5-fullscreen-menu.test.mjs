@@ -401,3 +401,26 @@ test('C6: zero horizontal overflow while fullscreen menu is open across viewport
 
   await context.close();
 });
+
+test('C7: clicking comic-nav-logo navigates to home (/) from any subpage', async () => {
+  const context = await browser.newContext();
+  const page = await context.newPage();
+
+  // Test from /whoami
+  await page.goto(`${baseUrl}/whoami`, { waitUntil: 'networkidle' });
+  assert.equal(new URL(page.url()).pathname, '/whoami');
+
+  await page.click('#comic-nav-logo');
+  await page.waitForFunction(() => window.location.pathname === '/');
+  assert.equal(new URL(page.url()).pathname, '/');
+
+  // Test from /cases/magalu-cloud
+  await page.goto(`${baseUrl}/cases/magalu-cloud`, { waitUntil: 'networkidle' });
+  assert.equal(new URL(page.url()).pathname, '/cases/magalu-cloud');
+
+  await page.click('#comic-nav-logo');
+  await page.waitForFunction(() => window.location.pathname === '/');
+  assert.equal(new URL(page.url()).pathname, '/');
+
+  await context.close();
+});
