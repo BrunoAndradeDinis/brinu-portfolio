@@ -137,11 +137,13 @@ test('C3: each background keeps to the brand palette plus its accent at most 15%
   }
 });
 
-test('C4: rendered frames show the six backgrounds in order', async () => {
+test('C4: rendered frames show the six backgrounds in reversed reel order (06 to 01)', async () => {
   const { context, page } = await openHome('pt-br', { reducedMotion: 'reduce' });
   try {
     const srcs = await page.locator('[data-passion-slide] img').evaluateAll((els) => els.map((el) => new URL(el.src).pathname));
-    assert.deepEqual(srcs, [1, 2, 3, 4, 5, 6].map((n) => `/assets/filmstrip/passion-bg-${n}.svg`));
+    assert.deepEqual(srcs, [6, 5, 4, 3, 2, 1].map((n) => `/assets/filmstrip/passion-bg-${n}.svg`));
+    const indexes = await page.locator('[data-passion-slide]').evaluateAll((els) => els.map((el) => Number(el.dataset.passionIndex)));
+    assert.deepEqual(indexes, [6, 5, 4, 3, 2, 1], 'DOM order must run from frame 06 to frame 01');
     const loaded = await page.locator('[data-passion-slide] img').evaluateAll((els) => els.map((el) => el.complete && el.naturalWidth > 0));
     assert.deepEqual(loaded, [true, true, true, true, true, true], 'every background must load');
   } finally {
@@ -158,7 +160,7 @@ const TAGS = {
 
 const readFrames = (page) =>
   page.locator('[data-passion-slide]').evaluateAll((slides) =>
-    slides.map((slide) => {
+    [...slides].sort((a, b) => Number(a.dataset.passionIndex) - Number(b.dataset.passionIndex)).map((slide) => {
       const t = (sel) => slide.querySelector(sel).textContent.replace(/\s+/g, ' ').trim();
       const card = slide.querySelectorAll('[data-passion-card] > span');
       return {
@@ -497,7 +499,7 @@ test('C16: failed background keeps the solid color and legible text', async () =
     await dismissIntroIfPresent(page);
     const solid = await page.locator('[data-passion-slide] [data-passion-bg]').evaluateAll((els) => els.map((el) => getComputedStyle(el).backgroundColor));
     assert.equal(solid.length, 6);
-    assert.deepEqual(solid, ['rgb(254, 0, 0)', 'rgb(8, 8, 8)', 'rgb(254, 0, 0)', 'rgb(8, 8, 8)', 'rgb(254, 0, 0)', 'rgb(8, 8, 8)'], 'each frame keeps its own solid color');
+    assert.deepEqual(solid, ['rgb(8, 8, 8)', 'rgb(254, 0, 0)', 'rgb(8, 8, 8)', 'rgb(254, 0, 0)', 'rgb(8, 8, 8)', 'rgb(254, 0, 0)'], 'each frame keeps its own solid color, in reel order 06 to 01');
     const broken = await page.locator('[data-passion-slide] img').evaluateAll((els) => els.filter((el) => el.complete && el.naturalWidth === 0).length);
     assert.equal(broken, 6, 'precondition: all backgrounds failed');
     for (const frame of await auditFrames(page)) {

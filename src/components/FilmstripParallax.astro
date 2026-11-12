@@ -48,6 +48,8 @@ const PASSION_SLIDES: PassionSlide[] = [
   { index: 6, bgColor: "#080808" },
 ];
 
+const REVERSED_PASSION_SLIDES = [...PASSION_SLIDES].reverse();
+
 const NARRATIVE_CONFIG: Record<string, NarrativeToken[][]> = {
   "pt-br": buildMottoTokens(ptBrDict),
   en: buildMottoTokens(enDict),
@@ -240,7 +242,7 @@ function splitWords(text: string): string[] {
             </figure>
           </div>
 
-          {PASSION_SLIDES.map((slide) => (
+          {REVERSED_PASSION_SLIDES.map((slide) => (
             <PassionFrame index={slide.index} bgColor={slide.bgColor} />
           ))}
 
