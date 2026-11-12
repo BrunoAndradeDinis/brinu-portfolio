@@ -456,3 +456,41 @@ test('next button reveals the next case in sequence', async () => {
     }
   }
 });
+
+test('index shows the cases reveal in the projects position', async () => {
+  const { context, page } = await openHome({ reducedMotion: 'reduce' });
+  try {
+    const layout = await page.evaluate(() => {
+      const sections = [...document.querySelectorAll('#main-content > section')];
+      const works = document.getElementById('works');
+      const position = sections.indexOf(works);
+      return {
+        worksCount: document.querySelectorAll('#works').length,
+        isCasesReveal: works.hasAttribute('data-cases-reveal'),
+        previous: sections[position - 1]?.id,
+        next: sections[position + 1]?.id,
+        oldListParts: document.querySelectorAll('[data-reel-track], [data-technical-grid]').length,
+        cases: [...works.querySelectorAll('[data-reveal-case]')].map((card) => card.id),
+        background: getComputedStyle(works).backgroundColor,
+      };
+    });
+    assert.equal(layout.worksCount, 1, 'one projects section');
+    assert.equal(layout.isCasesReveal, true, 'the projects section is the cases reveal');
+    assert.equal(layout.next, 'about', 'the cases reveal sits right before the about section');
+    assert.ok(layout.previous && layout.previous !== 'hero', `the cases reveal follows the filmstrip (${layout.previous})`);
+    assert.equal(layout.oldListParts, 0, 'the old projects list no longer renders');
+    assert.deepEqual(layout.cases, CASE_IDS.map((id) => `case-${id}`));
+    assert.equal(layout.background, 'rgb(251, 250, 244)', 'the section keeps the Paper White ground');
+
+    await page.locator('#cockpit-trigger-btn').click();
+    const link = page.locator('[data-cockpit-link="works"]');
+    await link.waitFor({ state: 'visible' });
+    await link.click();
+    await page.waitForFunction(() => {
+      const top = document.getElementById('works').getBoundingClientRect().top;
+      return top >= 0 && top < window.innerHeight / 2;
+    });
+  } finally {
+    await context.close();
+  }
+});
