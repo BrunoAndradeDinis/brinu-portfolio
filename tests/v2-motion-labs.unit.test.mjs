@@ -53,3 +53,57 @@ test('visible characters clamp outside the typing window and for empty text', as
   assert.equal(visibleChars(0, 'paragraph', 100), 0);
   assert.equal(visibleChars(0, 'label', 300), 0);
 });
+
+const casesReveal = () => import('../src/components/cases/cases-reveal.ts');
+
+test('next advances exactly one case at a time', async () => {
+  const { createCaseSteps } = await casesReveal();
+  const { MAIN_CASES } = await import('../src/data/cases.ts');
+  const steps = createCaseSteps(MAIN_CASES.length);
+  assert.equal(steps.index, 0, 'starts on the first case');
+  for (let expected = 1; expected < MAIN_CASES.length; expected += 1) {
+    assert.deepEqual(steps.next(), { index: expected, done: false });
+    assert.equal(steps.index, expected);
+  }
+});
+
+test('next from the last case reports done and keeps the index', async () => {
+  const { createCaseSteps } = await casesReveal();
+  for (const count of [1, 2, 4, 9]) {
+    const steps = createCaseSteps(count);
+    for (let move = 1; move < count; move += 1) steps.next();
+    assert.deepEqual(steps.next(), { index: count - 1, done: true }, `count ${count}`);
+    assert.deepEqual(steps.next(), { index: count - 1, done: true }, `count ${count}, repeated`);
+    assert.equal(steps.index, count - 1);
+  }
+});
+
+test('previous steps back one case and clamps at the first', async () => {
+  const { createCaseSteps } = await casesReveal();
+  const steps = createCaseSteps(4);
+  assert.deepEqual(steps.previous(), { index: 0, done: true });
+  steps.next();
+  steps.next();
+  assert.deepEqual(steps.previous(), { index: 1, done: false });
+  assert.deepEqual(steps.previous(), { index: 0, done: false });
+  assert.deepEqual(steps.previous(), { index: 0, done: true });
+  assert.deepEqual(steps.goTo(99), { index: 3, done: false });
+  assert.deepEqual(steps.goTo(-5), { index: 0, done: false });
+  assert.equal(steps.index, 0);
+});
+
+test('each case element starts before the previous one ends', async () => {
+  const { elementOffsets, CASE_REVEAL_ELEMENTS } = await casesReveal();
+  assert.deepEqual([...CASE_REVEAL_ELEMENTS], ['title', 'meta', 'media', 'summary', 'link']);
+  for (const duration of [0.4, 0.5, 0.6, 500]) {
+    const offsets = elementOffsets(CASE_REVEAL_ELEMENTS.length, duration);
+    assert.equal(offsets.length, CASE_REVEAL_ELEMENTS.length);
+    assert.equal(offsets[0], 0);
+    for (let position = 1; position < offsets.length; position += 1) {
+      assert.ok(offsets[position] > offsets[position - 1], `element ${position} starts after element ${position - 1}`);
+      const overlap = offsets[position - 1] + duration - offsets[position];
+      assert.ok(overlap > 0, `element ${position} starts ${overlap} before the previous one ends`);
+    }
+  }
+  assert.deepEqual(elementOffsets(0, 0.5), []);
+});
