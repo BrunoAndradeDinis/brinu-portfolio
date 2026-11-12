@@ -107,3 +107,39 @@ test('each case element starts before the previous one ends', async () => {
   }
   assert.deepEqual(elementOffsets(0, 0.5), []);
 });
+
+const orbitLayout = () => import('../src/components/arsenal-orbit/orbit-layout.ts');
+
+test('every skill gets exactly one orbit node', async () => {
+  const { layoutOrbit } = await orbitLayout();
+  const { ARSENAL } = await import('../src/data/arsenal.ts');
+  const nodes = layoutOrbit();
+  const skills = ARSENAL.flatMap((domain) => domain.skills.map((skill) => ({ domainId: domain.id, name: skill.name })));
+  assert.ok(skills.length > 0);
+  assert.equal(nodes.length, skills.length);
+  for (const skill of skills) {
+    const matches = nodes.filter((node) => node.domainId === skill.domainId && node.name === skill.name);
+    assert.equal(matches.length, 1, `${skill.domainId} / ${skill.name} has one node`);
+  }
+});
+
+test('the same arsenal gives the same orbit positions', async () => {
+  const { layoutOrbit } = await orbitLayout();
+  const { ARSENAL } = await import('../src/data/arsenal.ts');
+  assert.deepEqual(layoutOrbit(), layoutOrbit());
+  assert.deepEqual(layoutOrbit(structuredClone(ARSENAL)), layoutOrbit(ARSENAL));
+});
+
+test('orbit nodes sit on one of two ellipses and never share a position', async () => {
+  const { layoutOrbit, ORBIT_ELLIPSES } = await orbitLayout();
+  const nodes = layoutOrbit();
+  assert.equal(ORBIT_ELLIPSES.length, 2);
+  assert.deepEqual([...new Set(nodes.map((node) => node.ring))].sort(), [0, 1], 'both ellipses carry nodes');
+  for (const node of nodes) {
+    const { rx, ry } = ORBIT_ELLIPSES[node.ring];
+    const onEllipse = (node.x / rx) ** 2 + (node.y / ry) ** 2;
+    assert.ok(Math.abs(onEllipse - 1) < 1e-9, `${node.name} lies on ellipse ${node.ring} (${onEllipse})`);
+  }
+  const positions = new Set(nodes.map((node) => `${node.x.toFixed(6)},${node.y.toFixed(6)}`));
+  assert.equal(positions.size, nodes.length);
+});
