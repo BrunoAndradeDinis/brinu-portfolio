@@ -165,6 +165,17 @@ const archive = getLocalizedArchive("pt-br");
         );
       })}
     </ol>
+    <div class="flex justify-end pt-3">
+      <button
+        type="button"
+        data-cases-next
+        hidden
+        class="inline-flex items-center border-2 border-space-base bg-space-base px-4 py-2 font-mono text-xs font-black uppercase text-paper-white transition-colors duration-100 hover:bg-bebop-red hover:text-space-base focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-space-base"
+        data-i18n="casePage.nextCase"
+      >
+        {ptBrDict.casePage.nextCase}
+      </button>
+    </div>
   </div>
 
   <div data-archive class="mx-auto max-w-[140rem] mt-16 sm:mt-20 pt-10 border-t-4 border-space-base">
@@ -231,4 +242,79 @@ const archive = getLocalizedArchive("pt-br");
     max-height: 30svh;
     width: 100%;
   }
+
+  @container (min-width: 48rem) {
+    .cases-media {
+      max-height: 52svh;
+    }
+  }
+
+  #works[data-cases-mode="reveal"] .cases-stage {
+    display: grid;
+    grid-template-rows: minmax(0, 1fr) auto;
+    box-sizing: border-box;
+    height: 100svh;
+    padding-top: var(--cases-clearance, 6rem);
+    padding-bottom: 1rem;
+  }
+
+  #works[data-cases-mode="reveal"] .cases-list {
+    grid-template-columns: minmax(0, 1fr);
+    align-items: center;
+    gap: 0;
+    min-height: 0;
+  }
+
+  #works[data-cases-mode="reveal"] .cases-item {
+    grid-area: 1 / 1;
+    width: 100%;
+    max-width: 76rem;
+    margin-inline: auto;
+    visibility: hidden;
+  }
+
+  #works[data-cases-mode="reveal"] .cases-item[data-case-active="true"] {
+    visibility: visible;
+  }
+
+  /* The global scroll lock drops the scrollbar gutter, which reflows the page and moves it out of the pin range. */
+  html.lenis-stopped:not(.cockpit-menu-open):has(#works[data-cases-pinned="true"]) {
+    overflow-x: clip !important;
+    overflow-y: visible !important;
+    scrollbar-gutter: stable !important;
+  }
+
+  @container (max-width: 47.99rem) {
+    #works[data-cases-mode="reveal"] .cases-media {
+      max-height: 22svh;
+    }
+
+    #works[data-cases-mode="reveal"] a[data-case-link] {
+      display: none;
+    }
+  }
 </style>
+
+<script>
+  import { onPageReady } from "../../utils/page-lifecycle";
+
+  onPageReady(() => {
+    const section = document.querySelector<HTMLElement>("[data-cases-reveal]");
+    if (!section || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+    let unbind: (() => void) | null = null;
+    let left = false;
+    import("./cases-reveal-bind")
+      .then(({ bindCasesReveal }) => {
+        if (!left) unbind = bindCasesReveal(section);
+      })
+      .catch(() => {
+        section.dataset.casesMode = "static";
+      });
+
+    return () => {
+      left = true;
+      unbind?.();
+    };
+  });
+</script>

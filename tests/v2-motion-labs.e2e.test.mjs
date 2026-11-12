@@ -195,3 +195,164 @@ test('static cases list follows the language toggle', async () => {
     await context.close();
   }
 });
+
+// A pause is what separates two wheel gestures, so it is part of the input, not a wait for a result.
+const GESTURE_PAUSE_MS = 400;
+const betweenGestures = (page) => page.waitForTimeout(GESTURE_PAUSE_MS);
+
+const visibleCases = (page) =>
+  page.evaluate(() =>
+    [...document.querySelectorAll('#works [data-reveal-case]')]
+      .filter((card) => getComputedStyle(card).visibility !== 'hidden' && card.getClientRects().length > 0)
+      .map((card) => card.id.replace('case-', ''))
+  );
+
+const waitForOnlyCase = (page, id) =>
+  page.waitForFunction((expected) => {
+    const shown = [...document.querySelectorAll('#works [data-reveal-case]')].filter((card) => getComputedStyle(card).visibility !== 'hidden');
+    return shown.length === 1 && shown[0].id === `case-${expected}`;
+  }, id);
+
+async function pinCases(page) {
+  await page.waitForFunction(() => document.getElementById('works').getAttribute('data-cases-mode') === 'reveal');
+  await page.mouse.move(700, 450);
+  await page.evaluate(() => {
+    const stage = document.querySelector('#works [data-cases-stage]');
+    window.scrollTo(0, stage.getBoundingClientRect().top + window.scrollY - 250);
+  });
+  await page.waitForFunction(() => {
+    const top = document.querySelector('#works [data-cases-stage]').getBoundingClientRect().top;
+    return top > 200 && top < 300;
+  });
+  const approaching = await stageState(page);
+  assert.equal(approaching.pinned, false, 'the section is not pinned before it reaches the top');
+  assert.equal(approaching.locked, false);
+  await betweenGestures(page);
+  await page.mouse.wheel(0, 400);
+  await page.waitForFunction(() => document.getElementById('works').getAttribute('data-cases-pinned') === 'true');
+  await betweenGestures(page);
+}
+
+async function assertPinnedAtTop(page, label) {
+  const samples = await page.evaluate(async () => {
+    const stage = document.querySelector('#works [data-cases-stage]');
+    const tops = [];
+    for (let frame = 0; frame < 6; frame += 1) {
+      tops.push(stage.getBoundingClientRect().top);
+      await new Promise((resolve) => requestAnimationFrame(resolve));
+    }
+    return tops;
+  });
+  for (const top of samples) assert.ok(Math.abs(top) <= 1, `${label}: the pinned section sits at the top of the viewport (${samples.join(', ')})`);
+  const state = await stageState(page);
+  assert.equal(state.pinned, true, `${label}: pinned`);
+  assert.equal(state.locked, true, `${label}: page scroll is held while pinned`);
+}
+
+test('cases section pins and shows the first case', async () => {
+  for (const locale of LOCALES) {
+    const { context, page } = await openHome({ locale });
+    try {
+      await pinCases(page);
+      await assertPinnedAtTop(page, locale);
+      await waitForOnlyCase(page, CASE_IDS[0]);
+      const first = await page.locator(`#case-${CASE_IDS[0]} [data-case-title]`).evaluate(async (title) => {
+        const opaque = () => {
+          for (let node = title; node && node !== document.body; node = node.parentElement) {
+            if (Number(getComputedStyle(node).opacity) < 1) return false;
+          }
+          return true;
+        };
+        while (!opaque()) await new Promise((resolve) => requestAnimationFrame(resolve));
+        const rect = title.getBoundingClientRect();
+        return { text: title.textContent.trim(), inViewport: rect.top >= 0 && rect.bottom <= window.innerHeight && rect.left >= 0 && rect.right <= window.innerWidth };
+      });
+      assert.equal(first.text, CASE_TITLES[locale][0], `${locale}: the first case from the data is the one shown`);
+      assert.equal(first.inViewport, true, `${locale}: the first case title is inside the viewport`);
+      assert.deepEqual(await visibleCases(page), [CASE_IDS[0]], `${locale}: only the first case is shown`);
+      const navBottom = await page.evaluate(() =>
+        Math.max(...[document.querySelector('#comic-nav-logo [data-nav-avatar]'), document.getElementById('cockpit-trigger-btn')].map((el) => el.getBoundingClientRect().bottom))
+      );
+      const cardTop = await page.locator(`#case-${CASE_IDS[0]}`).evaluate((card) => card.getBoundingClientRect().top);
+      assert.ok(cardTop >= navBottom, `${locale}: the pinned case clears the nav controls (${cardTop} vs ${navBottom})`);
+    } finally {
+      await context.close();
+    }
+  }
+});
+
+test('one wheel gesture advances one case', async () => {
+  const { context, page } = await openHome();
+  try {
+    await pinCases(page);
+    await waitForOnlyCase(page, CASE_IDS[0]);
+
+    await page.mouse.wheel(0, 120);
+    await waitForOnlyCase(page, CASE_IDS[1]);
+    await betweenGestures(page);
+    assert.deepEqual(await visibleCases(page), [CASE_IDS[1]], 'a single notch moves exactly one case');
+    await assertPinnedAtTop(page, 'after the first gesture');
+
+    for (let burst = 0; burst < 5; burst += 1) await page.mouse.wheel(0, 600);
+    await waitForOnlyCase(page, CASE_IDS[2]);
+    await betweenGestures(page);
+    assert.deepEqual(await visibleCases(page), [CASE_IDS[2]], 'a long, strong gesture still moves exactly one case');
+    await assertPinnedAtTop(page, 'after the strong gesture');
+
+    await page.mouse.wheel(0, -120);
+    await waitForOnlyCase(page, CASE_IDS[1]);
+    await betweenGestures(page);
+    assert.deepEqual(await visibleCases(page), [CASE_IDS[1]], 'a gesture upwards moves exactly one case back');
+  } finally {
+    await context.close();
+  }
+});
+
+test('pin releases after the last case', async () => {
+  const { context, page } = await openHome();
+  try {
+    await pinCases(page);
+    await waitForOnlyCase(page, CASE_IDS[0]);
+    for (const id of CASE_IDS.slice(1)) {
+      await page.mouse.wheel(0, 120);
+      await waitForOnlyCase(page, id);
+      await betweenGestures(page);
+      await assertPinnedAtTop(page, `on ${id}`);
+    }
+
+    await page.mouse.wheel(0, 120);
+    await page.waitForFunction(() => document.getElementById('works').getAttribute('data-cases-pinned') === 'false');
+    await betweenGestures(page);
+    const released = await stageState(page);
+    assert.equal(released.locked, false, 'page scroll is no longer held');
+    assert.deepEqual(await visibleCases(page), [CASE_IDS.at(-1)], 'the last case stays on screen when the pin lets go');
+
+    await page.mouse.wheel(0, 300);
+    await page.waitForFunction((y) => window.scrollY >= y + 250, released.scrollY);
+    const scrolled = await stageState(page);
+    assert.equal(scrolled.pinned, false);
+    assert.ok(scrolled.top <= released.top - 250, `the section scrolls away with the page (${released.top} -> ${scrolled.top})`);
+    assert.ok(Math.abs(scrolled.top - released.top + (scrolled.scrollY - released.scrollY)) <= 2, 'the section moves exactly as far as the page scrolled');
+  } finally {
+    await context.close();
+  }
+});
+
+test('failed motion load shows the static cases list', async () => {
+  let aborted = 0;
+  const { context, page } = await openHome({
+    prepare: (target) =>
+      target.route(/cases-reveal-bind/, (route) => {
+        aborted += 1;
+        return route.abort();
+      }),
+  });
+  try {
+    assert.ok(aborted >= 1, 'the motion code was requested and failed to load');
+    await assertStaticList(page, 'pt-br');
+    await assertScrollsWithoutPin(page, 'failed motion load');
+    await assertStaticList(page, 'pt-br');
+  } finally {
+    await context.close();
+  }
+});
