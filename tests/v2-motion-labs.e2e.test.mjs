@@ -356,3 +356,103 @@ test('failed motion load shows the static cases list', async () => {
     await context.close();
   }
 });
+
+const REVEAL_ORDER = ['title', 'meta', 'media', 'summary', 'link'];
+const NEXT_CASE_LABEL = { 'pt-br': 'PRÓXIMO CASE →', en: 'NEXT CASE →' };
+
+const waitForCaseFullyShown = (page, id) =>
+  page.waitForFunction(
+    ({ expected, names }) => {
+      const card = document.getElementById(`case-${expected}`);
+      if (getComputedStyle(card).visibility === 'hidden') return false;
+      return names.every((name) => {
+        const style = getComputedStyle(card.querySelector(`[data-case-el="${name}"]`));
+        return style.visibility !== 'hidden' && Number(style.opacity) === 1;
+      });
+    },
+    { expected: id, names: REVEAL_ORDER }
+  );
+
+const recordReveal = (page, id) =>
+  page.evaluate(
+    ({ expected, names }) => {
+      const card = document.getElementById(`case-${expected}`);
+      const record = { start: {}, end: {}, hiddenWhenFirstAppeared: {}, complete: false };
+      window.__reveal = record;
+      const opacityOf = (name) => {
+        const style = getComputedStyle(card.querySelector(`[data-case-el="${name}"]`));
+        return style.visibility === 'hidden' ? 0 : Number(style.opacity);
+      };
+      const sample = () => {
+        if (getComputedStyle(card).visibility !== 'hidden') {
+          const now = performance.now();
+          const opacities = Object.fromEntries(names.map((name) => [name, opacityOf(name)]));
+          for (const name of names) {
+            if (opacities[name] > 0 && record.start[name] === undefined) {
+              record.start[name] = now;
+              record.hiddenWhenFirstAppeared[name] = names.filter((other) => opacities[other] === 0);
+            }
+            if (opacities[name] === 1 && record.start[name] !== undefined && record.end[name] === undefined) record.end[name] = now;
+          }
+        }
+        record.complete = names.every((name) => record.end[name] !== undefined);
+        if (!record.complete) requestAnimationFrame(sample);
+      };
+      requestAnimationFrame(sample);
+    },
+    { expected: id, names: REVEAL_ORDER }
+  );
+
+async function readReveal(page) {
+  await page.waitForFunction(() => window.__reveal.complete === true);
+  return page.evaluate(() => window.__reveal);
+}
+
+function assertOverlappingOrder(reveal, label) {
+  assert.deepEqual(reveal.hiddenWhenFirstAppeared[REVEAL_ORDER[0]], REVEAL_ORDER.slice(1), `${label}: the title appears alone, before every other element`);
+  for (let position = 1; position < REVEAL_ORDER.length; position += 1) {
+    const previous = REVEAL_ORDER[position - 1];
+    const current = REVEAL_ORDER[position];
+    assert.ok(reveal.start[current] > reveal.start[previous], `${label}: ${current} starts after ${previous} (${reveal.start[previous]} -> ${reveal.start[current]})`);
+    assert.ok(reveal.start[current] < reveal.end[previous], `${label}: ${current} starts before ${previous} ends (${reveal.start[current]} vs ${reveal.end[previous]})`);
+    assert.ok(reveal.end[current] > reveal.end[previous], `${label}: ${current} finishes after ${previous}`);
+  }
+}
+
+test('case elements reveal in overlapping order', async () => {
+  const { context, page } = await openHome();
+  try {
+    await pinCases(page);
+    await waitForCaseFullyShown(page, CASE_IDS[0]);
+    for (const id of CASE_IDS.slice(1, 3)) {
+      await recordReveal(page, id);
+      await page.mouse.wheel(0, 120);
+      assertOverlappingOrder(await readReveal(page), id);
+      await waitForCaseFullyShown(page, id);
+      assert.deepEqual(await visibleCases(page), [id]);
+    }
+  } finally {
+    await context.close();
+  }
+});
+
+test('next button reveals the next case in sequence', async () => {
+  for (const locale of LOCALES) {
+    const { context, page } = await openHome({ locale });
+    try {
+      await pinCases(page);
+      await waitForCaseFullyShown(page, CASE_IDS[0]);
+      for (const id of CASE_IDS.slice(1)) {
+        await recordReveal(page, id);
+        await page.locator('#works').getByRole('button', { name: NEXT_CASE_LABEL[locale], exact: true }).click();
+        assertOverlappingOrder(await readReveal(page), `${locale} ${id}`);
+        await waitForCaseFullyShown(page, id);
+        assert.deepEqual(await visibleCases(page), [id], `${locale}: one click moves exactly one case`);
+        assert.equal((await page.locator(`#case-${id} [data-case-title]`).textContent()).trim(), CASE_TITLES[locale][CASE_IDS.indexOf(id)]);
+        await assertPinnedAtTop(page, `${locale} after the button on ${id}`);
+      }
+    } finally {
+      await context.close();
+    }
+  }
+});

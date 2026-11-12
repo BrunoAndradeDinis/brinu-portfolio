@@ -1,4 +1,6 @@
 import {
+  MOTION_DURATION,
+  MOTION_EASE,
   ScrollTrigger,
   gsap,
   getNavClearanceOffset,
@@ -6,7 +8,7 @@ import {
   pauseScroll,
   resumeScroll,
 } from '../../utils/motion.ts';
-import { createCaseSteps } from './cases-reveal.ts';
+import { CASE_REVEAL_ELEMENTS, createCaseSteps, elementOffsets } from './cases-reveal.ts';
 
 type Direction = 1 | -1;
 
@@ -21,23 +23,43 @@ const KEY_DIRECTIONS: Readonly<Record<string, Direction>> = {
   PageUp: -1,
 };
 
+const REVEAL_RISE_PX = 28;
+
 const rootClasses = () => document.documentElement.classList;
+
+function revealElementsOf(item: HTMLElement): HTMLElement[] {
+  return CASE_REVEAL_ELEMENTS.flatMap((name) => {
+    const element = item.querySelector<HTMLElement>(`[data-case-el="${name}"]`);
+    return element ? [element] : [];
+  });
+}
 
 function enableReveal(section: HTMLElement): (() => void) | null {
   const stage = section.querySelector<HTMLElement>('[data-cases-stage]');
   const list = section.querySelector<HTMLElement>('[data-cases-list]');
   const items = Array.from(section.querySelectorAll<HTMLElement>('[data-case-item]'));
+  const nextButton = section.querySelector<HTMLButtonElement>('[data-cases-next]');
   if (!stage || !list || items.length === 0) return null;
 
+  let revealTimeline: gsap.core.Timeline | null = null;
+
   const restoreStatic = () => {
+    revealTimeline?.kill();
+    revealTimeline = null;
     section.dataset.casesMode = 'static';
     section.style.removeProperty('--cases-clearance');
     delete section.dataset.casesPinned;
-    items.forEach((item) => delete item.dataset.caseActive);
+    if (nextButton) nextButton.hidden = true;
+    items.forEach((item) => {
+      delete item.dataset.caseActive;
+      delete item.dataset.caseRevealed;
+      gsap.set(revealElementsOf(item), { clearProps: 'opacity,visibility,transform' });
+    });
   };
 
   section.style.setProperty('--cases-clearance', `${getNavClearanceOffset()}px`);
   section.dataset.casesMode = 'reveal';
+  if (nextButton) nextButton.hidden = false;
   const everyCaseFits = items.every((item) => (item.firstElementChild as HTMLElement).offsetHeight <= list.clientHeight);
   if (!everyCaseFits) {
     restoreStatic();
@@ -50,9 +72,30 @@ function enableReveal(section: HTMLElement): (() => void) | null {
   let touchStartY: number | null = null;
 
   const showCase = (index: number) => {
+    revealTimeline?.kill();
     items.forEach((item, position) => {
       item.dataset.caseActive = String(position === index);
     });
+    if (nextButton) nextButton.hidden = index === items.length - 1;
+
+    const active = items[index];
+    const elements = revealElementsOf(active);
+    const offsets = elementOffsets(elements.length, MOTION_DURATION.seconds);
+    active.dataset.caseRevealed = 'false';
+    const timeline = gsap.timeline({
+      onComplete: () => {
+        active.dataset.caseRevealed = 'true';
+      },
+    });
+    elements.forEach((element, position) => {
+      timeline.fromTo(
+        element,
+        { autoAlpha: 0, y: REVEAL_RISE_PX },
+        { autoAlpha: 1, y: 0, duration: MOTION_DURATION.seconds, ease: MOTION_EASE.enter },
+        offsets[position]
+      );
+    });
+    revealTimeline = timeline;
   };
 
   const lock = (direction: number) => {
@@ -134,6 +177,8 @@ function enableReveal(section: HTMLElement): (() => void) | null {
   window.addEventListener('touchmove', onTouchMove, { passive: false });
   window.addEventListener('touchend', onTouchEnd, { passive: true });
   window.addEventListener('keydown', onKeyDown);
+  const onNextClick = () => step(1);
+  nextButton?.addEventListener('click', onNextClick);
 
   return () => {
     window.removeEventListener('wheel', onWheel, { capture: true });
@@ -141,6 +186,7 @@ function enableReveal(section: HTMLElement): (() => void) | null {
     window.removeEventListener('touchmove', onTouchMove);
     window.removeEventListener('touchend', onTouchEnd);
     window.removeEventListener('keydown', onKeyDown);
+    nextButton?.removeEventListener('click', onNextClick);
     trigger.kill();
     if (locked) release();
     restoreStatic();
