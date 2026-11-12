@@ -734,11 +734,12 @@ test('QUA-04: the showcase title scales fluidly without breaking a word', async 
         for (const width of widths) {
           await page.setViewportSize({ width, height: 900 });
           await page.waitForTimeout(80);
-          const m = await page.locator('[data-showcase-name]').first().evaluate((node) => {
+          const m = await page.locator('[data-showcase-name]:visible').first().evaluate((node) => {
             const size = parseFloat(getComputedStyle(node).fontSize);
             node.style.overflowWrap = 'normal';
             node.style.wordBreak = 'normal';
-            const overflow = node.scrollWidth - node.clientWidth;
+            const vertical = getComputedStyle(node).writingMode.startsWith('vertical');
+            const overflow = vertical ? node.scrollHeight - node.clientHeight : node.scrollWidth - node.clientWidth;
             node.style.overflowWrap = '';
             node.style.wordBreak = '';
             return { size, overflow, doc: document.documentElement.scrollWidth - document.documentElement.clientWidth };
