@@ -12,7 +12,7 @@ test('CLOSE-01: the built footer has no closing block', () => {
   const text = decode(footer);
   assert.equal(text.includes('data-footer-signature'), false);
   assert.equal(text.includes('TRANSMISSÃO CONCLUÍDA // PROTOCOLO BRINU V2'), false);
-  assert.equal(text.includes('"SEE YOU SPACE COWBOY…"'), false);
+  assert.equal(text.includes('"SEE YOU GITHUB COWBOY…"'), false);
   assert.equal(text.includes("YOU'RE GONNA CARRY THAT WEIGHT."), false);
 });
 

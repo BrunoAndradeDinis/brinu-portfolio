@@ -16,7 +16,7 @@ export interface LocalizedSticker {
 export const STICKERS: readonly StickerDefinition[] = [
   { id: 'brinu-ransom', file: stickerFile(1), alt: t('Sticker com as letras BRINU recortadas como bilhete de resgate', 'Sticker with the letters BRINU cut like a ransom note') },
   { id: 'pai-da-helena', file: stickerFile(2), alt: t('Carimbo com o texto PAI DA HELENA', "Stamp reading PAI DA HELENA (Helena's dad)") },
-  { id: 'space-cowboy', file: stickerFile(3), alt: t('Selo redondo com o texto SEE YOU SPACE COWBOY', 'Round seal reading SEE YOU SPACE COWBOY') },
+  { id: 'space-cowboy', file: stickerFile(3), alt: t('Selo redondo com o texto SEE YOU GITHUB COWBOY', 'Round seal reading SEE YOU GITHUB COWBOY') },
   { id: 'avatar-duotone', file: stickerFile(4), alt: t('Retrato de Bruno em duotone vermelho e preto', 'Red and black duotone portrait of Bruno') },
   { id: 'calling-card', file: stickerFile(5), alt: t('Cartão de aviso com o retrato de Bruno e um troféu', "Calling card with Bruno's portrait and a trophy") },
   { id: 'heart', file: stickerFile(6), alt: t('Coração roxo com contorno preto', 'Purple heart with a black outline') },

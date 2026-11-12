@@ -234,12 +234,15 @@ test('F6: Scrolling translates opposing filmstrip in reverse direction', async (
       el.scrollIntoView({ behavior: 'instant', block: 'center' });
     }
   });
-  await page.waitForTimeout(600);
-
-  const scrolledProgress = await page.evaluate(() => {
+  const readProgress = () => {
     const el = document.querySelector('[data-filmstrip-parallax-reverse]');
     return el ? parseFloat(el.style.getPropertyValue('--progress-rev') || '0') : 0;
-  });
+  };
+  await page.waitForFunction(() => {
+    const el = document.querySelector('[data-filmstrip-parallax-reverse]');
+    return el && parseFloat(el.style.getPropertyValue('--progress-rev') || '0') > 0;
+  }, null, { timeout: 5000 }).catch(() => {});
+  const scrolledProgress = await page.evaluate(readProgress);
 
   assert.ok(
     scrolledProgress > 0,

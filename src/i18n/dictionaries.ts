@@ -367,7 +367,7 @@ export const ptBrDict: TranslationSchema = {
   },
   hero: {
     ticker:
-      '• DESENVOLVEDOR FRONTEND • MAGALU CLOUD • CREATIVE DEVELOPER • PAI DA HELENA • FRANCA / SP • SEE YOU SPACE COWBOY •',
+      '• DESENVOLVEDOR FRONTEND & FULL STACK • MAGALU CLOUD • CREATIVE DEVELOPER • PAI DA HELENA • FRANCA / SP • SEE YOU GITHUB COWBOY •',
     avatarAria:
       'Avatar oficial de Bruno Dinis em moldura brutalista. Clique para interagir.',
     bubbleDefault: PROFILE.family['pt-br'],
@@ -601,7 +601,7 @@ export const ptBrDict: TranslationSchema = {
   footer: {
     sectionAria: 'Rodapé do Portfólio e Encerramento',
     ticker:
-      '• SEE YOU SPACE COWBOY • 2026 BRINU.DEV • FRANCA / SP • DESENVOLVEDOR FRONTEND • PERSONA BRUTALIST UI •',
+      '• SEE YOU GITHUB COWBOY • 2026 BRINU.DEV • FRANCA / SP • DESENVOLVEDOR FRONTEND & FULL STACK • PERSONA BRUTALIST UI •',
     backToTop: 'VOLTAR AO TOPO',
     backToTopAria: 'Voltar suavemente ao topo da página',
     copyright: '© 2026 BRUNO DE ANDRADE DINIS (BRINU) // TODOS OS DIREITOS RESERVADOS.',
@@ -693,7 +693,7 @@ export const enDict = {
   },
   hero: {
     ticker:
-      '• FRONTEND DEVELOPER • MAGALU CLOUD • CREATIVE DEVELOPER • HELENA\'S DAD • FRANCA / SP • SEE YOU SPACE COWBOY •',
+      '• FRONTEND & FULL STACK DEVELOPER • MAGALU CLOUD • CREATIVE DEVELOPER • HELENA\'S DAD • FRANCA / SP • SEE YOU GITHUB COWBOY •',
     avatarAria:
       'Official avatar of Bruno Dinis in brutalist frame. Click to interact.',
     bubbleDefault: PROFILE.family.en,
@@ -927,7 +927,7 @@ export const enDict = {
   footer: {
     sectionAria: 'Portfolio Footer and Sign-off',
     ticker:
-      '• SEE YOU SPACE COWBOY • 2026 BRINU.DEV • FRANCA / SP • FRONTEND DEVELOPER • PERSONA BRUTALIST UI •',
+      '• SEE YOU GITHUB COWBOY • 2026 BRINU.DEV • FRANCA / SP • FRONTEND & FULL STACK DEVELOPER • PERSONA BRUTALIST UI •',
     backToTop: 'BACK TO TOP',
     backToTopAria: 'Scroll smoothly back to top',
     copyright: '© 2026 BRUNO DE ANDRADE DINIS (BRINU) // ALL RIGHTS RESERVED.',
