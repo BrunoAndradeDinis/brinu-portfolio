@@ -143,7 +143,7 @@ const currentId = CAREER.find((entry) => entry.end === "present")?.id;
                     tabindex={tabIndex === 0 ? 0 : -1}
                     data-career-tab={key}
                     data-i18n={`about.tab${key === "info" ? "Info" : key === "details" ? "Details" : "Learned"}`}
-                    class="border-2 border-paper-white px-2.5 py-1 text-paper-white transition-colors duration-150 aria-selected:bg-paper-white aria-selected:text-space-base hover:bg-bebop-red hover:text-space-base focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-paper-white"
+                    class="cursor-pointer border-2 border-paper-white px-2.5 py-1 text-paper-white transition-colors duration-150 aria-selected:bg-paper-white aria-selected:text-space-base hover:bg-bebop-red hover:text-space-base focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-paper-white"
                   >
                     {key === "info" ? ptBrDict.about.tabInfo : key === "details" ? ptBrDict.about.tabDetails : ptBrDict.about.tabLearned}
                   </button>
@@ -202,6 +202,9 @@ const currentId = CAREER.find((entry) => entry.end === "present")?.id;
           ))}
         </ol>
       </P5Panel>
+      <script is:inline>
+        document.querySelectorAll('[data-career-panel]:not([data-career-panel="info"])').forEach((panel) => { panel.hidden = true; });
+      </script>
 
       <P5Panel as="div" cut="a" data-about-card="education" class="bg-space-surface-1 p-6 sm:p-8 text-paper-white">
         <h4 class="mb-5 font-mono text-xs font-black uppercase tracking-widest text-bebop-red" data-i18n="about.educationTitle">
