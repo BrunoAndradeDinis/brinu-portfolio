@@ -342,7 +342,7 @@ test('failed motion load shows the static cases list', async () => {
   let aborted = 0;
   const { context, page } = await openHome({
     prepare: (target) =>
-      target.route(/cases-reveal-bind/, (route) => {
+      target.route(/CasesReveal\.astro[^/]*\.js/, (route) => {
         aborted += 1;
         return route.abort();
       }),

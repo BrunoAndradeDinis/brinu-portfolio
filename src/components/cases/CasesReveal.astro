@@ -297,24 +297,10 @@ const archive = getLocalizedArchive("pt-br");
 
 <script>
   import { onPageReady } from "../../utils/page-lifecycle";
+  import { bindCasesReveal } from "./cases-reveal-bind";
 
   onPageReady(() => {
     const section = document.querySelector<HTMLElement>("[data-cases-reveal]");
-    if (!section || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-
-    let unbind: (() => void) | null = null;
-    let left = false;
-    import("./cases-reveal-bind")
-      .then(({ bindCasesReveal }) => {
-        if (!left) unbind = bindCasesReveal(section);
-      })
-      .catch(() => {
-        section.dataset.casesMode = "static";
-      });
-
-    return () => {
-      left = true;
-      unbind?.();
-    };
+    if (section) return bindCasesReveal(section);
   });
 </script>

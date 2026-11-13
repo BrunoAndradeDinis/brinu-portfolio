@@ -25,8 +25,6 @@ const KEY_DIRECTIONS: Readonly<Record<string, Direction>> = {
 
 const REVEAL_RISE_PX = 28;
 
-const rootClasses = () => document.documentElement.classList;
-
 function revealElementsOf(item: HTMLElement): HTMLElement[] {
   return CASE_REVEAL_ELEMENTS.flatMap((name) => {
     const element = item.querySelector<HTMLElement>(`[data-case-el="${name}"]`);
@@ -135,7 +133,7 @@ function enableReveal(section: HTMLElement): (() => void) | null {
     ScrollTrigger.update();
   };
 
-  const acceptsInput = () => locked && !rootClasses().contains('cockpit-menu-open');
+  const acceptsInput = () => locked && !document.documentElement.classList.contains('cockpit-menu-open');
 
   const onWheel = (event: WheelEvent) => {
     const now = performance.now();
@@ -143,7 +141,7 @@ function enableReveal(section: HTMLElement): (() => void) | null {
     lastWheelAt = now;
     if (!acceptsInput()) return;
     // Another scroll-lock owner (the menu) may have resumed Lenis while the section is still pinned.
-    if (!rootClasses().contains('lenis-stopped')) pauseScroll();
+    pauseScroll();
     event.preventDefault();
     event.stopPropagation();
     if (startsGesture && event.deltaY !== 0) step(event.deltaY > 0 ? 1 : -1);
