@@ -291,8 +291,7 @@ test('C16: case cards and archive cards render through P5Panel with non-rectangu
 test('C17: hovering or focusing a case link reveals the P5 selection polygon within 150ms', async () => {
   const { context, page } = await openHome('pt-br');
   try {
-    const firstLink = page.locator('#works a[data-case-link]').first();
-    const secondLink = page.locator('#works a[data-case-link]').nth(1);
+    const firstLink = page.locator('#works [data-case-item]:not([data-case-active="false"]) a[data-case-link]').first();
     await firstLink.scrollIntoViewIfNeeded();
     await page.waitForTimeout(80);
 
@@ -331,10 +330,15 @@ test('C17: hovering or focusing a case link reveals the P5 selection polygon wit
     assert.ok(afterHover.labelZ > afterHover.polyZ, 'Selection polygon must render behind link label');
     assert.ok(afterHover.width > 20 && afterHover.height > 12);
 
-    await secondLink.focus();
+    await page.mouse.move(0, 0);
+    await page.waitForFunction(
+      (link) => Number(window.getComputedStyle(link.querySelector('[data-p5-select-poly]')).opacity) === 0,
+      await firstLink.elementHandle()
+    );
+    await firstLink.focus();
     await page.waitForTimeout(130);
 
-    const afterFocus = await secondLink.evaluate((el) => {
+    const afterFocus = await firstLink.evaluate((el) => {
       const poly = el.querySelector('[data-p5-select-poly]');
       return poly ? Number(window.getComputedStyle(poly).opacity) : 0;
     });

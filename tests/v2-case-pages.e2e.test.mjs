@@ -238,6 +238,21 @@ const navGap = (page, selector) =>
     return target - Math.max(...bottoms);
   }, selector);
 
+// With motion on, the home shows one case at a time; a visitor reaches another one through its evidence chip.
+async function homeCaseLink(page, id) {
+  const link = page.locator(`#case-${id} a[data-case-open]`);
+  if (await link.isVisible()) return link;
+  const chip = page.locator(`#arsenal a[data-evidence-link="case:${id}"]`).first();
+  await chip.scrollIntoViewIfNeeded();
+  await chip.click();
+  await page.waitForFunction((caseId) => {
+    const active = document.querySelector('#works [data-case-item][data-case-active="true"] [data-reveal-case]');
+    const title = active?.querySelector('[data-case-el="title"]');
+    return active?.id === `case-${caseId}` && title && Number(getComputedStyle(title).opacity) === 1;
+  }, id);
+  return link;
+}
+
 async function clickAndWaitFor(page, locator, pathname) {
   await locator.click();
   await page.waitForFunction((target) => window.location.pathname === target, pathname);
@@ -255,7 +270,7 @@ test('C7: navigation between pages keeps the window marker', async () => {
   const { context, page } = await freshHome();
   try {
     await page.evaluate(() => { window.__marker = 'alive'; });
-    await clickAndWaitFor(page, page.locator('#case-uriana a[data-case-open]'), '/cases/uriana');
+    await clickAndWaitFor(page, await homeCaseLink(page, 'uriana'), '/cases/uriana');
     await clickAndWaitFor(page, page.locator('[data-showcase-next]'), '/cases/efood');
     await (await openMenuLink(page, 'works')).click();
     await page.waitForFunction(() => window.location.pathname === '/');
@@ -280,7 +295,7 @@ test('C9: nav, menu and alert persist and the active blade updates', async () =>
       menu: document.querySelector('astro-island[component-url*="CockpitMenu"]').__kept === true,
       alert: document.querySelector('astro-island[component-url*="CiladaAlert"]').__kept === true,
     }));
-    await clickAndWaitFor(page, page.locator('#case-uriana a[data-case-open]'), '/cases/uriana');
+    await clickAndWaitFor(page, await homeCaseLink(page, 'uriana'), '/cases/uriana');
     assert.deepEqual(await kept(), { nav: true, menu: true, alert: true });
     let link = await openMenuLink(page, 'works');
     assert.equal(await link.getAttribute('data-active-blade'), 'true', 'case pages mark the works blade');
@@ -321,7 +336,7 @@ test('C10: the intro runs only on the first load of the home', async () => {
     await page.keyboard.press('Escape');
     await page.waitForFunction(() => !document.getElementById('intro-preloader') && !document.documentElement.classList.contains('lenis-stopped'), null, { timeout: 8000 });
     await page.waitForLoadState('networkidle');
-    await clickAndWaitFor(page, page.locator('#case-uriana a[data-case-open]'), '/cases/uriana');
+    await clickAndWaitFor(page, await homeCaseLink(page, 'uriana'), '/cases/uriana');
     assert.deepEqual(await introState(page), { preloader: false, marks: 1, locked: false });
     await clickAndWaitFor(page, await openMenuLink(page, 'works'), '/');
     await page.waitForFunction(() => !document.documentElement.classList.contains('lenis-stopped'));
@@ -369,7 +384,7 @@ test('C11: the page is fully initialized after navigation', async () => {
   try {
     await page.evaluate(() => window.localStorage.setItem('brinu_locale', 'en'));
     await page.reload({ waitUntil: 'networkidle' });
-    await clickAndWaitFor(page, page.locator('#case-uriana a[data-case-open]'), '/cases/uriana');
+    await clickAndWaitFor(page, await homeCaseLink(page, 'uriana'), '/cases/uriana');
     await expectInitialized(page, 'en');
     assert.equal(await page.evaluate(() => window.scrollY), 0);
   } finally {
@@ -415,7 +430,7 @@ test('C15: with JavaScript disabled links navigate and pages are readable', asyn
   const page = await context.newPage();
   try {
     await page.goto(`${baseUrl}/`);
-    await Promise.all([page.waitForURL(/\/cases\/uriana$/), page.locator('#case-uriana a[data-case-open]').click()]);
+    await Promise.all([page.waitForURL(/\/cases\/uriana$/), (await homeCaseLink(page, 'uriana')).click()]);
     assert.equal((await page.locator('h1').textContent()).trim(), 'Uriana');
     await Promise.all([page.waitForURL(/\/cases\/efood$/), page.locator('[data-showcase-next]').click()]);
     assert.ok((await page.locator('[data-showcase-lead]').textContent()).trim().length > 40);
@@ -432,7 +447,7 @@ test('C15: with JavaScript disabled links navigate and pages are readable', asyn
 test('C21: a navigation during another one ends on the latest page', async () => {
   const { context, page } = await motionHome();
   try {
-    await page.locator('#case-uriana a[data-case-open]').click();
+    await (await homeCaseLink(page, 'uriana')).click();
     await page.evaluate(() => {
       const link = document.createElement('a');
       link.href = '/cases/efood';
@@ -465,6 +480,7 @@ test('C22: a direct case load with a hash skips the intro and clears the nav', a
 });
 
 async function windowListenerCount(context, page, type) {
+  await page.waitForFunction(() => [...document.querySelectorAll('astro-island[client="idle"]')].every((island) => !island.hasAttribute('ssr')));
   const client = await context.newCDPSession(page);
   const { result } = await client.send('Runtime.evaluate', { expression: 'window' });
   const { listeners } = await client.send('DOMDebugger.getEventListeners', { objectId: result.objectId });
@@ -477,7 +493,7 @@ test('C23: home sections initialize once after home to case to home', async () =
   try {
     const initial = await windowListenerCount(context, page, 'brinu:locale-change');
     for (let round = 0; round < 2; round += 1) {
-      await clickAndWaitFor(page, page.locator('#case-uriana a[data-case-open]'), '/cases/uriana');
+      await clickAndWaitFor(page, await homeCaseLink(page, 'uriana'), '/cases/uriana');
       await clickAndWaitFor(page, await openMenuLink(page, 'works'), '/');
       await page.waitForLoadState('networkidle');
     }
@@ -518,7 +534,7 @@ test('C23: home sections initialize once after home to case to home', async () =
 test('C27: menu section blades navigate home from a case page', async () => {
   const { context, page } = await freshHome();
   try {
-    await clickAndWaitFor(page, page.locator('#case-uriana a[data-case-open]'), '/cases/uriana');
+    await clickAndWaitFor(page, await homeCaseLink(page, 'uriana'), '/cases/uriana');
     const contact = await openMenuLink(page, 'contact');
     assert.equal(await contact.getAttribute('href'), '/#contact');
     await contact.click();
@@ -558,7 +574,7 @@ test('C8: the red and black wipe crosses during navigation', async () => {
       };
       requestAnimationFrame(sample);
     });
-    await page.locator('#case-uriana a[data-case-open]').click();
+    await (await homeCaseLink(page, 'uriana')).click();
     await page.waitForFunction(() => window.location.pathname === '/cases/uriana' && window.__wipe.swapped);
     await page.waitForTimeout(600);
     const probe = await page.evaluate(() => window.__wipe);
@@ -593,7 +609,7 @@ test('C14: reduced motion swaps pages with no wipe', async () => {
       };
       requestAnimationFrame(sample);
     });
-    await page.locator('#case-uriana a[data-case-open]').click();
+    await (await homeCaseLink(page, 'uriana')).click();
     await page.waitForFunction(() => window.location.pathname === '/cases/uriana' && document.querySelector('h1')?.textContent.trim() === 'Uriana');
     await page.waitForTimeout(500);
     const probe = await page.evaluate(() => window.__reduced);
@@ -612,7 +628,7 @@ test('C24: rapid double navigation leaves the scroll unlocked', async () => {
     await page.keyboard.press('Escape');
     await page.waitForFunction(() => !document.getElementById('intro-preloader'), null, { timeout: 8000 });
     await page.waitForLoadState('networkidle');
-    await page.locator('#case-uriana a[data-case-open]').click();
+    await (await homeCaseLink(page, 'uriana')).click();
     await page.evaluate(() => {
       const link = document.createElement('a');
       link.href = '/stickers';

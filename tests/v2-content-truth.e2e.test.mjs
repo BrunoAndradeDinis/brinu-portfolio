@@ -173,7 +173,7 @@ test('C27: doutor agenda shows its in progress status in both locales', async ()
         const en = getLocalizedArchive('en').find((e) => e.id === 'jokenpo');
         assert.equal((await page.locator('#archive-jokenpo [data-archive-description]').innerText()).trim(), en.description);
         const enCase = getLocalizedCases('en').find((c) => c.id === 'uriana');
-        assert.equal((await page.locator('#case-uriana [data-case-description]').innerText()).trim(), enCase.description);
+        assert.equal((await page.locator('#case-uriana [data-case-description]').textContent()).trim(), enCase.description);
       }
     } finally {
       await context.close();
@@ -228,9 +228,18 @@ test('C24: clicking an evidence chip scrolls to its card', async () => {
     const before = await page.evaluate(() => document.getElementById('case-uriana').getBoundingClientRect().top);
     assert.ok(Math.abs(before) > 900, `card must start out of view (top ${before})`);
     await chip.dispatchEvent('click', { button: 0 });
-    await page.waitForFunction(() => Math.abs(document.getElementById('case-uriana').getBoundingClientRect().top) <= 90, null, {
-      timeout: 15000,
-    });
+    // In the reveal the card sits under the pinned section header, so the click must make it the active case, whole and below the nav.
+    await page.waitForFunction(
+      () => {
+        const card = document.getElementById('case-uriana');
+        const rect = card.getBoundingClientRect();
+        if (document.getElementById('works').dataset.casesMode !== 'reveal') return Math.abs(rect.top) <= 90;
+        const navBottom = Math.max(...[document.querySelector('#comic-nav-logo [data-nav-avatar]'), document.getElementById('cockpit-trigger-btn')].map((el) => el.getBoundingClientRect().bottom));
+        return card.closest('[data-case-item]').dataset.caseActive === 'true' && rect.top >= navBottom && rect.bottom <= window.innerHeight;
+      },
+      null,
+      { timeout: 15000 }
+    );
   } finally {
     await context.close();
   }

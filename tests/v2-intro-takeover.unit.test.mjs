@@ -61,7 +61,7 @@ test('C8: scroll lock is set and released only through motion.ts', async () => {
   const lenisUsers = files.filter((f) => /from ['"]lenis['"]|new Lenis\(|getLenis\(/.test(fs.readFileSync(f, 'utf8')));
   assert.deepEqual(lenisUsers, ['src/utils/motion.ts'], 'only motion.ts may touch Lenis');
   const lockUsers = files.filter((f) => /\b(pauseScroll|resumeScroll)\(/.test(fs.readFileSync(f, 'utf8'))).sort();
-  assert.deepEqual(lockUsers, ['src/components/IntroPreloader.astro', 'src/utils/motion.ts']);
+  assert.deepEqual(lockUsers, ['src/components/IntroPreloader.astro', 'src/components/cases/cases-reveal-bind.ts', 'src/utils/motion.ts']);
 
   const preloader = fs.readFileSync('src/components/IntroPreloader.astro', 'utf8');
   assert.match(preloader, /import \{ pauseScroll, resumeScroll \} from ["']\.\.\/utils\/motion["']/);

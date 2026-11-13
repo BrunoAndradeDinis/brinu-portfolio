@@ -607,16 +607,16 @@ test('C12: About and SkillsGrid render unified Persona 5 Confidant dossier witho
   assert.equal(aboutSrc.includes('PHILOSOPHY //'), false);
 });
 
-test('T11: CreativeLab renders the Arcana Deck with bound i18n and no hardware telemetry boxes', () => {
+test('T11: CreativeLab renders the Arsenal Orbit with bound i18n and no hardware telemetry boxes', () => {
   const labAstro = fs.readFileSync(path.resolve('src/components/CreativeLab.astro'), 'utf8');
-  const deckAstro = fs.readFileSync(path.resolve('src/components/ArcanaDeck.astro'), 'utf8');
-  const i18nSrc = fs.readFileSync(path.resolve('src/i18n/index.ts'), 'utf8');
 
   assert.equal(labAstro.includes('GRAPHICS SUBSYSTEM'), false);
-  assert.ok(labAstro.includes('ArcanaDeck'));
-  assert.ok(deckAstro.includes('data-i18n="lab.hint"'));
-  assert.ok(deckAstro.includes('data-i18n="lab.openCase"'));
-  assert.ok(i18nSrc.includes('data-arcana-title') && i18nSrc.includes('data-arcana-challenge'));
+  assert.ok(labAstro.includes('ArsenalOrbit'));
+  assert.equal(labAstro.includes('ArcanaDeck'), false);
+  assert.equal(fs.existsSync(path.resolve('src/components/ArcanaDeck.astro')), false, 'ArcanaDeck.astro must be removed');
+  for (const key of ['lab.actTag', 'lab.title', 'lab.statusBadge', 'lab.domainLine']) {
+    assert.ok(labAstro.includes(`data-i18n="${key}"`), `${key} must be bound`);
+  }
   for (const gone of ['CrtTuner', 'SonarRadar', 'CyberDeck']) {
     assert.equal(fs.existsSync(path.resolve(`src/components/lab/${gone}.tsx`)), false, `${gone}.tsx must be removed`);
   }
