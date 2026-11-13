@@ -8,7 +8,6 @@ export interface TranslationSchema {
     preloaderAria: string;
     mainNavAria: string;
     heroPortraitAlt: string;
-    labNavAria: string;
   };
   meta: {
     title: string;
@@ -223,11 +222,6 @@ export interface TranslationSchema {
     title: string;
     statusBadge: string;
     domainLine: string;
-    indexLabel: string;
-    hint: string;
-    openCase: string;
-    prevAria: string;
-    nextAria: string;
   };
   stickers: {
     sectionAria: string;
@@ -318,7 +312,6 @@ export const ptBrDict: TranslationSchema = {
     preloaderAria: 'Abertura do portfólio',
     mainNavAria: 'Navegação principal',
     heroPortraitAlt: 'Retrato estilo HQ noir de Bruno Dinis',
-    labNavAria: 'Cartas do Arcana Deck',
   },
   meta: {
     title: 'Bruno Dinis // Brinu — Desenvolvedor Frontend & Full Stack, Creative Developer',
@@ -351,7 +344,7 @@ export const ptBrDict: TranslationSchema = {
       hero: '01 // INÍCIO & MANIFESTO',
       works: '02 // ARQUIVO DE PROJETOS',
       about: '03 // DOSSIÊ CONFIDANT & SKILLS',
-      lab: '04 // ARCANA DECK',
+      lab: '04 // ARSENAL ORBIT',
       contact: '05 // ENVIAR PROPOSTA',
       whoami: '06 // TERMINAL /WHOAMI',
     },
@@ -538,16 +531,11 @@ export const ptBrDict: TranslationSchema = {
     skillsTitle: 'ARSENAL TÉCNICO',
   },
   lab: {
-    sectionAria: 'Arcana Deck: Baralho de Projetos Selecionados',
-    actTag: '[ ATO III // ARCANA DECK • GSAP, CSS 3D & TECLADO ]',
-    title: 'ARCANA DECK',
-    statusBadge: 'STATUS: INTERATIVO // ARRASTE & VIRE',
-    domainLine: 'GSAP DRAGGABLE • CSS 3D • NAVEGAÇÃO POR TECLADO',
-    indexLabel: 'CARTAS //',
-    hint: 'ARRASTE, USE AS SETAS E PRESSIONE ENTER PARA VIRAR A CARTA',
-    openCase: 'VER CASE COMPLETO',
-    prevAria: 'Carta anterior',
-    nextAria: 'Próxima carta',
+    sectionAria: 'Arsenal Orbit: skills em órbita com links de evidência',
+    actTag: '[ ATO III // ARSENAL ORBIT • THREE.JS & GSAP ]',
+    title: 'ARSENAL ORBIT',
+    statusBadge: 'STATUS: INTERATIVO // SKILLS & EVIDÊNCIAS',
+    domainLine: 'THREE.JS • GSAP • WEB AUDIO API',
   },
   stickers: {
     sectionAria: 'Biblioteca de stickers do Brinu',
@@ -644,7 +632,6 @@ export const enDict = {
     preloaderAria: 'Portfolio opening',
     mainNavAria: 'Main navigation',
     heroPortraitAlt: 'Noir comic-style portrait of Bruno Dinis',
-    labNavAria: 'Arcana Deck cards',
   },
   meta: {
     title: 'Bruno Dinis // Brinu — Frontend & Full Stack Developer, Creative Developer',
@@ -677,7 +664,7 @@ export const enDict = {
       hero: '01 // HOME & MANIFESTO',
       works: '02 // BOUNTY ARCHIVE (WORKS)',
       about: '03 // CONFIDANT DOSSIER & SKILLS',
-      lab: '04 // ARCANA DECK',
+      lab: '04 // ARSENAL ORBIT',
       contact: '05 // TRANSMIT A BOUNTY',
       whoami: '06 // TERMINAL /WHOAMI',
     },
@@ -864,16 +851,11 @@ export const enDict = {
     skillsTitle: 'TECHNICAL ARSENAL',
   },
   lab: {
-    sectionAria: 'Arcana Deck: Selected Projects Card Deck',
-    actTag: '[ ACT III // ARCANA DECK • GSAP, CSS 3D & KEYBOARD ]',
-    title: 'ARCANA DECK',
-    statusBadge: 'STATUS: INTERACTIVE // DRAG & FLIP',
-    domainLine: 'GSAP DRAGGABLE • CSS 3D • KEYBOARD NAVIGATION',
-    indexLabel: 'CARDS //',
-    hint: 'DRAG, USE THE ARROW KEYS AND PRESS ENTER TO FLIP THE CARD',
-    openCase: 'VIEW FULL CASE',
-    prevAria: 'Previous card',
-    nextAria: 'Next card',
+    sectionAria: 'Arsenal Orbit: skills in orbit with evidence links',
+    actTag: '[ ACT III // ARSENAL ORBIT • THREE.JS & GSAP ]',
+    title: 'ARSENAL ORBIT',
+    statusBadge: 'STATUS: INTERACTIVE // SKILLS & EVIDENCE',
+    domainLine: 'THREE.JS • GSAP • WEB AUDIO API',
   },
   stickers: {
     sectionAria: 'Brinu sticker library',

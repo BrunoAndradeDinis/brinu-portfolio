@@ -1490,3 +1490,88 @@ test('reduced motion shows the static skills list', async () => {
     }
   }
 });
+
+const LAB_COPY = {
+  'pt-br': {
+    menu: '04 // ARSENAL ORBIT',
+    aria: 'Arsenal Orbit: skills em órbita com links de evidência',
+    tag: '[ ATO III // ARSENAL ORBIT • THREE.JS & GSAP ]',
+    title: 'ARSENAL ORBIT',
+    badge: 'STATUS: INTERATIVO // SKILLS & EVIDÊNCIAS',
+    line: 'THREE.JS • GSAP • WEB AUDIO API',
+  },
+  en: {
+    menu: '04 // ARSENAL ORBIT',
+    aria: 'Arsenal Orbit: skills in orbit with evidence links',
+    tag: '[ ACT III // ARSENAL ORBIT • THREE.JS & GSAP ]',
+    title: 'ARSENAL ORBIT',
+    badge: 'STATUS: INTERACTIVE // SKILLS & EVIDENCE',
+    line: 'THREE.JS • GSAP • WEB AUDIO API',
+  },
+};
+
+const readLabCopy = (page) =>
+  page.locator('#lab').evaluate((lab) => ({
+    aria: lab.getAttribute('aria-label'),
+    tag: lab.querySelector('[data-i18n="lab.actTag"]').textContent.trim(),
+    badge: lab.querySelector('[data-i18n="lab.statusBadge"]').textContent.trim(),
+    line: lab.querySelector('[data-i18n="lab.domainLine"]').textContent.trim(),
+  }));
+
+async function assertLabCopy(page, locale) {
+  const { menu, title, ...copy } = LAB_COPY[locale];
+  await page.waitForFunction((expected) => document.querySelector('#lab [data-lab-title]').getAttribute('aria-label') === expected, title);
+  assert.equal(await page.locator('#lab').getByRole('heading', { level: 2, name: title, exact: true }).count(), 1, `${locale}: the act is headed ${title}`);
+  assert.deepEqual(await readLabCopy(page), copy, `${locale}: the act's copy describes the orbit`);
+  const leftovers = await page.evaluate(() => ({
+    deckParts: document.querySelectorAll('[data-arcana-deck], [id^="arcana-"], [data-arcana-toggle]').length,
+    mentions: /arcana/i.test(document.documentElement.outerHTML),
+  }));
+  assert.deepEqual(leftovers, { deckParts: 0, mentions: false }, `${locale}: nothing of ARCANA DECK is left on the page`);
+}
+
+test('lab act shows the orbit and no deck', async () => {
+  const skills = await arsenalSkillNames();
+  for (const locale of LOCALES) {
+    const { context, page } = await openHome({ locale });
+    try {
+      await page.locator('#cockpit-trigger-btn').click();
+      const link = page.locator('[data-cockpit-link="lab"]');
+      await link.waitFor({ state: 'visible' });
+      assert.equal((await link.locator('span.truncate').textContent()).trim(), LAB_COPY[locale].menu, `${locale}: the menu names the orbit`);
+      assert.equal(await link.getAttribute('href'), '#lab', `${locale}: the menu entry points at the Lab act`);
+      await page.keyboard.press('Escape');
+      await showOrbit(page);
+
+      const act = await page.locator('#lab').evaluate((lab) => {
+        const stage = lab.querySelector('[data-orbit-stage]');
+        const rect = stage.getBoundingClientRect();
+        return {
+          orbits: lab.querySelectorAll('[data-arsenal-orbit]').length,
+          onScreen: rect.bottom > 0 && rect.top < window.innerHeight,
+          acts: [...lab.children].filter((child) => !['STYLE', 'SCRIPT', 'LINK'].includes(child.tagName)).map((child) => child.querySelector('[data-arsenal-orbit]') !== null),
+        };
+      });
+      assert.equal(act.orbits, 1, `${locale}: the Lab act holds one orbit`);
+      assert.equal(act.onScreen, true, `${locale}: the orbit is on screen inside the Lab act`);
+      assert.deepEqual(act.acts, [false, true], `${locale}: the orbit is the only act under the Lab heading`);
+      assert.deepEqual([...(await orbitState(page)).nodes].sort(), [...skills].sort(), `${locale}: the orbit shows one node per skill`);
+      await assertLabCopy(page, locale);
+    } finally {
+      await context.close();
+    }
+  }
+
+  const { context, page } = await openHome({ locale: 'pt-br', reducedMotion: 'reduce' });
+  try {
+    await assertLabCopy(page, 'pt-br');
+    await page.locator('#cockpit-trigger-btn').click();
+    await page.locator('[data-cockpit-lang="en"]').click();
+    await page.waitForFunction(() => document.documentElement.getAttribute('data-locale') === 'en');
+    assert.equal((await page.locator('[data-cockpit-link="lab"] span.truncate').textContent()).trim(), LAB_COPY.en.menu);
+    await page.keyboard.press('Escape');
+    await assertLabCopy(page, 'en');
+  } finally {
+    await context.close();
+  }
+});

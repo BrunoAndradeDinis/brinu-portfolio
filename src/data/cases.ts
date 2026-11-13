@@ -12,7 +12,6 @@ export interface ProjectLink {
 export interface ProjectCase {
   id: string;
   reelNumber: string;
-  arcanaCode: string;
   category: string;
   badge: string;
   title: string;
@@ -39,7 +38,6 @@ interface CaseLinkDefinition {
 export interface CaseDefinition {
   readonly id: MainCaseId;
   readonly track: 1 | 2;
-  readonly arcanaCode: string;
   readonly stack: readonly string[];
   readonly links: readonly CaseLinkDefinition[];
   readonly text: {
@@ -60,7 +58,6 @@ export const MAIN_CASES: readonly CaseDefinition[] = [
   {
     id: 'magalu-cloud',
     track: 1,
-    arcanaCode: 'ARCANA // EMPRESS',
     stack: ['Astro', 'React', 'Tailwind CSS', 'Next.js', 'TypeScript', 'Figma', 'Strapi CMS', 'GitLab'],
     links: [
       {
@@ -101,7 +98,6 @@ export const MAIN_CASES: readonly CaseDefinition[] = [
   {
     id: 'uriana',
     track: 1,
-    arcanaCode: 'ARCANA // HIEROPHANT',
     stack: ['Next.js 14', 'TypeScript', 'Prisma', 'PostgreSQL', 'Zod', 'next-safe-action', 'Tailwind CSS', 'Recharts'],
     links: [
       {
@@ -148,7 +144,6 @@ export const MAIN_CASES: readonly CaseDefinition[] = [
   {
     id: 'efood',
     track: 2,
-    arcanaCode: 'ARCANA // TEMPERANCE',
     stack: ['React 18', 'TypeScript', 'Redux Toolkit', 'RTK Query', 'Formik', 'Yup', 'styled-components'],
     links: [
       {
@@ -195,7 +190,6 @@ export const MAIN_CASES: readonly CaseDefinition[] = [
   {
     id: 'aurastream',
     track: 2,
-    arcanaCode: 'ARCANA // CHARIOT',
     stack: ['Next.js 15/16', 'TypeScript', 'Node.js', 'Puppeteer', 'WebSocket', 'FFmpeg', 'Xvfb', 'Magalu Cloud', 'S3'],
     links: [
       {
@@ -257,7 +251,6 @@ function localizeCase(definition: CaseDefinition, locale: Locale): ProjectCase {
   const { text } = definition;
   return {
     id: definition.id,
-    arcanaCode: definition.arcanaCode,
     track: definition.track,
     stack: [...definition.stack],
     reelNumber: text.reelNumber[locale],
