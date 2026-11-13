@@ -1027,8 +1027,8 @@ test('tile click blurs the grid and enters the panel', async () => {
   }
 });
 
-function assertGridBack(record, since, label) {
-  const rest = record.frames[0];
+function assertGridBack(record, openedAt, since, label) {
+  const rest = record.frames.findLast((frame) => frame.at < openedAt);
   const end = record.frames.at(-1);
   assert.equal(end.panel, null, `${label}: the panel is gone`);
   assert.equal(blurOf(end), 0, `${label}: the grid is sharp again`);
@@ -1045,21 +1045,23 @@ test('closing the panel brings the grid back', async () => {
     try {
       await tile.click();
       await waitForPanelSettled(page, true);
+      const openedByClick = lastGesture(await panelFrames(page), 'click');
       await page.getByRole('dialog').getByRole('button', { name: CLOSE_PANEL_LABEL[locale], exact: true }).click();
       await waitForPanelSettled(page, false);
       let record = await panelFrames(page);
-      assertGridBack(record, lastGesture(record, 'click'), `${locale} close button`);
+      assertGridBack(record, openedByClick, lastGesture(record, 'click'), `${locale} close button`);
 
       await tile.focus();
       await page.keyboard.press('Enter');
       await waitForPanelSettled(page, true);
       record = await panelFrames(page);
+      const openedByEnter = lastGesture(record, 'keydown');
       assert.equal(panelInPlace(record.frames.at(-1)), true, `${locale}: Enter on the tile opens the panel`);
       assert.equal(record.frames.at(-1).focus, 'panel');
       await page.keyboard.press('Escape');
       await waitForPanelSettled(page, false);
       record = await panelFrames(page);
-      assertGridBack(record, lastGesture(record, 'keydown'), `${locale} Escape`);
+      assertGridBack(record, openedByEnter, lastGesture(record, 'keydown'), `${locale} Escape`);
     } finally {
       await context.close();
     }
