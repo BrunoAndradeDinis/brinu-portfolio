@@ -317,12 +317,26 @@ test('C11: arsenal evidence chip scrolls to the case below the nav', async () =>
     await chip.dispatchEvent('click');
     await page.waitForTimeout(2200);
     const m = await page.evaluate(() => {
-      const target = document.getElementById('case-uriana').getBoundingClientRect().top;
+      const card = document.getElementById('case-uriana');
+      const rect = card.getBoundingClientRect();
       const avatar = document.querySelector('#comic-nav-logo [data-nav-avatar]');
       const trigger = document.getElementById('cockpit-trigger-btn');
-      return { target, navBottom: Math.max(avatar.getBoundingClientRect().bottom, trigger.getBoundingClientRect().bottom) };
+      return {
+        target: rect.top,
+        bottom: rect.bottom,
+        viewport: window.innerHeight,
+        reveal: document.getElementById('works').dataset.casesMode === 'reveal',
+        active: card.closest('[data-case-item]').dataset.caseActive === 'true',
+        navBottom: Math.max(avatar.getBoundingClientRect().bottom, trigger.getBoundingClientRect().bottom),
+      };
     });
-    assert.ok(m.target >= m.navBottom + 1 && m.target <= m.navBottom + 90, `case top ${m.target} vs nav bottom ${m.navBottom}`);
+    if (m.reveal) {
+      // The pinned reveal keeps the section header above the case, so the card shows whole below the nav as the active case.
+      assert.equal(m.active, true, 'the chip makes uriana the active case');
+      assert.ok(m.target >= m.navBottom + 1 && m.bottom <= m.viewport, `case ${m.target}-${m.bottom} vs nav bottom ${m.navBottom} and viewport ${m.viewport}`);
+    } else {
+      assert.ok(m.target >= m.navBottom + 1 && m.target <= m.navBottom + 90, `case top ${m.target} vs nav bottom ${m.navBottom}`);
+    }
   } finally {
     await context.close();
   }
