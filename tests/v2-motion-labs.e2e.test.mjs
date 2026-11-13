@@ -1230,3 +1230,162 @@ test('leaving the act disposes orbit resources', async () => {
     await context.close();
   }
 });
+
+// The nodes drift along their orbit, so the pointer goes to where the node is without waiting for it to hold still.
+const MOVING_TARGET = { force: true };
+const orbitNode = (page, name) => page.locator(ORBIT_STAGE).getByRole('button', { name, exact: true });
+
+const orbitEvidence = (page) =>
+  page.locator('#lab [data-orbit-evidence]').evaluate((region) => ({
+    heading: region.querySelector('h4')?.textContent.trim() ?? null,
+    links: [...region.querySelectorAll('a')].filter((link) => link.checkVisibility({ visibilityProperty: true })).map((link) => ({ label: link.textContent.trim(), href: link.getAttribute('href') })),
+  }));
+
+// Counts, on every frame, the pixels the WebGL canvas draws for one node inside a fixed square around it.
+const startNodeSizeRecorder = (page, name) =>
+  page.locator(ORBIT_STAGE).evaluate((stage, nodeName) => {
+    const canvas = stage.querySelector('canvas');
+    const gl = canvas.getContext('webgl2') ?? canvas.getContext('webgl');
+    const node = [...stage.querySelectorAll('button')].find((button) => button.getAttribute('aria-label') === nodeName);
+    const ratio = canvas.width / canvas.getBoundingClientRect().width;
+    const side = Math.round(64 * ratio);
+    const pixels = new Uint8Array(side * side * 4);
+    const record = { frames: [], running: true };
+    window.__nodeSize = record;
+    const sample = () => {
+      if (!record.running) return;
+      const box = canvas.getBoundingClientRect();
+      const rect = node.getBoundingClientRect();
+      const x = Math.round((rect.left + rect.width / 2 - box.left) * ratio - side / 2);
+      const y = Math.round((box.bottom - (rect.top + rect.height / 2)) * ratio - side / 2);
+      gl.readPixels(x, y, side, side, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
+      let drawn = 0;
+      for (let offset = 3; offset < pixels.length; offset += 4) if (pixels[offset] === 255) drawn += 1;
+      record.frames.push({ at: performance.now(), drawn, target: rect.width });
+      requestAnimationFrame(sample);
+    };
+    requestAnimationFrame(sample);
+  }, name);
+
+async function readNodePulse(page) {
+  await page.waitForFunction(() => {
+    const frames = window.__nodeSize.frames;
+    const rest = frames.at(-1).drawn;
+    const peak = Math.max(...frames.map((frame) => frame.drawn));
+    return peak > rest * 1.5 && frames.length > 20 && frames.slice(-10).every((frame) => frame.drawn === rest);
+  });
+  return page.evaluate(() => {
+    window.__nodeSize.running = false;
+    return window.__nodeSize.frames;
+  });
+}
+
+// The square also holds a stretch of the ring, which shifts by a few pixels while the node drifts before the gesture.
+function assertPulsed(frames, label) {
+  const rest = frames.at(-1).drawn;
+  const peakIndex = frames.reduce((best, frame, index) => (frame.drawn > frames[best].drawn ? index : best), 0);
+  assert.ok(frames[0].drawn > 0, `${label}: the node is drawn before the gesture`);
+  assert.ok(frames[peakIndex].drawn >= rest * 2, `${label}: the drawn node grows (${frames[0].drawn} -> ${frames[peakIndex].drawn} pixels)`);
+  assert.ok(Math.abs(frames[0].drawn - rest) <= rest * 0.15, `${label}: the drawn node returns to the size it had (${frames[0].drawn} before, ${rest} after)`);
+  assert.ok(frames.slice(0, peakIndex).some((frame) => frame.drawn > rest * 1.1 && frame.drawn < frames[peakIndex].drawn * 0.95), `${label}: the node grows over several frames`);
+  assert.ok(frames.slice(peakIndex).some((frame) => frame.drawn > rest * 1.1 && frame.drawn < frames[peakIndex].drawn * 0.95), `${label}: the node shrinks back over several frames`);
+  assert.ok(Math.max(...frames.map((frame) => frame.target)) > frames[0].target * 1.3, `${label}: the node's pointer target pulses with it`);
+}
+
+const ORBIT_EVIDENCE = {
+  TypeScript: (locale) => CASE_IDS.map((id, index) => ({ label: CASE_TITLES[locale][index], href: `#case-${id}` })),
+  'PostgreSQL + Prisma': () => [{ label: 'Uriana', href: '#case-uriana' }],
+};
+
+test('hover pulses a node and lists its evidence', async () => {
+  for (const locale of LOCALES) {
+    const { context, page } = await openHome({ locale });
+    try {
+      await showOrbit(page);
+      assert.deepEqual(await orbitEvidence(page), { heading: null, links: [] }, `${locale}: no evidence before a node is picked`);
+      for (const [name, evidence] of Object.entries(ORBIT_EVIDENCE)) {
+        await startNodeSizeRecorder(page, name);
+        await page.waitForFunction(() => window.__nodeSize.frames.length >= 3);
+        await orbitNode(page, name).hover(MOVING_TARGET);
+        assertPulsed(await readNodePulse(page), `${locale} ${name}`);
+        assert.deepEqual(await orbitEvidence(page), { heading: name, links: evidence(locale) }, `${locale}: ${name} lists its evidence links`);
+      }
+    } finally {
+      await context.close();
+    }
+  }
+
+  const { context, page } = await openHome({ viewport: SMALL_PHONE, hasTouch: true, isMobile: true });
+  try {
+    await showOrbit(page);
+    const name = 'PostgreSQL + Prisma';
+    await startNodeSizeRecorder(page, name);
+    await page.waitForFunction(() => window.__nodeSize.frames.length >= 3);
+    await orbitNode(page, name).tap(MOVING_TARGET);
+    assertPulsed(await readNodePulse(page), `tap ${name}`);
+    assert.deepEqual(await orbitEvidence(page), { heading: name, links: ORBIT_EVIDENCE[name]('pt-br') }, 'a tap lists the evidence links');
+  } finally {
+    await context.close();
+  }
+});
+
+const SOUND_LABELS = { 'pt-br': { muted: 'ÁUDIO: MUDO', on: 'ÁUDIO: ATIVO' }, en: { muted: 'AUDIO: MUTED', on: 'AUDIO: ON' } };
+
+test('sound stays muted until the visitor unmutes', async () => {
+  for (const locale of LOCALES) {
+    const audioRequests = [];
+    const { context, page } = await openHome({
+      locale,
+      prepare: async (target) => {
+        target.on('request', (request) => {
+          if (request.resourceType() === 'media' || /\.(mp3|wav|ogg|oga|m4a|aac|flac|opus|webm)(\?|$)/i.test(request.url())) audioRequests.push(request.url());
+        });
+        await target.addInitScript(() => {
+          window.__sound = { contexts: 0, tones: [] };
+          const NativeContext = window.AudioContext;
+          window.AudioContext = class extends NativeContext {
+            constructor(...args) {
+              super(...args);
+              window.__sound.contexts += 1;
+            }
+          };
+          const start = OscillatorNode.prototype.start;
+          OscillatorNode.prototype.start = function (...args) {
+            window.__sound.tones.push({ hz: this.frequency.value, contextState: this.context.state });
+            return start.apply(this, args);
+          };
+        });
+      },
+    });
+    try {
+      await showOrbit(page);
+      const soundToggle = (name) => page.locator('#lab').getByRole('button', { name, exact: true });
+      assert.equal(await soundToggle(SOUND_LABELS[locale].muted).getAttribute('aria-pressed'), 'false', `${locale}: sound starts muted`);
+
+      await orbitNode(page, 'TypeScript').hover(MOVING_TARGET);
+      await page.waitForFunction(() => document.querySelector('#lab [data-orbit-evidence] h4')?.textContent.trim() === 'TypeScript');
+      await orbitNode(page, 'Astro').click(MOVING_TARGET);
+      await page.waitForFunction(() => document.querySelector('#lab [data-orbit-evidence] h4')?.textContent.trim() === 'Astro');
+      assert.deepEqual(await page.evaluate(() => window.__sound), { contexts: 0, tones: [] }, `${locale}: no sound and no audio context while muted`);
+
+      await soundToggle(SOUND_LABELS[locale].muted).click();
+      assert.equal(await soundToggle(SOUND_LABELS[locale].on).getAttribute('aria-pressed'), 'true', `${locale}: the toggle shows sound is on`);
+      await page.waitForFunction(() => window.bebopAudio.getContext().state === 'running');
+      await orbitNode(page, 'TypeScript').hover(MOVING_TARGET);
+      await page.waitForFunction(() => window.__sound.tones.length >= 1);
+      const sound = await page.evaluate(() => window.__sound);
+      assert.equal(sound.contexts, 1, `${locale}: one audio context, made after the visitor unmuted`);
+      assert.equal(sound.tones.length, 1, `${locale}: one synthesized tone for one hover`);
+      assert.ok(sound.tones[0].hz > 0 && sound.tones[0].contextState === 'running', `${locale}: the tone is an oscillator on a running context`);
+
+      await soundToggle(SOUND_LABELS[locale].on).click();
+      assert.equal(await soundToggle(SOUND_LABELS[locale].muted).getAttribute('aria-pressed'), 'false');
+      await orbitNode(page, 'Zod').hover(MOVING_TARGET);
+      await page.waitForFunction(() => document.querySelector('#lab [data-orbit-evidence] h4')?.textContent.trim() === 'Zod');
+      assert.equal(await page.evaluate(() => window.__sound.tones.length), 1, `${locale}: muting again silences the next pulse`);
+      assert.deepEqual(audioRequests, [], `${locale}: no audio file is requested`);
+    } finally {
+      await context.close();
+    }
+  }
+});
