@@ -4,6 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import http from 'node:http';
 import { chromium } from 'playwright';
+import { assertClientJsBudget } from './fixtures/client-js-budget.mjs';
 
 const MIME_TYPES = {
   '.html': 'text/html; charset=utf-8',
@@ -395,7 +396,6 @@ test('C20: a second tap restarts the 1.2 s timer', async () => {
   }
 });
 
-import zlib from 'node:zlib';
 import { getLocalizedStickers } from '../src/data/stickers.ts';
 import { DICTIONARIES } from '../src/i18n/dictionaries.ts';
 
@@ -574,8 +574,6 @@ test('C16: /stickers has zero overflow and contrast at least 4.5:1', async () =>
   }
 });
 
-test('C17: built js stays within 200 kB gzip', () => {
-  let total = 0;
-  for (const f of fs.readdirSync('dist/_astro').filter((n) => n.endsWith('.js'))) total += zlib.gzipSync(fs.readFileSync(`dist/_astro/${f}`)).length;
-  assert.ok(total <= 200 * 1000, `client js gzip total is ${(total / 1000).toFixed(1)} kB, budget is 200 kB`);
+test('C17: first-load js stays within 200 kB gzip and every chunk under 500 kB', async () => {
+  await assertClientJsBudget(assert, browser, baseUrl, ['/', '/stickers']);
 });

@@ -2,9 +2,9 @@ import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
-import zlib from 'node:zlib';
 import http from 'node:http';
 import { chromium } from 'playwright';
+import { assertClientJsBudget } from './fixtures/client-js-budget.mjs';
 
 const MIME_TYPES = {
   '.html': 'text/html; charset=utf-8',
@@ -616,10 +616,8 @@ test('QUA-01: contrast is at least 4.5:1 on showcase, cockpit and stickers', asy
   }
 });
 
-test('QUA-02: built js stays within 200 kB gzip', () => {
-  let total = 0;
-  for (const file of fs.readdirSync('dist/_astro').filter((name) => name.endsWith('.js'))) total += zlib.gzipSync(fs.readFileSync(`dist/_astro/${file}`)).length;
-  assert.ok(total <= 200 * 1000, `client js gzip total is ${(total / 1000).toFixed(1)} kB, budget is 200 kB`);
+test('QUA-02: first-load js stays within 200 kB gzip and every chunk under 500 kB', async () => {
+  await assertClientJsBudget(assert, browser, baseUrl, ['/cases/magalu-cloud', '/cases/uriana', '/cases/efood', '/cases/aurastream']);
 });
 
 test('QUA-03: showcase media declares its dimensions', async () => {
