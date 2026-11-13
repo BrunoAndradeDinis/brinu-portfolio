@@ -1548,15 +1548,19 @@ test('arrow keys and a swipe step one case', async () => {
     await pinCases(page);
     await waitForActiveCase(page, CASE_IDS[0]);
     const client = await context.newCDPSession(page);
-    await swipe(page, client, 600, 580);
+    await swipe(page, client, 600, 561);
     await betweenGestures(page);
-    assert.equal((await activeCase(page)).id, `case-${CASE_IDS[0]}`, 'a 20 px swipe does not step');
-    await swipe(page, client, 600, 450);
+    assert.equal((await activeCase(page)).id, `case-${CASE_IDS[0]}`, 'a 39 px swipe does not step');
+    await swipe(page, client, 600, 560);
     await waitForActiveCase(page, CASE_IDS[1]);
     await betweenGestures(page);
-    assert.equal((await activeCase(page)).id, `case-${CASE_IDS[1]}`, 'one upward swipe steps exactly one case');
+    assert.equal((await activeCase(page)).id, `case-${CASE_IDS[1]}`, 'a 40 px upward swipe steps exactly one case');
+    await swipe(page, client, 600, 450);
+    await waitForActiveCase(page, CASE_IDS[2]);
+    await betweenGestures(page);
+    assert.equal((await activeCase(page)).id, `case-${CASE_IDS[2]}`, 'a longer swipe still steps exactly one case');
     await swipe(page, client, 450, 600);
-    await waitForActiveCase(page, CASE_IDS[0]);
+    await waitForActiveCase(page, CASE_IDS[1]);
     await client.detach();
   } finally {
     await context.close();
@@ -1564,7 +1568,9 @@ test('arrow keys and a swipe step one case', async () => {
 });
 
 test('phone cards keep the open link and hide the external links', async () => {
-  for (const [viewport, externalShown] of [[{ width: 390, height: 844 }, false], [{ width: 1440, height: 900 }, true]]) {
+  const BREAKPOINT_PX = 48 * 16;
+  const measured = [];
+  for (const viewport of [{ width: 390, height: 844 }, { width: 885, height: 900 }, { width: 891, height: 900 }, { width: 1440, height: 900 }]) {
     const { context, page } = await openHome({ viewport });
     try {
       await pinCases(page);
@@ -1574,13 +1580,24 @@ test('phone cards keep the open link and hide the external links', async () => {
       await waitForCaseFullyShown(page, 'uriana');
       const card = page.locator('#case-uriana');
       assert.equal(await card.locator('a[data-case-open]').isVisible(), true, `${viewport.width}px: the open-case link shows`);
+      const cardWidth = await card.locator('a[data-case-link]').first().evaluate((link) => {
+        let node = link.parentElement;
+        while (node && getComputedStyle(node).containerType === 'normal') node = node.parentElement;
+        const style = getComputedStyle(node);
+        return node.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
+      });
+      const externalShown = cardWidth >= BREAKPOINT_PX;
+      measured.push(cardWidth);
       const external = await card.locator('a[data-case-link]').evaluateAll((links) => links.map((link) => link.checkVisibility()));
       assert.ok(external.length > 0, 'uriana has external links');
-      assert.deepEqual(external, external.map(() => externalShown), `${viewport.width}px: external links ${externalShown ? 'show' : 'stay hidden'} in the reveal`);
+      assert.deepEqual(external, external.map(() => externalShown), `${viewport.width}px (card ${cardWidth}px): external links ${externalShown ? 'show' : 'stay hidden'} in the reveal`);
     } finally {
       await context.close();
     }
   }
+  assert.ok(measured.some((width) => width >= BREAKPOINT_PX - 12 && width < BREAKPOINT_PX), `a card just under 48rem is measured (${measured.join(', ')})`);
+  assert.ok(measured.some((width) => width >= BREAKPOINT_PX && width <= BREAKPOINT_PX + 12), `a card just over 48rem is measured (${measured.join(', ')})`);
+  assert.ok(measured[0] < BREAKPOINT_PX && measured.at(-1) >= BREAKPOINT_PX, 'the phone card is narrow and the desktop card is wide');
 });
 
 

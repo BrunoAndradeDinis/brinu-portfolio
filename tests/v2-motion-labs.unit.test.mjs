@@ -143,9 +143,13 @@ test('the route wipe reads its timings from motion.ts', async () => {
   const { WIPE_TIMING } = await import('../src/utils/motion.ts');
   assert.deepEqual({ ...WIPE_TIMING }, { coverMs: 140, leaveMs: 200, resetMs: 220 });
   const wipe = fs.readFileSync('src/utils/page-wipe.ts', 'utf8');
-  for (const key of ['coverMs', 'leaveMs', 'resetMs']) assert.match(wipe, new RegExp(`WIPE_TIMING\\.${key}`), `page-wipe.ts reads ${key}`);
-  assert.doesNotMatch(wipe, /\b(?:const|let)\s+\w*_MS\s*=\s*\d+/, 'page-wipe.ts declares no timing numbers of its own');
   const css = fs.readFileSync('src/styles/global.css', 'utf8');
+  assert.match(wipe, /setProperty\('--wipe-cover-duration', `\$\{WIPE_TIMING\.coverMs\}ms`\)/, 'the cover blade duration is written from WIPE_TIMING.coverMs');
+  assert.match(wipe, /setProperty\('--wipe-leave-duration', `\$\{WIPE_TIMING\.leaveMs\}ms`\)/, 'the leave blade duration is written from WIPE_TIMING.leaveMs');
+  assert.match(wipe, /waitFor\(WIPE_TIMING\.coverMs\)/, 'the navigation waits for the cover from WIPE_TIMING.coverMs');
+  assert.match(wipe, /setTimeout\(\(\) => resetWipe\(overlay\), WIPE_TIMING\.resetMs\)/, 'the reset timer reads WIPE_TIMING.resetMs');
+  assert.doesNotMatch(css, /--wipe-(?:cover|leave)-duration\s*:/, 'no stylesheet gives the wipe durations a value of its own');
+  assert.doesNotMatch(wipe, /\b(?:const|let)\s+\w*_MS\s*=\s*\d+/, 'page-wipe.ts declares no timing numbers of its own');
   const blades = css.match(/#p5-wipe-overlay\.is-(?:covering|leaving) \.p5-wipe-blade-red \{[^}]*\}/g);
   assert.equal(blades.length, 2);
   assert.match(blades[0], /transition: transform var\(--wipe-cover-duration\)/);
