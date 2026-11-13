@@ -77,13 +77,29 @@ async function openHome({ viewport = { width: 1440, height: 900 }, ...contextOpt
 const startCubeRecorder = (page) =>
   page.evaluate(() => {
     const host = document.querySelector('[data-about-portrait]');
-    const record = { phases: [], snapshots: {}, overflow: 0, frames: 0 };
+    const record = { phases: [], snapshots: {}, overflow: 0, frames: 0, stickerShown: 0, portraitShown: 0, thirdInView: null };
+    const frameBox = document.querySelector('[data-about-portrait-frame]');
+    const slicesShown = (stage, kind) => {
+      const slices = [...stage.querySelectorAll(`[data-cube-slice="${kind}"]`)];
+      return slices.length === 9 ? Math.min(...slices.map((slice) => Number(getComputedStyle(slice).opacity))) : 0;
+    };
     window.__cube = record;
+    const matrixOf = (element) => {
+      const transform = getComputedStyle(element).transform;
+      return transform === 'none' ? new DOMMatrix() : new DOMMatrix(transform);
+    };
+    // The face a sticker shows on screen, read from the rendered transforms of its piece and itself.
+    const shownFacing = (sticker) => {
+      const normal = matrixOf(sticker.parentElement).multiply(matrixOf(sticker)).transformPoint(new DOMPoint(0, 0, 1, 0));
+      const axes = [['x', normal.x], ['y', normal.y], ['z', normal.z]];
+      const [axis, value] = axes.reduce((best, entry) => (Math.abs(entry[1]) > Math.abs(best[1]) ? entry : best));
+      return `${value > 0 ? '+' : '-'}${axis}`;
+    };
     const snapshot = (stage) => {
       const stickers = [...stage.querySelectorAll('[data-cube-sticker]')];
       const faces = {};
-      for (const sticker of stickers) (faces[sticker.dataset.cubeFacing] ??= []).push(sticker.dataset.cubeSticker);
-      const front = stickers.filter((sticker) => sticker.dataset.cubeFacing === '+z');
+      for (const sticker of stickers) (faces[shownFacing(sticker)] ??= []).push(sticker.dataset.cubeSticker);
+      const front = stickers.filter((sticker) => shownFacing(sticker) === '+z');
       return {
         pieces: stage.querySelectorAll('[data-cube-piece]').length,
         stickers: stickers.length,
@@ -104,6 +120,15 @@ const startCubeRecorder = (page) =>
         last = phase;
       }
       record.frames += 1;
+      if (record.thirdInView === null) {
+        const rect = frameBox.getBoundingClientRect();
+        const visible = Math.max(0, Math.min(rect.bottom, window.innerHeight) - Math.max(rect.top, 0));
+        if (rect.height > 0 && visible / rect.height >= 0.35) record.thirdInView = performance.now();
+      }
+      if (stage) {
+        record.stickerShown = Math.max(record.stickerShown, slicesShown(stage, 'sticker'));
+        record.portraitShown = Math.max(record.portraitShown, slicesShown(stage, 'portrait'));
+      }
       record.overflow = Math.max(record.overflow, document.documentElement.scrollWidth - document.documentElement.clientWidth);
       if (phase !== 'gone' || record.frames < 5) requestAnimationFrame(sample);
     };
@@ -169,9 +194,13 @@ test('a scrambled Rubik cube solves itself into the portrait', async () => {
     for (const image of sticker.stickerSlices) assert.match(image, /\/stickers\/sticker-04\.svg/, 'sticker 04 is spread over the front');
     const portrait = record.snapshots.portrait;
     for (const image of portrait.portraitSlices) assert.match(image, /brinu-avatar\.jpg/, 'the front settles into the Dossier portrait');
+    assert.ok(record.stickerShown >= 0.99, `all nine sticker 04 slices become fully visible (${record.stickerShown})`);
+    assert.ok(record.portraitShown >= 0.99, `all nine portrait slices become fully visible (${record.portraitShown})`);
 
     const end = record.phases.at(-1).at;
-    assert.ok(end - startedAt <= 4000, `the sequence ends within 4 s (${Math.round(end - startedAt)} ms)`);
+    assert.ok(record.thirdInView !== null, 'a third of the portrait came into view');
+    assert.ok(startedAt - record.thirdInView <= 100, `the cube starts as 35% of the portrait is on screen (${Math.round(startedAt - record.thirdInView)} ms later)`);
+    assert.ok(end - record.thirdInView <= 4000, `the sequence ends within 4 s of that moment (${Math.round(end - record.thirdInView)} ms)`);
     const final = await page.evaluate(() => {
       const image = document.getElementById('about-official-avatar');
       return {

@@ -15,7 +15,9 @@ import {
 const STICKER_IMAGE = '/stickers/sticker-04.svg';
 const CUBE_SHARE = 0.78;
 const GAP_SHARE = 0.04;
-const TURN_SECONDS = 0.2;
+const TURN_SECONDS = 0.17;
+/** The cube starts once this share of the portrait is on screen, so the visitor sees it from the first turn. */
+export const START_VISIBLE_SHARE = 0.35;
 const AXIS_VECTOR: Readonly<Record<Axis, readonly [number, number, number]>> = { x: [1, 0, 0], y: [0, 1, 0], z: [0, 0, 1] };
 const FACE_TRANSFORM: Readonly<Record<Facing, string>> = {
   '+z': 'rotateY(0deg)',
@@ -180,7 +182,7 @@ export function bindRubikPortrait(host: HTMLElement, frame: HTMLElement, portrai
     const portraitSlices = front.map(({ at, element }) => slice(element, at, portrait.currentSrc || portrait.src, size * ratio));
     gsap.timeline()
       .to(stickerSlices, { opacity: 1, duration: 0.3, stagger: 0.03 })
-      .call(setPhase('portrait'), undefined, '+=0.25')
+      .call(setPhase('portrait'), undefined, '+=0.15')
       .to(portraitSlices, { opacity: 1, duration: 0.35, stagger: 0.03 })
       .to(frame, { opacity: 1, duration: 0.35, ease: 'power1.out' })
       .to(stage, { opacity: 0, scale: 1.04, duration: 0.35, ease: 'power1.out' }, '<')
@@ -199,7 +201,7 @@ export function bindRubikPortrait(host: HTMLElement, frame: HTMLElement, portrai
       host.dataset.cubeStartedAt = String(performance.now());
       timeline.play();
     },
-    { threshold: 0.35 }
+    { threshold: START_VISIBLE_SHARE }
   );
   observer.observe(frame);
 
