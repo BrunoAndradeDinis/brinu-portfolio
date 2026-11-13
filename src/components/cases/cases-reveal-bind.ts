@@ -9,6 +9,7 @@ import {
   resumeScroll,
 } from '../../utils/motion.ts';
 import { CASE_REVEAL_ELEMENTS, createCaseSteps, elementOffsets } from './cases-reveal.ts';
+import { typeText } from '../../utils/text-type-bind.ts';
 
 type Direction = 1 | -1;
 
@@ -92,6 +93,8 @@ function enableReveal(section: HTMLElement): (() => void) | null {
         { autoAlpha: 1, y: 0, duration: MOTION_DURATION.seconds, ease: MOTION_EASE.enter },
         offsets[position]
       );
+      const typedBlocks = Array.from(element.querySelectorAll<HTMLElement>('[data-type]'));
+      if (typedBlocks.length > 0) timeline.call(() => typedBlocks.forEach(typeText), undefined, offsets[position]);
     });
     revealTimeline = timeline;
   };

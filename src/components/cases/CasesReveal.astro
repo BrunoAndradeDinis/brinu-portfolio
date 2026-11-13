@@ -112,7 +112,7 @@ const archive = getLocalizedArchive("pt-br");
                     data-case-el="meta"
                     class:list={["mb-4 flex flex-wrap items-center justify-between gap-2 pb-3 font-mono text-xs font-black uppercase", v.head, v.meta]}
                   >
-                    <span data-case-reel>[ {project.reelNumber} ] // {project.category}</span>
+                    <span data-case-reel data-type="label">[ {project.reelNumber} ] // {project.category}</span>
                     <P5Badge data-case-badge class:list={["px-2.5 py-0.5 text-[10px] sm:text-xs font-black", v.badge]}>
                       {project.badge}
                     </P5Badge>
@@ -126,7 +126,7 @@ const archive = getLocalizedArchive("pt-br");
                     {project.title}
                   </h3>
                   <div data-case-el="summary">
-                    <p data-case-subtitle class:list={["mt-1 mb-3 font-mono text-xs font-bold uppercase", v.subtitle]}>
+                    <p data-case-subtitle data-type="label" class:list={["mt-1 mb-3 font-mono text-xs font-bold uppercase", v.subtitle]}>
                       {project.subtitle}
                     </p>
                     <p data-case-description class:list={["font-body text-sm sm:text-base leading-relaxed", v.body]}>
@@ -298,9 +298,16 @@ const archive = getLocalizedArchive("pt-br");
 <script>
   import { onPageReady } from "../../utils/page-lifecycle";
   import { bindCasesReveal } from "./cases-reveal-bind";
+  import { bindTypedText } from "../../utils/text-type-bind";
 
   onPageReady(() => {
     const section = document.querySelector<HTMLElement>("[data-cases-reveal]");
-    if (section) return bindCasesReveal(section);
+    if (!section) return;
+    const unbindTyping = bindTypedText(section);
+    const unbindReveal = bindCasesReveal(section);
+    return () => {
+      unbindReveal();
+      unbindTyping();
+    };
   });
 </script>

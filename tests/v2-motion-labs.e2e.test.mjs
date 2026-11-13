@@ -494,3 +494,166 @@ test('index shows the cases reveal in the projects position', async () => {
     await context.close();
   }
 });
+
+const startTypingRecorder = (page, key, selector) =>
+  page.evaluate(
+    ({ key, selector }) => {
+      const element = document.querySelector(selector);
+      const card = element.closest('[data-reveal-case]');
+      const shownText = () => {
+        let text = '';
+        const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
+        for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+          let shown = true;
+          for (let parent = node.parentElement; parent !== element; parent = parent.parentElement) {
+            const style = getComputedStyle(parent);
+            if (Number(style.opacity) === 0 || style.visibility === 'hidden' || style.display === 'none' || style.color === 'rgba(0, 0, 0, 0)') shown = false;
+          }
+          if (shown) text += node.data;
+        }
+        return text.trim();
+      };
+      const onScreen = () => {
+        const rect = element.getBoundingClientRect();
+        return element.checkVisibility({ visibilityProperty: true }) && rect.bottom > 0 && rect.top < window.innerHeight;
+      };
+      const record = { before: null, samples: [], complete: false };
+      window.__typing = { ...(window.__typing || {}), [key]: record };
+      const sample = () => {
+        const frame = {
+          at: performance.now(),
+          shown: shownText(),
+          full: element.textContent.trim(),
+          height: element.offsetHeight,
+          cardHeight: card.offsetHeight,
+          onScreen: onScreen(),
+        };
+        const typing = frame.shown !== frame.full;
+        if (record.samples.length === 0 && !typing) record.before = frame;
+        else record.samples.push(frame);
+        record.complete = record.samples.length > 0 && !typing;
+        if (!record.complete) requestAnimationFrame(sample);
+      };
+      requestAnimationFrame(sample);
+    },
+    { key, selector }
+  );
+
+async function readTyping(page, key) {
+  await page.waitForFunction((name) => window.__typing[name].complete === true, key, { timeout: 15_000 });
+  return page.evaluate((name) => window.__typing[name], key);
+}
+
+function assertTypedOnce(record, label) {
+  const partial = record.samples.slice(0, -1);
+  const done = record.samples.at(-1);
+  assert.equal(partial[0].shown, '', `${label}: typing starts from an empty block`);
+  assert.equal(done.shown, done.full, `${label}: typing ends on the whole text`);
+  let previous = 0;
+  for (const frame of record.samples) {
+    assert.ok(frame.full.startsWith(frame.shown), `${label}: what is shown is always the start of the text ("${frame.shown}")`);
+    assert.ok(frame.shown.length >= previous, `${label}: typed characters never go back`);
+    previous = frame.shown.length;
+  }
+  assert.ok(new Set(partial.map((frame) => frame.shown.length)).size >= 5, `${label}: the text grows character by character, not in one flash`);
+  const firstTyped = partial.find((frame) => frame.shown.length > 0);
+  assert.equal(firstTyped.onScreen, true, `${label}: the block is on screen while it types`);
+}
+
+// Typing starts after `lastEmpty` and ends at or before `done`, so the real time lies between `shortest` and `longest`.
+function typingWindow(record) {
+  const partial = record.samples.slice(0, -1);
+  const lastEmpty = partial.findLast((frame) => frame.shown.length === 0);
+  const firstTyped = partial.find((frame) => frame.shown.length > 0);
+  return { shortest: partial.at(-1).at - firstTyped.at, longest: record.samples.at(-1).at - lastEmpty.at };
+}
+
+const LABEL_SELECTORS = ['[data-case-reel]', '[data-case-subtitle]'];
+
+function assertLabelTiming(record, label) {
+  assertTypedOnce(record, label);
+  const { shortest, longest } = typingWindow(record);
+  assert.ok(longest >= 400, `${label}: typing takes at least 400 ms (at most ${longest} ms measured)`);
+  assert.ok(shortest <= 600, `${label}: typing takes at most 600 ms (at least ${shortest} ms measured)`);
+}
+
+test('a label types within 400 to 600 ms on screen', async () => {
+  for (const locale of LOCALES) {
+    const { context, page } = await openHome({ locale });
+    try {
+      await pinCases(page);
+      await waitForCaseFullyShown(page, CASE_IDS[0]);
+      for (const selector of LABEL_SELECTORS) await startTypingRecorder(page, selector, `#case-${CASE_IDS[1]} ${selector}`);
+      await page.mouse.wheel(0, 120);
+      for (const selector of LABEL_SELECTORS) assertLabelTiming(await readTyping(page, selector), `${locale} ${selector}`);
+    } finally {
+      await context.close();
+    }
+  }
+
+  const { context, page } = await openHome({ viewport: { width: 360, height: 640 } });
+  try {
+    assert.equal((await stageState(page)).mode, 'static', 'a small phone shows the plain list');
+    const selector = `#case-${CASE_IDS[2]} [data-case-subtitle]`;
+    await startTypingRecorder(page, 'scrolled', selector);
+    await page.locator(selector).scrollIntoViewIfNeeded();
+    assertLabelTiming(await readTyping(page, 'scrolled'), 'label scrolled into the viewport');
+  } finally {
+    await context.close();
+  }
+});
+
+test('typing reserves the final height', async () => {
+  const { context, page } = await openHome();
+  try {
+    await pinCases(page);
+    await waitForCaseFullyShown(page, CASE_IDS[0]);
+    for (const selector of LABEL_SELECTORS) await startTypingRecorder(page, selector, `#case-${CASE_IDS[1]} ${selector}`);
+    await page.mouse.wheel(0, 120);
+    for (const selector of LABEL_SELECTORS) {
+      const record = await readTyping(page, selector);
+      assertTypedOnce(record, selector);
+      const settled = record.samples.at(-1);
+      assert.ok(settled.height > 0, `${selector}: the settled block has a height`);
+      assert.equal(record.before.height, settled.height, `${selector}: the height is reserved before typing starts`);
+      assert.equal(record.before.cardHeight, settled.cardHeight, `${selector}: the case card is at its final height before typing starts`);
+      for (const frame of record.samples) {
+        assert.equal(frame.height, settled.height, `${selector}: the block keeps its final height with "${frame.shown}" typed`);
+        assert.equal(frame.cardHeight, settled.cardHeight, `${selector}: the case card never moves while "${frame.shown}" is typed`);
+        assert.equal(frame.full, settled.full, `${selector}: the whole text stays in the DOM while typing`);
+      }
+    }
+  } finally {
+    await context.close();
+  }
+});
+
+test('reduced motion shows typed text in full at once', async () => {
+  for (const locale of LOCALES) {
+    const { context, page } = await openHome({ locale, reducedMotion: 'reduce' });
+    try {
+      for (const selector of LABEL_SELECTORS) {
+        const target = `#case-${CASE_IDS[2]} ${selector}`;
+        await startTypingRecorder(page, selector, target);
+        await page.locator(target).scrollIntoViewIfNeeded();
+        const frames = await page.evaluate(
+          async ({ key, windowMs }) => {
+            const until = performance.now() + windowMs;
+            while (performance.now() < until) await new Promise((resolve) => requestAnimationFrame(resolve));
+            return { typed: window.__typing[key].samples.length, text: window.__typing[key].before.full, onScreen: window.__typing[key].before !== null };
+          },
+          { key: selector, windowMs: 700 }
+        );
+        assert.equal(frames.typed, 0, `${locale} ${selector}: no frame ever shows a partly typed text`);
+        assert.ok(frames.text.length > 0, `${locale} ${selector}: the whole text is shown`);
+        const visible = await page.locator(target).evaluate((element) => {
+          const rect = element.getBoundingClientRect();
+          return element.checkVisibility({ visibilityProperty: true, opacityProperty: true }) && rect.bottom > 0 && rect.top < window.innerHeight;
+        });
+        assert.equal(visible, true, `${locale} ${selector}: the label is on screen in full`);
+      }
+    } finally {
+      await context.close();
+    }
+  }
+});
