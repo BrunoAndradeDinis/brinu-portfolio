@@ -186,8 +186,10 @@ test('static cases list follows the language toggle', async () => {
   try {
     await assertStaticList(page, 'pt-br');
     assert.deepEqual((await readCases(page)).map((entry) => entry.description), getLocalizedCases('pt-br').map((entry) => entry.description));
-    await page.locator('[data-lang-toggle]').first().click();
+    await page.locator('#cockpit-trigger-btn').click();
+    await page.locator('[data-cockpit-lang="en"]').click();
     await page.waitForFunction(() => document.documentElement.getAttribute('data-locale') === 'en');
+    await page.keyboard.press('Escape');
     await page.waitForFunction((title) => document.querySelector('#case-magalu-cloud [data-case-title]').textContent.trim() === title, CASE_TITLES.en[0]);
     await assertStaticList(page, 'en');
     assert.deepEqual((await readCases(page)).map((entry) => entry.description), getLocalizedCases('en').map((entry) => entry.description));
@@ -560,12 +562,11 @@ function assertTypedOnce(record, label) {
   assert.equal(firstTyped.onScreen, true, `${label}: the block is on screen while it types`);
 }
 
-// Typing starts after `lastEmpty` and ends at or before `done`, so the real time lies between `shortest` and `longest`.
+// Typing starts between the last untouched frame and the first typing frame, and ends between the last
+// partial frame and the first complete one, so the real time lies between `shortest` and `longest`.
 function typingWindow(record) {
-  const partial = record.samples.slice(0, -1);
-  const lastEmpty = partial.findLast((frame) => frame.shown.length === 0);
-  const firstTyped = partial.find((frame) => frame.shown.length > 0);
-  return { shortest: partial.at(-1).at - firstTyped.at, longest: record.samples.at(-1).at - lastEmpty.at };
+  assert.ok(record.before, 'the block was sampled before typing started');
+  return { shortest: record.samples.at(-2).at - record.samples[0].at, longest: record.samples.at(-1).at - record.before.at };
 }
 
 const LABEL_SELECTORS = ['[data-case-reel]', '[data-case-subtitle]'];
@@ -655,5 +656,127 @@ test('reduced motion shows typed text in full at once', async () => {
     } finally {
       await context.close();
     }
+  }
+});
+
+const caseTexts = async (locale, id) => {
+  const { getLocalizedCases } = await import('../src/data/cases.ts');
+  const entry = getLocalizedCases(locale).find((project) => project.id === id);
+  return {
+    '[data-case-reel]': `[ ${entry.reelNumber} ] // ${entry.category}`,
+    '[data-case-subtitle]': entry.subtitle,
+    '[data-case-description]': entry.description,
+  };
+};
+
+const waitForMidTyping = (page, key) =>
+  page.waitForFunction((name) => {
+    const frame = window.__typing[name].samples.at(-1);
+    return frame !== undefined && frame.shown.length >= 10 && frame.shown.length < frame.full.length - 10;
+  }, key);
+
+test('paragraph keeps full text in the DOM while typing', async () => {
+  for (const locale of LOCALES) {
+    const id = CASE_IDS[1];
+    const description = (await caseTexts(locale, id))['[data-case-description]'];
+    const { context, page } = await openHome({ locale });
+    try {
+      await pinCases(page);
+      await waitForCaseFullyShown(page, CASE_IDS[0]);
+      await startTypingRecorder(page, 'paragraph', `#case-${id} [data-case-description]`);
+      await page.mouse.wheel(0, 120);
+
+      await waitForMidTyping(page, 'paragraph');
+      const accessible = await page.locator(`#case-${id} [data-case-description]`).ariaSnapshot();
+      assert.ok(accessible.replace(/\s+/g, ' ').includes(description), `${locale}: assistive tech reads the whole paragraph while it types (${accessible})`);
+
+      const record = await readTyping(page, 'paragraph');
+      assertTypedOnce(record, `${locale} paragraph`);
+      const settled = record.samples.at(-1);
+      assert.equal(settled.full, description, `${locale}: the paragraph is the case description`);
+      for (const frame of record.samples) {
+        assert.equal(frame.full, description, `${locale}: the whole paragraph is in the DOM with ${frame.shown.length} characters typed`);
+        assert.equal(frame.height, settled.height, `${locale}: the paragraph keeps its final height with ${frame.shown.length} characters typed`);
+      }
+      const expected = Math.min(4000, description.length * 40);
+      const { shortest, longest } = typingWindow(record);
+      assert.ok(shortest <= expected && expected <= longest, `${locale}: ${description.length} characters type in ${expected} ms (measured between ${shortest} and ${longest} ms)`);
+    } finally {
+      await context.close();
+    }
+  }
+});
+
+test('typed text keeps the active locale', async () => {
+  const id = CASE_IDS[1];
+  const texts = { 'pt-br': await caseTexts('pt-br', id), en: await caseTexts('en', id) };
+  const selectors = Object.keys(texts.en);
+  for (const selector of selectors) assert.notEqual(texts['pt-br'][selector], texts.en[selector], `${selector} differs between the two languages`);
+  const { context, page } = await openHome({ locale: 'pt-br' });
+  try {
+    await pinCases(page);
+    await waitForCaseFullyShown(page, CASE_IDS[0]);
+    await page.evaluate(
+      ({ id, selectors }) => {
+        const shownText = (element) => {
+          let text = '';
+          const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
+          for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+            let shown = true;
+            for (let parent = node.parentElement; parent !== element; parent = parent.parentElement) {
+              const style = getComputedStyle(parent);
+              if (Number(style.opacity) === 0 || style.visibility === 'hidden' || style.display === 'none' || style.color === 'rgba(0, 0, 0, 0)') shown = false;
+            }
+            if (shown) text += node.data;
+          }
+          return text.trim();
+        };
+        const frames = [];
+        window.__localeFrames = frames;
+        const sample = () => {
+          frames.push({
+            at: performance.now(),
+            locale: document.documentElement.getAttribute('data-locale'),
+            blocks: Object.fromEntries(
+              selectors.map((selector) => {
+                const element = document.querySelector(`#case-${id} ${selector}`);
+                return [selector, { shown: shownText(element), full: element.textContent.trim() }];
+              })
+            ),
+          });
+          requestAnimationFrame(sample);
+        };
+        requestAnimationFrame(sample);
+      },
+      { id, selectors }
+    );
+    await page.mouse.wheel(0, 120);
+    await page.waitForFunction(() => {
+      const paragraph = window.__localeFrames.at(-1).blocks['[data-case-description]'];
+      return paragraph.shown.length >= 10 && paragraph.shown.length < paragraph.full.length - 10;
+    });
+    await page.locator('#cockpit-trigger-btn').click();
+    await page.locator('[data-cockpit-lang="en"]').click();
+    await page.waitForFunction(() => document.documentElement.getAttribute('data-locale') === 'en');
+    await page.keyboard.press('Escape');
+    const switchedAt = await page.evaluate(() => window.__localeFrames.find((frame) => frame.locale === 'en').at);
+    await page.waitForFunction((since) => performance.now() - since > 4500, switchedAt);
+    const frames = await page.evaluate(() => window.__localeFrames);
+
+    const lastPortuguese = frames.findLast((frame) => frame.locale === 'pt-br').blocks['[data-case-description]'];
+    assert.ok(lastPortuguese.shown.length >= 10 && lastPortuguese.shown.length < lastPortuguese.full.length, `the switch happens while the paragraph is still typing in Portuguese ("${lastPortuguese.shown}")`);
+    const english = frames.filter((frame) => frame.locale === 'en');
+    assert.ok(english.length > 100, `the English frames cover the rest of the typing time (${english.length})`);
+    for (const frame of frames) {
+      for (const selector of selectors) {
+        const expected = texts[frame.locale][selector];
+        const block = frame.blocks[selector];
+        assert.equal(block.full, expected, `${selector} holds only ${frame.locale} text at ${Math.round(frame.at)} ms`);
+        assert.ok(expected.startsWith(block.shown), `${selector} shows only ${frame.locale} text at ${Math.round(frame.at)} ms ("${block.shown}")`);
+      }
+    }
+    for (const selector of selectors) assert.equal(frames.at(-1).blocks[selector].shown, texts.en[selector], `${selector} ends on the whole English text`);
+  } finally {
+    await context.close();
   }
 });
