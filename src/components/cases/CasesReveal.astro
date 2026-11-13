@@ -277,6 +277,27 @@ const archive = getLocalizedArchive("pt-br");
     visibility: visible;
   }
 
+  #works[data-cases-mode="reveal"] .cases-item {
+    position: relative;
+  }
+
+  #works .case-cubes {
+    position: absolute;
+    z-index: 20;
+    pointer-events: none;
+    perspective: 900px;
+  }
+
+  #works .case-cube {
+    position: absolute;
+    box-sizing: border-box;
+    border: 1px solid;
+    box-shadow: inset -4px -4px 0 rgb(0 0 0 / 0.28);
+    backface-visibility: hidden;
+    transform-style: preserve-3d;
+    will-change: transform, opacity;
+  }
+
   /* The global scroll lock drops the scrollbar gutter, which reflows the page and moves it out of the pin range. */
   html.lenis-stopped:not(.cockpit-menu-open):has(#works[data-cases-pinned="true"]) {
     overflow-x: clip !important;

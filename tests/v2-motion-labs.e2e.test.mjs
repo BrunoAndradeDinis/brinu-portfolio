@@ -1629,3 +1629,150 @@ test('the home has no lab section and the menu lists five sections', async () =>
     }
   }
 });
+
+const cubeState = (page, role) =>
+  page.evaluate((which) => {
+    const layer = document.querySelector(`#works [data-case-cubes="${which}"]`);
+    const card = which === 'enter' ? document.querySelector('#works [data-case-item]:first-child [data-reveal-case]') : document.querySelector('#works [data-case-item]:last-child [data-reveal-case]');
+    const shown = (element) => {
+      for (let node = element; node && node !== document.body; node = node.parentElement) {
+        const style = getComputedStyle(node);
+        if (style.visibility === 'hidden' || Number(style.opacity) === 0 || style.display === 'none') return false;
+      }
+      return true;
+    };
+    const cubes = layer ? [...layer.querySelectorAll('[data-case-cube]')] : [];
+    const visible = cubes.filter((cube) => shown(cube));
+    const offsets = cubes.map((cube) => {
+      const matrix = new DOMMatrixReadOnly(getComputedStyle(cube).transform === 'none' ? undefined : getComputedStyle(cube).transform);
+      return Math.hypot(matrix.m41, matrix.m42);
+    });
+    return {
+      cubes: cubes.length,
+      visibleCubes: visible.length,
+      spread: offsets.length ? offsets.reduce((sum, value) => sum + value, 0) / offsets.length : 0,
+      cardShown: card ? shown(card) && Number(getComputedStyle(card).opacity) === 1 : false,
+      pinned: document.getElementById('works').dataset.casesPinned === 'true',
+      overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+    };
+  }, role);
+
+async function scrollToEntry(page, progress) {
+  await page.evaluate((fraction) => {
+    const stage = document.querySelector('#works [data-cases-stage]');
+    const top = stage.getBoundingClientRect().top + window.scrollY;
+    window.scrollTo(0, top - window.innerHeight * (1 - fraction));
+  }, progress);
+  await page.waitForTimeout(400);
+}
+
+test('the first case assembles from cubes as the section scrolls to its pin', async () => {
+  const { context, page } = await openHome();
+  try {
+    await page.waitForFunction(() => document.getElementById('works').dataset.casesMode === 'reveal');
+    const samples = [];
+    for (const progress of [0.2, 0.5, 0.65]) {
+      await scrollToEntry(page, progress);
+      samples.push({ progress, ...(await cubeState(page, 'enter')) });
+    }
+    for (const sample of samples) {
+      assert.ok(sample.cubes > 0, 'the card has a layer of cubes');
+      assert.equal(sample.pinned, false, `${sample.progress}: the section is not pinned yet`);
+      assert.equal(sample.cardShown, false, `${sample.progress}: the case card is not shown before the cubes assemble it`);
+      assert.ok(sample.overflow <= 0, `${sample.progress}: flying cubes never widen the page`);
+    }
+    assert.ok(samples[1].visibleCubes > 0, 'cubes are on screen while they fly in');
+    assert.ok(samples[0].spread > samples[1].spread && samples[1].spread > samples[2].spread, `cubes close in as the page scrolls (${samples.map((sample) => Math.round(sample.spread)).join(' > ')})`);
+
+    await scrollToEntry(page, 0.2);
+    const back = await cubeState(page, 'enter');
+    assert.ok(back.spread > samples[1].spread, 'scrolling back up sends the cubes back out');
+    assert.equal(back.cardShown, false);
+
+    await pinCases(page);
+    await page.waitForTimeout(300);
+    const pinned = await cubeState(page, 'enter');
+    assert.equal(pinned.cardShown, true, 'the whole card is shown when the section pins');
+    assert.equal(pinned.visibleCubes, 0, 'no cube is left over the card once it pins');
+  } finally {
+    await context.close();
+  }
+});
+
+test('pinning does not replay the first case', async () => {
+  const { context, page } = await openHome();
+  try {
+    await page.waitForFunction(() => document.getElementById('works').dataset.casesMode === 'reveal');
+    await scrollToEntry(page, 0.99);
+    await page.evaluate(() => {
+      const card = document.querySelector(`#case-magalu-cloud`);
+      const elements = ['title', 'meta', 'media', 'summary', 'link'].map((name) => card.querySelector(`[data-case-el="${name}"]`));
+      window.__firstCase = { lowest: 1, frames: 0 };
+      const sample = () => {
+        if (document.getElementById('works').dataset.casesPinned === 'true') {
+          window.__firstCase.frames += 1;
+          for (const element of elements) {
+            const style = getComputedStyle(element);
+            window.__firstCase.lowest = Math.min(window.__firstCase.lowest, style.visibility === 'hidden' ? 0 : Number(style.opacity));
+          }
+        }
+        if (window.__firstCase.frames < 90) requestAnimationFrame(sample);
+      };
+      requestAnimationFrame(sample);
+    });
+    await page.mouse.move(700, 450);
+    await page.mouse.wheel(0, 400);
+    await page.waitForFunction(() => window.__firstCase.frames >= 90, null, { timeout: 10000 });
+    const record = await page.evaluate(() => window.__firstCase);
+    assert.equal(record.lowest, 1, 'every element of the first case stays shown from the moment the section pins');
+  } finally {
+    await context.close();
+  }
+});
+
+test('the last case breaks into cubes that scatter with the scroll', async () => {
+  const { context, page } = await openHome();
+  try {
+    await pinCases(page);
+    for (let step = 1; step < CASE_IDS.length; step += 1) {
+      await page.mouse.wheel(0, 300);
+      await waitForActiveCase(page, CASE_IDS[step]);
+      await betweenGestures(page);
+    }
+    await page.mouse.wheel(0, 300);
+    await page.waitForFunction(() => document.getElementById('works').dataset.casesPinned === 'false');
+    await page.waitForTimeout(400);
+    const released = await page.evaluate(() => window.scrollY);
+    const at = async (offset) => {
+      await page.evaluate((y) => window.scrollTo(0, y), released + offset);
+      await page.waitForTimeout(400);
+      return cubeState(page, 'exit');
+    };
+    const near = await at(80);
+    const far = await at(260);
+    for (const [label, state] of [['near', near], ['far', far]]) {
+      assert.equal(state.cardShown, false, `${label}: the last card has turned into cubes`);
+      assert.ok(state.visibleCubes > 0, `${label}: its cubes are on screen`);
+      assert.ok(state.overflow <= 0, `${label}: scattering cubes never widen the page`);
+    }
+    assert.ok(far.spread > near.spread, `the cubes spread further as the page scrolls (${Math.round(near.spread)} < ${Math.round(far.spread)})`);
+    const again = await at(80);
+    assert.ok(Math.abs(again.spread - near.spread) < 2, 'scrolling back gathers the cubes again');
+    const whole = await at(-2);
+    assert.equal(whole.cardShown, true, 'back at the end of the pin the last card is whole');
+    assert.equal(whole.visibleCubes, 0, 'and no cube shows over it');
+  } finally {
+    await context.close();
+  }
+});
+
+test('reduced motion shows no cubes', async () => {
+  const { context, page } = await openHome({ reducedMotion: 'reduce' });
+  try {
+    await page.locator('#works').scrollIntoViewIfNeeded();
+    assert.equal(await page.locator('#works [data-case-cubes]').count(), 0);
+    await assertStaticList(page, 'pt-br');
+  } finally {
+    await context.close();
+  }
+});

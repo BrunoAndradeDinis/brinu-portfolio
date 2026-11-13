@@ -11,6 +11,7 @@ import {
 } from '../../utils/motion.ts';
 import { CASE_REVEAL_ELEMENTS, createCaseSteps, elementOffsets } from './cases-reveal.ts';
 import { typeText } from '../../utils/text-type-bind.ts';
+import { bindCaseCubes } from './case-cubes-bind.ts';
 import { SCROLL_TO_HASH_EVENT } from '../../utils/page-lifecycle.ts';
 
 type Direction = 1 | -1;
@@ -27,6 +28,8 @@ const KEY_DIRECTIONS: Readonly<Record<string, Direction>> = {
 };
 
 const REVEAL_RISE_PX = 28;
+// A jump lands this far inside the pin, so a refresh that moves the pin start by a pixel still finds it pinned.
+const PIN_ENTRY_NUDGE_PX = 6;
 
 function revealElementsOf(item: HTMLElement): HTMLElement[] {
   return CASE_REVEAL_ELEMENTS.flatMap((name) => {
@@ -76,12 +79,25 @@ function enableReveal(section: HTMLElement): (() => void) | null {
   const hashIndex = caseIndexOf(decodeURIComponent(window.location.hash));
   if (hashIndex >= 0) requestedIndex = hashIndex;
 
-  const showCase = (index: number) => {
-    revealTimeline?.kill();
+  const markActive = (index: number) => {
     items.forEach((item, position) => {
       item.dataset.caseActive = String(position === index);
     });
     if (nextButton) nextButton.hidden = index === items.length - 1;
+  };
+
+  // A case the cubes assembled is already whole on screen, so it is shown as it stands, with no second reveal.
+  const showAssembled = (index: number) => {
+    revealTimeline?.kill();
+    revealTimeline = null;
+    markActive(index);
+    gsap.set(revealElementsOf(items[index]), { autoAlpha: 1, y: 0 });
+    items[index].dataset.caseRevealed = 'true';
+  };
+
+  const showCase = (index: number) => {
+    revealTimeline?.kill();
+    markActive(index);
 
     const active = items[index];
     const elements = revealElementsOf(active);
@@ -109,9 +125,13 @@ function enableReveal(section: HTMLElement): (() => void) | null {
     locked = true;
     section.dataset.casesPinned = 'true';
     pauseScroll();
-    const index = requestedIndex ?? (direction < 0 ? items.length - 1 : 0);
-    requestedIndex = null;
-    showCase(steps.goTo(index).index);
+    if (requestedIndex !== null) {
+      const index = requestedIndex;
+      requestedIndex = null;
+      showCase(steps.goTo(index).index);
+      return;
+    }
+    showAssembled(steps.goTo(direction < 0 ? items.length - 1 : 0).index);
   };
 
   const release = () => {
@@ -120,7 +140,7 @@ function enableReveal(section: HTMLElement): (() => void) | null {
     section.dataset.casesPinned = 'false';
   };
 
-  showCase(0);
+  showAssembled(0);
   const trigger = ScrollTrigger.create({
     trigger: stage,
     start: 'top top',
@@ -155,7 +175,7 @@ function enableReveal(section: HTMLElement): (() => void) | null {
       return;
     }
     requestedIndex = index;
-    smoothScrollTo(trigger.start + 1, MOTION_DURATION.seconds);
+    smoothScrollTo(trigger.start + PIN_ENTRY_NUDGE_PX, MOTION_DURATION.seconds);
   };
 
   const onScrollToHash = (event: Event) => {
@@ -167,8 +187,14 @@ function enableReveal(section: HTMLElement): (() => void) | null {
       return;
     }
     requestedIndex = index;
-    jumpScrollTo(trigger.start + 1);
+    jumpScrollTo(trigger.start + PIN_ENTRY_NUDGE_PX);
     ScrollTrigger.update();
+    // A jump that lands inside the pin crosses no start, so the pin may be active without having toggled.
+    const lockIfPinned = () => {
+      if (!locked && trigger.isActive) lock(1);
+    };
+    lockIfPinned();
+    requestAnimationFrame(lockIfPinned);
   };
 
   const acceptsInput = () => locked && !document.documentElement.classList.contains('cockpit-menu-open');
@@ -218,7 +244,17 @@ function enableReveal(section: HTMLElement): (() => void) | null {
   document.addEventListener('click', onCaseLinkClick, { capture: true });
   window.addEventListener(SCROLL_TO_HASH_EVENT, onScrollToHash);
 
+  const cardOf = (item: HTMLElement) => item.querySelector<HTMLElement>('[data-reveal-case]') as HTMLElement;
+  const unbindCubes = bindCaseCubes({
+    stage,
+    firstCard: cardOf(items[0]),
+    lastCard: cardOf(items[items.length - 1]),
+    pinEnd: () => trigger.end,
+    onAssembled: () => items[0].querySelectorAll<HTMLElement>('[data-type]').forEach(typeText),
+  });
+
   return () => {
+    unbindCubes();
     window.removeEventListener('wheel', onWheel, { capture: true });
     window.removeEventListener('touchstart', onTouchStart);
     window.removeEventListener('touchmove', onTouchMove);

@@ -155,3 +155,29 @@ test('the route wipe reads its timings from motion.ts', async () => {
   assert.match(blades[0], /transition: transform var\(--wipe-cover-duration\)/);
   assert.match(blades[1], /transition: transform var\(--wipe-leave-duration\)/);
 });
+
+test('cubes tile the card exactly and come from all four corners', async () => {
+  const { layoutCubes, MAX_CUBES } = await import('../src/components/cases/case-cubes.ts');
+  for (const [width, height] of [[1200, 420], [358, 640], [57, 30], [2400, 900]]) {
+    const cubes = layoutCubes(width, height, 700, 450, 7);
+    assert.ok(cubes.length > 0 && cubes.length <= MAX_CUBES, `${width}x${height}: ${cubes.length} cubes`);
+    const area = cubes.reduce((sum, cube) => sum + cube.width * cube.height, 0);
+    assert.ok(Math.abs(area - width * height) < 1e-6 * width * height, `${width}x${height}: the cubes cover the card exactly`);
+    const right = Math.max(...cubes.map((cube) => cube.left + cube.width));
+    const bottom = Math.max(...cubes.map((cube) => cube.top + cube.height));
+    assert.ok(Math.abs(right - width) < 1e-6 && Math.abs(bottom - height) < 1e-6, `${width}x${height}: the grid ends on the card's edges`);
+    if (cubes.length >= 4) {
+      const corners = new Set(cubes.map((cube) => `${Math.sign(cube.fromX)},${Math.sign(cube.fromY)}`));
+      assert.deepEqual([...corners].sort(), ['-1,-1', '-1,1', '1,-1', '1,1'], `${width}x${height}: cubes come from all four corners`);
+    }
+    for (const cube of cubes) {
+      const offX = cube.left + cube.width / 2 - width / 2;
+      const offY = cube.top + cube.height / 2 - height / 2;
+      if (Math.abs(offX) > 1e-6) assert.equal(Math.sign(cube.fromX), Math.sign(offX), 'each cube comes from its own side');
+      if (Math.abs(offY) > 1e-6) assert.equal(Math.sign(cube.fromY), Math.sign(offY), 'each cube comes from its own side');
+      assert.ok(cube.turnAt >= 0 && cube.turnAt <= 1);
+    }
+  }
+  assert.deepEqual(layoutCubes(1200, 420, 700, 450, 7), layoutCubes(1200, 420, 700, 450, 7), 'the same seed gives the same cubes');
+  assert.deepEqual(layoutCubes(0, 420, 700, 450), []);
+});
