@@ -200,11 +200,10 @@ function bindJumpCutBadge(section: HTMLElement): () => void {
   if (!strip || !badge) return () => {};
   const tween = gsap.fromTo(
     badge,
-    { scale: 0.88, opacity: 0.7 },
+    { scale: 0.88 },
     {
       scrollTrigger: { trigger: strip, start: 'top 90%', end: 'top 50%', scrub: 0.6 },
       scale: 1,
-      opacity: 1,
       ease: 'power3.out',
       force3D: true,
     }
@@ -212,7 +211,7 @@ function bindJumpCutBadge(section: HTMLElement): () => void {
   return () => {
     tween.scrollTrigger?.kill();
     tween.kill();
-    gsap.set(badge, { clearProps: 'transform,opacity' });
+    gsap.set(badge, { clearProps: 'transform' });
   };
 }
 
