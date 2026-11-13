@@ -52,5 +52,15 @@ export default defineConfig({
   ],
   vite: {
     plugins: [tailwindcss()],
+    build: {
+      rollupOptions: {
+        output: {
+          manualChunks(id) {
+            if (id.includes('/three/build/three.core')) return 'three-core';
+            if (id.includes('/three/build/three.module')) return 'three-renderers';
+          },
+        },
+      },
+    },
   },
 });

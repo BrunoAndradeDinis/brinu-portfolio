@@ -549,7 +549,11 @@ async function readTyping(page, key) {
 function assertTypedOnce(record, label) {
   const partial = record.samples.slice(0, -1);
   const done = record.samples.at(-1);
-  assert.equal(partial[0].shown, '', `${label}: typing starts from an empty block`);
+  // The first typing frame may already hold the characters typed since the last untouched frame, and no more.
+  assert.ok(record.before, `${label}: the block was sampled before typing started`);
+  const charsPerMs = done.full.length / (done.at - record.before.at);
+  const typedByFirstFrame = Math.ceil(charsPerMs * (partial[0].at - record.before.at)) + 1;
+  assert.ok(partial[0].shown.length <= typedByFirstFrame, `${label}: typing starts from an empty block ("${partial[0].shown}" on the first frame)`);
   assert.equal(done.shown, done.full, `${label}: typing ends on the whole text`);
   let previous = 0;
   for (const frame of record.samples) {
@@ -1097,5 +1101,132 @@ test('reduced motion shows the panel and full text at once', async () => {
     } finally {
       await context.close();
     }
+  }
+});
+
+const ORBIT_STAGE = '#lab [data-orbit-stage]';
+
+const arsenalSkillNames = async () => {
+  const { ARSENAL } = await import('../src/data/arsenal.ts');
+  return ARSENAL.flatMap((domain) => domain.skills.map((skill) => skill.name));
+};
+
+const orbitState = (page) =>
+  page.locator(ORBIT_STAGE).evaluate((stage) => ({
+    state: stage.dataset.orbitState ?? null,
+    geometries: Number(stage.dataset.orbitGeometries),
+    textures: Number(stage.dataset.orbitTextures),
+    programs: Number(stage.dataset.orbitPrograms),
+    canvases: stage.querySelectorAll('canvas').length,
+    nodes: [...stage.querySelectorAll('button')].filter((node) => node.checkVisibility({ visibilityProperty: true })).map((node) => node.getAttribute('aria-label')),
+  }));
+
+async function showOrbit(page) {
+  await page.locator(ORBIT_STAGE).scrollIntoViewIfNeeded();
+  await page.waitForFunction((selector) => document.querySelector(selector).dataset.orbitState === 'running', ORBIT_STAGE);
+}
+
+// Reads the WebGL drawing itself: the alpha under each node's centre and in the stage's empty corner.
+const readOrbitPixels = (page) =>
+  page.locator(ORBIT_STAGE).evaluate(async (stage) => {
+    const canvas = stage.querySelector('canvas');
+    const gl = canvas.getContext('webgl2') ?? canvas.getContext('webgl');
+    const box = canvas.getBoundingClientRect();
+    const alphaAt = (clientX, clientY) => {
+      const pixel = new Uint8Array(4);
+      const x = Math.round(((clientX - box.left) / box.width) * canvas.width);
+      const y = Math.round((1 - (clientY - box.top) / box.height) * canvas.height);
+      gl.readPixels(x, y, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, pixel);
+      return pixel[3];
+    };
+    let reading = null;
+    for (let frame = 0; frame < 30; frame += 1) {
+      await new Promise((resolve) => requestAnimationFrame(resolve));
+      reading = {
+        nodes: [...stage.querySelectorAll('button')].map((node) => {
+          const rect = node.getBoundingClientRect();
+          return { name: node.getAttribute('aria-label'), alpha: alphaAt(rect.left + rect.width / 2, rect.top + rect.height / 2) };
+        }),
+        corner: alphaAt(box.left + 12, box.top + 12),
+        contextLost: gl.isContextLost(),
+      };
+      if (reading.nodes.some((node) => node.alpha > 0)) break;
+    }
+    return reading;
+  });
+
+test('orbit renders one node per skill when the act is visible', async () => {
+  const skills = await arsenalSkillNames();
+  for (const viewport of [{ width: 1440, height: 900 }, SMALL_PHONE]) {
+    const label = `${viewport.width}px`;
+    const sceneRequests = [];
+    const { context, page } = await openHome({
+      viewport,
+      prepare: (target) => target.on('request', (request) => /three|orbit-scene/.test(request.url()) && sceneRequests.push(request.url())),
+    });
+    try {
+      const idle = await orbitState(page);
+      assert.equal(idle.canvases, 0, `${label}: no scene is mounted while the act is off screen`);
+      assert.deepEqual(idle.nodes, [], `${label}: no node is shown while the act is off screen`);
+      assert.deepEqual(sceneRequests, [], `${label}: Three.js is not downloaded before the act is visible`);
+
+      await showOrbit(page);
+      const shown = await orbitState(page);
+      assert.equal(shown.canvases, 1, `${label}: one canvas is mounted`);
+      assert.deepEqual([...shown.nodes].sort(), [...skills].sort(), `${label}: one node per skill, none missing and none twice`);
+      assert.ok(sceneRequests.some((url) => url.includes('three')), `${label}: Three.js is downloaded once the act is visible`);
+
+      const drawn = await readOrbitPixels(page);
+      assert.equal(drawn.contextLost, false, `${label}: the WebGL context is alive`);
+      assert.equal(drawn.corner, 0, `${label}: nothing is drawn in the empty corner of the stage`);
+      for (const node of drawn.nodes) assert.equal(node.alpha, 255, `${label}: ${node.name} is drawn on the canvas where its node sits`);
+      const stage = await page.locator(ORBIT_STAGE).evaluate((element) => {
+        const rect = element.getBoundingClientRect();
+        const centres = [...element.querySelectorAll('button')].map((node) => node.getBoundingClientRect()).map((box) => ({ x: box.left + box.width / 2, y: box.top + box.height / 2 }));
+        return { inside: centres.every((point) => point.x > rect.left && point.x < rect.right && point.y > rect.top && point.y < rect.bottom), distinct: new Set(centres.map((point) => `${Math.round(point.x)}:${Math.round(point.y)}`)).size };
+      });
+      assert.equal(stage.inside, true, `${label}: every node sits inside the stage`);
+      assert.equal(stage.distinct, skills.length, `${label}: no two nodes share a position`);
+    } finally {
+      await context.close();
+    }
+  }
+});
+
+test('leaving the act disposes orbit resources', async () => {
+  const skills = await arsenalSkillNames();
+  const { context, page } = await openHome();
+  try {
+    await showOrbit(page);
+    const running = await orbitState(page);
+    assert.ok(running.geometries >= skills.length, `the scene holds a geometry per node (${running.geometries})`);
+    assert.ok(running.programs >= 1, `the scene holds compiled materials (${running.programs})`);
+    await page.locator(ORBIT_STAGE).evaluate((stage) => {
+      window.__orbitCanvas = stage.querySelector('canvas');
+    });
+
+    await page.evaluate(() => window.scrollTo(0, 0));
+    await page.waitForFunction((selector) => document.querySelector(selector).dataset.orbitState === 'disposed', ORBIT_STAGE);
+    const left = await orbitState(page);
+    assert.deepEqual(
+      { geometries: left.geometries, textures: left.textures, programs: left.programs },
+      { geometries: 0, textures: 0, programs: 0 },
+      'the renderer tracks no geometry, texture or material program after leaving'
+    );
+    assert.equal(left.canvases, 0, 'the canvas is removed');
+    assert.deepEqual(left.nodes, [], 'the nodes are removed');
+    const context2 = await page.evaluate(() => {
+      const gl = window.__orbitCanvas.getContext('webgl2') ?? window.__orbitCanvas.getContext('webgl');
+      return { lost: gl.isContextLost(), attached: window.__orbitCanvas.isConnected };
+    });
+    assert.deepEqual(context2, { lost: true, attached: false }, 'the WebGL context of the old canvas is released');
+
+    await showOrbit(page);
+    const again = await orbitState(page);
+    assert.equal(again.canvases, 1, 'coming back mounts one scene again');
+    assert.deepEqual([...again.nodes].sort(), [...skills].sort());
+    assert.equal((await readOrbitPixels(page)).nodes.every((node) => node.alpha === 255), true, 'the remounted scene draws every node');
+  } finally {
+    await context.close();
   }
 });

@@ -1,5 +1,6 @@
 ---
 import ArcanaDeck from "./ArcanaDeck.astro";
+import ArsenalOrbit from "./arsenal-orbit/ArsenalOrbit";
 import { ptBrDict } from "../i18n/dictionaries";
 import P5Title from "./p5/P5Title.astro";
 import P5Badge from "./p5/P5Badge.astro";
@@ -45,4 +46,8 @@ import P5Badge from "./p5/P5Badge.astro";
   </div>
 
   <ArcanaDeck />
+
+  <div class="mt-16 sm:mt-20">
+    <ArsenalOrbit client:visible />
+  </div>
 </section>
