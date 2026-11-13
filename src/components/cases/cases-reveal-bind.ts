@@ -250,7 +250,6 @@ function enableReveal(section: HTMLElement): (() => void) | null {
     firstCard: cardOf(items[0]),
     lastCard: cardOf(items[items.length - 1]),
     pinEnd: () => trigger.end,
-    onAssembled: () => items[0].querySelectorAll<HTMLElement>('[data-type]').forEach(typeText),
   });
 
   return () => {

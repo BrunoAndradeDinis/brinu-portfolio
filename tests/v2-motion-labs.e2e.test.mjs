@@ -1684,6 +1684,12 @@ test('the first case assembles from cubes as the section scrolls to its pin', as
     assert.ok(samples[1].visibleCubes > 0, 'cubes are on screen while they fly in');
     assert.ok(samples[0].spread > samples[1].spread && samples[1].spread > samples[2].spread, `cubes close in as the page scrolls (${samples.map((sample) => Math.round(sample.spread)).join(' > ')})`);
 
+    await scrollToEntry(page, 0.85);
+    const turning = await cubeState(page, 'enter');
+    assert.equal(turning.pinned, false, 'the cubes turn before the section pins');
+    assert.equal(turning.cardShown, true, 'once assembled, the card sits under the turning cubes');
+    assert.ok(turning.visibleCubes > 0 && turning.visibleCubes < turning.cubes, `part of the cubes have turned away (${turning.visibleCubes} of ${turning.cubes} left)`);
+
     await scrollToEntry(page, 0.2);
     const back = await cubeState(page, 'enter');
     assert.ok(back.spread > samples[1].spread, 'scrolling back up sends the cubes back out');
@@ -1707,13 +1713,26 @@ test('pinning does not replay the first case', async () => {
     await page.evaluate(() => {
       const card = document.querySelector(`#case-magalu-cloud`);
       const elements = ['title', 'meta', 'media', 'summary', 'link'].map((name) => card.querySelector(`[data-case-el="${name}"]`));
-      window.__firstCase = { lowest: 1, frames: 0 };
+      const typed = [...card.querySelectorAll('[data-type]')];
+      const shownText = (element) => {
+        let text = '';
+        const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
+        for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+          if (Number(getComputedStyle(node.parentElement).opacity) !== 0) text += node.data;
+        }
+        return text.trim();
+      };
+      window.__firstCase = { lowest: 1, frames: 0, partialText: [] };
       const sample = () => {
         if (document.getElementById('works').dataset.casesPinned === 'true') {
           window.__firstCase.frames += 1;
           for (const element of elements) {
             const style = getComputedStyle(element);
             window.__firstCase.lowest = Math.min(window.__firstCase.lowest, style.visibility === 'hidden' ? 0 : Number(style.opacity));
+          }
+          for (const block of typed) {
+            const shown = shownText(block);
+            if (shown !== block.textContent.trim()) window.__firstCase.partialText.push(shown);
           }
         }
         if (window.__firstCase.frames < 90) requestAnimationFrame(sample);
@@ -1725,6 +1744,7 @@ test('pinning does not replay the first case', async () => {
     await page.waitForFunction(() => window.__firstCase.frames >= 90, null, { timeout: 10000 });
     const record = await page.evaluate(() => window.__firstCase);
     assert.equal(record.lowest, 1, 'every element of the first case stays shown from the moment the section pins');
+    assert.deepEqual(record.partialText, [], 'no text of the first case is typed again once it is on screen');
   } finally {
     await context.close();
   }
@@ -1767,12 +1787,16 @@ test('the last case breaks into cubes that scatter with the scroll', async () =>
 });
 
 test('reduced motion shows no cubes', async () => {
-  const { context, page } = await openHome({ reducedMotion: 'reduce' });
-  try {
-    await page.locator('#works').scrollIntoViewIfNeeded();
-    assert.equal(await page.locator('#works [data-case-cubes]').count(), 0);
-    await assertStaticList(page, 'pt-br');
-  } finally {
-    await context.close();
+  for (const options of [{ reducedMotion: 'reduce' }, { viewport: { width: 375, height: 667 } }, { viewport: { width: 1024, height: 600 } }]) {
+    const label = options.reducedMotion ? 'reduced motion' : `${options.viewport.width}x${options.viewport.height} static fallback`;
+    const { context, page } = await openHome(options);
+    try {
+      await page.locator('#works').scrollIntoViewIfNeeded();
+      assert.equal(await page.locator('#works').getAttribute('data-cases-mode'), 'static', `${label}: the plain list`);
+      assert.equal(await page.locator('#works [data-case-cubes]').count(), 0, `${label}: no cubes`);
+      await assertStaticList(page, 'pt-br');
+    } finally {
+      await context.close();
+    }
   }
 });

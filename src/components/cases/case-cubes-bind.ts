@@ -57,17 +57,15 @@ export interface CaseCubesOptions {
   readonly firstCard: HTMLElement;
   readonly lastCard: HTMLElement;
   readonly pinEnd: () => number;
-  readonly onAssembled: () => void;
 }
 
 /**
  * Scrubs the first card in from cubes as the stage scrolls up to its pin, and breaks the last card
  * into cubes that scatter with the scroll once the pin is released. Returns the teardown.
  */
-export function bindCaseCubes({ stage, firstCard, lastCard, pinEnd, onAssembled }: CaseCubesOptions): () => void {
+export function bindCaseCubes({ stage, firstCard, lastCard, pinEnd }: CaseCubesOptions): () => void {
   const enter = buildCubes(firstCard, 'enter');
   const exit = buildCubes(lastCard, 'exit');
-  let assembled = false;
 
   const enterTimeline = gsap.timeline({ paused: true });
   enterTimeline.set(firstCard, { autoAlpha: 0 }, 0);
@@ -89,11 +87,6 @@ export function bindCaseCubes({ stage, firstCard, lastCard, pinEnd, onAssembled 
     end: 'top top',
     scrub: true,
     animation: enterTimeline,
-    onLeave: () => {
-      if (assembled) return;
-      assembled = true;
-      onAssembled();
-    },
   });
 
   const exitTimeline = gsap.timeline({ paused: true });

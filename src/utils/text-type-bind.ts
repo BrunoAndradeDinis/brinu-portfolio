@@ -57,6 +57,8 @@ export function bindTypedText(root: ParentNode): () => void {
     for (const entry of entries) {
       const element = entry.target as HTMLElement;
       if (!entry.isIntersecting || !element.checkVisibility({ visibilityProperty: true })) continue;
+      // The pinned cases reveal types its own blocks as each case enters, and never retypes the one the cubes assembled.
+      if (element.closest('[data-cases-mode="reveal"]')) continue;
       observer.unobserve(element);
       typeText(element);
     }
