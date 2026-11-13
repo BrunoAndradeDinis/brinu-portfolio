@@ -157,7 +157,7 @@ function setupAnchorInterception(): void {
 
   handleAnchorClick = (event: MouseEvent) => {
     // Ignora cliques que não sejam com o botão principal (esquerdo) ou com teclas modificadoras (abrir em nova aba)
-    if (event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) {
+    if (event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey || event.defaultPrevented) {
       return;
     }
 

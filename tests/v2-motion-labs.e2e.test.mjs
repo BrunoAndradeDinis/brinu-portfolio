@@ -1796,3 +1796,62 @@ test('text contrast stays at or above 4.5:1 during and after typing', async () =
     }
   }
 });
+
+const activeCase = (page) =>
+  page.evaluate(() => {
+    const section = document.getElementById('works');
+    const active = section.querySelector('[data-case-item][data-case-active="true"] [data-reveal-case]');
+    const title = active?.querySelector('[data-case-el="title"]');
+    const rect = active?.getBoundingClientRect();
+    return {
+      pinned: section.dataset.casesPinned === 'true',
+      id: active?.id ?? null,
+      titleShown: title ? Number(getComputedStyle(title).opacity) === 1 && getComputedStyle(title).visibility === 'visible' : false,
+      inView: rect ? rect.top >= 0 && rect.top < window.innerHeight && rect.height > 0 : false,
+    };
+  });
+
+async function waitForActiveCase(page, id) {
+  await page.waitForFunction(
+    (caseId) => {
+      const section = document.getElementById('works');
+      const active = section.querySelector('[data-case-item][data-case-active="true"] [data-reveal-case]');
+      const title = active?.querySelector('[data-case-el="title"]');
+      return section.dataset.casesPinned === 'true' && active?.id === `case-${caseId}` && title && Number(getComputedStyle(title).opacity) === 1;
+    },
+    id,
+    { timeout: 10000 }
+  );
+}
+
+test('an evidence link selects its case in the reveal', async () => {
+  for (const locale of LOCALES) {
+    const { context, page } = await openHome({ locale });
+    try {
+      assert.equal(await page.locator('#works').getAttribute('data-cases-mode'), 'reveal', `${locale}: the cases section runs the reveal`);
+      const chip = page.locator('#arsenal [data-skill-badge]', { hasText: 'PostgreSQL + Prisma' }).locator('a[data-evidence-link="case:uriana"]');
+      await chip.scrollIntoViewIfNeeded();
+      await chip.click();
+      await waitForActiveCase(page, 'uriana');
+      assert.deepEqual(await activeCase(page), { pinned: true, id: 'case-uriana', titleShown: true, inView: true }, `${locale}: the grid chip shows the uriana case`);
+
+      const tile = page.locator('#arsenal').getByRole('button', { name: PANEL_SKILL.name, exact: true });
+      await tile.scrollIntoViewIfNeeded();
+      await tile.click();
+      await waitForPanelSettledOpen(page);
+      await page.getByRole('dialog').locator('a[href="#case-efood"]').click();
+      await waitForActiveCase(page, 'efood');
+      assert.deepEqual(await activeCase(page), { pinned: true, id: 'case-efood', titleShown: true, inView: true }, `${locale}: the panel link shows the efood case`);
+      assert.equal(await page.locator('#arsenal dialog').evaluate((dialog) => dialog.open), false, `${locale}: following a panel link closes the panel`);
+    } finally {
+      await context.close();
+    }
+  }
+});
+
+const waitForPanelSettledOpen = (page) =>
+  page.waitForFunction(() => {
+    const dialog = document.querySelector('#arsenal dialog');
+    const rect = dialog.getBoundingClientRect();
+    return dialog.open && rect.width > 0 && Math.abs(rect.right - document.body.getBoundingClientRect().right) < 0.5;
+  });

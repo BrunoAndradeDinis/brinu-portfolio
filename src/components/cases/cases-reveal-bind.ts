@@ -4,6 +4,7 @@ import {
   ScrollTrigger,
   gsap,
   getNavClearanceOffset,
+  getLenis,
   jumpScrollTo,
   pauseScroll,
   resumeScroll,
@@ -69,6 +70,7 @@ function enableReveal(section: HTMLElement): (() => void) | null {
   let locked = false;
   let lastWheelAt = Number.NEGATIVE_INFINITY;
   let touchStartY: number | null = null;
+  let requestedIndex: number | null = null;
 
   const showCase = (index: number) => {
     revealTimeline?.kill();
@@ -103,7 +105,9 @@ function enableReveal(section: HTMLElement): (() => void) | null {
     locked = true;
     section.dataset.casesPinned = 'true';
     pauseScroll();
-    showCase(steps.goTo(direction < 0 ? items.length - 1 : 0).index);
+    const index = requestedIndex ?? (direction < 0 ? items.length - 1 : 0);
+    requestedIndex = null;
+    showCase(steps.goTo(index).index);
   };
 
   const release = () => {
@@ -134,6 +138,22 @@ function enableReveal(section: HTMLElement): (() => void) | null {
     }
     jumpScrollTo(direction > 0 ? trigger.end : Math.max(0, trigger.start - 1));
     ScrollTrigger.update();
+  };
+
+  const onCaseLinkClick = (event: MouseEvent) => {
+    if (event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+    const href = (event.target as HTMLElement | null)?.closest('a[href^="#case-"]')?.getAttribute('href');
+    const index = href ? items.findIndex((item) => item.querySelector(`[id="${href.slice(1)}"]`)) : -1;
+    if (index < 0) return;
+    event.preventDefault();
+    if (locked) {
+      showCase(steps.goTo(index).index);
+      return;
+    }
+    requestedIndex = index;
+    const lenis = getLenis();
+    if (lenis) lenis.scrollTo(trigger.start + 1, { duration: MOTION_DURATION.seconds, force: true });
+    else jumpScrollTo(trigger.start + 1);
   };
 
   const acceptsInput = () => locked && !document.documentElement.classList.contains('cockpit-menu-open');
@@ -180,6 +200,7 @@ function enableReveal(section: HTMLElement): (() => void) | null {
   window.addEventListener('keydown', onKeyDown);
   const onNextClick = () => step(1);
   nextButton?.addEventListener('click', onNextClick);
+  document.addEventListener('click', onCaseLinkClick, { capture: true });
 
   return () => {
     window.removeEventListener('wheel', onWheel, { capture: true });
@@ -188,6 +209,7 @@ function enableReveal(section: HTMLElement): (() => void) | null {
     window.removeEventListener('touchend', onTouchEnd);
     window.removeEventListener('keydown', onKeyDown);
     nextButton?.removeEventListener('click', onNextClick);
+    document.removeEventListener('click', onCaseLinkClick, { capture: true });
     trigger.kill();
     if (locked) release();
     restoreStatic();
