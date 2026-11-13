@@ -1138,478 +1138,6 @@ test('reduced motion shows the panel and full text at once', async () => {
   }
 });
 
-const ORBIT_STAGE = '#lab [data-orbit-stage]';
-
-const arsenalSkillNames = async () => {
-  const { ARSENAL } = await import('../src/data/arsenal.ts');
-  return ARSENAL.flatMap((domain) => domain.skills.map((skill) => skill.name));
-};
-
-const orbitState = (page) =>
-  page.locator(ORBIT_STAGE).evaluate((stage) => ({
-    state: stage.dataset.orbitState ?? null,
-    geometries: Number(stage.dataset.orbitGeometries),
-    textures: Number(stage.dataset.orbitTextures),
-    programs: Number(stage.dataset.orbitPrograms),
-    canvases: stage.querySelectorAll('canvas').length,
-    nodes: [...stage.querySelectorAll('button')].filter((node) => node.checkVisibility({ visibilityProperty: true })).map((node) => node.getAttribute('aria-label')),
-  }));
-
-async function showOrbit(page) {
-  await page.locator(ORBIT_STAGE).scrollIntoViewIfNeeded();
-  await page.waitForFunction((selector) => document.querySelector(selector).dataset.orbitState === 'running', ORBIT_STAGE);
-}
-
-// Reads the WebGL drawing itself: the alpha under each node's centre and in the stage's empty corner.
-const readOrbitPixels = (page) =>
-  page.locator(ORBIT_STAGE).evaluate(async (stage) => {
-    const canvas = stage.querySelector('canvas');
-    const gl = canvas.getContext('webgl2') ?? canvas.getContext('webgl');
-    const box = canvas.getBoundingClientRect();
-    const alphaAt = (clientX, clientY) => {
-      const pixel = new Uint8Array(4);
-      const x = Math.round(((clientX - box.left) / box.width) * canvas.width);
-      const y = Math.round((1 - (clientY - box.top) / box.height) * canvas.height);
-      gl.readPixels(x, y, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, pixel);
-      return pixel[3];
-    };
-    let reading = null;
-    for (let frame = 0; frame < 30; frame += 1) {
-      await new Promise((resolve) => requestAnimationFrame(resolve));
-      reading = {
-        nodes: [...stage.querySelectorAll('button')].map((node) => {
-          const rect = node.getBoundingClientRect();
-          return { name: node.getAttribute('aria-label'), alpha: alphaAt(rect.left + rect.width / 2, rect.top + rect.height / 2) };
-        }),
-        corner: alphaAt(box.left + 12, box.top + 12),
-        contextLost: gl.isContextLost(),
-      };
-      if (reading.nodes.some((node) => node.alpha > 0)) break;
-    }
-    return reading;
-  });
-
-test('orbit renders one node per skill when the act is visible', async () => {
-  const skills = await arsenalSkillNames();
-  for (const viewport of [{ width: 1440, height: 900 }, SMALL_PHONE]) {
-    const label = `${viewport.width}px`;
-    const sceneRequests = [];
-    const { context, page } = await openHome({
-      viewport,
-      prepare: (target) => target.on('request', (request) => /three|orbit-scene/.test(request.url()) && sceneRequests.push(request.url())),
-    });
-    try {
-      const idle = await orbitState(page);
-      assert.equal(idle.canvases, 0, `${label}: no scene is mounted while the act is off screen`);
-      assert.deepEqual(idle.nodes, [], `${label}: no node is shown while the act is off screen`);
-      assert.deepEqual(sceneRequests, [], `${label}: Three.js is not downloaded before the act is visible`);
-
-      await showOrbit(page);
-      const shown = await orbitState(page);
-      assert.equal(shown.canvases, 1, `${label}: one canvas is mounted`);
-      assert.deepEqual([...shown.nodes].sort(), [...skills].sort(), `${label}: one node per skill, none missing and none twice`);
-      assert.ok(sceneRequests.some((url) => url.includes('three')), `${label}: Three.js is downloaded once the act is visible`);
-
-      const drawn = await readOrbitPixels(page);
-      assert.equal(drawn.contextLost, false, `${label}: the WebGL context is alive`);
-      assert.equal(drawn.corner, 0, `${label}: nothing is drawn in the empty corner of the stage`);
-      for (const node of drawn.nodes) assert.equal(node.alpha, 255, `${label}: ${node.name} is drawn on the canvas where its node sits`);
-      const stage = await page.locator(ORBIT_STAGE).evaluate((element) => {
-        const rect = element.getBoundingClientRect();
-        const centres = [...element.querySelectorAll('button')].map((node) => node.getBoundingClientRect()).map((box) => ({ x: box.left + box.width / 2, y: box.top + box.height / 2 }));
-        return { inside: centres.every((point) => point.x > rect.left && point.x < rect.right && point.y > rect.top && point.y < rect.bottom), distinct: new Set(centres.map((point) => `${Math.round(point.x)}:${Math.round(point.y)}`)).size };
-      });
-      assert.equal(stage.inside, true, `${label}: every node sits inside the stage`);
-      assert.equal(stage.distinct, skills.length, `${label}: no two nodes share a position`);
-    } finally {
-      await context.close();
-    }
-  }
-});
-
-test('leaving the act disposes orbit resources', async () => {
-  const skills = await arsenalSkillNames();
-  const { context, page } = await openHome();
-  try {
-    await showOrbit(page);
-    const running = await orbitState(page);
-    assert.ok(running.geometries >= skills.length, `the scene holds a geometry per node (${running.geometries})`);
-    assert.ok(running.programs >= 1, `the scene holds compiled materials (${running.programs})`);
-    await page.locator(ORBIT_STAGE).evaluate((stage) => {
-      window.__orbitCanvas = stage.querySelector('canvas');
-    });
-
-    await page.evaluate(() => window.scrollTo(0, 0));
-    await page.waitForFunction((selector) => document.querySelector(selector).dataset.orbitState === 'disposed', ORBIT_STAGE);
-    const left = await orbitState(page);
-    assert.deepEqual(
-      { geometries: left.geometries, textures: left.textures, programs: left.programs },
-      { geometries: 0, textures: 0, programs: 0 },
-      'the renderer tracks no geometry, texture or material program after leaving'
-    );
-    assert.equal(left.canvases, 0, 'the canvas is removed');
-    assert.deepEqual(left.nodes, [], 'the nodes are removed');
-    const context2 = await page.evaluate(() => {
-      const gl = window.__orbitCanvas.getContext('webgl2') ?? window.__orbitCanvas.getContext('webgl');
-      return { lost: gl.isContextLost(), attached: window.__orbitCanvas.isConnected };
-    });
-    assert.deepEqual(context2, { lost: true, attached: false }, 'the WebGL context of the old canvas is released');
-
-    await showOrbit(page);
-    const again = await orbitState(page);
-    assert.equal(again.canvases, 1, 'coming back mounts one scene again');
-    assert.deepEqual([...again.nodes].sort(), [...skills].sort());
-    assert.equal((await readOrbitPixels(page)).nodes.every((node) => node.alpha === 255), true, 'the remounted scene draws every node');
-  } finally {
-    await context.close();
-  }
-});
-
-// The nodes drift along their orbit, so the pointer goes to where the node is without waiting for it to hold still.
-const MOVING_TARGET = { force: true };
-const orbitNode = (page, name) => page.locator(ORBIT_STAGE).getByRole('button', { name, exact: true });
-
-const orbitEvidence = (page) =>
-  page.locator('#lab [data-orbit-evidence]').evaluate((region) => ({
-    heading: region.querySelector('h4')?.textContent.trim() ?? null,
-    links: [...region.querySelectorAll('a')].filter((link) => link.checkVisibility({ visibilityProperty: true })).map((link) => ({ label: link.textContent.trim(), href: link.getAttribute('href') })),
-  }));
-
-// Counts, on every frame, the pixels the WebGL canvas draws for one node inside a fixed square around it.
-const startNodeSizeRecorder = (page, name) =>
-  page.locator(ORBIT_STAGE).evaluate((stage, nodeName) => {
-    const canvas = stage.querySelector('canvas');
-    const gl = canvas.getContext('webgl2') ?? canvas.getContext('webgl');
-    const node = [...stage.querySelectorAll('button')].find((button) => button.getAttribute('aria-label') === nodeName);
-    const ratio = canvas.width / canvas.getBoundingClientRect().width;
-    const side = Math.round(64 * ratio);
-    const pixels = new Uint8Array(side * side * 4);
-    const record = { frames: [], running: true };
-    window.__nodeSize = record;
-    const sample = () => {
-      if (!record.running) return;
-      const box = canvas.getBoundingClientRect();
-      const rect = node.getBoundingClientRect();
-      const x = Math.round((rect.left + rect.width / 2 - box.left) * ratio - side / 2);
-      const y = Math.round((box.bottom - (rect.top + rect.height / 2)) * ratio - side / 2);
-      gl.readPixels(x, y, side, side, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
-      let drawn = 0;
-      for (let offset = 3; offset < pixels.length; offset += 4) if (pixels[offset] === 255) drawn += 1;
-      record.frames.push({ at: performance.now(), drawn, target: rect.width });
-      requestAnimationFrame(sample);
-    };
-    requestAnimationFrame(sample);
-  }, name);
-
-async function readNodePulse(page) {
-  await page.waitForFunction(() => {
-    const frames = window.__nodeSize.frames;
-    const rest = frames.at(-1).drawn;
-    const peak = Math.max(...frames.map((frame) => frame.drawn));
-    return peak > rest * 1.5 && frames.length > 20 && frames.slice(-10).every((frame) => frame.drawn === rest);
-  });
-  return page.evaluate(() => {
-    window.__nodeSize.running = false;
-    return window.__nodeSize.frames;
-  });
-}
-
-// The square also holds a stretch of the ring, which shifts by a few pixels while the node drifts before the gesture.
-function assertPulsed(frames, label) {
-  const rest = frames.at(-1).drawn;
-  const peakIndex = frames.reduce((best, frame, index) => (frame.drawn > frames[best].drawn ? index : best), 0);
-  assert.ok(frames[0].drawn > 0, `${label}: the node is drawn before the gesture`);
-  assert.ok(frames[peakIndex].drawn >= rest * 2, `${label}: the drawn node grows (${frames[0].drawn} -> ${frames[peakIndex].drawn} pixels)`);
-  assert.ok(Math.abs(frames[0].drawn - rest) <= rest * 0.15, `${label}: the drawn node returns to the size it had (${frames[0].drawn} before, ${rest} after)`);
-  assert.ok(frames.slice(0, peakIndex).some((frame) => frame.drawn > rest * 1.1 && frame.drawn < frames[peakIndex].drawn * 0.95), `${label}: the node grows over several frames`);
-  assert.ok(frames.slice(peakIndex).some((frame) => frame.drawn > rest * 1.1 && frame.drawn < frames[peakIndex].drawn * 0.95), `${label}: the node shrinks back over several frames`);
-  assert.ok(Math.max(...frames.map((frame) => frame.target)) > frames[0].target * 1.3, `${label}: the node's pointer target pulses with it`);
-}
-
-const ORBIT_EVIDENCE = {
-  TypeScript: (locale) => CASE_IDS.map((id, index) => ({ label: CASE_TITLES[locale][index], href: `#case-${id}` })),
-  'PostgreSQL + Prisma': () => [{ label: 'Uriana', href: '#case-uriana' }],
-};
-
-test('hover pulses a node and lists its evidence', async () => {
-  for (const locale of LOCALES) {
-    const { context, page } = await openHome({ locale });
-    try {
-      await showOrbit(page);
-      assert.deepEqual(await orbitEvidence(page), { heading: null, links: [] }, `${locale}: no evidence before a node is picked`);
-      for (const [name, evidence] of Object.entries(ORBIT_EVIDENCE)) {
-        await startNodeSizeRecorder(page, name);
-        await page.waitForFunction(() => window.__nodeSize.frames.length >= 3);
-        await orbitNode(page, name).hover(MOVING_TARGET);
-        assertPulsed(await readNodePulse(page), `${locale} ${name}`);
-        assert.deepEqual(await orbitEvidence(page), { heading: name, links: evidence(locale) }, `${locale}: ${name} lists its evidence links`);
-      }
-    } finally {
-      await context.close();
-    }
-  }
-
-  const { context, page } = await openHome({ viewport: SMALL_PHONE, hasTouch: true, isMobile: true });
-  try {
-    await showOrbit(page);
-    const name = 'PostgreSQL + Prisma';
-    await startNodeSizeRecorder(page, name);
-    await page.waitForFunction(() => window.__nodeSize.frames.length >= 3);
-    await orbitNode(page, name).tap(MOVING_TARGET);
-    assertPulsed(await readNodePulse(page), `tap ${name}`);
-    assert.deepEqual(await orbitEvidence(page), { heading: name, links: ORBIT_EVIDENCE[name]('pt-br') }, 'a tap lists the evidence links');
-  } finally {
-    await context.close();
-  }
-});
-
-const SOUND_LABELS = { 'pt-br': { muted: 'ÁUDIO: MUDO', on: 'ÁUDIO: ATIVO' }, en: { muted: 'AUDIO: MUTED', on: 'AUDIO: ON' } };
-
-test('sound stays muted until the visitor unmutes', async () => {
-  for (const locale of LOCALES) {
-    const audioRequests = [];
-    const { context, page } = await openHome({
-      locale,
-      prepare: async (target) => {
-        target.on('request', (request) => {
-          if (request.resourceType() === 'media' || /\.(mp3|wav|ogg|oga|m4a|aac|flac|opus|webm)(\?|$)/i.test(request.url())) audioRequests.push(request.url());
-        });
-        await target.addInitScript(() => {
-          window.__sound = { contexts: 0, tones: [] };
-          const NativeContext = window.AudioContext;
-          window.AudioContext = class extends NativeContext {
-            constructor(...args) {
-              super(...args);
-              window.__sound.contexts += 1;
-            }
-          };
-          const start = OscillatorNode.prototype.start;
-          OscillatorNode.prototype.start = function (...args) {
-            window.__sound.tones.push({ hz: this.frequency.value, contextState: this.context.state });
-            return start.apply(this, args);
-          };
-        });
-      },
-    });
-    try {
-      await showOrbit(page);
-      const soundToggle = (name) => page.locator('#lab').getByRole('button', { name, exact: true });
-      assert.equal(await soundToggle(SOUND_LABELS[locale].muted).getAttribute('aria-pressed'), 'false', `${locale}: sound starts muted`);
-
-      await orbitNode(page, 'TypeScript').hover(MOVING_TARGET);
-      await page.waitForFunction(() => document.querySelector('#lab [data-orbit-evidence] h4')?.textContent.trim() === 'TypeScript');
-      await orbitNode(page, 'Astro').click(MOVING_TARGET);
-      await page.waitForFunction(() => document.querySelector('#lab [data-orbit-evidence] h4')?.textContent.trim() === 'Astro');
-      assert.deepEqual(await page.evaluate(() => window.__sound), { contexts: 0, tones: [] }, `${locale}: no sound and no audio context while muted`);
-
-      await soundToggle(SOUND_LABELS[locale].muted).click();
-      assert.equal(await soundToggle(SOUND_LABELS[locale].on).getAttribute('aria-pressed'), 'true', `${locale}: the toggle shows sound is on`);
-      await page.waitForFunction(() => window.bebopAudio.getContext().state === 'running');
-      await orbitNode(page, 'TypeScript').hover(MOVING_TARGET);
-      await page.waitForFunction(() => window.__sound.tones.length >= 1);
-      const sound = await page.evaluate(() => window.__sound);
-      assert.equal(sound.contexts, 1, `${locale}: one audio context, made after the visitor unmuted`);
-      assert.equal(sound.tones.length, 1, `${locale}: one synthesized tone for one hover`);
-      assert.ok(sound.tones[0].hz > 0 && sound.tones[0].contextState === 'running', `${locale}: the tone is an oscillator on a running context`);
-
-      await soundToggle(SOUND_LABELS[locale].on).click();
-      assert.equal(await soundToggle(SOUND_LABELS[locale].muted).getAttribute('aria-pressed'), 'false');
-      await orbitNode(page, 'Zod').hover(MOVING_TARGET);
-      await page.waitForFunction(() => document.querySelector('#lab [data-orbit-evidence] h4')?.textContent.trim() === 'Zod');
-      assert.equal(await page.evaluate(() => window.__sound.tones.length), 1, `${locale}: muting again silences the next pulse`);
-      assert.deepEqual(audioRequests, [], `${locale}: no audio file is requested`);
-    } finally {
-      await context.close();
-    }
-  }
-});
-
-const expectedSkillsList = async (locale) => {
-  const { getLocalizedArsenal } = await import('../src/data/arsenal.ts');
-  return getLocalizedArsenal(locale).flatMap((domain) =>
-    domain.skills.map((skill) => ({ name: skill.name, domain: domain.title, links: skill.evidence.map((evidence) => ({ label: evidence.label, href: `#${evidence.anchor}` })) }))
-  );
-};
-
-async function readStaticOrbit(page) {
-  await page.locator(ORBIT_STAGE).scrollIntoViewIfNeeded();
-  await page.waitForFunction((selector) => document.querySelector(selector).closest('astro-island').hasAttribute('ssr') === false, ORBIT_STAGE);
-  return page.locator(ORBIT_STAGE).evaluate(async (stage) => {
-    const read = () => ({
-      canvases: document.querySelectorAll('#lab canvas').length,
-      nodes: stage.querySelectorAll('button').length,
-      skills: [...stage.querySelectorAll('li[data-orbit-skill]')].map((item) => ({
-        name: item.querySelector('h4').textContent.trim(),
-        domain: item.querySelector('p').textContent.trim(),
-        links: [...item.querySelectorAll('a')].map((link) => ({ label: link.textContent.trim(), href: link.getAttribute('href') })),
-        shown: item.checkVisibility({ visibilityProperty: true, opacityProperty: true }) && [...item.querySelectorAll('a')].every((link) => link.getClientRects().length > 0),
-      })),
-    });
-    const frames = [];
-    for (let frame = 0; frame < 45; frame += 1) {
-      await new Promise((resolve) => requestAnimationFrame(resolve));
-      frames.push(read());
-    }
-    return frames;
-  });
-}
-
-async function assertStaticSkillsList(page, locale, label) {
-  const expected = await expectedSkillsList(locale);
-  const frames = await readStaticOrbit(page);
-  for (const frame of frames) {
-    assert.equal(frame.canvases, 0, `${label}: no canvas is ever mounted`);
-    assert.equal(frame.nodes, 0, `${label}: no orbit node is ever mounted`);
-  }
-  const list = frames.at(-1).skills;
-  assert.deepEqual(list.map(({ name, domain, links }) => ({ name, domain, links })), expected, `${label}: every skill is listed with its domain and the same evidence links`);
-  assert.equal(list.every((skill) => skill.shown), true, `${label}: every skill and link is visible`);
-  assert.ok(list.every((skill) => skill.links.length > 0), `${label}: no skill is listed without evidence`);
-  const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
-  assert.ok(overflow <= 0, `${label}: the list does not overflow the page`);
-}
-
-test('no WebGL shows the static skills list', async () => {
-  for (const locale of LOCALES) {
-    for (const viewport of [{ width: 1440, height: 900 }, SMALL_PHONE]) {
-      const errors = [];
-      const { context, page } = await openHome({
-        locale,
-        viewport,
-        prepare: async (target) => {
-          target.on('pageerror', (error) => errors.push(error.message));
-          await target.addInitScript(() => {
-            window.__webglRefused = 0;
-            const getContext = HTMLCanvasElement.prototype.getContext;
-            HTMLCanvasElement.prototype.getContext = function (type, ...rest) {
-              if (/webgl/i.test(type)) {
-                window.__webglRefused += 1;
-                return null;
-              }
-              return getContext.call(this, type, ...rest);
-            };
-          });
-        },
-      });
-      try {
-        const label = `${locale} ${viewport.width}px without WebGL`;
-        await page.locator(ORBIT_STAGE).scrollIntoViewIfNeeded();
-        await page.waitForFunction(() => window.__webglRefused >= 1);
-        await page.waitForFunction((selector) => document.querySelector(`${selector} li[data-orbit-skill]`) !== null && document.querySelector('#lab canvas') === null, ORBIT_STAGE);
-        await assertStaticSkillsList(page, locale, label);
-        assert.deepEqual(errors, [], `${label}: the refusal raises no page error`);
-        const link = page.locator(ORBIT_STAGE).getByRole('link', { name: 'Uriana', exact: true }).first();
-        assert.equal(await link.getAttribute('href'), '#case-uriana', `${label}: the links are real anchors to the evidence`);
-      } finally {
-        await context.close();
-      }
-    }
-  }
-});
-
-test('reduced motion shows the static skills list', async () => {
-  for (const locale of LOCALES) {
-    const sceneRequests = [];
-    const { context, page } = await openHome({
-      locale,
-      reducedMotion: 'reduce',
-      prepare: (target) => target.on('request', (request) => /three|orbit-scene/.test(request.url()) && sceneRequests.push(request.url())),
-    });
-    try {
-      await assertStaticSkillsList(page, locale, `${locale} reduced motion`);
-      assert.deepEqual(sceneRequests, [], `${locale}: the Three.js scene is never downloaded`);
-      assert.equal(await page.locator('#lab [data-orbit-sound]').count(), 0, `${locale}: no sound control without a scene to pulse`);
-    } finally {
-      await context.close();
-    }
-  }
-});
-
-const LAB_COPY = {
-  'pt-br': {
-    menu: '04 // ARSENAL ORBIT',
-    aria: 'Arsenal Orbit: skills em órbita com links de evidência',
-    tag: '[ ATO III // ARSENAL ORBIT • THREE.JS & GSAP ]',
-    title: 'ARSENAL ORBIT',
-    badge: 'STATUS: INTERATIVO // SKILLS & EVIDÊNCIAS',
-    line: 'THREE.JS • GSAP • WEB AUDIO API',
-  },
-  en: {
-    menu: '04 // ARSENAL ORBIT',
-    aria: 'Arsenal Orbit: skills in orbit with evidence links',
-    tag: '[ ACT III // ARSENAL ORBIT • THREE.JS & GSAP ]',
-    title: 'ARSENAL ORBIT',
-    badge: 'STATUS: INTERACTIVE // SKILLS & EVIDENCE',
-    line: 'THREE.JS • GSAP • WEB AUDIO API',
-  },
-};
-
-const readLabCopy = (page) =>
-  page.locator('#lab').evaluate((lab) => ({
-    aria: lab.getAttribute('aria-label'),
-    tag: lab.querySelector('[data-i18n="lab.actTag"]').textContent.trim(),
-    badge: lab.querySelector('[data-i18n="lab.statusBadge"]').textContent.trim(),
-    line: lab.querySelector('[data-i18n="lab.domainLine"]').textContent.trim(),
-  }));
-
-async function assertLabCopy(page, locale) {
-  const { menu, title, ...copy } = LAB_COPY[locale];
-  await page.waitForFunction((expected) => document.querySelector('#lab [data-lab-title]').getAttribute('aria-label') === expected, title);
-  assert.equal(await page.locator('#lab').getByRole('heading', { level: 2, name: title, exact: true }).count(), 1, `${locale}: the act is headed ${title}`);
-  assert.deepEqual(await readLabCopy(page), copy, `${locale}: the act's copy describes the orbit`);
-  const leftovers = await page.evaluate(() => ({
-    deckParts: document.querySelectorAll('[data-arcana-deck], [id^="arcana-"], [data-arcana-toggle]').length,
-    mentions: /arcana/i.test(document.documentElement.outerHTML),
-  }));
-  assert.deepEqual(leftovers, { deckParts: 0, mentions: false }, `${locale}: nothing of ARCANA DECK is left on the page`);
-}
-
-test('lab act shows the orbit and no deck', async () => {
-  const skills = await arsenalSkillNames();
-  for (const locale of LOCALES) {
-    const { context, page } = await openHome({ locale });
-    try {
-      await page.locator('#cockpit-trigger-btn').click();
-      const link = page.locator('[data-cockpit-link="lab"]');
-      await link.waitFor({ state: 'visible' });
-      assert.equal((await link.locator('span.truncate').textContent()).trim(), LAB_COPY[locale].menu, `${locale}: the menu names the orbit`);
-      assert.equal(await link.getAttribute('href'), '#lab', `${locale}: the menu entry points at the Lab act`);
-      await page.keyboard.press('Escape');
-      await showOrbit(page);
-
-      const act = await page.locator('#lab').evaluate((lab) => {
-        const stage = lab.querySelector('[data-orbit-stage]');
-        const rect = stage.getBoundingClientRect();
-        return {
-          orbits: lab.querySelectorAll('[data-arsenal-orbit]').length,
-          onScreen: rect.bottom > 0 && rect.top < window.innerHeight,
-          acts: [...lab.children].filter((child) => !['STYLE', 'SCRIPT', 'LINK'].includes(child.tagName)).map((child) => child.querySelector('[data-arsenal-orbit]') !== null),
-        };
-      });
-      assert.equal(act.orbits, 1, `${locale}: the Lab act holds one orbit`);
-      assert.equal(act.onScreen, true, `${locale}: the orbit is on screen inside the Lab act`);
-      assert.deepEqual(act.acts, [false, true], `${locale}: the orbit is the only act under the Lab heading`);
-      assert.deepEqual([...(await orbitState(page)).nodes].sort(), [...skills].sort(), `${locale}: the orbit shows one node per skill`);
-      await assertLabCopy(page, locale);
-    } finally {
-      await context.close();
-    }
-  }
-
-  const { context, page } = await openHome({ locale: 'pt-br', reducedMotion: 'reduce' });
-  try {
-    await assertLabCopy(page, 'pt-br');
-    await page.locator('#cockpit-trigger-btn').click();
-    await page.locator('[data-cockpit-lang="en"]').click();
-    await page.waitForFunction(() => document.documentElement.getAttribute('data-locale') === 'en');
-    assert.equal((await page.locator('[data-cockpit-link="lab"] span.truncate').textContent()).trim(), LAB_COPY.en.menu);
-    await page.keyboard.press('Escape');
-    await assertLabCopy(page, 'en');
-  } finally {
-    await context.close();
-  }
-});
-
 const AUDIT_VIEWPORTS = [
   { width: 320, height: 640 },
   { width: 768, height: 1024 },
@@ -1757,15 +1285,6 @@ async function auditArsenalPanel(page, screens) {
   await page.waitForFunction(() => !document.querySelector('#arsenal dialog').checkVisibility());
 }
 
-async function auditOrbit(page, screens, touch) {
-  await showOrbit(page);
-  const node = orbitNode(page, PANEL_SKILL.name);
-  if (touch) await node.tap(MOVING_TARGET);
-  else await node.hover(MOVING_TARGET);
-  await page.waitForFunction((name) => document.querySelector('#lab [data-orbit-evidence] h4')?.textContent.trim() === name, PANEL_SKILL.name);
-  screens.push({ name: 'orbit act with evidence open', ...(await auditScreen(page, '#lab')) });
-}
-
 let auditWalk;
 const walkAuditedScreens = () => {
   auditWalk ??= (async () => {
@@ -1778,16 +1297,8 @@ const walkAuditedScreens = () => {
         try {
           await auditCases(page, screens);
           await auditArsenalPanel(page, screens);
-          await auditOrbit(page, screens, touch);
         } finally {
           await context.close();
-        }
-        const reduced = await openHome({ locale, viewport, reducedMotion: 'reduce' });
-        try {
-          await readStaticOrbit(reduced.page);
-          screens.push({ name: 'orbit act as a static list', ...(await auditScreen(reduced.page, '#lab')) });
-        } finally {
-          await reduced.context.close();
         }
         walks.push({ label: `${viewport.width}px ${locale}`, screens });
       }
@@ -1797,13 +1308,13 @@ const walkAuditedScreens = () => {
   return auditWalk;
 };
 
-const AUDITED_SCREENS = 7;
+const AUDITED_SCREENS = 5;
 
 test('no horizontal overflow from 320 to 2560 px in both locales', async () => {
   const walks = await walkAuditedScreens();
   assert.equal(walks.length, AUDIT_VIEWPORTS.length * LOCALES.length, 'every width is walked in both locales');
   for (const { label, screens } of walks) {
-    assert.equal(screens.length, AUDITED_SCREENS, `${label}: cases, typed text, the open panel and both orbit modes are audited`);
+    assert.equal(screens.length, AUDITED_SCREENS, `${label}: cases, typed text and the open panel are audited`);
     for (const screen of screens) {
       assert.ok(screen.pageOverflow <= 0, `${label} ${screen.name}: scrollWidth exceeds clientWidth by ${screen.pageOverflow}px`);
       assert.ok(screen.rootOutside < 0.5, `${label} ${screen.name}: the block reaches ${screen.rootOutside}px outside the viewport`);
@@ -1813,7 +1324,7 @@ test('no horizontal overflow from 320 to 2560 px in both locales', async () => {
 
 test('text contrast stays at or above 4.5:1 during and after typing', async () => {
   for (const { label, screens } of await walkAuditedScreens()) {
-    assert.equal(screens.length, AUDITED_SCREENS, `${label}: cases, typed text, the open panel and both orbit modes are audited`);
+    assert.equal(screens.length, AUDITED_SCREENS, `${label}: cases, typed text and the open panel are audited`);
     for (const screen of screens) {
       const where = `${label} ${screen.name}`;
       assert.equal(screen.atRest, true, `${where}: every fade has ended when the screen is read`);
@@ -2066,6 +1577,36 @@ test('phone cards keep the open link and hide the external links', async () => {
       const external = await card.locator('a[data-case-link]').evaluateAll((links) => links.map((link) => link.checkVisibility()));
       assert.ok(external.length > 0, 'uriana has external links');
       assert.deepEqual(external, external.map(() => externalShown), `${viewport.width}px: external links ${externalShown ? 'show' : 'stay hidden'} in the reveal`);
+    } finally {
+      await context.close();
+    }
+  }
+});
+
+
+const MENU_SECTIONS = {
+  'pt-br': [['#hero', '01 // INÍCIO & MANIFESTO'], ['#works', '02 // ARQUIVO DE PROJETOS'], ['#about', '03 // DOSSIÊ CONFIDANT & SKILLS'], ['#contact', '04 // ENVIAR PROPOSTA'], ['/whoami', '05 // TERMINAL /WHOAMI']],
+  en: [['#hero', '01 // HOME & MANIFESTO'], ['#works', '02 // BOUNTY ARCHIVE (WORKS)'], ['#about', '03 // CONFIDANT DOSSIER & SKILLS'], ['#contact', '04 // TRANSMIT A BOUNTY'], ['/whoami', '05 // TERMINAL /WHOAMI']],
+};
+
+test('the home has no lab section and the menu lists five sections', async () => {
+  for (const locale of LOCALES) {
+    const { context, page } = await openHome({ locale });
+    try {
+      const home = await page.evaluate(() => ({
+        lab: document.getElementById('lab') !== null,
+        orbit: document.querySelector('[data-arsenal-orbit], [data-orbit-stage], astro-island[component-url*="ArsenalOrbit"]') !== null,
+        sections: [...document.querySelectorAll('main section[id]')].map((section) => section.id),
+      }));
+      assert.equal(home.lab, false, `${locale}: no #lab section`);
+      assert.equal(home.orbit, false, `${locale}: no orbit island or stage`);
+      assert.deepEqual(home.sections.filter((id) => ['works', 'arsenal', 'contact'].includes(id)), ['works', 'arsenal', 'contact'], `${locale}: works, arsenal and contact keep their order`);
+      await page.locator('#cockpit-trigger-btn').click();
+      await page.locator('#cockpit-menu-overlay a[href="#contact"]').waitFor({ state: 'visible' });
+      const blades = await page.locator('#cockpit-menu-overlay nav a').evaluateAll((links) => links.map((link) => [link.getAttribute('href'), link.querySelector('span.truncate')?.textContent.trim() ?? '']));
+      assert.deepEqual(blades, MENU_SECTIONS[locale], `${locale}: the menu lists the five sections, numbered in order`);
+      const requested = await page.evaluate(() => performance.getEntriesByType('resource').map((entry) => entry.name).filter((name) => /three|orbit/i.test(name)));
+      assert.deepEqual(requested, [], `${locale}: no orbit or Three.js chunk is requested`);
     } finally {
       await context.close();
     }

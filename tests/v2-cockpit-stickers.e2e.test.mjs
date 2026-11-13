@@ -76,7 +76,7 @@ async function openPath(route, { locale = 'pt-br', viewport = { width: 1440, hei
 
 
 
-const BLADES = ['hero', 'works', 'about', 'lab', 'contact', 'whoami'];
+const BLADES = ['hero', 'works', 'about', 'contact', 'whoami'];
 const overlayOpen = (page) =>
   page.evaluate(() => {
     const overlay = document.getElementById('cockpit-menu-overlay');
@@ -136,7 +136,7 @@ test('CKP-02: Escape or the trigger closes the menu and returns focus', async ()
   }
 });
 
-test('CKP-03: the menu lists six blades and closes on activation', async () => {
+test('CKP-03: the menu lists five blades and closes on activation', async () => {
   const { context, page } = await openPath('/');
   try {
     await openCockpit(page);
@@ -145,8 +145,8 @@ test('CKP-03: the menu lists six blades and closes on activation', async () => {
     );
     const blades = await readBlades();
     assert.deepEqual(blades.map((blade) => blade.id), BLADES);
-    assert.deepEqual(blades.map((blade) => blade.href), ['#hero', '#works', '#about', '#lab', '#contact', '/whoami']);
-    assert.deepEqual(blades.map((blade) => blade.current), ['true', null, null, null, null, null]);
+    assert.deepEqual(blades.map((blade) => blade.href), ['#hero', '#works', '#about', '#contact', '/whoami']);
+    assert.deepEqual(blades.map((blade) => blade.current), ['true', null, null, null, null]);
     await page.locator('#cockpit-menu-overlay [data-cockpit-link="works"]').click();
     await waitClosed(page);
     assert.equal(new URL(page.url()).hash, '#works');

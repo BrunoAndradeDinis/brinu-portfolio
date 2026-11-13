@@ -432,12 +432,12 @@ test('C9: tokens.css enforces Persona 5 Red/Black/White triad without legacy nav
   assert.equal(tokensCss.toUpperCase().includes('#1A1A2E'), false);
 });
 
-test('T6a: CockpitMenu defines all 6 canonical Persona 5 navigation blades and syncCockpitTriggerDom', () => {
+test('T6a: CockpitMenu defines all 5 canonical Persona 5 navigation blades and syncCockpitTriggerDom', () => {
   const source = fs.readFileSync(
     path.resolve('src/components/CockpitMenu.tsx'),
     'utf8'
   );
-  for (const href of ['#hero', '#works', '#about', '#lab', '#contact', '/whoami']) {
+  for (const href of ['#hero', '#works', '#about', '#contact', '/whoami']) {
     assert.ok(source.includes(`href: '${href}'`), `Missing blade href ${href}`);
   }
   assert.ok(source.includes('export function syncCockpitTriggerDom(isOpen: boolean)'));
@@ -483,7 +483,7 @@ test('C10: clicking #cockpit-trigger-btn opens CockpitMenu with aria-expanded=tr
     'false'
   );
 
-  for (const href of ['#hero', '#works', '#about', '#lab', '#contact', '/whoami']) {
+  for (const href of ['#hero', '#works', '#about', '#contact', '/whoami']) {
     const linkCount = await page
       .locator(`#cockpit-menu-overlay a[href="${href}"]`)
       .count();
@@ -607,15 +607,11 @@ test('C12: About and SkillsGrid render unified Persona 5 Confidant dossier witho
   assert.equal(aboutSrc.includes('PHILOSOPHY //'), false);
 });
 
-test('T11: CreativeLab renders the Arsenal Orbit with bound i18n and no hardware telemetry boxes', () => {
-  const labAstro = fs.readFileSync(path.resolve('src/components/CreativeLab.astro'), 'utf8');
-
-  assert.equal(labAstro.includes('GRAPHICS SUBSYSTEM'), false);
-  assert.ok(labAstro.includes('ArsenalOrbit'));
-  assert.equal(labAstro.includes('ArcanaDeck'), false);
-  assert.equal(fs.existsSync(path.resolve('src/components/ArcanaDeck.astro')), false, 'ArcanaDeck.astro must be removed');
-  for (const key of ['lab.actTag', 'lab.title', 'lab.statusBadge', 'lab.domainLine']) {
-    assert.ok(labAstro.includes(`data-i18n="${key}"`), `${key} must be bound`);
+test('T11: the home has no lab section and no hardware telemetry boxes', () => {
+  const indexAstro = fs.readFileSync(path.resolve('src/pages/index.astro'), 'utf8');
+  assert.equal(indexAstro.includes('CreativeLab'), false);
+  for (const gone of ['src/components/CreativeLab.astro', 'src/components/ArcanaDeck.astro', 'src/components/arsenal-orbit']) {
+    assert.equal(fs.existsSync(path.resolve(gone)), false, `${gone} must be removed`);
   }
   for (const gone of ['CrtTuner', 'SonarRadar', 'CyberDeck']) {
     assert.equal(fs.existsSync(path.resolve(`src/components/lab/${gone}.tsx`)), false, `${gone}.tsx must be removed`);

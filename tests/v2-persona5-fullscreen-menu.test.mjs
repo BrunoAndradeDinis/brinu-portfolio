@@ -218,7 +218,7 @@ test('C4: menu executes kinetic transitions and respects prefers-reduced-motion'
     kineticStyles.slashStyle.includes('transform'),
     'Backdrop red slash received dynamic GSAP transform style'
   );
-  assert.equal(kineticStyles.blades.length, 6);
+  assert.equal(kineticStyles.blades.length, 5);
   for (const blade of kineticStyles.blades) {
     assert.ok(
       blade.inlineStyle.includes('transform') || blade.transform !== 'none',
@@ -271,7 +271,7 @@ test('C4: menu executes kinetic transitions and respects prefers-reduced-motion'
   await redContext.close();
 });
 
-test('C5: all 6 navigation blades render with index codes and active blade tracking', async () => {
+test('C5: all 5 navigation blades render with index codes and active blade tracking', async () => {
   const context = await browser.newContext();
   const page = await context.newPage();
   await page.goto(`${baseUrl}/`, { waitUntil: 'networkidle' });
@@ -284,9 +284,8 @@ test('C5: all 6 navigation blades render with index codes and active blade track
     { id: 'hero', code: '00', label: '01 // INÍCIO & MANIFESTO' },
     { id: 'works', code: '01', label: '02 // ARQUIVO DE PROJETOS' },
     { id: 'about', code: '02', label: '03 // DOSSIÊ CONFIDANT & SKILLS' },
-    { id: 'lab', code: '03', label: '04 // ARSENAL ORBIT' },
-    { id: 'contact', code: '04', label: '05 // ENVIAR PROPOSTA' },
-    { id: 'whoami', code: '05', label: '06 // TERMINAL /WHOAMI' },
+    { id: 'contact', code: '03', label: '04 // ENVIAR PROPOSTA' },
+    { id: 'whoami', code: '04', label: '05 // TERMINAL /WHOAMI' },
   ];
 
   const bladesPt = await page.$$eval(
@@ -305,7 +304,7 @@ test('C5: all 6 navigation blades render with index codes and active blade track
       })
   );
 
-  assert.equal(bladesPt.length, 6, 'Exactly 6 navigation blades rendered');
+  assert.equal(bladesPt.length, 5, 'Exactly 5 navigation blades rendered');
   for (let i = 0; i < expectedBladesPt.length; i++) {
     const exp = expectedBladesPt[i];
     const actual = bladesPt[i];
@@ -329,9 +328,8 @@ test('C5: all 6 navigation blades render with index codes and active blade track
     { id: 'hero', code: '00', label: '01 // HOME & MANIFESTO' },
     { id: 'works', code: '01', label: '02 // BOUNTY ARCHIVE (WORKS)' },
     { id: 'about', code: '02', label: '03 // CONFIDANT DOSSIER & SKILLS' },
-    { id: 'lab', code: '03', label: '04 // ARSENAL ORBIT' },
-    { id: 'contact', code: '04', label: '05 // TRANSMIT A BOUNTY' },
-    { id: 'whoami', code: '05', label: '06 // TERMINAL /WHOAMI' },
+    { id: 'contact', code: '03', label: '04 // TRANSMIT A BOUNTY' },
+    { id: 'whoami', code: '04', label: '05 // TERMINAL /WHOAMI' },
   ];
 
   const bladesEn = await page.$$eval(

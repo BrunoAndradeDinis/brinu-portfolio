@@ -7,7 +7,7 @@ import { PROFILE } from '../data/profile.ts';
 export interface CockpitNavItem {
   id: string;
   code: string;
-  labelKey: 'hero' | 'works' | 'about' | 'lab' | 'contact' | 'whoami';
+  labelKey: 'hero' | 'works' | 'about' | 'contact' | 'whoami';
   href: string;
 }
 
@@ -15,12 +15,11 @@ export const COCKPIT_NAV_ITEMS: readonly CockpitNavItem[] = [
   { id: 'hero', code: '00', labelKey: 'hero', href: '#hero' },
   { id: 'works', code: '01', labelKey: 'works', href: '#works' },
   { id: 'about', code: '02', labelKey: 'about', href: '#about' },
-  { id: 'lab', code: '03', labelKey: 'lab', href: '#lab' },
-  { id: 'contact', code: '04', labelKey: 'contact', href: '#contact' },
-  { id: 'whoami', code: '05', labelKey: 'whoami', href: '/whoami' },
+  { id: 'contact', code: '03', labelKey: 'contact', href: '#contact' },
+  { id: 'whoami', code: '04', labelKey: 'whoami', href: '/whoami' },
 ] as const;
 
-const HOME_SECTION_IDS = ['hero', 'works', 'about', 'lab', 'contact'] as const;
+const HOME_SECTION_IDS = ['hero', 'works', 'about', 'contact'] as const;
 
 export function resolveActiveBladeId(
   pathname: string,

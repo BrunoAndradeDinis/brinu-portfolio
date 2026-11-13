@@ -38,7 +38,6 @@ export interface TranslationSchema {
       hero: string;
       works: string;
       about: string;
-      lab: string;
       contact: string;
       whoami: string;
     };
@@ -216,13 +215,6 @@ export interface TranslationSchema {
     skillsTag: string;
     skillsTitle: string;
   };
-  lab: {
-    sectionAria: string;
-    actTag: string;
-    title: string;
-    statusBadge: string;
-    domainLine: string;
-  };
   stickers: {
     sectionAria: string;
     actTag: string;
@@ -344,9 +336,8 @@ export const ptBrDict: TranslationSchema = {
       hero: '01 // INÍCIO & MANIFESTO',
       works: '02 // ARQUIVO DE PROJETOS',
       about: '03 // DOSSIÊ CONFIDANT & SKILLS',
-      lab: '04 // ARSENAL ORBIT',
-      contact: '05 // ENVIAR PROPOSTA',
-      whoami: '06 // TERMINAL /WHOAMI',
+      contact: '04 // ENVIAR PROPOSTA',
+      whoami: '05 // TERMINAL /WHOAMI',
     },
     languageLabel: 'IDIOMA DA INTERFACE',
     downloadCvLabel: '↓ BAIXAR CURRÍCULO',
@@ -530,13 +521,6 @@ export const ptBrDict: TranslationSchema = {
     skillsTag: '// MATRIZ DE HABILIDADES • CONFIDANT RANKS',
     skillsTitle: 'ARSENAL TÉCNICO',
   },
-  lab: {
-    sectionAria: 'Arsenal Orbit: skills em órbita com links de evidência',
-    actTag: '[ ATO III // ARSENAL ORBIT • THREE.JS & GSAP ]',
-    title: 'ARSENAL ORBIT',
-    statusBadge: 'STATUS: INTERATIVO // SKILLS & EVIDÊNCIAS',
-    domainLine: 'THREE.JS • GSAP • WEB AUDIO API',
-  },
   stickers: {
     sectionAria: 'Biblioteca de stickers do Brinu',
     actTag: '[ EXTRA // STICKERS • ARQUIVOS SVG ]',
@@ -547,7 +531,7 @@ export const ptBrDict: TranslationSchema = {
   },
   contact: {
     sectionAria: 'Contato e Envio de Propostas — Bounty Board',
-    actTag: '[ ATO IV // BOUNTY BOARD • TRANSMISSÃO DIRETA ]',
+    actTag: '[ ATO III // BOUNTY BOARD • TRANSMISSÃO DIRETA ]',
     title: 'VAMOS CONVERSAR',
     availableBadge: 'DISPONÍVEL PARA PROJETOS DE ALTO IMPACTO',
     leadText:
@@ -664,9 +648,8 @@ export const enDict = {
       hero: '01 // HOME & MANIFESTO',
       works: '02 // BOUNTY ARCHIVE (WORKS)',
       about: '03 // CONFIDANT DOSSIER & SKILLS',
-      lab: '04 // ARSENAL ORBIT',
-      contact: '05 // TRANSMIT A BOUNTY',
-      whoami: '06 // TERMINAL /WHOAMI',
+      contact: '04 // TRANSMIT A BOUNTY',
+      whoami: '05 // TERMINAL /WHOAMI',
     },
     languageLabel: 'INTERFACE LANGUAGE',
     downloadCvLabel: '↓ DOWNLOAD RÉSUMÉ',
@@ -850,13 +833,6 @@ export const enDict = {
     skillsTag: '// SKILL MATRIX • CONFIDANT RANKS',
     skillsTitle: 'TECHNICAL ARSENAL',
   },
-  lab: {
-    sectionAria: 'Arsenal Orbit: skills in orbit with evidence links',
-    actTag: '[ ACT III // ARSENAL ORBIT • THREE.JS & GSAP ]',
-    title: 'ARSENAL ORBIT',
-    statusBadge: 'STATUS: INTERACTIVE // SKILLS & EVIDENCE',
-    domainLine: 'THREE.JS • GSAP • WEB AUDIO API',
-  },
   stickers: {
     sectionAria: 'Brinu sticker library',
     actTag: '[ BONUS // STICKERS • SVG FILES ]',
@@ -867,7 +843,7 @@ export const enDict = {
   },
   contact: {
     sectionAria: 'Contact and Project Proposals — Bounty Board',
-    actTag: '[ ACT IV // BOUNTY BOARD • DIRECT TRANSMISSION ]',
+    actTag: '[ ACT III // BOUNTY BOARD • DIRECT TRANSMISSION ]',
     title: 'LET’S TALK',
     availableBadge: 'AVAILABLE FOR HIGH-IMPACT CONTRACTS',
     leadText:

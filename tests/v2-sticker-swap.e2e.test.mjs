@@ -486,9 +486,9 @@ test('C14: footer links to /stickers while the menu keeps six items', async () =
       assert.equal(await link.getAttribute('href'), '/stickers');
       assert.match((await link.textContent()).trim(), /^STICKERS$/);
       await page.locator('#cockpit-trigger-btn').dispatchEvent('click');
-      await page.locator('#cockpit-menu-overlay a[href="#lab"]').waitFor({ state: 'visible', timeout: 8000 });
+      await page.locator('#cockpit-menu-overlay a[href="#contact"]').waitFor({ state: 'visible', timeout: 8000 });
       const hrefs = await page.locator('#cockpit-menu-overlay nav a').evaluateAll((els) => els.map((el) => el.getAttribute('href')));
-      assert.deepEqual(hrefs, ['#hero', '#works', '#about', '#lab', '#contact', '/whoami']);
+      assert.deepEqual(hrefs, ['#hero', '#works', '#about', '#contact', '/whoami']);
     } finally {
       await context.close();
     }

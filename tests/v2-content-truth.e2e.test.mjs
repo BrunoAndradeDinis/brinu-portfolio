@@ -361,7 +361,7 @@ function ptOnlyStrings() {
 test('C3: switching to en translates portrait alt and filmstrip captions', async () => {
   const { context, page } = await openHome('pt-br');
   try {
-    for (const id of ['#lab', '#contact']) {
+    for (const id of ['#contact']) {
       await page.locator(id).scrollIntoViewIfNeeded();
       await page.waitForTimeout(300);
     }

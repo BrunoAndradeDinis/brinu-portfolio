@@ -299,9 +299,9 @@ test('C10: menu keeps six items without the arsenal', async () => {
   const { context, page } = await openHome('pt-br', { reducedMotion: 'reduce' });
   try {
     await page.locator('#cockpit-trigger-btn').dispatchEvent('click');
-    await page.locator('#cockpit-menu-overlay a[href="#lab"]').waitFor({ state: 'visible', timeout: 8000 });
+    await page.locator('#cockpit-menu-overlay a[href="#contact"]').waitFor({ state: 'visible', timeout: 8000 });
     const hrefs = await page.locator('#cockpit-menu-overlay nav a').evaluateAll((els) => els.map((el) => el.getAttribute('href')));
-    assert.deepEqual(hrefs, ['#hero', '#works', '#about', '#lab', '#contact', '/whoami']);
+    assert.deepEqual(hrefs, ['#hero', '#works', '#about', '#contact', '/whoami']);
     assert.equal(hrefs.includes('#arsenal'), false);
   } finally {
     await context.close();
