@@ -71,6 +71,14 @@ function evidenceLabel(ref: EvidenceRef, locale: Locale): string | null {
   return CAREER.find((c) => c.id === id)?.org ?? null;
 }
 
+/** The evidence item's own description, shown beside its link; a career entry has none. */
+export function getEvidenceDescription(ref: EvidenceRef, locale: Locale): string | null {
+  const [kind, id] = ref.split(':') as ['case' | 'archive' | 'career', string];
+  if (kind === 'case') return MAIN_CASES.find((c) => c.id === id)?.text.description[locale] ?? null;
+  if (kind === 'archive') return ARCHIVE.find((a) => a.id === id)?.text.description[locale] ?? null;
+  return null;
+}
+
 export function resolveEvidenceAnchor(ref: string): string | null {
   const match = /^(case|archive|career):(.+)$/.exec(ref);
   if (!match) return null;

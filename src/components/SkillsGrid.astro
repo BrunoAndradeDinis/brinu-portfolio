@@ -30,7 +30,7 @@ const counter = getArsenalCounter("pt-br");
     </div>
   </div>
 
-  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
+  <div data-skills-grid class="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
     {domains.map((domain, idx) => (
       <div
         data-skill-vignette={domain.id}
@@ -51,17 +51,24 @@ const counter = getArsenalCounter("pt-br");
           </span>
         </div>
         <ul class="flex flex-col gap-3">
-          {domain.skills.map((skill) => (
-            <li data-skill-badge class="flex flex-wrap items-center gap-x-2 gap-y-1.5 border-b border-paper-white/15 pb-2.5 last:border-b-0">
-              <span data-skill-badge-text class="font-mono text-xs sm:text-sm font-black text-paper-white uppercase">
-                {skill.name}
-              </span>
+          {domain.skills.map((skill, skillIndex) => (
+            <li data-skill-badge class="group relative flex flex-wrap items-center gap-x-2 gap-y-1.5 border-b border-paper-white/15 pb-2.5 last:border-b-0">
+              <button
+                type="button"
+                data-skill-tile
+                data-skill-domain={domain.id}
+                data-skill-index={skillIndex}
+                aria-haspopup="dialog"
+                class="cursor-pointer text-left font-mono text-xs sm:text-sm font-black text-paper-white uppercase after:absolute after:inset-0 group-hover:text-bebop-red focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-paper-white"
+              >
+                <span data-skill-badge-text>{skill.name}</span>
+              </button>
               <span class="font-mono text-[10px] text-muted-gray" aria-hidden="true">→</span>
               {skill.evidence.map((evidence) => (
                 <a
                   href={`#${evidence.anchor}`}
                   data-evidence-link={evidence.ref}
-                  class="border border-bebop-red px-1.5 py-0.5 font-mono text-[10px] sm:text-[11px] font-bold uppercase text-paper-white transition-colors duration-150 hover:bg-bebop-red focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-paper-white"
+                  class="relative z-10 border border-bebop-red px-1.5 py-0.5 font-mono text-[10px] sm:text-[11px] font-bold uppercase text-paper-white transition-colors duration-150 hover:bg-bebop-red focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-paper-white"
                 >
                   {evidence.label}
                 </a>

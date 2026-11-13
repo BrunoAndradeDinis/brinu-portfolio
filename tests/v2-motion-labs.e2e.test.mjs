@@ -879,3 +879,223 @@ test('stickers route enters with the shared ease and duration', async () => {
     await reduced.context.close();
   }
 });
+
+const CLOSE_PANEL_LABEL = { 'pt-br': 'FECHAR [ESC]', en: 'CLOSE [ESC]' };
+const PANEL_SKILL = { name: 'TypeScript', domain: 'Frontend & Motion', evidence: CASE_IDS };
+const PANEL_GRID_BLUR = /^blur\((\d+(?:\.\d+)?)px\)$/;
+
+async function openArsenal(options) {
+  const opened = await openHome(options);
+  const tile = opened.page.locator('#arsenal').getByRole('button', { name: PANEL_SKILL.name, exact: true });
+  await tile.scrollIntoViewIfNeeded();
+  await opened.page.waitForFunction(() => {
+    const matrix = document.querySelector('#arsenal [data-skills-matrix]');
+    return Number(getComputedStyle(matrix).opacity) === 1 && new DOMMatrixReadOnly(getComputedStyle(matrix).transform).isIdentity;
+  });
+  await startPanelRecorder(opened.page);
+  return { ...opened, tile };
+}
+
+const startPanelRecorder = (page) =>
+  page.evaluate(() => {
+    const grid = document.querySelector('#arsenal [data-skills-grid]');
+    const tiles = [...grid.querySelectorAll('[data-skill-badge]')];
+    const boxes = () => tiles.map((tile) => tile.getBoundingClientRect()).map((rect) => [rect.left, rect.top, rect.right, rect.bottom]);
+    const shownText = (element) => {
+      let text = '';
+      const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
+      for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+        let shown = true;
+        for (let parent = node.parentElement; parent !== element; parent = parent.parentElement) {
+          const style = getComputedStyle(parent);
+          if (Number(style.opacity) === 0 || style.visibility === 'hidden' || style.display === 'none' || style.color === 'rgba(0, 0, 0, 0)') shown = false;
+        }
+        if (shown) text += node.data;
+      }
+      return text.trim();
+    };
+    const record = { gestures: [], frames: [] };
+    window.__panel = record;
+    for (const type of ['click', 'keydown']) {
+      document.addEventListener(type, (event) => record.gestures.push({ type, key: event.key ?? null, at: performance.now() }), true);
+    }
+    const sample = () => {
+      const dialog = document.querySelector('#arsenal dialog');
+      const rect = dialog.getBoundingClientRect();
+      const visible = dialog.checkVisibility({ visibilityProperty: true, opacityProperty: true }) && rect.width > 0;
+      const rects = boxes();
+      const scroll = { x: window.scrollX, y: window.scrollY };
+      record.frames.push({
+        at: performance.now(),
+        panel: visible ? { left: rect.left, right: rect.right, top: rect.top, bottom: rect.bottom } : null,
+        typed: visible ? [...dialog.querySelectorAll('[data-type]')].map((block) => ({ shown: shownText(block), full: block.textContent.trim() })) : [],
+        filter: getComputedStyle(grid).filter,
+        tiles: rects.map(([left, top, right, bottom]) => [left + scroll.x, top + scroll.y, right + scroll.x, bottom + scroll.y]),
+        viewport: document.body.getBoundingClientRect().right,
+        focus: document.activeElement?.closest('dialog') ? 'panel' : (document.activeElement?.textContent.trim() ?? null),
+      });
+      requestAnimationFrame(sample);
+    };
+    requestAnimationFrame(sample);
+  });
+
+const panelFrames = (page) => page.evaluate(() => window.__panel);
+
+const blurOf = (frame) => (frame.filter === 'none' ? 0 : Number(PANEL_GRID_BLUR.exec(frame.filter)?.[1] ?? Number.NaN));
+const tileShift = (frame, rest) => Math.max(...frame.tiles.flatMap((box, tile) => box.map((edge, side) => Math.abs(edge - rest.tiles[tile][side]))));
+// `viewport` is the right edge of the page area, left of the reserved scrollbar gutter.
+const panelInPlace = (frame) => frame.panel !== null && Math.abs(frame.panel.right - frame.viewport) < 0.01 && frame.panel.top === 0;
+
+// The move ends between the last frame that still differs from the end state and the first frame that holds it.
+function assertLandsInWindow(frames, since, settled, label) {
+  const after = frames.filter((frame) => frame.at >= since);
+  const lastMoving = after.findLastIndex((frame) => !settled(frame));
+  assert.ok(lastMoving >= 0, `${label}: the move is seen in progress`);
+  assert.ok(lastMoving < after.length - 1, `${label}: the move ends`);
+  const earliest = after[lastMoving].at - since;
+  const latest = after[lastMoving + 1].at - since;
+  assert.ok(latest >= 400, `${label}: lands no sooner than 400 ms after the gesture (by ${latest} ms)`);
+  assert.ok(earliest <= 600, `${label}: lands no later than 600 ms after the gesture (after ${earliest} ms)`);
+}
+
+const lastGesture = (record, type) => record.gestures.findLast((gesture) => gesture.type === type).at;
+
+async function waitForPanelSettled(page, open) {
+  await page.waitForFunction((expectOpen) => {
+    const frames = window.__panel.frames;
+    const gesture = window.__panel.gestures.at(-1);
+    if (!gesture || frames.at(-1).at - gesture.at < 900) return false;
+    return (frames.at(-1).panel !== null) === expectOpen;
+  }, open);
+}
+
+test('tile click blurs the grid and enters the panel', async () => {
+  for (const locale of LOCALES) {
+    for (const viewport of [{ width: 1440, height: 900 }, SMALL_PHONE]) {
+      const label = `${locale} ${viewport.width}px`;
+      const { context, page, tile } = await openArsenal({ locale, viewport });
+      try {
+        await tile.click();
+        await waitForPanelSettled(page, true);
+        const record = await panelFrames(page);
+        const clickedAt = lastGesture(record, 'click');
+        const rest = record.frames.findLast((frame) => frame.at < clickedAt);
+        const end = record.frames.at(-1);
+        assert.equal(rest.panel, null, `${label}: no panel before the click`);
+        assert.equal(blurOf(rest), 0, `${label}: the grid is sharp before the click`);
+
+        const entering = record.frames.filter((frame) => frame.at >= clickedAt && frame.panel !== null);
+        assert.ok(entering[0].panel.left > end.panel.left + 20, `${label}: the panel starts to the right of where it lands (${entering[0].panel.left} vs ${end.panel.left})`);
+        for (let index = 1; index < entering.length; index += 1) {
+          assert.ok(entering[index].panel.left <= entering[index - 1].panel.left, `${label}: the panel only moves leftwards`);
+        }
+        assert.equal(panelInPlace(end), true, `${label}: the panel rests against the right edge`);
+        assert.ok(end.panel.left >= 0 && end.panel.bottom <= viewport.height, `${label}: the whole panel is inside the viewport`);
+        assertLandsInWindow(record.frames, clickedAt, (frame) => panelInPlace(frame) && frame.panel.left === end.panel.left, `${label} panel entry`);
+
+        assert.ok(blurOf(end) >= 4, `${label}: the grid is blurred behind the panel (${end.filter})`);
+        assert.ok(tileShift(end, rest) >= 8, `${label}: the tiles are dispersed (${tileShift(end, rest)} px)`);
+        const dispersedTiles = end.tiles.filter((box, index) => Math.abs(box[0] - rest.tiles[index][0]) >= 4 || Math.abs(box[1] - rest.tiles[index][1]) >= 4);
+        assert.equal(dispersedTiles.length, end.tiles.length, `${label}: every tile leaves its place`);
+        assertLandsInWindow(record.frames, clickedAt, (frame) => blurOf(frame) === blurOf(end) && tileShift(frame, end) < 0.01, `${label} grid blur`);
+
+        const dialog = page.getByRole('dialog', { name: PANEL_SKILL.name, exact: true });
+        assert.equal(await dialog.count(), 1, `${label}: the panel is a dialog named after the skill`);
+        assert.equal(end.focus, 'panel', `${label}: focus moves into the panel`);
+        assert.equal((await dialog.getByRole('heading').textContent()).trim(), PANEL_SKILL.name);
+        assert.equal((await dialog.locator('[data-skill-panel-domain]').textContent()).trim(), PANEL_SKILL.domain);
+        const { getLocalizedCases } = await import('../src/data/cases.ts');
+        const links = await dialog.getByRole('link').evaluateAll((anchors) =>
+          anchors.map((anchor) => ({ label: anchor.querySelector('[data-skill-panel-link-label]').textContent.trim(), href: anchor.getAttribute('href'), description: anchor.parentElement.querySelector('p').textContent.trim() }))
+        );
+        assert.deepEqual(
+          links,
+          PANEL_SKILL.evidence.map((id, index) => ({ label: CASE_TITLES[locale][index], href: `#case-${id}`, description: getLocalizedCases(locale).find((entry) => entry.id === id).description })),
+          `${label}: the panel lists the skill's evidence`
+        );
+        assert.equal(await dialog.getByRole('button', { name: CLOSE_PANEL_LABEL[locale], exact: true }).count(), 1, `${label}: the panel has a close button`);
+        const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+        assert.ok(overflow <= 0, `${label}: no horizontal overflow with the panel open`);
+      } finally {
+        await context.close();
+      }
+    }
+  }
+});
+
+function assertGridBack(record, since, label) {
+  const rest = record.frames[0];
+  const end = record.frames.at(-1);
+  assert.equal(end.panel, null, `${label}: the panel is gone`);
+  assert.equal(blurOf(end), 0, `${label}: the grid is sharp again`);
+  assert.ok(tileShift(end, rest) < 0.01, `${label}: every tile is back in its place (${tileShift(end, rest)} px)`);
+  const closing = record.frames.find((frame) => frame.at >= since);
+  assert.ok(blurOf(closing) > 0 && tileShift(closing, rest) > 1, `${label}: the grid is still blurred and dispersed when the gesture happens`);
+  assertLandsInWindow(record.frames, since, (frame) => blurOf(frame) === 0 && tileShift(frame, rest) < 0.01, `${label} grid return`);
+  assert.equal(end.focus, PANEL_SKILL.name, `${label}: focus returns to the tile`);
+}
+
+test('closing the panel brings the grid back', async () => {
+  for (const locale of LOCALES) {
+    const { context, page, tile } = await openArsenal({ locale });
+    try {
+      await tile.click();
+      await waitForPanelSettled(page, true);
+      await page.getByRole('dialog').getByRole('button', { name: CLOSE_PANEL_LABEL[locale], exact: true }).click();
+      await waitForPanelSettled(page, false);
+      let record = await panelFrames(page);
+      assertGridBack(record, lastGesture(record, 'click'), `${locale} close button`);
+
+      await tile.focus();
+      await page.keyboard.press('Enter');
+      await waitForPanelSettled(page, true);
+      record = await panelFrames(page);
+      assert.equal(panelInPlace(record.frames.at(-1)), true, `${locale}: Enter on the tile opens the panel`);
+      assert.equal(record.frames.at(-1).focus, 'panel');
+      await page.keyboard.press('Escape');
+      await waitForPanelSettled(page, false);
+      record = await panelFrames(page);
+      assertGridBack(record, lastGesture(record, 'keydown'), `${locale} Escape`);
+    } finally {
+      await context.close();
+    }
+  }
+});
+
+test('reduced motion shows the panel and full text at once', async () => {
+  for (const locale of LOCALES) {
+    const { context, page, tile } = await openArsenal({ locale, reducedMotion: 'reduce' });
+    try {
+      await tile.click();
+      await waitForPanelSettled(page, true);
+      let record = await panelFrames(page);
+      const clickedAt = lastGesture(record, 'click');
+      const rest = record.frames[0];
+      const open = record.frames.filter((frame) => frame.at >= clickedAt && frame.panel !== null);
+      assert.ok(open[0].at - clickedAt <= 100, `${locale}: the panel is there right after the click (${open[0].at - clickedAt} ms)`);
+      assert.ok(record.frames.filter((frame) => frame.at >= clickedAt).length - open.length <= 1, `${locale}: the panel shows on the first frame after the click`);
+      for (const frame of open) {
+        assert.equal(panelInPlace(frame), true, `${locale}: the panel is in place on every frame`);
+        assert.equal(frame.panel.left, open.at(-1).panel.left, `${locale}: the panel never moves`);
+        assert.equal(frame.filter, 'none', `${locale}: the grid is never blurred`);
+        assert.ok(tileShift(frame, rest) < 0.01, `${locale}: the tiles never move`);
+        assert.ok(frame.typed.length >= 4, `${locale}: the panel holds its title, labels and paragraphs`);
+        for (const block of frame.typed) {
+          assert.ok(block.full.length > 0, `${locale}: every text block has text`);
+          assert.equal(block.shown, block.full, `${locale}: "${block.full}" is shown in full on every frame`);
+        }
+      }
+      assert.equal((await page.getByRole('dialog', { name: PANEL_SKILL.name, exact: true }).getByRole('heading').textContent()).trim(), PANEL_SKILL.name);
+
+      await page.keyboard.press('Escape');
+      await waitForPanelSettled(page, false);
+      record = await panelFrames(page);
+      const escapedAt = lastGesture(record, 'keydown');
+      const closed = record.frames.filter((frame) => frame.at >= escapedAt);
+      assert.ok(closed.filter((frame) => frame.panel !== null).length <= 1, `${locale}: the panel closes at once`);
+      assert.equal(closed.at(-1).focus, PANEL_SKILL.name, `${locale}: focus returns to the tile`);
+    } finally {
+      await context.close();
+    }
+  }
+});
