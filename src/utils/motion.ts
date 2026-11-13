@@ -124,6 +124,15 @@ export function jumpScrollTo(top: number): void {
   }
 }
 
+export function smoothScrollTo(top: number, duration: number): void {
+  if (typeof window === 'undefined') return;
+  if (lenisInstance) {
+    lenisInstance.scrollTo(top, { duration, force: true });
+  } else {
+    window.scrollTo({ top, behavior: 'auto' });
+  }
+}
+
 /**
  * Pausa a física de rolagem (útil durante o intro preloader ou modais em tela cheia).
  */

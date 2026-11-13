@@ -4,10 +4,10 @@ import {
   ScrollTrigger,
   gsap,
   getNavClearanceOffset,
-  getLenis,
   jumpScrollTo,
   pauseScroll,
   resumeScroll,
+  smoothScrollTo,
 } from '../../utils/motion.ts';
 import { CASE_REVEAL_ELEMENTS, createCaseSteps, elementOffsets } from './cases-reveal.ts';
 import { typeText } from '../../utils/text-type-bind.ts';
@@ -151,9 +151,7 @@ function enableReveal(section: HTMLElement): (() => void) | null {
       return;
     }
     requestedIndex = index;
-    const lenis = getLenis();
-    if (lenis) lenis.scrollTo(trigger.start + 1, { duration: MOTION_DURATION.seconds, force: true });
-    else jumpScrollTo(trigger.start + 1);
+    smoothScrollTo(trigger.start + 1, MOTION_DURATION.seconds);
   };
 
   const acceptsInput = () => locked && !document.documentElement.classList.contains('cockpit-menu-open');
