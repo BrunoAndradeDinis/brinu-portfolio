@@ -7,6 +7,7 @@ export type EvidenceRef = `case:${string}` | `archive:${string}` | `career:${str
 
 export interface ArsenalSkill {
   readonly name: string;
+  readonly description: Localized<string>;
   readonly evidence: readonly EvidenceRef[];
 }
 
@@ -25,7 +26,7 @@ export interface LocalizedEvidence {
 export interface LocalizedArsenalDomain {
   id: ArsenalDomain['id'];
   title: string;
-  skills: { name: string; evidence: LocalizedEvidence[] }[];
+  skills: { name: string; description: string; evidence: LocalizedEvidence[] }[];
 }
 
 export const ARSENAL: readonly ArsenalDomain[] = [
@@ -33,33 +34,33 @@ export const ARSENAL: readonly ArsenalDomain[] = [
     id: 'frontend',
     title: t('Frontend & Motion', 'Frontend & Motion'),
     skills: [
-      { name: 'TypeScript', evidence: ['case:magalu-cloud', 'case:uriana', 'case:efood', 'case:aurastream'] },
-      { name: 'React / Next.js', evidence: ['case:magalu-cloud', 'case:uriana', 'case:efood'] },
-      { name: 'Astro', evidence: ['case:magalu-cloud'] },
-      { name: 'Tailwind CSS', evidence: ['case:magalu-cloud', 'case:uriana'] },
-      { name: 'GSAP', evidence: ['archive:brinu-portfolio-v2'] },
+      { name: 'TypeScript', description: t('Tipagem em todos os meus cases, do site da Magalu Cloud ao AuraStream.', 'Typing across all my cases, from the Magalu Cloud website to AuraStream.'), evidence: ['case:magalu-cloud', 'case:uriana', 'case:efood', 'case:aurastream'] },
+      { name: 'React / Next.js', description: t('Interfaces do site da Magalu Cloud, do Uriana e do eFood.', 'Interfaces for the Magalu Cloud website, Uriana and eFood.'), evidence: ['case:magalu-cloud', 'case:uriana', 'case:efood'] },
+      { name: 'Astro', description: t('Páginas do site institucional da Magalu Cloud.', 'Pages of the Magalu Cloud corporate website.'), evidence: ['case:magalu-cloud'] },
+      { name: 'Tailwind CSS', description: t('Estilos do site da Magalu Cloud e do Uriana.', 'Styling for the Magalu Cloud website and Uriana.'), evidence: ['case:magalu-cloud', 'case:uriana'] },
+      { name: 'GSAP', description: t('Transições e animações de scroll deste portfólio.', 'Transitions and scroll animations in this portfolio.'), evidence: ['archive:brinu-portfolio-v2'] },
     ],
   },
   {
     id: 'backend',
     title: t('Backend & Dados', 'Backend & Data'),
     skills: [
-      { name: 'Node.js / Express', evidence: ['archive:quake-log-parser'] },
-      { name: 'PostgreSQL + Prisma', evidence: ['case:uriana'] },
-      { name: 'MongoDB', evidence: ['archive:quake-log-parser'] },
-      { name: 'Object Storage', evidence: ['case:aurastream'] },
-      { name: 'FFmpeg / streaming', evidence: ['case:aurastream'] },
+      { name: 'Node.js / Express', description: t('API do Quake Log Parser.', 'The Quake Log Parser API.'), evidence: ['archive:quake-log-parser'] },
+      { name: 'PostgreSQL + Prisma', description: t('Banco de dados de estoque e vendas do Uriana.', 'Inventory and sales database for Uriana.'), evidence: ['case:uriana'] },
+      { name: 'MongoDB', description: t('Persistência dos dados do Quake Log Parser.', 'Data persistence for the Quake Log Parser.'), evidence: ['archive:quake-log-parser'] },
+      { name: 'Object Storage', description: t('Armazenamento do AuraStream no Object Storage da Magalu Cloud.', 'AuraStream storage on Magalu Cloud Object Storage.'), evidence: ['case:aurastream'] },
+      { name: 'FFmpeg / streaming', description: t('Captura e transmissão de vídeo no AuraStream.', 'Video capture and streaming in AuraStream.'), evidence: ['case:aurastream'] },
     ],
   },
   {
     id: 'quality',
     title: t('Qualidade & Ferramentas', 'Quality & Tooling'),
     skills: [
-      { name: 'Jest', evidence: ['archive:quake-log-parser'] },
-      { name: 'Playwright', evidence: ['archive:brinu-portfolio-v2'] },
-      { name: 'Docker Compose', evidence: ['archive:quake-log-parser'] },
-      { name: 'Zod', evidence: ['case:uriana'] },
-      { name: 'Figma / GitLab', evidence: ['case:magalu-cloud'] },
+      { name: 'Jest', description: t('Testes da API do Quake Log Parser.', 'Tests for the Quake Log Parser API.'), evidence: ['archive:quake-log-parser'] },
+      { name: 'Playwright', description: t('Testes de ponta a ponta deste portfólio.', 'End-to-end tests for this portfolio.'), evidence: ['archive:brinu-portfolio-v2'] },
+      { name: 'Docker Compose', description: t('Ambiente local do Quake Log Parser.', 'Local environment for the Quake Log Parser.'), evidence: ['archive:quake-log-parser'] },
+      { name: 'Zod', description: t('Validação de dados no Uriana.', 'Data validation in Uriana.'), evidence: ['case:uriana'] },
+      { name: 'Figma / GitLab', description: t('Handoff de design e versionamento no time da Magalu Cloud.', 'Design handoff and version control on the Magalu Cloud team.'), evidence: ['case:magalu-cloud'] },
     ],
   },
 ];
@@ -92,6 +93,7 @@ export function getLocalizedArsenal(locale: Locale): LocalizedArsenalDomain[] {
     title: domain.title[locale],
     skills: domain.skills.map((skill) => ({
       name: skill.name,
+      description: skill.description[locale],
       evidence: skill.evidence.map((ref) => ({
         ref,
         anchor: resolveEvidenceAnchor(ref) ?? '',

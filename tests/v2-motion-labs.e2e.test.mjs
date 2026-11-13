@@ -1855,3 +1855,25 @@ const waitForPanelSettledOpen = (page) =>
     const rect = dialog.getBoundingClientRect();
     return dialog.open && rect.width > 0 && Math.abs(rect.right - document.body.getBoundingClientRect().right) < 0.5;
   });
+
+const SKILL_SUMMARY = {
+  'pt-br': 'Tipagem em todos os meus cases, do site da Magalu Cloud ao AuraStream.',
+  en: 'Typing across all my cases, from the Magalu Cloud website to AuraStream.',
+};
+
+test('the panel describes the skill in the active locale', async () => {
+  for (const locale of LOCALES) {
+    const { context, page, tile } = await openArsenal({ locale });
+    try {
+      await tile.click();
+      await waitForPanelSettled(page, true);
+      const summary = page.getByRole('dialog', { name: PANEL_SKILL.name, exact: true }).locator('[data-skill-panel-summary]');
+      assert.equal((await summary.textContent()).trim(), SKILL_SUMMARY[locale], `${locale}: the summary holds the approved sentence`);
+      await page.waitForFunction((expected) => document.querySelector('#arsenal [data-skill-panel-summary]').innerText.trim() === expected, SKILL_SUMMARY[locale], { timeout: 6000 });
+      const box = await summary.boundingBox();
+      assert.ok(box && box.height > 0 && box.y >= 0, `${locale}: the summary is on screen inside the panel`);
+    } finally {
+      await context.close();
+    }
+  }
+});

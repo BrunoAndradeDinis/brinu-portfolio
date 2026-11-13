@@ -143,3 +143,33 @@ test('orbit nodes sit on one of two ellipses and never share a position', async 
   const positions = new Set(nodes.map((node) => `${node.x.toFixed(6)},${node.y.toFixed(6)}`));
   assert.equal(positions.size, nodes.length);
 });
+
+const APPROVED_SKILL_DESCRIPTIONS = {
+  TypeScript: ['Tipagem em todos os meus cases, do site da Magalu Cloud ao AuraStream.', 'Typing across all my cases, from the Magalu Cloud website to AuraStream.'],
+  'React / Next.js': ['Interfaces do site da Magalu Cloud, do Uriana e do eFood.', 'Interfaces for the Magalu Cloud website, Uriana and eFood.'],
+  Astro: ['Páginas do site institucional da Magalu Cloud.', 'Pages of the Magalu Cloud corporate website.'],
+  'Tailwind CSS': ['Estilos do site da Magalu Cloud e do Uriana.', 'Styling for the Magalu Cloud website and Uriana.'],
+  GSAP: ['Transições e animações de scroll deste portfólio.', 'Transitions and scroll animations in this portfolio.'],
+  'Node.js / Express': ['API do Quake Log Parser.', 'The Quake Log Parser API.'],
+  'PostgreSQL + Prisma': ['Banco de dados de estoque e vendas do Uriana.', 'Inventory and sales database for Uriana.'],
+  MongoDB: ['Persistência dos dados do Quake Log Parser.', 'Data persistence for the Quake Log Parser.'],
+  'Object Storage': ['Armazenamento do AuraStream no Object Storage da Magalu Cloud.', 'AuraStream storage on Magalu Cloud Object Storage.'],
+  'FFmpeg / streaming': ['Captura e transmissão de vídeo no AuraStream.', 'Video capture and streaming in AuraStream.'],
+  Jest: ['Testes da API do Quake Log Parser.', 'Tests for the Quake Log Parser API.'],
+  Playwright: ['Testes de ponta a ponta deste portfólio.', 'End-to-end tests for this portfolio.'],
+  'Docker Compose': ['Ambiente local do Quake Log Parser.', 'Local environment for the Quake Log Parser.'],
+  Zod: ['Validação de dados no Uriana.', 'Data validation in Uriana.'],
+  'Figma / GitLab': ['Handoff de design e versionamento no time da Magalu Cloud.', 'Design handoff and version control on the Magalu Cloud team.'],
+};
+
+test('every skill carries its approved description in both locales', async () => {
+  const { ARSENAL, getLocalizedArsenal } = await import('../src/data/arsenal.ts');
+  const skills = ARSENAL.flatMap((domain) => domain.skills);
+  assert.deepEqual(skills.map((skill) => skill.name).sort(), Object.keys(APPROVED_SKILL_DESCRIPTIONS).sort());
+  for (const [locale, column] of [['pt-br', 0], ['en', 1]]) {
+    const localized = getLocalizedArsenal(locale).flatMap((domain) => domain.skills);
+    for (const skill of localized) {
+      assert.equal(skill.description, APPROVED_SKILL_DESCRIPTIONS[skill.name][column], `${locale} ${skill.name}`);
+    }
+  }
+});
