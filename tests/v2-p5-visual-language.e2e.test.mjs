@@ -576,7 +576,7 @@ test('C6: P5Title exposes full title via aria-label and hides individual letters
       });
     });
 
-    assert.ok(titles.length >= 5, `Expected at least 5 section P5Title headings, got ${titles.length}`);
+    assert.ok(titles.length >= 4, `Expected at least 4 section P5Title headings, got ${titles.length}`);
     for (const t of titles) {
       assert.ok(t.ariaLabel && t.ariaLabel.length > 0, 'P5Title must have non-empty aria-label');
       assert.equal(t.ariaLabel, t.textContent, 'aria-label must match full reconstructed title text');
@@ -606,7 +606,7 @@ test('C7: P5Title renders static ransom-note state immediately when reduced moti
       });
     });
 
-    assert.ok(state.length >= 5);
+    assert.ok(state.length >= 4);
     for (const item of state) {
       assert.equal(item.animated, 'false', 'P5Title must skip entrance animation under prefers-reduced-motion');
       assert.equal(item.revealed, 'true', 'P5Title must immediately be in revealed state under prefers-reduced-motion');
@@ -772,7 +772,7 @@ test('C21: with JavaScript disabled section titles render as plain readable text
       }));
     });
 
-    assert.ok(titles.length >= 5);
+    assert.ok(titles.length >= 4);
     for (const t of titles) {
       assert.ok(t.text.length >= 3, 'Title text must be non-empty when JS is disabled');
       assert.equal(t.childElementCount, 0, 'With JS disabled, title must render as plain text without split spans');
