@@ -1575,3 +1575,222 @@ test('lab act shows the orbit and no deck', async () => {
     await context.close();
   }
 });
+
+const AUDIT_VIEWPORTS = [
+  { width: 320, height: 640 },
+  { width: 768, height: 1024 },
+  { width: 1280, height: 800 },
+  { width: 2560, height: 1440 },
+];
+
+// Composites every ancestor's background and opacity, so a faded plate counts as faded.
+// The untyped rest of a typing block is the one thing left out: it is not shown yet.
+// An entrance fade crosses every contrast value on its way in, so the screen is read once its opacities hold still.
+const REST_FRAMES = 6;
+const REST_WAIT_FRAMES = 300;
+
+const auditScreen = (page, rootSelector) =>
+  page.evaluate(async ({ selector, restFrames, waitFrames }) => {
+    const fades = () => [...document.querySelector(selector).querySelectorAll('*')].map((element) => getComputedStyle(element).opacity).join();
+    let held = 0;
+    let previous = fades();
+    for (let frame = 0; frame < waitFrames && held < restFrames; frame += 1) {
+      await new Promise((resolve) => requestAnimationFrame(resolve));
+      const current = fades();
+      held = current === previous ? held + 1 : 0;
+      previous = current;
+    }
+    const probe = document.createElement('canvas').getContext('2d', { willReadFrequently: true });
+    const parse = (value) => {
+      probe.clearRect(0, 0, 1, 1);
+      probe.fillStyle = value;
+      probe.fillRect(0, 0, 1, 1);
+      const [r, g, b, a] = probe.getImageData(0, 0, 1, 1).data;
+      return { r, g, b, a: a / 255 };
+    };
+    const mix = (top, base, alpha) => ({ r: top.r * alpha + base.r * (1 - alpha), g: top.g * alpha + base.g * (1 - alpha), b: top.b * alpha + base.b * (1 - alpha) });
+    const luminance = ({ r, g, b }) => {
+      const linear = (channel) => (channel / 255 <= 0.03928 ? channel / 255 / 12.92 : ((channel / 255 + 0.055) / 1.055) ** 2.4);
+      return 0.2126 * linear(r) + 0.7152 * linear(g) + 0.0722 * linear(b);
+    };
+    const paint = (chain, depth, ground) => {
+      const style = getComputedStyle(chain[depth]);
+      const fill = parse(style.backgroundColor);
+      const plate = mix(fill, ground, fill.a);
+      const image = style.backgroundImage !== 'none';
+      let inner;
+      if (depth === chain.length - 1) {
+        const ink = parse(style.color);
+        inner = { ink: mix(ink, plate, ink.a), plate, image };
+      } else {
+        inner = paint(chain, depth + 1, plate);
+        inner.image ||= image && parse(getComputedStyle(chain[depth + 1]).backgroundColor).a < 1;
+      }
+      const opacity = Number(style.opacity);
+      return { ink: mix(inner.ink, ground, opacity), plate: mix(inner.plate, ground, opacity), image: inner.image };
+    };
+    const root = document.querySelector(selector);
+    const box = root.getBoundingClientRect();
+    const page = document.documentElement;
+    const texts = [];
+    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+    for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+      if (!node.data.trim()) continue;
+      const element = node.parentElement;
+      if (['SCRIPT', 'STYLE', 'NOSCRIPT', 'TEMPLATE'].includes(element.tagName)) continue;
+      if (!element.checkVisibility({ visibilityProperty: true }) || element.getClientRects().length === 0) continue;
+      const typedPart = element.parentElement.matches('[data-type]') && element.parentElement.children.length === 2;
+      if (typedPart && element === element.parentElement.children[1] && element.style.opacity === '0') continue;
+      const chain = [];
+      for (let ancestor = element; ancestor; ancestor = ancestor.parentElement) chain.unshift(ancestor);
+      const { ink, plate, image } = paint(chain, 0, { r: 255, g: 255, b: 255 });
+      const [light, dark] = [luminance(ink), luminance(plate)].sort((a, b) => b - a);
+      texts.push({ text: node.data.trim().slice(0, 40), contrast: (light + 0.05) / (dark + 0.05), overImage: image, typed: typedPart });
+    }
+    return {
+      texts,
+      typingBlocks: [...root.querySelectorAll('[data-type]')].filter((block) => block.children.length === 2 && block.children[0].textContent.length > 0 && block.children[1].textContent.length > 0).length,
+      pageOverflow: page.scrollWidth - page.clientWidth,
+      rootOutside: Math.max(0, -box.left, box.right - page.clientWidth),
+      atRest: held >= restFrames,
+    };
+  }, { selector: rootSelector, restFrames: REST_FRAMES, waitFrames: REST_WAIT_FRAMES });
+
+const waitForTyping = (page, rootSelector, state) =>
+  page.waitForFunction(
+    ({ selector, expected }) => {
+      const blocks = [...document.querySelectorAll(`${selector} [data-type]`)].filter((block) => block.checkVisibility({ visibilityProperty: true }) && block.children.length === 2);
+      const midway = blocks.filter((block) => block.children[0].textContent.length >= 5 && block.children[1].textContent.length >= 5);
+      return expected === 'midway' ? midway.length > 0 : blocks.length === 0;
+    },
+    { selector: rootSelector, expected: state },
+    { timeout: 15_000 }
+  );
+
+async function auditCases(page, screens) {
+  await page.evaluate(() => {
+    const strip = document.querySelector('#works [data-tank-strip]');
+    window.scrollTo(0, strip.getBoundingClientRect().top + window.scrollY - window.innerHeight * 0.8);
+  });
+  await page.waitForFunction(() => {
+    const top = document.querySelector('#works [data-tank-strip]').getBoundingClientRect().top / window.innerHeight;
+    return top > 0.7 && top < 0.9;
+  });
+  screens.push({ name: 'cases entering the viewport', ...(await auditScreen(page, '#works')) });
+
+  const mode = (await stageState(page)).mode;
+  if (mode === 'reveal') {
+    await pinCases(page);
+    await waitForCaseFullyShown(page, CASE_IDS[0]);
+    await page.mouse.wheel(0, 120);
+    await waitForCaseFullyShown(page, CASE_IDS[1]);
+  } else {
+    await page.locator(`#case-${CASE_IDS[1]} [data-case-description]`).scrollIntoViewIfNeeded();
+  }
+  await waitForTyping(page, '#works', 'midway');
+  screens.push({ name: `cases while typing (${mode})`, typing: 'midway', ...(await auditScreen(page, '#works')) });
+  await waitForTyping(page, '#works', 'done');
+  screens.push({ name: `cases after typing (${mode})`, typing: 'done', ...(await auditScreen(page, '#works')) });
+  if (mode === 'reveal') {
+    for (const id of CASE_IDS.slice(2)) {
+      await betweenGestures(page);
+      await page.mouse.wheel(0, 120);
+      await waitForCaseFullyShown(page, id);
+    }
+    await betweenGestures(page);
+    await page.mouse.wheel(0, 120);
+    await page.waitForFunction(() => document.getElementById('works').getAttribute('data-cases-pinned') === 'false');
+  }
+}
+
+async function auditArsenalPanel(page, screens) {
+  const tile = page.locator('#arsenal').getByRole('button', { name: PANEL_SKILL.name, exact: true });
+  await tile.scrollIntoViewIfNeeded();
+  await page.waitForFunction(() => {
+    const matrix = document.querySelector('#arsenal [data-skills-matrix]');
+    return Number(getComputedStyle(matrix).opacity) === 1 && new DOMMatrixReadOnly(getComputedStyle(matrix).transform).isIdentity;
+  });
+  await tile.click();
+  await page.waitForFunction(() => {
+    const panel = document.querySelector('#arsenal dialog').getBoundingClientRect();
+    return panel.width > 0 && Math.abs(panel.right - document.body.getBoundingClientRect().right) < 0.5;
+  });
+  await waitForTyping(page, '#arsenal dialog', 'midway');
+  screens.push({ name: 'arsenal panel while typing', typing: 'midway', ...(await auditScreen(page, '#arsenal dialog')) });
+  await waitForTyping(page, '#arsenal dialog', 'done');
+  screens.push({ name: 'arsenal panel after typing', typing: 'done', ...(await auditScreen(page, '#arsenal dialog')) });
+  await page.keyboard.press('Escape');
+  await page.waitForFunction(() => !document.querySelector('#arsenal dialog').checkVisibility());
+}
+
+async function auditOrbit(page, screens, touch) {
+  await showOrbit(page);
+  const node = orbitNode(page, PANEL_SKILL.name);
+  if (touch) await node.tap(MOVING_TARGET);
+  else await node.hover(MOVING_TARGET);
+  await page.waitForFunction((name) => document.querySelector('#lab [data-orbit-evidence] h4')?.textContent.trim() === name, PANEL_SKILL.name);
+  screens.push({ name: 'orbit act with evidence open', ...(await auditScreen(page, '#lab')) });
+}
+
+let auditWalk;
+const walkAuditedScreens = () => {
+  auditWalk ??= (async () => {
+    const walks = [];
+    for (const viewport of AUDIT_VIEWPORTS) {
+      for (const locale of LOCALES) {
+        const touch = viewport.width < 768;
+        const screens = [];
+        const { context, page } = await openHome({ locale, viewport, hasTouch: touch });
+        try {
+          await auditCases(page, screens);
+          await auditArsenalPanel(page, screens);
+          await auditOrbit(page, screens, touch);
+        } finally {
+          await context.close();
+        }
+        const reduced = await openHome({ locale, viewport, reducedMotion: 'reduce' });
+        try {
+          await readStaticOrbit(reduced.page);
+          screens.push({ name: 'orbit act as a static list', ...(await auditScreen(reduced.page, '#lab')) });
+        } finally {
+          await reduced.context.close();
+        }
+        walks.push({ label: `${viewport.width}px ${locale}`, screens });
+      }
+    }
+    return walks;
+  })();
+  return auditWalk;
+};
+
+const AUDITED_SCREENS = 7;
+
+test('no horizontal overflow from 320 to 2560 px in both locales', async () => {
+  const walks = await walkAuditedScreens();
+  assert.equal(walks.length, AUDIT_VIEWPORTS.length * LOCALES.length, 'every width is walked in both locales');
+  for (const { label, screens } of walks) {
+    assert.equal(screens.length, AUDITED_SCREENS, `${label}: cases, typed text, the open panel and both orbit modes are audited`);
+    for (const screen of screens) {
+      assert.ok(screen.pageOverflow <= 0, `${label} ${screen.name}: scrollWidth exceeds clientWidth by ${screen.pageOverflow}px`);
+      assert.ok(screen.rootOutside < 0.5, `${label} ${screen.name}: the block reaches ${screen.rootOutside}px outside the viewport`);
+    }
+  }
+});
+
+test('text contrast stays at or above 4.5:1 during and after typing', async () => {
+  for (const { label, screens } of await walkAuditedScreens()) {
+    assert.equal(screens.length, AUDITED_SCREENS, `${label}: cases, typed text, the open panel and both orbit modes are audited`);
+    for (const screen of screens) {
+      const where = `${label} ${screen.name}`;
+      assert.equal(screen.atRest, true, `${where}: every fade has ended when the screen is read`);
+      assert.ok(screen.texts.length >= 10, `${where}: the audit reads the screen's text (${screen.texts.length} text runs)`);
+      if (screen.typing === 'midway') {
+        assert.ok(screen.typingBlocks >= 1, `${where}: a block is caught mid-typing`);
+        assert.ok(screen.texts.some((entry) => entry.typed), `${where}: the typed part of the block is audited`);
+      }
+      if (screen.typing === 'done') assert.equal(screen.typingBlocks, 0, `${where}: no block is still typing`);
+      assert.deepEqual(screen.texts.filter((entry) => entry.overImage).map((entry) => entry.text), [], `${where}: text sits on a flat plate, not on an image`);
+      assert.deepEqual(screen.texts.filter((entry) => entry.contrast < 4.5).map((entry) => `${entry.text} (${entry.contrast.toFixed(2)})`), [], `${where}: text below 4.5:1`);
+    }
+  }
+});
