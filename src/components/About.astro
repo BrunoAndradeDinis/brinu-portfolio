@@ -56,9 +56,9 @@ const currentId = CAREER.find((entry) => entry.end === "present")?.id;
   <div class="mx-auto max-w-[140rem] grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
     <div
       data-about-avatar-panel
-      class="lg:col-span-5 flex flex-col items-center lg:items-start"
+      class="lg:col-span-5 lg:self-center flex flex-col items-center"
     >
-      <div class="relative w-full max-w-[24rem] sm:max-w-[26rem] mx-auto lg:mx-0 py-4">
+      <div data-about-portrait class="relative w-full max-w-[24rem] sm:max-w-[26rem] mx-auto py-4">
         <div
           data-about-portrait-frame
           class="relative rotate-[-4deg] bg-bebop-red p-[0.45rem] sm:p-[0.6rem] [clip-path:polygon(7%_0%,100%_5%,93%_100%,0%_95%)]"
@@ -228,17 +228,61 @@ const currentId = CAREER.find((entry) => entry.end === "present")?.id;
   import { onPageReady } from "../utils/page-lifecycle";
   import { initDossier } from "./about/dossier";
   import { initCareerTabs } from "./about/career-tabs";
+  import { bindRubikPortrait } from "./about/rubik-bind";
 
   function boot() {
     const about = document.getElementById("about");
     if (!about) return undefined;
     const stopDossier = initDossier(about);
     const stopTabs = initCareerTabs(about);
+    const portraitHost = about.querySelector<HTMLElement>("[data-about-portrait]");
+    const frame = about.querySelector<HTMLElement>("[data-about-portrait-frame]");
+    const portrait = about.querySelector<HTMLImageElement>("#about-official-avatar");
+    const stopCube = portraitHost && frame && portrait ? bindRubikPortrait(portraitHost, frame, portrait) : undefined;
     return () => {
       stopDossier?.();
       stopTabs();
+      stopCube?.();
     };
   }
 
   onPageReady(boot);
 </script>
+
+<style is:global>
+  #about .rubik-stage {
+    position: absolute;
+    z-index: 5;
+    display: grid;
+    place-items: center;
+    perspective: 1100px;
+    pointer-events: none;
+  }
+
+  #about .rubik-root {
+    position: relative;
+    transform-style: preserve-3d;
+  }
+
+  #about .rubik-piece {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform-style: preserve-3d;
+  }
+
+  #about .rubik-sticker {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    border: 2px solid #080808;
+    border-radius: 3px;
+    backface-visibility: hidden;
+  }
+
+  #about .rubik-slice {
+    position: absolute;
+    inset: 0;
+    background-repeat: no-repeat;
+  }
+</style>
