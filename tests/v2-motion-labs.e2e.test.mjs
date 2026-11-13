@@ -1389,3 +1389,104 @@ test('sound stays muted until the visitor unmutes', async () => {
     }
   }
 });
+
+const expectedSkillsList = async (locale) => {
+  const { getLocalizedArsenal } = await import('../src/data/arsenal.ts');
+  return getLocalizedArsenal(locale).flatMap((domain) =>
+    domain.skills.map((skill) => ({ name: skill.name, domain: domain.title, links: skill.evidence.map((evidence) => ({ label: evidence.label, href: `#${evidence.anchor}` })) }))
+  );
+};
+
+async function readStaticOrbit(page) {
+  await page.locator(ORBIT_STAGE).scrollIntoViewIfNeeded();
+  await page.waitForFunction((selector) => document.querySelector(selector).closest('astro-island').hasAttribute('ssr') === false, ORBIT_STAGE);
+  return page.locator(ORBIT_STAGE).evaluate(async (stage) => {
+    const read = () => ({
+      canvases: document.querySelectorAll('#lab canvas').length,
+      nodes: stage.querySelectorAll('button').length,
+      skills: [...stage.querySelectorAll('li[data-orbit-skill]')].map((item) => ({
+        name: item.querySelector('h4').textContent.trim(),
+        domain: item.querySelector('p').textContent.trim(),
+        links: [...item.querySelectorAll('a')].map((link) => ({ label: link.textContent.trim(), href: link.getAttribute('href') })),
+        shown: item.checkVisibility({ visibilityProperty: true, opacityProperty: true }) && [...item.querySelectorAll('a')].every((link) => link.getClientRects().length > 0),
+      })),
+    });
+    const frames = [];
+    for (let frame = 0; frame < 45; frame += 1) {
+      await new Promise((resolve) => requestAnimationFrame(resolve));
+      frames.push(read());
+    }
+    return frames;
+  });
+}
+
+async function assertStaticSkillsList(page, locale, label) {
+  const expected = await expectedSkillsList(locale);
+  const frames = await readStaticOrbit(page);
+  for (const frame of frames) {
+    assert.equal(frame.canvases, 0, `${label}: no canvas is ever mounted`);
+    assert.equal(frame.nodes, 0, `${label}: no orbit node is ever mounted`);
+  }
+  const list = frames.at(-1).skills;
+  assert.deepEqual(list.map(({ name, domain, links }) => ({ name, domain, links })), expected, `${label}: every skill is listed with its domain and the same evidence links`);
+  assert.equal(list.every((skill) => skill.shown), true, `${label}: every skill and link is visible`);
+  assert.ok(list.every((skill) => skill.links.length > 0), `${label}: no skill is listed without evidence`);
+  const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+  assert.ok(overflow <= 0, `${label}: the list does not overflow the page`);
+}
+
+test('no WebGL shows the static skills list', async () => {
+  for (const locale of LOCALES) {
+    for (const viewport of [{ width: 1440, height: 900 }, SMALL_PHONE]) {
+      const errors = [];
+      const { context, page } = await openHome({
+        locale,
+        viewport,
+        prepare: async (target) => {
+          target.on('pageerror', (error) => errors.push(error.message));
+          await target.addInitScript(() => {
+            window.__webglRefused = 0;
+            const getContext = HTMLCanvasElement.prototype.getContext;
+            HTMLCanvasElement.prototype.getContext = function (type, ...rest) {
+              if (/webgl/i.test(type)) {
+                window.__webglRefused += 1;
+                return null;
+              }
+              return getContext.call(this, type, ...rest);
+            };
+          });
+        },
+      });
+      try {
+        const label = `${locale} ${viewport.width}px without WebGL`;
+        await page.locator(ORBIT_STAGE).scrollIntoViewIfNeeded();
+        await page.waitForFunction(() => window.__webglRefused >= 1);
+        await page.waitForFunction((selector) => document.querySelector(`${selector} li[data-orbit-skill]`) !== null && document.querySelector('#lab canvas') === null, ORBIT_STAGE);
+        await assertStaticSkillsList(page, locale, label);
+        assert.deepEqual(errors, [], `${label}: the refusal raises no page error`);
+        const link = page.locator(ORBIT_STAGE).getByRole('link', { name: 'Uriana', exact: true }).first();
+        assert.equal(await link.getAttribute('href'), '#case-uriana', `${label}: the links are real anchors to the evidence`);
+      } finally {
+        await context.close();
+      }
+    }
+  }
+});
+
+test('reduced motion shows the static skills list', async () => {
+  for (const locale of LOCALES) {
+    const sceneRequests = [];
+    const { context, page } = await openHome({
+      locale,
+      reducedMotion: 'reduce',
+      prepare: (target) => target.on('request', (request) => /three|orbit-scene/.test(request.url()) && sceneRequests.push(request.url())),
+    });
+    try {
+      await assertStaticSkillsList(page, locale, `${locale} reduced motion`);
+      assert.deepEqual(sceneRequests, [], `${locale}: the Three.js scene is never downloaded`);
+      assert.equal(await page.locator('#lab [data-orbit-sound]').count(), 0, `${locale}: no sound control without a scene to pulse`);
+    } finally {
+      await context.close();
+    }
+  }
+});
