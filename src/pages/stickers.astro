@@ -63,6 +63,7 @@ const stickersEn = getLocalizedStickers("en");
 <script>
   import { LOCALE_CHANGE_EVENT, getDictionary, getLocale } from "../i18n/index";
   import { onPageReady } from "../utils/page-lifecycle";
+  import { enterRoute } from "../utils/page-wipe";
 
   function bindStickerText() {
     const locale = getLocale();
@@ -77,4 +78,8 @@ const stickersEn = getLocalizedStickers("en");
 
   window.addEventListener(LOCALE_CHANGE_EVENT, bindStickerText);
   onPageReady(bindStickerText);
+  onPageReady(() => {
+    const content = document.getElementById("main-content");
+    if (content) enterRoute(content);
+  });
 </script>

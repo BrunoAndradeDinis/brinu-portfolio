@@ -780,3 +780,102 @@ test('typed text keeps the active locale', async () => {
     await context.close();
   }
 });
+
+const startRouteRecorder = (page) =>
+  page.evaluate(() => {
+    const frames = [];
+    window.__routeFrames = frames;
+    const sample = () => {
+      const content = document.getElementById('main-content');
+      const style = content ? getComputedStyle(content) : null;
+      frames.push({
+        at: performance.now(),
+        path: window.location.pathname.replace(/\/$/, ''),
+        opacity: style ? Number(style.opacity) : null,
+        y: style ? new DOMMatrixReadOnly(style.transform).m42 : null,
+      });
+      requestAnimationFrame(sample);
+    };
+    requestAnimationFrame(sample);
+  });
+
+async function readRouteEntry(page, route) {
+  await page.waitForFunction((target) => {
+    const arrived = window.__routeFrames.filter((frame) => frame.path === target);
+    return arrived.length >= 45 && arrived.slice(-5).every((frame) => frame.opacity === 1 && frame.y === 0);
+  }, route);
+  return page.evaluate(() => window.__routeFrames);
+}
+
+async function assertSharedEntry(frames, route, label) {
+  const { MOTION_DURATION, MOTION_EASE, gsap } = await import('../src/utils/motion.ts');
+  const ease = gsap.parseEase(MOTION_EASE.enter);
+  const first = frames.findIndex((frame) => frame.path === route && frame.opacity < 1);
+  assert.ok(first > 0, `${label}: the content of ${route} enters instead of just appearing`);
+  const settled = frames.findIndex((frame, index) => index > first && frame.opacity === 1 && frame.y === 0);
+  const entering = frames.slice(first, settled);
+  const startedAfter = frames[first - 1].at;
+  const shortest = entering.at(-1).at - entering[0].at;
+  const longest = frames[settled].at - startedAfter;
+  assert.ok(shortest <= MOTION_DURATION.ms && MOTION_DURATION.ms <= longest, `${label}: the entry lasts ${MOTION_DURATION.ms} ms (measured between ${shortest} and ${longest} ms)`);
+  assert.ok(entering.length >= 10, `${label}: the entry was sampled over ${entering.length} frames`);
+  assert.ok(entering[0].y > 0, `${label}: the content rises into place`);
+  for (const frame of entering) {
+    const slowest = ease(Math.max(0, frame.at - entering[0].at) / MOTION_DURATION.ms);
+    const fastest = ease(Math.min(MOTION_DURATION.ms, frame.at - startedAfter) / MOTION_DURATION.ms);
+    assert.ok(frame.opacity >= slowest - 0.03 && frame.opacity <= fastest + 0.03, `${label}: opacity follows the shared ease (${frame.opacity} not between ${slowest} and ${fastest})`);
+    assert.ok(Math.abs(frame.y / entering[0].y - (1 - frame.opacity) / (1 - entering[0].opacity)) <= 0.03, `${label}: the rise follows the same curve as the fade`);
+  }
+}
+
+async function assertInstantEntry(page, route, label) {
+  await page.waitForFunction((target) => window.__routeFrames.filter((frame) => frame.path === target).length >= 45, route);
+  const arrived = (await page.evaluate(() => window.__routeFrames)).filter((frame) => frame.path === route);
+  for (const frame of arrived) assert.deepEqual({ opacity: frame.opacity, y: frame.y }, { opacity: 1, y: 0 }, `${label}: the content is in place on every frame`);
+}
+
+const SMALL_PHONE = { width: 360, height: 640 };
+
+test('case routes enter with the shared ease and duration', async () => {
+  for (const id of CASE_IDS) {
+    const { context, page } = await openHome({ viewport: SMALL_PHONE });
+    try {
+      await startRouteRecorder(page);
+      await page.locator(`#case-${id} a[data-case-open]`).click();
+      await assertSharedEntry(await readRouteEntry(page, `/cases/${id}`), `/cases/${id}`, id);
+      assert.equal((await page.locator('#main-content [data-case-title]').first().textContent()).trim(), CASE_TITLES['pt-br'][CASE_IDS.indexOf(id)], `${id}: the case page is the one shown`);
+    } finally {
+      await context.close();
+    }
+  }
+
+  const { context, page } = await openHome({ viewport: SMALL_PHONE, reducedMotion: 'reduce' });
+  try {
+    await startRouteRecorder(page);
+    await page.locator(`#case-${CASE_IDS[0]} a[data-case-open]`).click();
+    await assertInstantEntry(page, `/cases/${CASE_IDS[0]}`, 'reduced motion');
+  } finally {
+    await context.close();
+  }
+});
+
+test('stickers route enters with the shared ease and duration', async () => {
+  const { context, page } = await openHome();
+  try {
+    await startRouteRecorder(page);
+    await page.locator('footer a[href="/stickers"]').click();
+    await assertSharedEntry(await readRouteEntry(page, '/stickers'), '/stickers', 'stickers');
+    assert.ok((await page.locator('#main-content a[data-sticker-download]').count()) > 0, 'the stickers page is the one shown');
+  } finally {
+    await context.close();
+  }
+
+  const reduced = await openHome({ reducedMotion: 'reduce' });
+  try {
+    await startRouteRecorder(reduced.page);
+    await reduced.page.locator('footer a[href="/stickers"]').click();
+    await assertInstantEntry(reduced.page, '/stickers', 'reduced motion');
+  } finally {
+    await reduced.context.close();
+  }
+});

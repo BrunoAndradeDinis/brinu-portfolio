@@ -21,3 +21,13 @@ const meta = caseMeta(project, ptBrDict.casePage.titleSuffix);
     <Showcase caseId={project.id} />
   </main>
 </BaseLayout>
+
+<script>
+  import { onPageReady } from "../../utils/page-lifecycle";
+  import { enterRoute } from "../../utils/page-wipe";
+
+  onPageReady(() => {
+    const content = document.getElementById("main-content");
+    if (content) enterRoute(content);
+  });
+</script>

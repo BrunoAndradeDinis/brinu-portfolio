@@ -1,3 +1,5 @@
+import { MOTION_DURATION, MOTION_EASE, gsap } from './motion.ts';
+
 const WIPE_COVER_MS = 140;
 const WIPE_LEAVE_MS = 220;
 const WIPE_CLASSES = ['is-covering', 'is-leaving', 'is-wiping'] as const;
@@ -58,4 +60,18 @@ export function installPageWipe(): void {
     const overlay = document.getElementById('p5-wipe-overlay');
     if (overlay) revealPage(overlay);
   });
+}
+
+const ENTRY_RISE_PX = 28;
+
+/** Enters a route's content as the wipe uncovers it; a first load has no wipe, so its content is shown as it is. */
+export function enterRoute(content: HTMLElement): void {
+  const overlay = document.getElementById('p5-wipe-overlay');
+  const wipeInFlight = overlay?.classList.contains('is-covering') || overlay?.classList.contains('is-leaving');
+  if (!wipeInFlight || prefersReducedMotion()) return;
+  gsap.fromTo(
+    content,
+    { opacity: 0, y: ENTRY_RISE_PX },
+    { opacity: 1, y: 0, duration: MOTION_DURATION.seconds, ease: MOTION_EASE.enter, clearProps: 'opacity,transform' }
+  );
 }
