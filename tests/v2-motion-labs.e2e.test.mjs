@@ -63,14 +63,14 @@ after(async () => {
   if (server) await new Promise((resolve) => server.close(resolve));
 });
 
-async function openHome({ locale = 'pt-br', viewport = { width: 1440, height: 900 }, prepare, ...contextOptions } = {}) {
+async function openHome({ locale = 'pt-br', viewport = { width: 1440, height: 900 }, path = '/', prepare, ...contextOptions } = {}) {
   const context = await browser.newContext({ viewport, ...contextOptions });
   const page = await context.newPage();
   await page.addInitScript((loc) => {
     window.localStorage.setItem('brinu_locale', loc);
   }, locale);
   if (prepare) await prepare(page);
-  await page.goto(`${baseUrl}/`, { waitUntil: 'networkidle' });
+  await page.goto(`${baseUrl}${path}`, { waitUntil: 'networkidle' });
   await page.evaluate(() => {
     const el = document.getElementById('intro-preloader');
     if (el) {
@@ -501,7 +501,7 @@ const startTypingRecorder = (page, key, selector) =>
   page.evaluate(
     ({ key, selector }) => {
       const element = document.querySelector(selector);
-      const card = element.closest('[data-reveal-case]');
+      const card = element.closest('[data-reveal-case]') ?? element.closest('dialog');
       const shownText = () => {
         let text = '';
         const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
@@ -628,8 +628,40 @@ test('typing reserves the final height', async () => {
         assert.equal(frame.full, settled.full, `${selector}: the whole text stays in the DOM while typing`);
       }
     }
+
+    const tile = page.locator('#arsenal').getByRole('button', { name: PANEL_SKILL.name, exact: true });
+    await tile.scrollIntoViewIfNeeded();
+    for (const selector of PANEL_TYPED_SELECTORS) await startTypingRecorder(page, `panel ${selector}`, `#arsenal ${selector}`);
+    await tile.click();
+    for (const selector of PANEL_TYPED_SELECTORS) {
+      const record = await readTyping(page, `panel ${selector}`);
+      assertTypedOnce(record, `panel ${selector}`);
+      const settled = record.samples.at(-1);
+      assert.ok(settled.height > 0, `panel ${selector}: the settled block has a height`);
+      for (const frame of record.samples) {
+        assert.equal(frame.height, settled.height, `panel ${selector}: the block keeps its final height with "${frame.shown}" typed`);
+        assert.equal(frame.full, settled.full, `panel ${selector}: the whole text stays in the DOM while typing`);
+      }
+    }
   } finally {
     await context.close();
+  }
+});
+
+const PANEL_TYPED_SELECTORS = ['[data-skill-panel-domain]', '[data-skill-panel-title]', '[data-skill-panel-summary]'];
+
+test('panel labels type within 400 to 600 ms', async () => {
+  for (const locale of LOCALES) {
+    const { context, page } = await openHome({ locale });
+    try {
+      const tile = page.locator('#arsenal').getByRole('button', { name: PANEL_SKILL.name, exact: true });
+      await tile.scrollIntoViewIfNeeded();
+      for (const selector of ['[data-skill-panel-domain]', '[data-skill-panel-title]']) await startTypingRecorder(page, selector, `#arsenal ${selector}`);
+      await tile.click();
+      for (const selector of ['[data-skill-panel-domain]', '[data-skill-panel-title]']) assertLabelTiming(await readTyping(page, selector), `${locale} panel ${selector}`);
+    } finally {
+      await context.close();
+    }
   }
 });
 
@@ -1872,6 +1904,168 @@ test('the panel describes the skill in the active locale', async () => {
       await page.waitForFunction((expected) => document.querySelector('#arsenal [data-skill-panel-summary]').innerText.trim() === expected, SKILL_SUMMARY[locale], { timeout: 6000 });
       const box = await summary.boundingBox();
       assert.ok(box && box.height > 0 && box.y >= 0, `${locale}: the summary is on screen inside the panel`);
+      const firstLink = await page.getByRole('dialog').getByRole('link').first().boundingBox();
+      const heading = await page.getByRole('dialog').getByRole('heading').boundingBox();
+      assert.ok(box.y >= heading.y + heading.height - 0.5, `${locale}: the summary sits under the skill name`);
+      assert.ok(box.y + box.height <= firstLink.y + 0.5, `${locale}: the summary sits above the evidence links`);
+    } finally {
+      await context.close();
+    }
+  }
+});
+
+
+const summaryState = (page) =>
+  page.evaluate(() => {
+    const element = document.querySelector('#arsenal [data-skill-panel-summary]');
+    let shown = '';
+    const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
+    for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+      if (Number(getComputedStyle(node.parentElement).opacity) !== 0) shown += node.data;
+    }
+    return { shown: shown.trim(), full: element.textContent.trim() };
+  });
+
+test('reopening the panel types the next skill again', async () => {
+  const next = { name: 'Astro', summary: 'Páginas do site institucional da Magalu Cloud.' };
+  const { context, page, tile } = await openArsenal({ locale: 'pt-br' });
+  try {
+    await tile.click();
+    await page.waitForFunction(() => document.querySelector('#arsenal dialog').open);
+    await page.waitForTimeout(700);
+    const midway = await summaryState(page);
+    assert.ok(midway.shown.length > 0 && midway.shown.length < midway.full.length, `the first summary is still typing when the panel closes ("${midway.shown}")`);
+    await page.keyboard.press('Escape');
+    await page.waitForFunction(() => !document.querySelector('#arsenal dialog').open);
+    await page.evaluate((expected) => {
+      const element = document.querySelector('#arsenal [data-skill-panel-summary]');
+      const frames = [];
+      window.__reopen = frames;
+      const sample = () => {
+        let shown = '';
+        const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
+        for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+          if (Number(getComputedStyle(node.parentElement).opacity) !== 0) shown += node.data;
+        }
+        frames.push({ shown: shown.trim(), full: element.textContent.trim() });
+        if (!(frames.at(-1).full === expected && frames.at(-1).shown === expected)) requestAnimationFrame(sample);
+      };
+      requestAnimationFrame(sample);
+    }, next.summary);
+    await page.locator('#arsenal').getByRole('button', { name: next.name, exact: true }).click();
+    await page.waitForFunction((expected) => window.__reopen.at(-1)?.shown === expected, next.summary, { timeout: 8000 });
+    const frames = (await page.evaluate(() => window.__reopen)).filter((frame) => frame.full === next.summary);
+    assert.ok(frames[0].shown.length <= 3, `the reopened summary starts from empty ("${frames[0].shown}")`);
+    assert.ok(new Set(frames.map((frame) => frame.shown.length)).size >= 5, 'the reopened summary types character by character');
+    for (const frame of frames) assert.ok(next.summary.startsWith(frame.shown), `only the start of the summary is shown ("${frame.shown}")`);
+  } finally {
+    await context.close();
+  }
+});
+
+test('loading a case hash shows that case', async () => {
+  for (const id of ['uriana', 'aurastream']) {
+    const { context, page } = await openHome({ path: `/#case-${id}` });
+    try {
+      await waitForActiveCase(page, id);
+      const lowest = await page.evaluate(
+        (caseId) =>
+          new Promise((resolve) => {
+            const title = document.querySelector(`#case-${caseId} [data-case-el="title"]`);
+            const end = performance.now() + 2500;
+            let min = 1;
+            const sample = () => {
+              const style = getComputedStyle(title);
+              min = Math.min(min, style.visibility === 'hidden' ? 0 : Number(style.opacity));
+              if (performance.now() < end) requestAnimationFrame(sample);
+              else resolve(min);
+            };
+            requestAnimationFrame(sample);
+          }),
+        id
+      );
+      assert.equal(lowest, 1, `/#case-${id}: the case stays shown while the page settles, with no replayed reveal`);
+      assert.deepEqual(await activeCase(page), { pinned: true, id: `case-${id}`, titleShown: true, inView: true }, `/#case-${id} shows that case`);
+    } finally {
+      await context.close();
+    }
+  }
+});
+
+test('cases that do not fit the screen fall back to the static list', async () => {
+  for (const viewport of [{ width: 375, height: 667 }, { width: 1024, height: 600 }]) {
+    const { context, page } = await openHome({ viewport });
+    try {
+      const label = `${viewport.width}x${viewport.height}`;
+      assert.equal((await stageState(page)).mode, 'static', `${label}: the reveal falls back to the plain list`);
+      await assertStaticList(page, 'pt-br');
+      await page.locator(`#case-${CASE_IDS.at(-1)}`).scrollIntoViewIfNeeded();
+      const state = await stageState(page);
+      assert.equal(state.pinned, false, `${label}: the section never pins`);
+      assert.equal(state.locked, false, `${label}: the page keeps scrolling`);
+    } finally {
+      await context.close();
+    }
+  }
+});
+
+async function swipe(page, client, fromY, toY) {
+  const x = 195;
+  await client.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x, y: fromY }] });
+  for (const y of [fromY + (toY - fromY) / 2, toY]) await client.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [{ x, y }] });
+  await client.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+}
+
+test('arrow keys and a swipe step one case', async () => {
+  {
+    const { context, page } = await openHome();
+    try {
+      await pinCases(page);
+      await waitForActiveCase(page, CASE_IDS[0]);
+      for (const [key, index] of [['ArrowDown', 1], ['ArrowUp', 0], ['PageDown', 1], ['PageDown', 2], ['PageUp', 1]]) {
+        await page.keyboard.press(key);
+        await waitForActiveCase(page, CASE_IDS[index]);
+        await betweenGestures(page);
+        assert.equal((await activeCase(page)).id, `case-${CASE_IDS[index]}`, `${key} moves to case ${index}`);
+      }
+    } finally {
+      await context.close();
+    }
+  }
+  const { context, page } = await openHome({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
+  try {
+    await pinCases(page);
+    await waitForActiveCase(page, CASE_IDS[0]);
+    const client = await context.newCDPSession(page);
+    await swipe(page, client, 600, 580);
+    await betweenGestures(page);
+    assert.equal((await activeCase(page)).id, `case-${CASE_IDS[0]}`, 'a 20 px swipe does not step');
+    await swipe(page, client, 600, 450);
+    await waitForActiveCase(page, CASE_IDS[1]);
+    await betweenGestures(page);
+    assert.equal((await activeCase(page)).id, `case-${CASE_IDS[1]}`, 'one upward swipe steps exactly one case');
+    await swipe(page, client, 450, 600);
+    await waitForActiveCase(page, CASE_IDS[0]);
+    await client.detach();
+  } finally {
+    await context.close();
+  }
+});
+
+test('phone cards keep the open link and hide the external links', async () => {
+  for (const [viewport, externalShown] of [[{ width: 390, height: 844 }, false], [{ width: 1440, height: 900 }, true]]) {
+    const { context, page } = await openHome({ viewport });
+    try {
+      await pinCases(page);
+      await page.mouse.move(viewport.width / 2, viewport.height / 2);
+      await page.mouse.wheel(0, 300);
+      await waitForActiveCase(page, 'uriana');
+      await waitForCaseFullyShown(page, 'uriana');
+      const card = page.locator('#case-uriana');
+      assert.equal(await card.locator('a[data-case-open]').isVisible(), true, `${viewport.width}px: the open-case link shows`);
+      const external = await card.locator('a[data-case-link]').evaluateAll((links) => links.map((link) => link.checkVisibility()));
+      assert.ok(external.length > 0, 'uriana has external links');
+      assert.deepEqual(external, external.map(() => externalShown), `${viewport.width}px: external links ${externalShown ? 'show' : 'stay hidden'} in the reveal`);
     } finally {
       await context.close();
     }

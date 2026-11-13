@@ -11,6 +11,7 @@ import {
 } from '../../utils/motion.ts';
 import { CASE_REVEAL_ELEMENTS, createCaseSteps, elementOffsets } from './cases-reveal.ts';
 import { typeText } from '../../utils/text-type-bind.ts';
+import { SCROLL_TO_HASH_EVENT } from '../../utils/page-lifecycle.ts';
 
 type Direction = 1 | -1;
 
@@ -71,6 +72,9 @@ function enableReveal(section: HTMLElement): (() => void) | null {
   let lastWheelAt = Number.NEGATIVE_INFINITY;
   let touchStartY: number | null = null;
   let requestedIndex: number | null = null;
+  const caseIndexOf = (hash: string) => (hash.startsWith('#case-') ? items.findIndex((item) => item.querySelector(`[id="${hash.slice(1)}"]`)) : -1);
+  const hashIndex = caseIndexOf(decodeURIComponent(window.location.hash));
+  if (hashIndex >= 0) requestedIndex = hashIndex;
 
   const showCase = (index: number) => {
     revealTimeline?.kill();
@@ -143,7 +147,7 @@ function enableReveal(section: HTMLElement): (() => void) | null {
   const onCaseLinkClick = (event: MouseEvent) => {
     if (event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
     const href = (event.target as HTMLElement | null)?.closest('a[href^="#case-"]')?.getAttribute('href');
-    const index = href ? items.findIndex((item) => item.querySelector(`[id="${href.slice(1)}"]`)) : -1;
+    const index = href ? caseIndexOf(href) : -1;
     if (index < 0) return;
     event.preventDefault();
     if (locked) {
@@ -152,6 +156,19 @@ function enableReveal(section: HTMLElement): (() => void) | null {
     }
     requestedIndex = index;
     smoothScrollTo(trigger.start + 1, MOTION_DURATION.seconds);
+  };
+
+  const onScrollToHash = (event: Event) => {
+    const index = caseIndexOf((event as CustomEvent<{ hash: string }>).detail.hash);
+    if (index < 0) return;
+    event.preventDefault();
+    if (locked) {
+      if (steps.index !== index) showCase(steps.goTo(index).index);
+      return;
+    }
+    requestedIndex = index;
+    jumpScrollTo(trigger.start + 1);
+    ScrollTrigger.update();
   };
 
   const acceptsInput = () => locked && !document.documentElement.classList.contains('cockpit-menu-open');
@@ -199,6 +216,7 @@ function enableReveal(section: HTMLElement): (() => void) | null {
   const onNextClick = () => step(1);
   nextButton?.addEventListener('click', onNextClick);
   document.addEventListener('click', onCaseLinkClick, { capture: true });
+  window.addEventListener(SCROLL_TO_HASH_EVENT, onScrollToHash);
 
   return () => {
     window.removeEventListener('wheel', onWheel, { capture: true });
@@ -208,6 +226,7 @@ function enableReveal(section: HTMLElement): (() => void) | null {
     window.removeEventListener('keydown', onKeyDown);
     nextButton?.removeEventListener('click', onNextClick);
     document.removeEventListener('click', onCaseLinkClick, { capture: true });
+    window.removeEventListener(SCROLL_TO_HASH_EVENT, onScrollToHash);
     trigger.kill();
     if (locked) release();
     restoreStatic();

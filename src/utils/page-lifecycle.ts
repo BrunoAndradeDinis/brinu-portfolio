@@ -46,8 +46,12 @@ function layoutTopOf(element: HTMLElement): number {
   return top;
 }
 
+export const SCROLL_TO_HASH_EVENT = 'brinu:scroll-to-hash';
+
+/** A section that lays its content out on its own (a pinned reveal) cancels the event to take the hash over. */
 export function scrollToHashBelowNav(hash: string): boolean {
   if (!hash || hash.length <= 1) return false;
+  if (!window.dispatchEvent(new CustomEvent(SCROLL_TO_HASH_EVENT, { detail: { hash: decodeURIComponent(hash) }, cancelable: true }))) return true;
   let target: HTMLElement | null = null;
   try {
     target = document.querySelector<HTMLElement>(decodeURIComponent(hash));

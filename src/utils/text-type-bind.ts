@@ -1,7 +1,7 @@
 import { gsap } from './motion.ts';
 import { typeDuration, visibleChars, type TypeKind } from './text-type.ts';
 
-const typing = new WeakMap<HTMLElement, gsap.core.Tween>();
+const typing = new WeakMap<HTMLElement, { tween: gsap.core.Tween; pending: HTMLElement }>();
 
 function prefersReducedMotion(): boolean {
   return typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -12,7 +12,11 @@ function prefersReducedMotion(): boolean {
  * so the block keeps its final size and screen readers get the whole text.
  */
 export function typeText(element: HTMLElement): void {
-  if (typing.get(element)?.isActive()) return;
+  const running = typing.get(element);
+  if (running?.tween.isActive()) {
+    if (running.pending.parentNode === element) return;
+    running.tween.kill();
+  }
   const text = (element.textContent ?? '').trim();
   if (prefersReducedMotion() || text.length === 0) return;
 
@@ -44,7 +48,7 @@ export function typeText(element: HTMLElement): void {
       if (ownsText()) element.textContent = text;
     },
   });
-  typing.set(element, tween);
+  typing.set(element, { tween, pending });
 }
 
 /** Types every `[data-type]` block under `root` when it enters the viewport; returns the unbind function. */

@@ -1,7 +1,5 @@
-import { MOTION_DURATION, MOTION_EASE, gsap } from './motion.ts';
+import { MOTION_DURATION, MOTION_EASE, WIPE_TIMING, gsap } from './motion.ts';
 
-const WIPE_COVER_MS = 140;
-const WIPE_LEAVE_MS = 220;
 const WIPE_CLASSES = ['is-covering', 'is-leaving', 'is-wiping'] as const;
 
 let installed = false;
@@ -32,7 +30,7 @@ function revealPage(overlay: HTMLElement): void {
   void overlay.offsetWidth;
   overlay.classList.remove('is-covering');
   overlay.classList.add('is-leaving');
-  leaveTimer = setTimeout(() => resetWipe(overlay), WIPE_LEAVE_MS);
+  leaveTimer = setTimeout(() => resetWipe(overlay), WIPE_TIMING.resetMs);
 }
 
 function waitFor(ms: number): Promise<void> {
@@ -42,6 +40,8 @@ function waitFor(ms: number): Promise<void> {
 export function installPageWipe(): void {
   if (installed || typeof document === 'undefined') return;
   installed = true;
+  document.documentElement.style.setProperty('--wipe-cover-duration', `${WIPE_TIMING.coverMs}ms`);
+  document.documentElement.style.setProperty('--wipe-leave-duration', `${WIPE_TIMING.leaveMs}ms`);
 
   document.addEventListener('astro:before-preparation', (event) => {
     if (prefersReducedMotion()) return;
@@ -52,7 +52,7 @@ export function installPageWipe(): void {
     const loadNextPage = preparation.loader;
     coverScreen(overlay);
     preparation.loader = async () => {
-      await Promise.all([loadNextPage(), waitFor(WIPE_COVER_MS)]);
+      await Promise.all([loadNextPage(), waitFor(WIPE_TIMING.coverMs)]);
     };
   });
 

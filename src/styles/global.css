@@ -392,12 +392,12 @@ a[data-case-link]:focus .p5-select-poly {
 
 #p5-wipe-overlay.is-covering .p5-wipe-blade-red {
   transform: translate3d(0, 0, 0) skewX(-16deg);
-  transition: transform 0.14s cubic-bezier(0.85, 0, 0.15, 1);
+  transition: transform var(--wipe-cover-duration) cubic-bezier(0.85, 0, 0.15, 1);
 }
 
 #p5-wipe-overlay.is-leaving .p5-wipe-blade-red {
   transform: translate3d(120%, 0, 0) skewX(-16deg);
-  transition: transform 0.2s cubic-bezier(0.85, 0, 0.15, 1);
+  transition: transform var(--wipe-leave-duration) cubic-bezier(0.85, 0, 0.15, 1);
 }
 
 /* ==========================================================================

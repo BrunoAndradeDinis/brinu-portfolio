@@ -173,3 +173,17 @@ test('every skill carries its approved description in both locales', async () =>
     }
   }
 });
+
+test('the route wipe reads its timings from motion.ts', async () => {
+  const fs = await import('node:fs');
+  const { WIPE_TIMING } = await import('../src/utils/motion.ts');
+  assert.deepEqual({ ...WIPE_TIMING }, { coverMs: 140, leaveMs: 200, resetMs: 220 });
+  const wipe = fs.readFileSync('src/utils/page-wipe.ts', 'utf8');
+  for (const key of ['coverMs', 'leaveMs', 'resetMs']) assert.match(wipe, new RegExp(`WIPE_TIMING\\.${key}`), `page-wipe.ts reads ${key}`);
+  assert.doesNotMatch(wipe, /\b(?:const|let)\s+\w*_MS\s*=\s*\d+/, 'page-wipe.ts declares no timing numbers of its own');
+  const css = fs.readFileSync('src/styles/global.css', 'utf8');
+  const blades = css.match(/#p5-wipe-overlay\.is-(?:covering|leaving) \.p5-wipe-blade-red \{[^}]*\}/g);
+  assert.equal(blades.length, 2);
+  assert.match(blades[0], /transition: transform var\(--wipe-cover-duration\)/);
+  assert.match(blades[1], /transition: transform var\(--wipe-leave-duration\)/);
+});
