@@ -1,4 +1,5 @@
 import { gsap } from '../../utils/motion.ts';
+import { STICKER_FILES } from '../../data/sticker-files.ts';
 import {
   FACE_COLOURS,
   SCRAMBLE,
@@ -13,6 +14,9 @@ import {
 } from './rubik-cube.ts';
 
 const STICKER_IMAGE = '/stickers/sticker-04.svg';
+/** One library sticker per square; sticker 04 is kept for the front it covers once the cube is solved. */
+export const CUBE_PHOTOS: readonly string[] = STICKER_FILES.filter((file) => file !== STICKER_IMAGE).slice(0, 54);
+const PRELOAD_MARGIN = '0px 0px 600px 0px';
 const CUBE_SHARE = 0.78;
 const GAP_SHARE = 0.04;
 const TURN_SECONDS = 0.17;
@@ -73,6 +77,7 @@ export function bindRubikPortrait(host: HTMLElement, frame: HTMLElement, portrai
 
   let model: Piece[] = solvedCube();
   const views = new Map<string, PieceView>();
+  let photoIndex = 0;
   for (const item of model) {
     const element = document.createElement('div');
     element.className = 'rubik-piece';
@@ -86,6 +91,12 @@ export function bindRubikPortrait(host: HTMLElement, frame: HTMLElement, portrai
       face.dataset.cubeSticker = sticker.home;
       face.style.backgroundColor = FACE_COLOURS[sticker.home];
       face.style.transform = `${FACE_TRANSFORM[sticker.home]} translateZ(${piece / 2}px)`;
+      const photo = document.createElement('span');
+      photo.className = 'rubik-photo';
+      photo.dataset.cubePhoto = CUBE_PHOTOS[photoIndex % CUBE_PHOTOS.length];
+      photo.style.backgroundImage = `url("${photo.dataset.cubePhoto}")`;
+      photoIndex += 1;
+      face.append(photo);
       element.append(face);
       stickers.set(sticker.home, face);
     }
@@ -193,6 +204,16 @@ export function bindRubikPortrait(host: HTMLElement, frame: HTMLElement, portrai
       });
   });
 
+  const preloader = new IntersectionObserver(
+    (entries) => {
+      if (!entries.some((entry) => entry.isIntersecting)) return;
+      preloader.disconnect();
+      for (const file of CUBE_PHOTOS) new Image().src = file;
+    },
+    { rootMargin: PRELOAD_MARGIN }
+  );
+  preloader.observe(frame);
+
   const observer = new IntersectionObserver(
     (entries) => {
       if (!entries.some((entry) => entry.isIntersecting)) return;
@@ -206,6 +227,7 @@ export function bindRubikPortrait(host: HTMLElement, frame: HTMLElement, portrai
   observer.observe(frame);
 
   return () => {
+    preloader.disconnect();
     observer.disconnect();
     timeline.kill();
     gsap.killTweensOf([frame, stage]);

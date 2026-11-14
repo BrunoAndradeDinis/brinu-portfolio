@@ -142,20 +142,21 @@ async function scrollToPortrait(page) {
   });
 }
 
-test('the portrait sits centred in its column', async () => {
+test('the portrait sits centred in its column, level with the text', async () => {
   for (const viewport of [{ width: 390, height: 844 }, { width: 1024, height: 800 }, { width: 1440, height: 900 }, { width: 2560, height: 1440 }]) {
     const { context, page } = await openHome({ viewport, reducedMotion: 'reduce' });
     try {
       const boxes = await page.evaluate(() => {
         const read = (selector) => {
           const rect = document.querySelector(selector).getBoundingClientRect();
-          return { centreX: rect.left + rect.width / 2, centreY: rect.top + rect.height / 2 };
+          return { centreX: rect.left + rect.width / 2, top: rect.top };
         };
-        return { column: read('[data-about-avatar-panel]'), portrait: read('[data-about-portrait]'), text: read('[data-about-content-panel]') };
+        return { column: read('[data-about-avatar-panel]'), portrait: read('[data-about-portrait]'), text: read('[data-about-content-panel]'), bio: read('[data-about-card="bio"]') };
       });
       assert.ok(Math.abs(boxes.portrait.centreX - boxes.column.centreX) <= 1, `${viewport.width}px: the portrait is centred across its column (${boxes.portrait.centreX} vs ${boxes.column.centreX})`);
       if (viewport.width >= 1024) {
-        assert.ok(Math.abs(boxes.column.centreY - boxes.text.centreY) <= 1, `${viewport.width}px: the portrait column is centred against the text column (${boxes.column.centreY} vs ${boxes.text.centreY})`);
+        assert.ok(Math.abs(boxes.column.top - boxes.text.top) <= 1, `${viewport.width}px: the portrait column starts level with the text column (${boxes.column.top} vs ${boxes.text.top})`);
+        assert.ok(Math.abs(boxes.portrait.top - boxes.bio.top) <= 1, `${viewport.width}px: the portrait starts level with the bio card (${boxes.portrait.top} vs ${boxes.bio.top})`);
       }
     } finally {
       await context.close();
@@ -252,5 +253,41 @@ test('the cube never widens the page from 320 to 2560 px', async () => {
     } finally {
       await context.close();
     }
+  }
+});
+
+test('each square of the cube shows a different sticker', async () => {
+  const { STICKER_FILES } = await import('../src/data/sticker-files.ts');
+  const { context, page } = await openHome();
+  try {
+    await scrollToPortrait(page);
+    await page.waitForFunction(() => document.querySelector('[data-dossier-cube]')?.dataset.dossierCube === 'solving');
+    const squares = await page.evaluate(() =>
+      [...document.querySelectorAll('[data-dossier-cube] [data-cube-sticker]')].map((sticker) => {
+        const photo = sticker.querySelector('[data-cube-photo]');
+        const box = photo?.getBoundingClientRect();
+        const outer = sticker.getBoundingClientRect();
+        return {
+          image: photo ? getComputedStyle(photo).backgroundImage : '',
+          inside: photo ? box.width > 0 && box.width < outer.width + 0.5 : false,
+          bordered: photo ? getComputedStyle(sticker).backgroundColor !== 'rgba(0, 0, 0, 0)' : false,
+        };
+      })
+    );
+    assert.equal(squares.length, 54, '54 squares');
+    const files = squares.map((square) => square.image.match(/\/stickers\/sticker-\d{2}\.svg/)?.[0] ?? '');
+    assert.equal(new Set(files).size, 54, 'every square shows a different sticker');
+    for (const file of files) {
+      assert.ok(STICKER_FILES.includes(file), `${file || '(none)'} comes from the sticker library`);
+      assert.notEqual(file, '/stickers/sticker-04.svg', 'sticker 04 is kept for the front');
+    }
+    assert.ok(squares.every((square) => square.inside && square.bordered), 'each photo sits inside a square of its face colour');
+    const loaded = await page.evaluate(async (urls) => {
+      const results = await Promise.all(urls.map((url) => fetch(url).then((response) => response.ok && response.headers.get('content-type')?.includes('svg'))));
+      return results.every(Boolean);
+    }, files);
+    assert.equal(loaded, true, 'every sticker file loads');
+  } finally {
+    await context.close();
   }
 });

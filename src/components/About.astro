@@ -56,9 +56,9 @@ const currentId = CAREER.find((entry) => entry.end === "present")?.id;
   <div class="mx-auto max-w-[140rem] grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
     <div
       data-about-avatar-panel
-      class="lg:col-span-5 lg:self-center flex flex-col items-center"
+      class="lg:col-span-5 flex flex-col items-center"
     >
-      <div data-about-portrait class="relative w-full max-w-[24rem] sm:max-w-[26rem] mx-auto py-4">
+      <div data-about-portrait class="relative w-full max-w-[24rem] sm:max-w-[26rem] mx-auto pb-4">
         <div
           data-about-portrait-frame
           class="relative rotate-[-4deg] bg-bebop-red p-[0.45rem] sm:p-[0.6rem] [clip-path:polygon(7%_0%,100%_5%,93%_100%,0%_95%)]"
@@ -281,6 +281,14 @@ const currentId = CAREER.find((entry) => entry.end === "present")?.id;
     border: 2px solid #080808;
     border-radius: 3px;
     backface-visibility: hidden;
+  }
+
+  #about .rubik-photo {
+    position: absolute;
+    inset: 9%;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: contain;
   }
 
   #about .rubik-slice {
