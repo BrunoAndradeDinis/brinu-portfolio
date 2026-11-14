@@ -55,7 +55,9 @@ after(async () => {
 });
 
 const { ptBrDict, enDict } = await import('../src/i18n/dictionaries.ts');
-const COPY = { 'pt-br': ptBrDict.notFound, en: enDict.notFound };
+// The prototype's copy, letter for letter (its artboards are pt-br only; en follows the dictionary).
+const PROTOTYPE_COPY = { actTag: '[ ERRO 404 // SINAL PERDIDO ]', title: 'PÁGINA NÃO ENCONTRADA', hint: 'Este endereço não existe neste portfólio.', back: '← VOLTAR AO INÍCIO' };
+const COPY = { 'pt-br': PROTOTYPE_COPY, en: enDict.notFound };
 
 async function openNotFound({ locale = 'pt-br', viewport = { width: 1440, height: 900 }, ...contextOptions } = {}) {
   const context = await browser.newContext({ viewport, ...contextOptions });
@@ -171,6 +173,11 @@ test('a breathing star sky is drawn behind the copy', async () => {
       return { hidden: canvas.getAttribute('aria-hidden'), copyOnTop: main.contains(top), pointerEvents: getComputedStyle(canvas).pointerEvents };
     });
     assert.deepEqual(layering, { hidden: 'true', copyOnTop: true, pointerEvents: 'none' }, 'the sky is decorative and sits behind the copy');
+    const cover = await page.evaluate(() => {
+      const box = document.querySelector('[data-not-found-sky]').getBoundingClientRect();
+      return { top: Math.round(box.top + window.scrollY), height: Math.round(box.height), page: document.documentElement.scrollHeight };
+    });
+    assert.deepEqual(cover, { top: 0, height: cover.page, page: cover.page }, 'the sky spans the whole page, the strip under the header included, as the prototype');
   } finally {
     await context.close();
   }
@@ -201,11 +208,11 @@ test('the sky drifts with the pointer', async () => {
     await page.mouse.move(1430, 450);
     await page.waitForTimeout(3000);
     const right = await readSky(page);
-    // The pointer stays on the centre line, so stars keep their row: pair each large star with the nearest one of like size on its row.
+    // The pointer keeps its height, so stars stay within a few pixels of their row: pair each large star with the nearest one of like size there.
     const shifts = [];
-    for (const star of left.blobs.filter((blob) => blob.pixels >= 10)) {
+    for (const star of left.blobs.filter((blob) => blob.pixels >= 6)) {
       const match = right.blobs
-        .filter((blob) => Math.abs(blob.y - star.y) < 1.5 && Math.abs(blob.pixels - star.pixels) <= star.pixels * 0.35 && Math.abs(blob.x - star.x) < 400)
+        .filter((blob) => Math.abs(blob.y - star.y) < 6 && Math.abs(blob.pixels - star.pixels) <= star.pixels * 0.35 && Math.abs(blob.x - star.x) < 400)
         .sort((a, b) => Math.abs(a.x - star.x) - Math.abs(b.x - star.x))[0];
       if (match) shifts.push(match.x - star.x);
     }
@@ -265,7 +272,7 @@ test('reduced motion draws the sky once, still', async () => {
     const second = await readSky(page);
     assert.ok(first.count > 400, 'the still sky has stars');
     assert.equal(second.checksum, first.checksum, 'nothing moves: no twinkle, no shooting star, no parallax');
-    assert.ok(first.longest <= 40, 'no shooting star is drawn');
+    assert.ok(first.longest > 40, 'the prototype\'s two shooting stars stay in the frame, frozen');
     assert.equal(await page.locator('.not-found-dots').evaluate((dots) => getComputedStyle(dots).animationName), 'none', 'the dots do not blink');
   } finally {
     await context.close();

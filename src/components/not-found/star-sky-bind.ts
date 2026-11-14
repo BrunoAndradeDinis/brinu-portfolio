@@ -1,7 +1,6 @@
 import {
-  HALF_FOV_TAN,
-  MAX_SHOTS,
-  SHOT_GAP,
+  FIRST_SHOT_AT,
+  advanceShots,
   createStarLayers,
   easeCamera,
   project,
@@ -11,10 +10,18 @@ import {
   twinkle,
   type Camera,
   type Shot,
+  type ShotSchedule,
 } from './star-sky.ts';
 
 const SPRITE_PX = 32;
 const MAX_PIXEL_RATIO = 2;
+/** The prototype's comet texture is 256 x 16: it widens from the tail to 12 px at 236 px and rounds off at 256. */
+const COMET = { shoulder: 236 / 256, halfWidth: 6 / 16 } as const;
+
+function rgba(hex: string, alpha: number): string {
+  const value = Number.parseInt(hex.slice(1), 16);
+  return `rgba(${(value >> 16) & 255}, ${(value >> 8) & 255}, ${value & 255}, ${alpha})`;
+}
 
 function dotSprite(colour: string): HTMLCanvasElement {
   const sprite = document.createElement('canvas');
@@ -22,9 +29,9 @@ function dotSprite(colour: string): HTMLCanvasElement {
   const context = sprite.getContext('2d') as CanvasRenderingContext2D;
   const half = SPRITE_PX / 2;
   const glow = context.createRadialGradient(half, half, 0, half, half, half);
-  glow.addColorStop(0, colour);
-  glow.addColorStop(0.35, colour);
-  glow.addColorStop(1, 'rgba(0, 0, 0, 0)');
+  glow.addColorStop(0, rgba(colour, 1));
+  glow.addColorStop(0.35, rgba(colour, 0.9));
+  glow.addColorStop(1, rgba(colour, 0));
   context.fillStyle = glow;
   context.fillRect(0, 0, SPRITE_PX, SPRITE_PX);
   return sprite;
@@ -38,44 +45,41 @@ export function bindStarSky(root: HTMLElement, canvas: HTMLCanvasElement): () =>
   const random = seeded(1996);
   const layers = createStarLayers(random);
   const sprites = new Map(layers.map((layer) => [layer.colour, dotSprite(layer.colour)]));
-  const shots: Shot[] = [];
   const pointer = { x: 0.4, y: -0.2 };
+  const schedule: ShotSchedule = { shots: [], next: FIRST_SHOT_AT };
   let camera: Camera = { x: 0, y: 0 };
   let width = 0;
   let height = 0;
   let frame = 0;
   let last = performance.now();
-  let nextShot = 2.5;
-
-  const resize = () => {
-    const ratio = Math.min(window.devicePixelRatio || 1, MAX_PIXEL_RATIO);
-    width = root.clientWidth;
-    height = root.clientHeight;
-    canvas.width = Math.round(width * ratio);
-    canvas.height = Math.round(height * ratio);
-    context.setTransform(ratio, 0, 0, ratio, 0, 0);
-    if (still) draw(0);
-  };
 
   const drawShot = (shot: Shot) => {
-    const head = project(shot, camera, width, height);
-    const scale = height / 2 / HALF_FOV_TAN;
-    const length = (shot.length * scale) / shot.depth;
     const speed = Math.hypot(shot.vx, shot.vy);
-    const dx = (-shot.vx / speed) * length;
-    const dy = (shot.vy / speed) * length;
-    const tail = context.createLinearGradient(head.x + dx, head.y + dy, head.x, head.y);
-    tail.addColorStop(0, 'rgba(251, 250, 244, 0)');
-    tail.addColorStop(0.85, 'rgba(251, 250, 244, 0.85)');
-    tail.addColorStop(1, 'rgba(251, 250, 244, 1)');
+    const ux = shot.vx / speed;
+    const uy = shot.vy / speed;
+    const half = shot.length / 2;
+    const head = project({ x: shot.x + ux * half, y: shot.y + uy * half, depth: shot.depth }, camera, width, height);
+    const tail = project({ x: shot.x - ux * half, y: shot.y - uy * half, depth: shot.depth }, camera, width, height);
+    const thickness = project(shot, camera, width, height, 3.2 + shot.depth / 500).size;
+    const dx = head.x - tail.x;
+    const dy = head.y - tail.y;
+    const length = Math.hypot(dx, dy) || 1;
+    const nx = -dy / length;
+    const ny = dx / length;
+    const shoulder = { x: tail.x + dx * COMET.shoulder, y: tail.y + dy * COMET.shoulder };
+    const spread = thickness * COMET.halfWidth;
+    const fill = context.createLinearGradient(tail.x, tail.y, head.x, head.y);
+    fill.addColorStop(0, 'rgba(255, 255, 255, 0)');
+    fill.addColorStop(0.85, 'rgba(255, 255, 255, 0.85)');
+    fill.addColorStop(1, 'rgba(255, 255, 255, 1)');
     context.globalAlpha = shotOpacity(shot);
-    context.strokeStyle = tail;
-    context.lineWidth = Math.max(1, ((3.2 + shot.depth / 500) * scale) / shot.depth);
-    context.lineCap = 'round';
+    context.fillStyle = fill;
     context.beginPath();
-    context.moveTo(head.x + dx, head.y + dy);
-    context.lineTo(head.x, head.y);
-    context.stroke();
+    context.moveTo(tail.x, tail.y);
+    context.lineTo(shoulder.x + nx * spread, shoulder.y + ny * spread);
+    context.quadraticCurveTo(head.x, head.y, shoulder.x - nx * spread, shoulder.y - ny * spread);
+    context.closePath();
+    context.fill();
   };
 
   const draw = (seconds: number) => {
@@ -91,27 +95,26 @@ export function bindStarSky(root: HTMLElement, canvas: HTMLCanvasElement): () =>
       }
     }
     context.globalCompositeOperation = 'lighter';
-    for (const shot of shots) drawShot(shot);
+    for (const shot of schedule.shots) drawShot(shot);
     context.globalCompositeOperation = 'source-over';
     context.globalAlpha = 1;
+  };
+
+  const resize = () => {
+    const ratio = Math.min(window.devicePixelRatio || 1, MAX_PIXEL_RATIO);
+    width = root.clientWidth;
+    height = root.clientHeight;
+    canvas.width = Math.round(width * ratio);
+    canvas.height = Math.round(height * ratio);
+    context.setTransform(ratio, 0, 0, ratio, 0, 0);
+    if (still) draw(0);
   };
 
   const tick = (now: number) => {
     const dt = Math.min((now - last) / 1000, 0.1);
     last = now;
     camera = easeCamera(camera, pointer);
-    nextShot -= dt;
-    if (nextShot <= 0 && shots.length < MAX_SHOTS) {
-      shots.push(spawnShot(random, pointer, width / Math.max(1, height)));
-      nextShot = SHOT_GAP.min + random() * SHOT_GAP.spread;
-    }
-    for (let index = shots.length - 1; index >= 0; index -= 1) {
-      const shot = shots[index];
-      shot.age += dt;
-      shot.x += shot.vx * dt;
-      shot.y += shot.vy * dt;
-      if (shot.age > shot.life) shots.splice(index, 1);
-    }
+    advanceShots(schedule, dt, random, pointer, width / Math.max(1, height));
     draw(now / 1000);
     frame = requestAnimationFrame(tick);
   };
@@ -123,7 +126,6 @@ export function bindStarSky(root: HTMLElement, canvas: HTMLCanvasElement): () =>
   };
 
   const onVisibility = () => {
-    if (still) return;
     cancelAnimationFrame(frame);
     if (document.visibilityState === 'visible') {
       last = performance.now();
@@ -133,12 +135,12 @@ export function bindStarSky(root: HTMLElement, canvas: HTMLCanvasElement): () =>
 
   const observer = new ResizeObserver(resize);
   observer.observe(root);
+  width = root.clientWidth;
+  height = root.clientHeight;
+  const aspect = width / Math.max(1, height);
+  schedule.shots.push(spawnShot(random, pointer, aspect, 4), spawnShot(random, pointer, aspect, 9));
   resize();
-  if (still) {
-    draw(0);
-  } else {
-    const aspect = width / Math.max(1, height);
-    shots.push(spawnShot(random, pointer, aspect, 4), spawnShot(random, pointer, aspect, 9));
+  if (!still) {
     window.addEventListener('pointermove', onPointerMove);
     document.addEventListener('visibilitychange', onVisibility);
     frame = requestAnimationFrame(tick);
