@@ -49,14 +49,13 @@ function prefersReducedMotion(): boolean {
   return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 }
 
-/**
- * Replaces the portrait's first appearance with a Rubik's cube that solves itself, shows sticker 04 on its
- * front face and settles into the portrait. Returns the teardown.
- */
-export function bindRubikPortrait(host: HTMLElement, frame: HTMLElement, portrait: HTMLImageElement): () => void {
-  if (prefersReducedMotion() || host.dataset.cubeBound === 'true') return () => {};
-  host.dataset.cubeBound = 'true';
+interface CubeRun {
+  readonly stage: HTMLElement;
+  readonly timeline: gsap.core.Timeline;
+}
 
+/** Builds a fresh scrambled cube over the frame and the timeline that solves it into the portrait. */
+function createCubeRun(frame: HTMLElement, portrait: HTMLImageElement, onDone: () => void): CubeRun {
   const size = Math.round(Math.min(frame.offsetWidth, frame.offsetHeight) * CUBE_SHARE);
   const piece = size / 3;
   const pitch = piece * (1 + GAP_SHARE);
@@ -153,7 +152,6 @@ export function bindRubikPortrait(host: HTMLElement, frame: HTMLElement, portrai
   };
 
   for (const move of SCRAMBLE) turn(move, 0);
-  frame.style.opacity = '0';
 
   const frontStickers = () =>
     model
@@ -201,8 +199,40 @@ export function bindRubikPortrait(host: HTMLElement, frame: HTMLElement, portrai
         stage.dataset.dossierCube = 'done';
         stage.remove();
         frame.style.removeProperty('opacity');
+        onDone();
       });
   });
+
+  return { stage, timeline };
+
+}
+
+const REPLAY_KEYS = new Set(['Enter', ' ']);
+
+/**
+ * Replaces the portrait's first appearance with a Rubik's cube that solves itself, shows sticker 04 on its
+ * front face and settles into the portrait; a double click, Enter or Space on the portrait plays it again.
+ * Returns the teardown.
+ */
+export function bindRubikPortrait(host: HTMLElement, frame: HTMLElement, portrait: HTMLImageElement): () => void {
+  if (prefersReducedMotion() || host.dataset.cubeBound === 'true') return () => {};
+  host.dataset.cubeBound = 'true';
+  frame.style.opacity = '0';
+
+  let run: CubeRun | null = null;
+  let plays = 0;
+  const play = () => {
+    if (run) return;
+    frame.style.opacity = '0';
+    run = createCubeRun(frame, portrait, () => {
+      run = null;
+    });
+    host.append(run.stage);
+    plays += 1;
+    host.dataset.cubePlays = String(plays);
+    host.dataset.cubeStartedAt = String(performance.now());
+    run.timeline.play();
+  };
 
   const preloader = new IntersectionObserver(
     (entries) => {
@@ -218,20 +248,43 @@ export function bindRubikPortrait(host: HTMLElement, frame: HTMLElement, portrai
     (entries) => {
       if (!entries.some((entry) => entry.isIntersecting)) return;
       observer.disconnect();
-      host.append(stage);
-      host.dataset.cubeStartedAt = String(performance.now());
-      timeline.play();
+      play();
     },
     { threshold: START_VISIBLE_SHARE }
   );
   observer.observe(frame);
 
+  const onDoubleClick = (event: MouseEvent) => {
+    event.preventDefault();
+    play();
+  };
+  const onKeyDown = (event: KeyboardEvent) => {
+    if (!REPLAY_KEYS.has(event.key)) return;
+    event.preventDefault();
+    play();
+  };
+  frame.addEventListener('dblclick', onDoubleClick);
+  frame.addEventListener('keydown', onKeyDown);
+  frame.dataset.replayable = '';
+  frame.setAttribute('role', 'button');
+  frame.tabIndex = 0;
+  frame.setAttribute('aria-describedby', 'about-portrait-replay-hint');
+
   return () => {
     preloader.disconnect();
     observer.disconnect();
-    timeline.kill();
-    gsap.killTweensOf([frame, stage]);
-    stage.remove();
+    frame.removeEventListener('dblclick', onDoubleClick);
+    frame.removeEventListener('keydown', onKeyDown);
+    delete frame.dataset.replayable;
+    frame.removeAttribute('role');
+    frame.removeAttribute('tabindex');
+    frame.removeAttribute('aria-describedby');
+    if (run) {
+      run.timeline.kill();
+      gsap.killTweensOf([frame, run.stage]);
+      run.stage.remove();
+      run = null;
+    }
     frame.style.removeProperty('opacity');
     delete host.dataset.cubeBound;
   };

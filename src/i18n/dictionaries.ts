@@ -204,6 +204,7 @@ export interface TranslationSchema {
     rankLabel: string;
     currentMarker: string;
     portraitAlt: string;
+    portraitReplayHint: string;
     careerTitle: string;
     educationTitle: string;
     automationsLabel: string;
@@ -510,6 +511,7 @@ export const ptBrDict: TranslationSchema = {
     rankLabel: 'RANK',
     currentMarker: 'ATUAL',
     portraitAlt: 'Retrato ilustrado de Bruno Dinis',
+    portraitReplayHint: 'Clique duas vezes, ou aperte Enter, para montar o cubo de novo',
     careerTitle: 'TRAJETÓRIA',
     educationTitle: 'FORMAÇÃO',
     automationsLabel: 'AUTOMAÇÕES',
@@ -822,6 +824,7 @@ export const enDict = {
     rankLabel: 'RANK',
     currentMarker: 'CURRENT',
     portraitAlt: 'Illustrated portrait of Bruno Dinis',
+    portraitReplayHint: 'Double-click, or press Enter, to solve the cube again',
     careerTitle: 'CAREER',
     educationTitle: 'EDUCATION',
     automationsLabel: 'AUTOMATIONS',

@@ -291,3 +291,108 @@ test('each square of the cube shows a different sticker', async () => {
     await context.close();
   }
 });
+
+const { enDict } = await import('../src/i18n/dictionaries.ts');
+
+async function waitForCubeDone(page, plays) {
+  await page.waitForFunction((count) => document.querySelector('[data-about-portrait]').dataset.cubePlays === String(count) && !document.querySelector('[data-dossier-cube]'), plays, { timeout: 8000 });
+}
+
+test('double click, Enter or Space solves the cube again', async () => {
+  const { context, page } = await openHome();
+  try {
+    await scrollToPortrait(page);
+    await waitForCubeDone(page, 1);
+    const frame = page.locator('[data-about-portrait-frame]');
+
+    await startCubeRecorder(page);
+    await frame.dblclick();
+    await page.waitForFunction(() => document.querySelector('[data-dossier-cube]') !== null);
+    await frame.dblclick();
+    assert.equal(await page.locator('[data-dossier-cube]').count(), 1, 'a double click while the cube plays starts no second cube');
+    await waitForCubeDone(page, 2);
+    const replay = await page.evaluate(() => window.__cube);
+    assert.deepEqual(replay.phases.map((entry) => entry.phase), ['scrambled', 'solving', 'solved', 'sticker', 'portrait', 'gone'], 'the double click plays the whole sequence again');
+    assert.equal(Object.values(replay.snapshots.solved.faces).every((homes) => new Set(homes).size === 1), true, 'the replayed cube is solved on screen');
+    assert.equal(await frame.evaluate((element) => Number(getComputedStyle(element).opacity)), 1, 'the portrait is back after the replay');
+
+    await frame.focus();
+    await page.keyboard.press('Enter');
+    await waitForCubeDone(page, 3);
+    await page.keyboard.press(' ');
+    await waitForCubeDone(page, 4);
+    assert.equal(await page.evaluate(() => window.scrollY > 0), true, 'Space replays without scrolling the page away');
+  } finally {
+    await context.close();
+  }
+});
+
+test('the portrait shows a pointer and sheds particles on hover', async () => {
+  for (const [locale, hint] of [['pt-br', ptBrDict.about.portraitReplayHint], ['en', enDict.about.portraitReplayHint]]) {
+    const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+    await context.addInitScript((value) => window.localStorage.setItem('brinu_locale', value), locale);
+    const page = await context.newPage();
+    try {
+      await page.goto(`${baseUrl}/`, { waitUntil: 'networkidle' });
+      await page.evaluate(() => {
+        document.getElementById('intro-preloader')?.remove();
+        window.dispatchEvent(new CustomEvent('intro-complete'));
+      });
+      await scrollToPortrait(page);
+      await waitForCubeDone(page, 1);
+      const frame = page.locator('[data-about-portrait-frame]');
+      const semantics = await frame.evaluate((element) => ({
+        cursor: getComputedStyle(element).cursor,
+        role: element.getAttribute('role'),
+        tabIndex: element.tabIndex,
+        description: document.getElementById(element.getAttribute('aria-describedby'))?.textContent.trim(),
+        name: element.querySelector('img').getAttribute('alt'),
+      }));
+      assert.deepEqual(semantics, { cursor: 'pointer', role: 'button', tabIndex: 0, description: hint, name: locale === 'en' ? enDict.about.portraitAlt : ptBrDict.about.portraitAlt }, `${locale}: the portrait reads as a button that replays the cube`);
+
+      const box = await frame.boundingBox();
+      for (let step = 0; step < 24; step += 1) {
+        await page.mouse.move(box.x + box.width * (0.25 + step * 0.02), box.y + box.height * (0.35 + step * 0.012));
+        await page.waitForTimeout(14);
+      }
+      const particles = await page.evaluate(() => {
+        const frame = document.querySelector('[data-about-portrait-frame]');
+        const bounds = frame.getBoundingClientRect();
+        return [...frame.querySelectorAll('[data-portrait-particles] > *')].map((particle) => {
+          const rect = particle.getBoundingClientRect();
+          return {
+            colour: getComputedStyle(particle).backgroundColor,
+            inside: rect.left >= bounds.left - 1 && rect.right <= bounds.right + 1 && rect.top >= bounds.top - 1 && rect.bottom <= bounds.bottom + 1,
+          };
+        });
+      });
+      assert.ok(particles.length >= 5, `${locale}: moving over the portrait sheds particles (${particles.length})`);
+      for (const particle of particles) assert.ok(['rgb(254, 0, 0)', 'rgb(251, 250, 244)', 'rgb(8, 8, 8)'].includes(particle.colour), `${particle.colour} is a brand colour`);
+      const near = particles.filter((particle) => particle.inside).length;
+      assert.ok(near >= particles.length * 0.6, `${locale}: particles start on the portrait (${near} of ${particles.length} inside its box)`);
+      await page.mouse.move(5, 5);
+      await page.waitForFunction(() => document.querySelectorAll('[data-portrait-particles] > *').length === 0, null, { timeout: 3000 });
+      assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth), `${locale}: particles never widen the page`);
+    } finally {
+      await context.close();
+    }
+  }
+});
+
+test('reduced motion keeps the portrait still: no replay, no particles, no pointer', async () => {
+  const { context, page } = await openHome({ reducedMotion: 'reduce' });
+  try {
+    await scrollToPortrait(page);
+    const frame = page.locator('[data-about-portrait-frame]');
+    const box = await frame.boundingBox();
+    for (let step = 0; step < 12; step += 1) await page.mouse.move(box.x + 40 + step * 10, box.y + 80 + step * 8);
+    await frame.dblclick();
+    await page.waitForTimeout(400);
+    assert.equal(await page.locator('[data-dossier-cube]').count(), 0, 'no cube on double click');
+    assert.equal(await page.locator('[data-portrait-particles] > *').count(), 0, 'no particles');
+    const semantics = await frame.evaluate((element) => ({ cursor: getComputedStyle(element).cursor, role: element.getAttribute('role'), focusable: element.tabIndex >= 0 }));
+    assert.deepEqual(semantics, { cursor: 'auto', role: null, focusable: false }, 'the still portrait does not pose as a button');
+  } finally {
+    await context.close();
+  }
+});

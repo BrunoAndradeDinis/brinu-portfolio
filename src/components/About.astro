@@ -61,7 +61,7 @@ const currentId = CAREER.find((entry) => entry.end === "present")?.id;
       <div data-about-portrait class="relative w-full max-w-[24rem] sm:max-w-[26rem] mx-auto pb-4">
         <div
           data-about-portrait-frame
-          class="relative rotate-[-4deg] bg-bebop-red p-[0.45rem] sm:p-[0.6rem] [clip-path:polygon(7%_0%,100%_5%,93%_100%,0%_95%)]"
+          class="relative rotate-[-4deg] outline-none bg-bebop-red p-[0.45rem] sm:p-[0.6rem] [clip-path:polygon(7%_0%,100%_5%,93%_100%,0%_95%)]"
         >
           <div class="relative overflow-hidden bg-space-base [clip-path:polygon(7%_0%,100%_5%,93%_100%,0%_95%)]">
             <img
@@ -78,6 +78,7 @@ const currentId = CAREER.find((entry) => entry.end === "present")?.id;
             />
           </div>
         </div>
+        <span id="about-portrait-replay-hint" class="sr-only" data-i18n="about.portraitReplayHint">{ptBrDict.about.portraitReplayHint}</span>
         <div class="mt-4 flex items-center justify-between gap-3 font-mono text-xs">
           <span
             class="inline-flex items-center gap-1.5 border-2 border-paper-white bg-bebop-red px-2.5 py-1 text-[11px] font-display font-black text-space-base uppercase tracking-wider"
@@ -232,6 +233,7 @@ const currentId = CAREER.find((entry) => entry.end === "present")?.id;
   import { initDossier } from "./about/dossier";
   import { initCareerTabs } from "./about/career-tabs";
   import { bindRubikPortrait } from "./about/rubik-bind";
+  import { bindPortraitParticles } from "./about/portrait-particles";
 
   function boot() {
     const about = document.getElementById("about");
@@ -242,7 +244,9 @@ const currentId = CAREER.find((entry) => entry.end === "present")?.id;
     const frame = about.querySelector<HTMLElement>("[data-about-portrait-frame]");
     const portrait = about.querySelector<HTMLImageElement>("#about-official-avatar");
     const stopCube = portraitHost && frame && portrait ? bindRubikPortrait(portraitHost, frame, portrait) : undefined;
+    const stopParticles = frame ? bindPortraitParticles(frame) : undefined;
     return () => {
+      stopParticles?.();
       stopDossier?.();
       stopTabs();
       stopCube?.();
@@ -281,6 +285,31 @@ const currentId = CAREER.find((entry) => entry.end === "present")?.id;
     border: 2px solid #080808;
     border-radius: 3px;
     backface-visibility: hidden;
+  }
+
+  /* The frame's clip-path would cut its own focus ring, so the unclipped block around it shows focus. */
+  #about [data-about-portrait]:has([data-about-portrait-frame]:focus-visible) {
+    outline: 4px solid #fbfaf4;
+    outline-offset: 6px;
+  }
+
+  #about [data-about-portrait-frame][data-replayable] {
+    cursor: pointer;
+  }
+
+  #about .portrait-particles {
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    overflow: hidden;
+    pointer-events: none;
+  }
+
+  #about .portrait-particle {
+    position: absolute;
+    box-sizing: border-box;
+    border: 1.5px solid #080808;
+    will-change: transform, opacity;
   }
 
   #about .rubik-photo {
