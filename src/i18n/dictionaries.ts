@@ -172,6 +172,9 @@ export interface TranslationSchema {
     title: string;
     hint: string;
     back: string;
+    seeYouLead: string;
+    seeYouAccent: string;
+    seeYouTail: string;
   };
   showcase: {
     caseLabel: string;
@@ -479,6 +482,9 @@ export const ptBrDict: TranslationSchema = {
     title: 'PÁGINA NÃO ENCONTRADA',
     hint: 'Este endereço não existe neste portfólio.',
     back: '← VOLTAR AO INÍCIO',
+    seeYouLead: 'SEE YOU',
+    seeYouAccent: 'GITHUB',
+    seeYouTail: 'COWBOY',
   },
   showcase: {
     caseLabel: 'CASE',
@@ -792,6 +798,9 @@ export const enDict = {
     title: 'PAGE NOT FOUND',
     hint: 'This address does not exist in this portfolio.',
     back: '← BACK TO START',
+    seeYouLead: 'SEE YOU',
+    seeYouAccent: 'GITHUB',
+    seeYouTail: 'COWBOY',
   },
   showcase: {
     caseLabel: 'CASE',

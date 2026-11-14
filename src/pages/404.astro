@@ -4,10 +4,68 @@ import { ptBrDict } from "../i18n/dictionaries";
 ---
 
 <BaseLayout title={`${ptBrDict.notFound.title} // Bruno Dinis`} description={ptBrDict.notFound.hint}>
-  <main id="main-content" tabindex="-1" class="flex min-h-screen flex-col items-start justify-center bg-space-base px-4 py-16 sm:px-8 md:px-12 text-paper-white focus:outline-none">
-    <span class="mb-3 block font-mono text-xs sm:text-sm font-bold tracking-widest text-bebop-red uppercase" data-i18n="notFound.actTag">{ptBrDict.notFound.actTag}</span>
-    <h1 class="font-display text-[clamp(1.5rem,7vw,5rem)] font-black uppercase leading-none tracking-tight break-words" data-i18n="notFound.title">{ptBrDict.notFound.title}</h1>
-    <p class="mt-4 font-mono text-xs sm:text-sm font-bold uppercase tracking-wider" data-i18n="notFound.hint">{ptBrDict.notFound.hint}</p>
-    <a href="/" data-not-found-home data-i18n="notFound.back" class="mt-8 border-2 border-bebop-red bg-bebop-red px-4 py-2 font-mono text-xs font-black uppercase tracking-wider text-space-base hover:bg-paper-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-paper-white">{ptBrDict.notFound.back}</a>
-  </main>
+  <div data-not-found class="not-found relative overflow-hidden bg-space-base">
+    <canvas data-not-found-sky aria-hidden="true" class="pointer-events-none absolute inset-0 block h-full w-full"></canvas>
+    <main id="main-content" tabindex="-1" class="relative z-[1] flex min-h-screen flex-col items-start justify-center px-4 py-16 sm:px-8 md:px-12 text-paper-white focus:outline-none">
+      <span class="mb-3 block font-mono text-xs sm:text-sm font-bold tracking-widest text-bebop-red uppercase" data-i18n="notFound.actTag">{ptBrDict.notFound.actTag}</span>
+      <h1 class="font-display text-[clamp(1.5rem,7vw,5rem)] font-black uppercase leading-none tracking-tight break-words" data-i18n="notFound.title">{ptBrDict.notFound.title}</h1>
+      <p class="mt-4 font-mono text-xs sm:text-sm font-bold uppercase tracking-wider" data-i18n="notFound.hint">{ptBrDict.notFound.hint}</p>
+      <a href="/" data-not-found-home data-i18n="notFound.back" class="mt-8 border-2 border-bebop-red bg-bebop-red px-4 py-2 font-mono text-xs font-black uppercase tracking-wider text-space-base hover:bg-paper-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-paper-white">{ptBrDict.notFound.back}</a>
+    </main>
+    <p data-not-found-sign class="not-found-sign">
+      <span data-i18n="notFound.seeYouLead">{ptBrDict.notFound.seeYouLead}</span>{" "}<span class="text-bebop-red" data-i18n="notFound.seeYouAccent">{ptBrDict.notFound.seeYouAccent}</span>{" "}<span data-i18n="notFound.seeYouTail">{ptBrDict.notFound.seeYouTail}</span><span class="not-found-dots" aria-hidden="true">...</span>
+    </p>
+  </div>
 </BaseLayout>
+
+<style>
+  .not-found-sign {
+    position: absolute;
+    right: clamp(1rem, 4vw, 4rem);
+    bottom: clamp(1.25rem, 4vw, 3rem);
+    z-index: 2;
+    margin: 0;
+    text-align: right;
+    font-family: var(--font-syne), sans-serif;
+    font-weight: 800;
+    font-style: italic;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    line-height: 1.1;
+    font-size: clamp(0.8rem, 1.7vw, 1.5rem);
+    color: var(--color-paper-white);
+    pointer-events: none;
+  }
+
+  .not-found-dots {
+    animation: not-found-blink 1.8s steps(1) infinite;
+  }
+
+  @keyframes not-found-blink {
+    0%,
+    60% {
+      opacity: 1;
+    }
+    80%,
+    100% {
+      opacity: 0.15;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .not-found-dots {
+      animation: none;
+    }
+  }
+</style>
+
+<script>
+  import { onPageReady } from "../utils/page-lifecycle";
+  import { bindStarSky } from "../components/not-found/star-sky-bind";
+
+  onPageReady(() => {
+    const root = document.querySelector<HTMLElement>("[data-not-found]");
+    const canvas = root?.querySelector<HTMLCanvasElement>("[data-not-found-sky]");
+    return root && canvas ? bindStarSky(root, canvas) : undefined;
+  });
+</script>
