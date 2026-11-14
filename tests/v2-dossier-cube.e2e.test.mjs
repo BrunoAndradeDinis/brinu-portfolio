@@ -294,6 +294,24 @@ test('each square of the cube shows a different sticker', async () => {
 
 const { enDict } = await import('../src/i18n/dictionaries.ts');
 
+// The computed accessible name and description of the portrait frame, from Chromium's accessibility tree.
+async function frameAccessibility(context, page) {
+  const client = await context.newCDPSession(page);
+  const { root } = await client.send('DOM.getDocument');
+  const { nodeId } = await client.send('DOM.querySelector', { nodeId: root.nodeId, selector: '[data-about-portrait-frame]' });
+  const { nodes } = await client.send('Accessibility.getPartialAXTree', { nodeId, fetchRelatives: false });
+  await client.detach();
+  const node = nodes.find((entry) => !entry.ignored) ?? nodes[0];
+  return { role: node.role?.value ?? null, name: node.name?.value ?? '', description: node.description?.value ?? '' };
+}
+
+// Whether any text node on the page reads the replay hint to assistive technology outside the button's description.
+const hintExposed = (page, hint) =>
+  page.evaluate((text) => {
+    const span = document.getElementById('about-portrait-replay-hint');
+    return span.textContent.trim() === text && span.checkVisibility() && !span.hidden;
+  }, hint);
+
 async function waitForCubeDone(page, plays) {
   await page.waitForFunction((count) => document.querySelector('[data-about-portrait]').dataset.cubePlays === String(count) && !document.querySelector('[data-dossier-cube]'), plays, { timeout: 8000 });
 }
@@ -319,9 +337,10 @@ test('double click, Enter or Space solves the cube again', async () => {
     await frame.focus();
     await page.keyboard.press('Enter');
     await waitForCubeDone(page, 3);
+    const before = await page.evaluate(() => window.scrollY);
     await page.keyboard.press(' ');
     await waitForCubeDone(page, 4);
-    assert.equal(await page.evaluate(() => window.scrollY > 0), true, 'Space replays without scrolling the page away');
+    assert.equal(await page.evaluate(() => window.scrollY), before, 'Space replays without scrolling the page');
   } finally {
     await context.close();
   }
@@ -341,16 +360,36 @@ test('the portrait shows a pointer and sheds particles on hover', async () => {
       await scrollToPortrait(page);
       await waitForCubeDone(page, 1);
       const frame = page.locator('[data-about-portrait-frame]');
-      const semantics = await frame.evaluate((element) => ({
-        cursor: getComputedStyle(element).cursor,
-        role: element.getAttribute('role'),
-        tabIndex: element.tabIndex,
-        description: document.getElementById(element.getAttribute('aria-describedby'))?.textContent.trim(),
-        name: element.querySelector('img').getAttribute('alt'),
-      }));
-      assert.deepEqual(semantics, { cursor: 'pointer', role: 'button', tabIndex: 0, description: hint, name: locale === 'en' ? enDict.about.portraitAlt : ptBrDict.about.portraitAlt }, `${locale}: the portrait reads as a button that replays the cube`);
+      const semantics = await frame.evaluate((element) => ({ cursor: getComputedStyle(element).cursor, tabIndex: element.tabIndex }));
+      assert.deepEqual(semantics, { cursor: 'pointer', tabIndex: 0 }, `${locale}: a pointer and a keyboard stop`);
+      assert.deepEqual(await frameAccessibility(context, page), { role: 'button', name: locale === 'en' ? enDict.about.portraitAlt : ptBrDict.about.portraitAlt, description: hint }, `${locale}: assistive technology hears a button named by the portrait, described by the replay hint`);
+      assert.equal(await hintExposed(page, hint), false, `${locale}: the hint is only read as the button's description`);
 
       const box = await frame.boundingBox();
+      await page.evaluate(() => {
+        const record = { pointer: null, first: null, overflow: 0, alive: 0 };
+        window.__particles = record;
+        document.addEventListener('pointermove', (event) => {
+          record.pointer = { x: event.clientX, y: event.clientY };
+        }, true);
+        const layer = document.querySelector('[data-portrait-particles]');
+        new MutationObserver((changes) => {
+          for (const change of changes) {
+            for (const node of change.addedNodes) {
+              if (record.first || !record.pointer) continue;
+              const rect = node.getBoundingClientRect();
+              record.first = Math.hypot(rect.left + rect.width / 2 - record.pointer.x, rect.top + rect.height / 2 - record.pointer.y);
+            }
+          }
+        }).observe(layer, { childList: true });
+        const sample = () => {
+          const alive = layer.childElementCount;
+          if (alive > 0) record.overflow = Math.max(record.overflow, document.documentElement.scrollWidth - document.documentElement.clientWidth);
+          record.alive = Math.max(record.alive, alive);
+          requestAnimationFrame(sample);
+        };
+        requestAnimationFrame(sample);
+      });
       for (let step = 0; step < 24; step += 1) {
         await page.mouse.move(box.x + box.width * (0.25 + step * 0.02), box.y + box.height * (0.35 + step * 0.012));
         await page.waitForTimeout(14);
@@ -368,11 +407,15 @@ test('the portrait shows a pointer and sheds particles on hover', async () => {
       });
       assert.ok(particles.length >= 5, `${locale}: moving over the portrait sheds particles (${particles.length})`);
       for (const particle of particles) assert.ok(['rgb(254, 0, 0)', 'rgb(251, 250, 244)', 'rgb(8, 8, 8)'].includes(particle.colour), `${particle.colour} is a brand colour`);
-      const near = particles.filter((particle) => particle.inside).length;
-      assert.ok(near >= particles.length * 0.6, `${locale}: particles start on the portrait (${near} of ${particles.length} inside its box)`);
+      const record = await page.evaluate(() => window.__particles);
+      assert.ok(record.first !== null && record.first <= 12, `${locale}: the first particle starts under the cursor (${record.first?.toFixed(1)} px away)`);
+      assert.ok(particles.every((particle) => particle.inside), `${locale}: every particle stays inside the frame`);
+      const leftAt = await page.evaluate(() => performance.now());
       await page.mouse.move(5, 5);
       await page.waitForFunction(() => document.querySelectorAll('[data-portrait-particles] > *').length === 0, null, { timeout: 3000 });
-      assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth), `${locale}: particles never widen the page`);
+      const gone = await page.evaluate((start) => performance.now() - start, leftAt);
+      assert.ok(gone <= 1100, `${locale}: particles fade within a second of the pointer leaving (${Math.round(gone)} ms)`);
+      assert.equal((await page.evaluate(() => window.__particles)).overflow <= 0, true, `${locale}: particles never widen the page while they live`);
     } finally {
       await context.close();
     }
@@ -380,6 +423,17 @@ test('the portrait shows a pointer and sheds particles on hover', async () => {
 });
 
 test('reduced motion keeps the portrait still: no replay, no particles, no pointer', async () => {
+  {
+    const { context, page } = await openHome({ javaScriptEnabled: false });
+    try {
+      const frame = page.locator('[data-about-portrait-frame]');
+      const plain = await frame.evaluate((element) => ({ cursor: getComputedStyle(element).cursor, role: element.getAttribute('role'), tabindex: element.getAttribute('tabindex'), describedBy: element.getAttribute('aria-describedby') }));
+      assert.deepEqual(plain, { cursor: 'auto', role: null, tabindex: null, describedBy: null }, 'without JavaScript the portrait is a plain image');
+      assert.equal(await hintExposed(page, ptBrDict.about.portraitReplayHint), false, 'without JavaScript the replay hint is not read');
+    } finally {
+      await context.close();
+    }
+  }
   const { context, page } = await openHome({ reducedMotion: 'reduce' });
   try {
     await scrollToPortrait(page);
@@ -392,6 +446,9 @@ test('reduced motion keeps the portrait still: no replay, no particles, no point
     assert.equal(await page.locator('[data-portrait-particles] > *').count(), 0, 'no particles');
     const semantics = await frame.evaluate((element) => ({ cursor: getComputedStyle(element).cursor, role: element.getAttribute('role'), focusable: element.tabIndex >= 0 }));
     assert.deepEqual(semantics, { cursor: 'auto', role: null, focusable: false }, 'the still portrait does not pose as a button');
+    assert.equal(await hintExposed(page, ptBrDict.about.portraitReplayHint), false, 'the replay hint is not read when nothing replays');
+    const accessible = await frameAccessibility(context, page);
+    assert.equal(accessible.description, '', 'the portrait carries no replay description');
   } finally {
     await context.close();
   }

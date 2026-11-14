@@ -78,7 +78,7 @@ const currentId = CAREER.find((entry) => entry.end === "present")?.id;
             />
           </div>
         </div>
-        <span id="about-portrait-replay-hint" class="sr-only" data-i18n="about.portraitReplayHint">{ptBrDict.about.portraitReplayHint}</span>
+        <span id="about-portrait-replay-hint" hidden data-i18n="about.portraitReplayHint">{ptBrDict.about.portraitReplayHint}</span>
         <div class="mt-4 flex items-center justify-between gap-3 font-mono text-xs">
           <span
             class="inline-flex items-center gap-1.5 border-2 border-paper-white bg-bebop-red px-2.5 py-1 text-[11px] font-display font-black text-space-base uppercase tracking-wider"
