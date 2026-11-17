@@ -1,21 +1,15 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { audioSynth } from '../utils/audio';
 import { useLocale } from '../i18n/index';
 import { PROFILE } from '../data/profile';
 import { BUDGET_IDS, CONTACT_BOUNDS, CONTACT_DEFAULTS, DEADLINE_IDS, SERVICE_IDS } from '../data/contact-brief';
-import {
-  isJobOnly,
-  validateContactBrief,
-  type ContactBrief,
-  type ContactErrors,
-  type ContactField,
-  type RawContactBrief,
-} from '../utils/contact-brief';
+import { isJobOnly, validateContactBrief, type ContactBrief, type ContactField, type RawContactBrief } from '../utils/contact-brief';
 import { formatBrPhone } from '../utils/contact-sanitize';
 import { ChoiceGroup, TextField } from './contact/fields';
 import { DispatchReceipt } from './contact/DispatchReceipt';
 
 type FormValues = { -readonly [K in keyof RawContactBrief]: RawContactBrief[K] };
+type Touched = Partial<Record<ContactField, true>>;
 
 const INITIAL_VALUES: FormValues = {
   name: '',
@@ -28,70 +22,55 @@ const INITIAL_VALUES: FormValues = {
   message: '',
 };
 
-const FIELD_ORDER: readonly ContactField[] = ['name', 'email', 'phone', 'services', 'message'];
-
-const FIELD_ELEMENT_ID: Readonly<Record<ContactField, string>> = {
-  name: 'dispatch-name',
-  email: 'dispatch-email',
-  phone: 'dispatch-phone',
-  services: 'dispatch-services',
-  message: 'dispatch-message',
-};
+const ALL_TOUCHED: Touched = { name: true, email: true, phone: true, services: true, message: true };
 
 const PHONE_MASK_LENGTH = 15;
-
-function focusField(field: ContactField): void {
-  const element = document.getElementById(FIELD_ELEMENT_ID[field]);
-  const target = element instanceof HTMLFieldSetElement ? element.querySelector('input') : element;
-  target?.focus();
-}
 
 export const BountyDispatch: React.FC = () => {
   const { dict: t } = useLocale();
   const copy = t.dispatch;
   const [values, setValues] = useState<FormValues>(INITIAL_VALUES);
-  const [errors, setErrors] = useState<ContactErrors>({});
+  const [touched, setTouched] = useState<Touched>({});
   const [brief, setBrief] = useState<ContactBrief | null>(null);
   const [dispatchTime, setDispatchTime] = useState<string>('');
 
+  const validation = useMemo(() => validateContactBrief(values), [values]);
+  const liveErrors = validation.ok ? {} : validation.errors;
+
   const update = <K extends keyof FormValues>(key: K, value: FormValues[K]) => {
     setValues((prev) => ({ ...prev, [key]: value }));
-    if (key in FIELD_ELEMENT_ID && errors[key as ContactField]) {
-      setErrors((prev) => ({ ...prev, [key]: undefined }));
-    }
+  };
+
+  const touch = (field: ContactField) => {
+    setTouched((prev) => (prev[field] ? prev : { ...prev, [field]: true }));
   };
 
   const toggleService = (id: string) => {
     const next = values.services.includes(id) ? values.services.filter((s) => s !== id) : [...values.services, id];
     update('services', next);
+    touch('services');
   };
 
   const errorText = (field: ContactField): string | undefined => {
-    const code = errors[field];
-    return code ? copy.errors[code] : undefined;
+    const code = liveErrors[field];
+    return touched[field] && code ? copy.errors[code] : undefined;
   };
 
   const handleSubmit = (e: React.SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const result = validateContactBrief(values);
-
-    if (!result.ok) {
-      setErrors(result.errors);
-      const first = FIELD_ORDER.find((field) => result.errors[field]);
-      if (first) requestAnimationFrame(() => focusField(first));
-      if (!audioSynth.isMuted()) audioSynth.playAlarm8Bit(1);
+    if (!validation.ok) {
+      setTouched(ALL_TOUCHED);
       return;
     }
 
-    setErrors({});
-    setBrief(result.brief);
+    setBrief(validation.brief);
     setDispatchTime(new Date().toUTCString());
     if (!audioSynth.isMuted()) audioSynth.playBountyAcquired();
   };
 
   const handleReset = () => {
     setValues(INITIAL_VALUES);
-    setErrors({});
+    setTouched({});
     setBrief(null);
   };
 
@@ -122,6 +101,7 @@ export const BountyDispatch: React.FC = () => {
             placeholder={copy.namePlaceholder}
             maxLength={CONTACT_BOUNDS.name.max}
             autoComplete="name"
+            onBlur={() => touch('name')}
             error={errorText('name')}
           />
           <TextField
@@ -146,6 +126,7 @@ export const BountyDispatch: React.FC = () => {
             placeholder={copy.emailPlaceholder}
             maxLength={CONTACT_BOUNDS.email.max}
             autoComplete="email"
+            onBlur={() => touch('email')}
             error={errorText('email')}
           />
           <TextField
@@ -160,6 +141,7 @@ export const BountyDispatch: React.FC = () => {
             placeholder={copy.phonePlaceholder}
             maxLength={PHONE_MASK_LENGTH}
             autoComplete="tel-national"
+            onBlur={() => touch('phone')}
             error={errorText('phone')}
           />
           <ChoiceGroup
@@ -170,6 +152,7 @@ export const BountyDispatch: React.FC = () => {
             options={SERVICE_IDS.map((id) => ({ value: id, label: copy.services[id] }))}
             selected={values.services}
             onSelect={toggleService}
+            onLeave={() => touch('services')}
             error={errorText('services')}
           />
           {showBudgetAndDeadline && (
@@ -203,13 +186,15 @@ export const BountyDispatch: React.FC = () => {
             onChange={(value) => update('message', value)}
             placeholder={copy.messagePlaceholder}
             maxLength={CONTACT_BOUNDS.message.max}
+            onBlur={() => touch('message')}
             error={errorText('message')}
           />
 
           <button
             type="submit"
             data-dispatch-submit-btn
-            className="w-full py-3.5 px-6 border-2 border-paper-white bg-bebop-red text-space-base font-mono font-black text-xs sm:text-sm uppercase tracking-wider hover:bg-paper-white hover:text-space-base transition-all duration-150 shadow-[4px_4px_0_var(--color-paper-white)] flex items-center justify-center gap-2 cursor-pointer"
+            disabled={!validation.ok}
+            className="w-full py-3.5 px-6 border-2 border-paper-white bg-bebop-red text-space-base font-mono font-black text-xs sm:text-sm uppercase tracking-wider hover:bg-paper-white hover:text-space-base transition-all duration-150 shadow-[4px_4px_0_var(--color-paper-white)] flex items-center justify-center gap-2 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none disabled:hover:bg-bebop-red"
           >
             <span>{copy.submitCta}</span>
           </button>

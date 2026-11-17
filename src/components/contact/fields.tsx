@@ -40,6 +40,7 @@ interface TextFieldProps {
   label: string;
   value: string;
   onChange: (value: string) => void;
+  onBlur?: () => void;
   placeholder: string;
   maxLength: number;
   error?: string;
@@ -56,6 +57,7 @@ export const TextField: React.FC<TextFieldProps> = ({
   label,
   value,
   onChange,
+  onBlur,
   placeholder,
   maxLength,
   error,
@@ -72,6 +74,7 @@ export const TextField: React.FC<TextFieldProps> = ({
     placeholder,
     maxLength,
     autoComplete,
+    onBlur,
     'aria-invalid': error ? true : undefined,
     'aria-describedby': error ? errorId(id) : undefined,
     [`data-input-${field}`]: '',
@@ -107,12 +110,16 @@ interface ChoiceGroupProps {
   options: readonly ChoiceOption[];
   selected: readonly string[];
   onSelect: (value: string) => void;
+  onLeave?: () => void;
   error?: string;
 }
 
-export const ChoiceGroup: React.FC<ChoiceGroupProps> = ({ id, field, legend, type, options, selected, onSelect, error }) => (
+export const ChoiceGroup: React.FC<ChoiceGroupProps> = ({ id, field, legend, type, options, selected, onSelect, onLeave, error }) => (
   <fieldset
     id={id}
+    onBlur={(e) => {
+      if (onLeave && !e.currentTarget.contains(e.relatedTarget)) onLeave();
+    }}
     {...{ [`data-group-${field}`]: '' }}
     aria-describedby={error ? errorId(id) : undefined}
     className="@container min-w-0"

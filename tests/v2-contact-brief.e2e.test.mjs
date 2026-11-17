@@ -81,6 +81,18 @@ async function assertErrorWithoutReceipt(page, field, message) {
   assert.equal((await error.innerText()).replace('■', '').trim(), message);
   assert.equal(await page.locator('[data-dispatch-receipt]').count(), 0);
   assert.equal(await page.locator('[data-dispatch-form]').count(), 1);
+  assert.equal(await page.locator('[data-dispatch-submit-btn]').isDisabled(), true);
+}
+
+const leave = (page, id) => page.locator(`#${id}`).blur();
+
+async function touchEveryField(page) {
+  for (const id of ['dispatch-name', 'dispatch-email', 'dispatch-phone', 'dispatch-message']) {
+    await page.focus(`#${id}`);
+    await leave(page, id);
+  }
+  await page.check('#dispatch-services input[value="web-system"]');
+  await page.uncheck('#dispatch-services input[value="web-system"]');
 }
 
 test('form fields render in the approved order', async () => {
@@ -154,7 +166,9 @@ test('locale switch translates the form and keeps typed values', async () => {
   await page.check('#dispatch-budget input[value="over-15k"]');
   await page.check('#dispatch-deadline input[value="urgent"]');
   await page.fill('#dispatch-message', 'Mensagem curta');
-  await submit(page);
+  await page.focus('#dispatch-email');
+  await leave(page, 'dispatch-email');
+  await leave(page, 'dispatch-message');
   assert.equal((await page.locator('[data-error-email]').innerText()).replace('■', '').trim(), PT.errors['email-required']);
 
   await page.evaluate(() => window.scrollTo(0, 0));
@@ -220,55 +234,52 @@ test('groups are fieldsets with legends and inputs have labels', async () => {
   await context.close();
 });
 
-test('invalid name shows the name error and no receipt', async () => {
+test('invalid name shows the name error and disables submit', async () => {
   const { context, page } = await openForm();
   await fillValid(page);
   await page.fill('#dispatch-name', `  A${ZERO_WIDTH}  `);
-  await submit(page);
+  await leave(page, 'dispatch-name');
   await assertErrorWithoutReceipt(page, 'name', PT.errors['name-length']);
   await page.evaluate(() => document.getElementById('dispatch-name').removeAttribute('maxlength'));
   await page.fill('#dispatch-name', 'a'.repeat(81));
-  await submit(page);
   await assertErrorWithoutReceipt(page, 'name', PT.errors['name-length']);
   await context.close();
 });
 
-test('invalid email shows the matching error and no receipt', async () => {
+test('invalid email shows the matching error and disables submit', async () => {
   const { context, page } = await openForm();
   await fillValid(page);
   await page.fill('#dispatch-email', '');
-  await submit(page);
+  await leave(page, 'dispatch-email');
   await assertErrorWithoutReceipt(page, 'email', PT.errors['email-required']);
   await page.fill('#dispatch-email', 'ana@acme');
-  await submit(page);
   await assertErrorWithoutReceipt(page, 'email', PT.errors['email-invalid']);
   await context.close();
 });
 
-test('invalid whatsapp shows the whatsapp error and no receipt', async () => {
+test('invalid whatsapp shows the whatsapp error and disables submit', async () => {
   const { context, page } = await openForm();
   await fillValid(page);
   await page.fill('#dispatch-phone', '');
   await page.locator('#dispatch-phone').pressSequentially('169912345');
-  await submit(page);
+  await leave(page, 'dispatch-phone');
   await assertErrorWithoutReceipt(page, 'phone', PT.errors['phone-invalid']);
   await context.close();
 });
 
-test('no service shows the service error and no receipt', async () => {
+test('no service shows the service error and disables submit', async () => {
   const { context, page } = await openForm();
   await fillValid(page);
   await page.uncheck('#dispatch-services input[value="web-system"]');
-  await submit(page);
   await assertErrorWithoutReceipt(page, 'services', PT.errors['services-required']);
   await context.close();
 });
 
-test('short message shows the message error and no receipt', async () => {
+test('short message shows the message error and disables submit', async () => {
   const { context, page } = await openForm();
   await fillValid(page);
   await page.fill('#dispatch-message', 'a'.repeat(19));
-  await submit(page);
+  await leave(page, 'dispatch-message');
   await assertErrorWithoutReceipt(page, 'message', PT.errors['message-length']);
   await context.close();
 });
@@ -295,55 +306,27 @@ test('text inputs carry maxlength at their bounds', async () => {
   await context.close();
 });
 
-test('invalid submit focuses the first error with aria wiring', async () => {
-  const { context, page } = await openForm();
-  await fillValid(page);
-  await page.fill('#dispatch-email', 'ana@acme');
-  await page.fill('#dispatch-message', 'curta');
-  await page.focus('[data-dispatch-submit-btn]');
-  await submit(page);
-  await page.waitForFunction(() => document.activeElement?.id === 'dispatch-email');
-  assert.equal(await page.getAttribute('#dispatch-email', 'aria-invalid'), 'true');
-  const describedBy = await page.getAttribute('#dispatch-email', 'aria-describedby');
-  assert.equal(describedBy, 'dispatch-email-error');
-  assert.equal((await page.locator(`#${describedBy}`).innerText()).replace('■', '').trim(), PT.errors['email-invalid']);
-  assert.equal(await page.getAttribute('#dispatch-message', 'aria-invalid'), 'true');
-  assert.equal(await page.getAttribute('#dispatch-name', 'aria-invalid'), null);
-  await context.close();
-});
-
-test('invalid submit focuses the first error for every field type', async () => {
+test('shown errors wire aria to the field for every field type', async () => {
   const cases = [
-    { field: 'name', code: 'name-length', break: (page) => page.fill('#dispatch-name', 'A'), focusId: 'dispatch-name' },
-    { field: 'phone', code: 'phone-invalid', break: (page) => page.fill('#dispatch-phone', '(16) 9912'), focusId: 'dispatch-phone' },
-    { field: 'services', code: 'services-required', break: (page) => page.uncheck('#dispatch-services input[value="web-system"]'), focusId: null },
-    { field: 'message', code: 'message-length', break: (page) => page.fill('#dispatch-message', 'curta'), focusId: 'dispatch-message' },
+    { field: 'name', code: 'name-length', target: '#dispatch-name', breakField: async (page) => { await page.fill('#dispatch-name', 'A'); await leave(page, 'dispatch-name'); } },
+    { field: 'email', code: 'email-invalid', target: '#dispatch-email', breakField: async (page) => { await page.fill('#dispatch-email', 'ana@acme'); await leave(page, 'dispatch-email'); } },
+    { field: 'phone', code: 'phone-invalid', target: '#dispatch-phone', breakField: async (page) => { await page.fill('#dispatch-phone', '(16) 9912'); await leave(page, 'dispatch-phone'); } },
+    { field: 'services', code: 'services-required', target: '#dispatch-services input', breakField: (page) => page.uncheck('#dispatch-services input[value="web-system"]') },
+    { field: 'message', code: 'message-length', target: '#dispatch-message', breakField: async (page) => { await page.fill('#dispatch-message', 'curta'); await leave(page, 'dispatch-message'); } },
   ];
-  for (const { field, code, break: breakField, focusId } of cases) {
+  for (const { field, code, target, breakField } of cases) {
     const { context, page } = await openForm();
     await fillValid(page);
+    assert.equal(await page.locator('[data-dispatch-form] [aria-invalid="true"]').count(), 0, `${field} starts clean`);
     await breakField(page);
-    await submit(page);
-    const errorElementId = field === 'services' ? 'dispatch-services-error' : `${focusId}-error`;
-    await page.waitForFunction((id) => document.getElementById(id), errorElementId);
-    await page.waitForFunction(
-      ({ focusId, field }) => {
-        const active = document.activeElement;
-        if (field === 'services') return active?.matches('#dispatch-services input') ?? false;
-        return active?.id === focusId;
-      },
-      { focusId, field }
+    const errorId = `dispatch-${field}-error`;
+    assert.equal((await page.locator(`#${errorId}`).innerText()).replace('■', '').trim(), PT.errors[code]);
+    const wiring = await page.locator(target).evaluateAll((elements) =>
+      elements.map((element) => [element.getAttribute('aria-invalid'), element.getAttribute('aria-describedby')])
     );
-    const focused = await page.evaluate(() => ({
-      invalid: document.activeElement.getAttribute('aria-invalid'),
-      describedBy: document.activeElement.getAttribute('aria-describedby'),
-    }));
-    assert.deepEqual(focused, { invalid: 'true', describedBy: errorElementId }, field);
-    assert.equal((await page.locator(`#${errorElementId}`).innerText()).replace('■', '').trim(), PT.errors[code]);
-    if (field === 'services') {
-      const describedInputs = await page.locator('#dispatch-services input[aria-invalid="true"][aria-describedby="dispatch-services-error"]').count();
-      assert.equal(describedInputs, 4);
-    }
+    assert.equal(wiring.length, field === 'services' ? 4 : 1);
+    for (const pair of wiring) assert.deepEqual(pair, ['true', errorId], field);
+    assert.equal(await page.locator('[data-dispatch-form] [aria-invalid="true"]').count(), wiring.length, `${field} only`);
     await context.close();
   }
 });
@@ -360,7 +343,7 @@ test('form has no horizontal overflow from 320 to 2560 px in both locales', asyn
   for (const locale of ['pt-br', 'en']) {
     for (const width of [320, 768, 1440, 2560]) {
       const { context, page } = await openForm({ locale, width });
-      await submit(page);
+      await touchEveryField(page);
       await page.waitForSelector('[data-error-message]');
       const metrics = await page.evaluate(() => {
         const contact = document.getElementById('contact');
@@ -473,5 +456,87 @@ test('new message restores the first-render state', async () => {
   assert.deepEqual(await checkedValue(page, 'dispatch-deadline'), ['flexible']);
   assert.equal(await page.locator('[data-dispatch-form] [aria-invalid="true"]').count(), 0);
   assert.equal(await page.locator('[id$="-error"]').count(), 0);
+  assert.equal(await page.locator('[data-dispatch-submit-btn]').isDisabled(), true);
+  await leave(page, 'dispatch-name');
+  assert.equal(await page.locator('[data-error-name]').count(), 0, 'touched state resets with the form');
+  await context.close();
+});
+
+test('errors stay hidden until the visitor leaves the field', async () => {
+  const { context, page } = await openForm();
+  for (const [id, text] of [['dispatch-name', 'A'], ['dispatch-email', 'ana@'], ['dispatch-phone', '1699'], ['dispatch-message', 'curta']]) {
+    await page.focus(`#${id}`);
+    await page.keyboard.type(text);
+    assert.equal(await page.locator('[id$="-error"]').count(), 0, `${id} shows no error while focused`);
+    await page.reload();
+    await page.evaluate(() => document.getElementById('intro-preloader')?.remove());
+    await page.locator('#bounty-dispatch-container').scrollIntoViewIfNeeded();
+    await page.waitForFunction(() => !document.querySelector('astro-island[component-url*="BountyDispatch"][ssr]'));
+  }
+  await page.focus('#dispatch-name');
+  await page.keyboard.type('A');
+  assert.equal(await page.locator('[data-dispatch-form] [aria-invalid="true"]').count(), 0);
+  await leave(page, 'dispatch-name');
+  assert.deepEqual(await page.locator('[id$="-error"]').evaluateAll((list) => list.map((el) => el.id)), ['dispatch-name-error']);
+  assert.equal((await page.locator('[data-error-name]').innerText()).replace('■', '').trim(), PT.errors['name-length']);
+  await context.close();
+});
+
+test('errors update live after the field was left', async () => {
+  const { context, page } = await openForm();
+  const name = page.locator('#dispatch-name');
+  await name.fill('A');
+  await leave(page, 'dispatch-name');
+  assert.equal(await page.locator('[data-error-name]').count(), 1);
+  await name.focus();
+  await page.keyboard.type('na');
+  assert.equal(await page.locator('[data-error-name]').count(), 0, 'error hides while typing');
+  await page.keyboard.press('Backspace');
+  await page.keyboard.press('Backspace');
+  assert.equal(await page.locator('[data-error-name]').count(), 1, 'error returns while typing');
+  assert.equal(await page.evaluate(() => document.activeElement?.id), 'dispatch-name', 'no blur happened');
+
+  const email = page.locator('#dispatch-email');
+  await email.fill('ana@acme.com');
+  await leave(page, 'dispatch-email');
+  await email.focus();
+  await page.keyboard.press('End');
+  for (let i = 0; i < 4; i++) await page.keyboard.press('Backspace');
+  assert.equal((await page.locator('[data-error-email]').innerText()).replace('■', '').trim(), PT.errors['email-invalid']);
+  await page.keyboard.type('.br');
+  assert.equal(await page.locator('[data-error-email]').count(), 0);
+  await context.close();
+});
+
+test('submit stays disabled until every field is valid', async () => {
+  const { context, page } = await openForm();
+  const button = page.locator('[data-dispatch-submit-btn]');
+  assert.equal(await button.isDisabled(), true, 'disabled on first render');
+  await page.fill('#dispatch-name', 'Ana Souza');
+  await page.fill('#dispatch-email', 'ana@acme.com');
+  await page.check('#dispatch-services input[value="site"]');
+  assert.equal(await button.isDisabled(), true, 'message still missing');
+  await page.fill('#dispatch-message', 'Preciso de um site institucional.');
+  assert.equal(await button.isDisabled(), false, 'enabled once required fields are valid');
+  await page.locator('#dispatch-phone').pressSequentially('1699');
+  assert.equal(await button.isDisabled(), true, 'partial whatsapp disables');
+  await page.locator('#dispatch-phone').pressSequentially('1234567');
+  assert.equal(await button.isDisabled(), false);
+  await page.uncheck('#dispatch-services input[value="site"]');
+  assert.equal(await button.isDisabled(), true);
+  await page.check('#dispatch-services input[value="job"]');
+  assert.equal(await button.isDisabled(), false);
+  await page.focus('#dispatch-name');
+  await page.keyboard.press('Enter');
+  assert.equal(await page.locator('[data-dispatch-receipt]').count(), 1, 'enabled submit works by keyboard');
+  await context.close();
+});
+
+test('enter in a field does not submit an invalid brief', async () => {
+  const { context, page } = await openForm();
+  await page.fill('#dispatch-name', 'Ana Souza');
+  await page.keyboard.press('Enter');
+  assert.equal(await page.locator('[data-dispatch-receipt]').count(), 0);
+  assert.equal(await page.locator('[data-dispatch-form]').count(), 1);
   await context.close();
 });
