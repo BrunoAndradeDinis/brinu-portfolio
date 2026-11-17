@@ -191,14 +191,14 @@ test('C4: about has no role heading, statistics block or bioP elements', async (
   }
 });
 
-test('C5: career ladder shows ranks 3 to 1 with only the current role marked', async () => {
+test('C5: career ladder shows ranks 2 to 1 with only the current role marked', async () => {
   for (const locale of ['pt-br', 'en']) {
     const { context, page } = await openAbout(locale, { reducedMotion: 'reduce' });
     try {
       const steps = await page.locator('#about [data-career-entry]').evaluateAll((els) => els.map((el) => ({ id: el.id, rank: el.querySelector('[data-career-rank]').textContent.replace(/\s+/g, ' ').trim(), current: el.querySelector('[data-career-current]')?.textContent.trim() ?? null })));
-      assert.deepEqual(steps.map((s) => s.id), ['career-magalu-cloud', 'career-luizalabs', 'career-magazine-luiza']);
-      assert.deepEqual(steps.map((s) => s.rank), ['RANK 3', 'RANK 2', 'RANK 1']);
-      assert.deepEqual(steps.map((s) => s.current), [DECK[locale].currentMarker, null, null]);
+      assert.deepEqual(steps.map((s) => s.id), ['career-magalu-cloud', 'career-luizalabs']);
+      assert.deepEqual(steps.map((s) => s.rank), ['RANK 2', 'RANK 1']);
+      assert.deepEqual(steps.map((s) => s.current), [DECK[locale].currentMarker, null]);
     } finally {
       await context.close();
     }

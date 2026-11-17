@@ -6,6 +6,7 @@ import P5Title from "./p5/P5Title.astro";
 import P5Badge from "./p5/P5Badge.astro";
 import P5Panel from "./p5/P5Panel.astro";
 import CareerIcon from "./about/CareerIcon.astro";
+import HobbyCards from "./about/HobbyCards.astro";
 
 const career = getLocalizedCareer("pt-br");
 const education = getLocalizedEducation("pt-br");
@@ -91,6 +92,7 @@ const currentId = CAREER.find((entry) => entry.end === "present")?.id;
           </span>
         </div>
       </div>
+      <HobbyCards />
     </div>
 
     <div data-about-content-panel class="lg:col-span-7 flex flex-col gap-6">

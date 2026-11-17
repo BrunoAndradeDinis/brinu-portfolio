@@ -82,7 +82,7 @@ const tab = (page, id, key) => page.locator(`#career-${id}-tab-${key}`);
 const panel = (page, id, key) => page.locator(`#career-${id}-panel-${key}`);
 const detailTexts = (page, id) => page.locator(`#career-${id}-panel-details [data-career-detail]`).evaluateAll((els) => els.map((el) => el.textContent));
 const expected = (locale, id) => getLocalizedCareer(locale).find((entry) => entry.id === id);
-const IDS = ['magalu-cloud', 'luizalabs', 'magazine-luiza'];
+const IDS = ['magalu-cloud', 'luizalabs'];
 const REDUCED = { reducedMotion: 'reduce' };
 
 test('TAB-01: each career card shows an icon and three tabs labelled in both locales', async () => {
@@ -243,17 +243,17 @@ test('TAB-E3: an entry without automations shows the summary only', async () => 
 
 test('TAB-E4: the INFO summary types on the first view and settles on the approved text', async () => {
   await withAbout('pt-br', {}, async (page) => {
-    const want = expected('pt-br', 'magazine-luiza').summary;
+    const want = expected('pt-br', 'luizalabs').summary;
     await page.evaluate(() => {
       window.__lengths = [];
-      setInterval(() => window.__lengths.push(document.querySelector('#career-magazine-luiza [data-career-summary]').textContent.length), 15);
-      document.querySelector('#career-magazine-luiza').scrollIntoView({ block: 'center' });
+      setInterval(() => window.__lengths.push(document.querySelector('#career-luizalabs [data-career-summary]').textContent.length), 15);
+      document.querySelector('#career-luizalabs').scrollIntoView({ block: 'center' });
     });
     await page.waitForTimeout(3500);
     const lengths = await page.evaluate(() => window.__lengths);
     assert.ok(lengths.some((length) => length > 0 && length < want.length), 'a partial summary was observed');
     assert.equal(lengths[lengths.length - 1], want.length);
-    assert.equal((await page.locator('#career-magazine-luiza [data-career-summary]').textContent()).trim(), want);
+    assert.equal((await page.locator('#career-luizalabs [data-career-summary]').textContent()).trim(), want);
   });
 });
 

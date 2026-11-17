@@ -29,7 +29,8 @@ function formatMonth(locale: Locale, value: YearMonth): string {
   return locale === 'pt-br' ? `${name}/${year}` : `${name} ${year}`;
 }
 
-export function formatPeriod(locale: Locale, start: YearMonth, end: YearMonth | 'present'): string {
+export function formatPeriod(locale: Locale, start: YearMonth, end: YearMonth | 'present' | null): string {
+  if (end === null) return formatMonth(locale, start);
   const endLabel = end === 'present' ? PRESENT[locale] : formatMonth(locale, end);
   return `${formatMonth(locale, start)} – ${endLabel}`;
 }

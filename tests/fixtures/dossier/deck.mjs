@@ -1,15 +1,15 @@
 export const DECK = {
   'pt-br': {
-    bioLine1: 'Frontend na Magalu Cloud: Astro, React e Tailwind no site institucional.',
-    bioLine2: 'Antes, 8 anos de SAC e helpdesk no ecossistema Magalu, onde aprendi a automatizar o próprio trabalho.',
-    baseLine: 'Franca / SP · Remoto · Pai da Helena',
+    bioLine1: 'Frontend na Magalu Cloud (Astro, React, Next.js e Tailwind) e desenvolvedor de sistemas web full stack com TypeScript, Node.js e PostgreSQL.',
+    bioLine2: 'Em 8 anos no ecossistema Magalu, evoluí do suporte técnico para a engenharia criando extensões, APIs, dashboards e automações reais.',
+    baseLine: 'Franca / SP · Remoto · Projetos Full Stack & Consultoria',
     rankLabel: 'RANK',
     currentMarker: 'ATUAL',
   },
   en: {
-    bioLine1: 'Frontend at Magalu Cloud: Astro, React and Tailwind on the corporate website.',
-    bioLine2: 'Before that, 8 years of support and helpdesk across the Magalu ecosystem, where I learned to automate my own work.',
-    baseLine: "Franca / SP · Remote · Helena's dad",
+    bioLine1: 'Frontend at Magalu Cloud (Astro, React, Next.js and Tailwind) and full stack web developer with TypeScript, Node.js and PostgreSQL.',
+    bioLine2: 'Across 8 years in the Magalu ecosystem, I grew from technical support into engineering by building extensions, APIs, dashboards and real automations.',
+    baseLine: 'Franca / SP · Remote · Full Stack Projects & Consulting',
     rankLabel: 'RANK',
     currentMarker: 'CURRENT',
   },
