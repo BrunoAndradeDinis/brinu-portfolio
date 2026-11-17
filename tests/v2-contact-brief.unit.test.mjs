@@ -308,3 +308,35 @@ test('lone surrogates and truncated astral characters never break the mail link'
     assert.doesNotMatch(JSON.stringify(result.brief), /\\ud[89ab]|\\udc/i);
   }
 });
+
+test('non-string payloads map to form error codes only', () => {
+  assert.deepEqual(validateContactBrief({ ...VALID_RAW, services: [1, 'site'] }).ok, true);
+  assert.deepEqual(validateContactBrief({ ...VALID_RAW, services: 'site' }), { ok: false, errors: { services: 'services-required' } });
+  assert.deepEqual(validateContactBrief({ ...VALID_RAW, name: 42, email: null, message: { x: 1 } }), {
+    ok: false,
+    errors: { name: 'name-length', email: 'email-required', message: 'message-length' },
+  });
+  const noOptions = validateContactBrief({ ...VALID_RAW, budget: undefined, deadline: 7 });
+  assert.ok(noOptions.ok);
+  assert.equal(noOptions.brief.budget, 'to-discuss');
+  assert.equal(noOptions.brief.deadline, 'flexible');
+  const empty = validateContactBrief({});
+  assert.deepEqual(empty, { ok: false, errors: { name: 'name-length', email: 'email-required', services: 'services-required', message: 'message-length' } });
+});
+
+test('email pattern rejects malformed domains and url-like strings', () => {
+  for (const bad of ['a@b..c', 'a@b.c.', 'javascript:alert(1)@x.y', 'a@b.c?bcc=z', 'a..b@acme.com', '.a@acme.com', 'a@-acme.com', 'a@acme.c', 'a@acme.123']) {
+    assert.deepEqual(errorsOf({ email: bad }), { email: 'email-invalid' }, bad);
+  }
+  for (const good of ['ana.souza+leads@acme.com.br', "o'neil@x-y.io", 'a_b@sub.domain.dev']) {
+    assert.deepEqual(errorsOf({ email: good }), {}, good);
+  }
+});
+
+test('whatsapp accepts a pasted +55 international number', () => {
+  assert.equal(formatBrPhone('+55 16 99123-4567'), '(16) 99123-4567');
+  assert.equal(formatBrPhone('+55 (16) 3333-4444'), '(16) 3333-4444');
+  const pasted = validateContactBrief(raw({ phone: '+55 16 99123-4567' }));
+  assert.equal(pasted.ok && pasted.brief.phone, '16991234567');
+  assert.deepEqual(errorsOf({ phone: '+44 20 7946 0958 12' }), { phone: 'phone-invalid' });
+});
