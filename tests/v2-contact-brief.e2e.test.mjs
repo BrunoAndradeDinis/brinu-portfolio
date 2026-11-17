@@ -284,6 +284,42 @@ test('invalid submit focuses the first error with aria wiring', async () => {
   await context.close();
 });
 
+test('invalid submit focuses the first error for every field type', async () => {
+  const cases = [
+    { field: 'name', code: 'name-length', break: (page) => page.fill('#dispatch-name', 'A'), focusId: 'dispatch-name' },
+    { field: 'phone', code: 'phone-invalid', break: (page) => page.fill('#dispatch-phone', '(16) 9912'), focusId: 'dispatch-phone' },
+    { field: 'services', code: 'services-required', break: (page) => page.uncheck('#dispatch-services input[value="web-system"]'), focusId: null },
+    { field: 'message', code: 'message-length', break: (page) => page.fill('#dispatch-message', 'curta'), focusId: 'dispatch-message' },
+  ];
+  for (const { field, code, break: breakField, focusId } of cases) {
+    const { context, page } = await openForm();
+    await fillValid(page);
+    await breakField(page);
+    await submit(page);
+    const errorElementId = field === 'services' ? 'dispatch-services-error' : `${focusId}-error`;
+    await page.waitForFunction((id) => document.getElementById(id), errorElementId);
+    await page.waitForFunction(
+      ({ focusId, field }) => {
+        const active = document.activeElement;
+        if (field === 'services') return active?.matches('#dispatch-services input') ?? false;
+        return active?.id === focusId;
+      },
+      { focusId, field }
+    );
+    const focused = await page.evaluate(() => ({
+      invalid: document.activeElement.getAttribute('aria-invalid'),
+      describedBy: document.activeElement.getAttribute('aria-describedby'),
+    }));
+    assert.deepEqual(focused, { invalid: 'true', describedBy: errorElementId }, field);
+    assert.equal((await page.locator(`#${errorElementId}`).innerText()).replace('■', '').trim(), PT.errors[code]);
+    if (field === 'services') {
+      const describedInputs = await page.locator('#dispatch-services input[aria-invalid="true"][aria-describedby="dispatch-services-error"]').count();
+      assert.equal(describedInputs, 4);
+    }
+    await context.close();
+  }
+});
+
 test('message textarea holds at most 2000 characters', async () => {
   const { context, page } = await openForm();
   await page.focus('#dispatch-message');

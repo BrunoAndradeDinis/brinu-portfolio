@@ -109,7 +109,6 @@ export const ChoiceGroup: React.FC<ChoiceGroupProps> = ({ id, field, legend, typ
   <fieldset
     id={id}
     {...{ [`data-group-${field}`]: '' }}
-    aria-invalid={error ? true : undefined}
     aria-describedby={error ? errorId(id) : undefined}
     className="@container min-w-0"
   >
@@ -128,6 +127,8 @@ export const ChoiceGroup: React.FC<ChoiceGroupProps> = ({ id, field, legend, typ
             value={option.value}
             checked={selected.includes(option.value)}
             onChange={() => onSelect(option.value)}
+            aria-invalid={error ? true : undefined}
+            aria-describedby={error ? errorId(id) : undefined}
             className="mt-0.5 size-4 shrink-0 accent-bebop-red"
           />
           <span className="break-words min-w-0">{option.label}</span>
