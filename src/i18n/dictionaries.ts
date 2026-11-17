@@ -1,4 +1,6 @@
 import { PROFILE } from '../data/profile.ts';
+import type { BudgetId, DeadlineId, ServiceId } from '../data/contact-brief.ts';
+import type { ContactErrorCode } from '../utils/contact-brief.ts';
 
 export type Locale = 'pt-br' | 'en';
 
@@ -261,6 +263,25 @@ export interface TranslationSchema {
     messagePlaceholder: string;
     messageEmptyError: string;
     messageShortError: string;
+    companyLabel: string;
+    companyPlaceholder: string;
+    phoneLabel: string;
+    phonePlaceholder: string;
+    servicesLegend: string;
+    budgetLegend: string;
+    deadlineLegend: string;
+    optionalTag: string;
+    services: Readonly<Record<ServiceId, string>>;
+    budgets: Readonly<Record<BudgetId, string>>;
+    deadlines: Readonly<Record<DeadlineId, string>>;
+    errors: Readonly<Record<ContactErrorCode, string>>;
+    mailSubjectPrefix: string;
+    mail: Readonly<Record<'name' | 'company' | 'email' | 'phone' | 'services' | 'budget' | 'deadline' | 'message', string>>;
+    companyKey: string;
+    phoneKey: string;
+    servicesKey: string;
+    budgetKey: string;
+    deadlineKey: string;
     submitCta: string;
     receiptSuccess: string;
     codenameKey: string;
@@ -567,14 +588,64 @@ export const ptBrDict: TranslationSchema = {
   dispatch: {
     headerTitle: '// SOLICITAR ORÇAMENTO OU PROPOSTA TÉCNICA',
     headerSub: 'CANAL DIRETO VERIFICADO',
-    nameLabel: '01 // SEU NOME OU EMPRESA',
-    namePlaceholder: 'Ex: Seu Nome / Sua Empresa',
+    nameLabel: '01 // SEU NOME',
+    namePlaceholder: 'Ex: Ana Souza',
+    companyLabel: '02 // EMPRESA',
+    companyPlaceholder: 'Ex: Acme Tecnologia',
+    phoneLabel: '04 // WHATSAPP',
+    phonePlaceholder: '(16) 99999-9999',
+    servicesLegend: '05 // QUAL SERVIÇO VOCÊ PROCURA?',
+    budgetLegend: '06 // QUAL O ORÇAMENTO DISPONÍVEL?',
+    deadlineLegend: '07 // QUAL O PRAZO DESEJADO?',
+    optionalTag: '(OPCIONAL)',
+    services: {
+      'web-system': 'Sistema web / painel',
+      site: 'Site / landing page',
+      integration: 'Integração / API / manutenção',
+      job: 'Oportunidade de vaga',
+    },
+    budgets: {
+      'up-to-3k': 'Até R$ 3.000',
+      '3k-8k': 'R$ 3.000 – R$ 8.000',
+      '8k-15k': 'R$ 8.000 – R$ 15.000',
+      'over-15k': 'Acima de R$ 15.000',
+      'to-discuss': 'A combinar',
+    },
+    deadlines: {
+      urgent: 'Urgente (até 1 mês)',
+      '1-3-months': '1 a 3 meses',
+      flexible: 'Flexível',
+    },
+    errors: {
+      'name-length': 'Informe um nome entre 2 e 80 caracteres.',
+      'email-required': 'E-mail de retorno obrigatório.',
+      'email-invalid': 'Formato de e-mail inválido.',
+      'phone-invalid': 'Informe DDD + número (10 ou 11 dígitos).',
+      'services-required': 'Selecione pelo menos um serviço.',
+      'message-length': 'Descreva o projeto entre 20 e 2000 caracteres.',
+    },
+    mailSubjectPrefix: '[Bounty Contract]',
+    mail: {
+      name: 'Nome',
+      company: 'Empresa',
+      email: 'E-mail',
+      phone: 'WhatsApp',
+      services: 'Serviços',
+      budget: 'Orçamento',
+      deadline: 'Prazo',
+      message: 'Detalhes do projeto',
+    },
+    companyKey: 'EMPRESA:',
+    phoneKey: 'WHATSAPP:',
+    servicesKey: 'SERVIÇOS:',
+    budgetKey: 'ORÇAMENTO:',
+    deadlineKey: 'PRAZO:',
     nameError: 'Identificador/Nome obrigatório.',
-    emailLabel: '02 // SEU E-MAIL DE RETORNO',
+    emailLabel: '03 // SEU E-MAIL DE RETORNO',
     emailPlaceholder: 'Ex: contato@empresa.com',
     emailRequiredError: 'E-mail de retorno obrigatório.',
     emailInvalidError: 'Formato de e-mail inválido.',
-    messageLabel: '03 // O QUE VOCÊ PRECISA CONSTRUIR?',
+    messageLabel: '08 // DETALHES DO PROJETO',
     messagePlaceholder: 'Conte sobre o sistema web, painel, site ou integração, objetivos e prazo estimado...',
     messageEmptyError: 'A mensagem da proposta não pode ficar vazia.',
     messageShortError: 'A proposta deve conter pelo menos 10 caracteres.',
@@ -888,14 +959,64 @@ export const enDict = {
   dispatch: {
     headerTitle: '// REQUEST A QUOTE OR TECHNICAL PROPOSAL',
     headerSub: 'VERIFIED DIRECT CHANNEL',
-    nameLabel: '01 // YOUR NAME OR COMPANY',
-    namePlaceholder: 'e.g. Your Name / Your Company',
+    nameLabel: '01 // YOUR NAME',
+    namePlaceholder: 'e.g. Ana Souza',
+    companyLabel: '02 // COMPANY',
+    companyPlaceholder: 'e.g. Acme Technology',
+    phoneLabel: '04 // WHATSAPP',
+    phonePlaceholder: '(16) 99999-9999',
+    servicesLegend: '05 // WHAT SERVICE ARE YOU LOOKING FOR?',
+    budgetLegend: '06 // WHAT IS YOUR AVAILABLE BUDGET?',
+    deadlineLegend: '07 // WHAT IS YOUR DESIRED TIMELINE?',
+    optionalTag: '(OPTIONAL)',
+    services: {
+      'web-system': 'Web system / dashboard',
+      site: 'Website / landing page',
+      integration: 'Integration / API / maintenance',
+      job: 'Job opportunity',
+    },
+    budgets: {
+      'up-to-3k': 'Up to R$ 3,000',
+      '3k-8k': 'R$ 3,000 – R$ 8,000',
+      '8k-15k': 'R$ 8,000 – R$ 15,000',
+      'over-15k': 'Over R$ 15,000',
+      'to-discuss': 'To be discussed',
+    },
+    deadlines: {
+      urgent: 'Urgent (within 1 month)',
+      '1-3-months': '1 to 3 months',
+      flexible: 'Flexible',
+    },
+    errors: {
+      'name-length': 'Enter a name between 2 and 80 characters.',
+      'email-required': 'Return email address is required.',
+      'email-invalid': 'Invalid email address format.',
+      'phone-invalid': 'Enter area code + number (10 or 11 digits).',
+      'services-required': 'Select at least one service.',
+      'message-length': 'Describe the project in 20 to 2000 characters.',
+    },
+    mailSubjectPrefix: '[Bounty Contract]',
+    mail: {
+      name: 'Name',
+      company: 'Company',
+      email: 'Email',
+      phone: 'WhatsApp',
+      services: 'Services',
+      budget: 'Budget',
+      deadline: 'Timeline',
+      message: 'Project details',
+    },
+    companyKey: 'COMPANY:',
+    phoneKey: 'WHATSAPP:',
+    servicesKey: 'SERVICES:',
+    budgetKey: 'BUDGET:',
+    deadlineKey: 'TIMELINE:',
     nameError: 'Sender name/codename is required.',
-    emailLabel: '02 // RETURN FREQUENCY (YOUR EMAIL)',
+    emailLabel: '03 // RETURN FREQUENCY (YOUR EMAIL)',
     emailPlaceholder: 'e.g. contact@company.com',
     emailRequiredError: 'Return email address is required.',
     emailInvalidError: 'Invalid email address format.',
-    messageLabel: '03 // WHAT DO YOU NEED TO BUILD?',
+    messageLabel: '08 // PROJECT DETAILS',
     messagePlaceholder: 'Tell me about the web system, dashboard, site or integration, goals, and timeline...',
     messageEmptyError: 'Proposal payload cannot be empty.',
     messageShortError: 'Proposal payload must be at least 10 characters.',

@@ -223,3 +223,25 @@ test('mailto subject carries no CR or LF for hostile names', () => {
   assert.doesNotMatch(href, /%0[AD].*subject|subject=[^&]*%0[AD]/i);
   assert.equal([...new URL(href).searchParams.keys()].join(','), 'subject,body');
 });
+
+const { DICTIONARIES } = await import('../src/i18n/dictionaries.ts');
+
+test('services offer exactly four options in both locales', () => {
+  const pt = DICTIONARIES['pt-br'].dispatch;
+  const en = DICTIONARIES.en.dispatch;
+  assert.deepEqual(SERVICE_IDS.map((id) => pt.services[id]), ['Sistema web / painel', 'Site / landing page', 'Integração / API / manutenção', 'Oportunidade de vaga']);
+  assert.deepEqual(SERVICE_IDS.map((id) => en.services[id]), ['Web system / dashboard', 'Website / landing page', 'Integration / API / maintenance', 'Job opportunity']);
+  assert.deepEqual(Object.keys(pt.services).sort(), [...SERVICE_IDS].sort());
+  assert.deepEqual(Object.keys(en.services).sort(), [...SERVICE_IDS].sort());
+});
+
+test('budget and deadline labels match the approved copy in both locales', () => {
+  const pt = DICTIONARIES['pt-br'].dispatch;
+  const en = DICTIONARIES.en.dispatch;
+  assert.deepEqual(BUDGET_IDS.map((id) => pt.budgets[id]), ['Até R$ 3.000', 'R$ 3.000 – R$ 8.000', 'R$ 8.000 – R$ 15.000', 'Acima de R$ 15.000', 'A combinar']);
+  assert.deepEqual(DEADLINE_IDS.map((id) => pt.deadlines[id]), ['Urgente (até 1 mês)', '1 a 3 meses', 'Flexível']);
+  for (const id of BUDGET_IDS) assert.ok(en.budgets[id]?.length > 0, `en budget ${id}`);
+  for (const id of DEADLINE_IDS) assert.ok(en.deadlines[id]?.length > 0, `en deadline ${id}`);
+  const codes = ['name-length', 'email-required', 'email-invalid', 'phone-invalid', 'services-required', 'message-length'];
+  for (const dict of [pt, en]) assert.deepEqual(Object.keys(dict.errors).sort(), [...codes].sort());
+});
