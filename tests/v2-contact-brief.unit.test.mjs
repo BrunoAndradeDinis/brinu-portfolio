@@ -160,3 +160,66 @@ test('job-only brief omits budget and deadline', () => {
   const mixed = validateContactBrief(raw({ services: ['job', 'site'] }));
   assert.equal(mixed.ok && mixed.brief.budget, '3k-8k');
 });
+
+const { buildMailtoHref } = await import('../src/utils/contact-mailto.ts');
+
+const MAILTO_COPY = {
+  subjectPrefix: '[Bounty Contract]',
+  labels: { name: 'Nome', company: 'Empresa', email: 'E-mail', phone: 'WhatsApp', services: 'Serviços', budget: 'Orçamento', deadline: 'Prazo', message: 'Detalhes' },
+  services: { 'web-system': 'Sistema web / painel', site: 'Site / landing page', integration: 'Integração / API / manutenção', job: 'Oportunidade de vaga' },
+  budgets: { 'up-to-3k': 'Até R$ 3.000', '3k-8k': 'R$ 3.000 – R$ 8.000', '8k-15k': 'R$ 8.000 – R$ 15.000', 'over-15k': 'Acima de R$ 15.000', 'to-discuss': 'A combinar' },
+  deadlines: { urgent: 'Urgente (até 1 mês)', '1-3-months': '1 a 3 meses', flexible: 'Flexível' },
+};
+
+function parseMailto(href) {
+  const url = new URL(href);
+  return { protocol: url.protocol, to: url.pathname, subject: url.searchParams.get('subject'), body: url.searchParams.get('body'), rawSearch: url.search };
+}
+
+test('mailto href is built from the payload and url-encoded', () => {
+  const full = validateContactBrief(raw({ name: 'Ana <b>Souza</b>', services: ['web-system', 'integration'], message: 'Linha 1\r\n\r\nLinha 2 & 50% ?' }));
+  assert.ok(full.ok);
+  const href = buildMailtoHref(full.brief, MAILTO_COPY, 'bruno@example.com');
+  assert.ok(href.startsWith('mailto:bruno@example.com?subject='));
+  assert.doesNotMatch(href.slice('mailto:bruno@example.com?'.length), /[ <>\r\n&](?!body=)/);
+  const parsed = parseMailto(href);
+  assert.equal(parsed.to, 'bruno@example.com');
+  assert.equal(parsed.subject, '[Bounty Contract] Ana bSouza/b // Acme');
+  assert.equal(
+    parsed.body,
+    [
+      'Nome: Ana bSouza/b',
+      'Empresa: Acme',
+      'E-mail: ana@acme.com',
+      'WhatsApp: (16) 99123-4567',
+      'Serviços: Sistema web / painel, Integração / API / manutenção',
+      'Orçamento: R$ 3.000 – R$ 8.000',
+      'Prazo: Urgente (até 1 mês)',
+      '',
+      'Detalhes:',
+      'Linha 1',
+      '',
+      'Linha 2 & 50% ?',
+    ].join('\r\n')
+  );
+
+  const minimal = validateContactBrief(raw({ company: '', phone: '', services: ['job'] }));
+  assert.ok(minimal.ok);
+  const minimalParsed = parseMailto(buildMailtoHref(minimal.brief, MAILTO_COPY, 'bruno@example.com'));
+  assert.equal(minimalParsed.subject, '[Bounty Contract] Ana Souza');
+  assert.equal(
+    minimalParsed.body,
+    ['Nome: Ana Souza', 'E-mail: ana@acme.com', 'Serviços: Oportunidade de vaga', '', 'Detalhes:', 'Preciso de um painel administrativo.'].join('\r\n')
+  );
+});
+
+test('mailto subject carries no CR or LF for hostile names', () => {
+  const hostile = validateContactBrief(raw({ name: 'Ana\r\nBcc: x@y.z', company: 'Acme\nCc: z@y.x' }));
+  assert.ok(hostile.ok);
+  const href = buildMailtoHref(hostile.brief, MAILTO_COPY, 'bruno@example.com');
+  const parsed = parseMailto(href);
+  assert.doesNotMatch(parsed.subject, /[\r\n]/);
+  assert.equal(parsed.subject, '[Bounty Contract] Ana Bcc: x@y.z // Acme Cc: z@y.x');
+  assert.doesNotMatch(href, /%0[AD].*subject|subject=[^&]*%0[AD]/i);
+  assert.equal([...new URL(href).searchParams.keys()].join(','), 'subject,body');
+});
