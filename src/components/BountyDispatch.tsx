@@ -11,9 +11,9 @@ import {
   type ContactField,
   type RawContactBrief,
 } from '../utils/contact-brief';
-import { buildMailtoHref } from '../utils/contact-mailto';
 import { formatBrPhone } from '../utils/contact-sanitize';
 import { ChoiceGroup, TextField } from './contact/fields';
+import { DispatchReceipt } from './contact/DispatchReceipt';
 
 type FormValues = { -readonly [K in keyof RawContactBrief]: RawContactBrief[K] };
 
@@ -215,45 +215,7 @@ export const BountyDispatch: React.FC = () => {
           </button>
         </form>
       ) : (
-        <div data-dispatch-receipt className="space-y-6 animate-in fade-in duration-300">
-          <div className="flex items-center gap-3 p-3.5 bg-bebop-red border-2 border-paper-white text-space-base">
-            <span className="w-2.5 h-2.5 bg-space-base animate-ping" />
-            <span className="font-bold text-xs uppercase tracking-wider">{copy.receiptSuccess}</span>
-          </div>
-
-          <div className="p-4 border-2 border-paper-white bg-space-base space-y-2.5 text-xs">
-            <div className="flex justify-between gap-3 border-b border-paper-white/30 pb-1.5">
-              <span className="text-muted-gray">{copy.codenameKey}</span>
-              <span className="text-paper-white font-bold break-words text-right min-w-0">{brief.name}</span>
-            </div>
-            <div className="flex justify-between gap-3 border-b border-paper-white/30 pb-1.5">
-              <span className="text-muted-gray">{copy.frequencyKey}</span>
-              <span className="text-bebop-red font-bold break-all text-right min-w-0">{brief.email}</span>
-            </div>
-            <div className="flex justify-between gap-3 pt-1">
-              <span className="text-muted-gray">{copy.timestampKey}</span>
-              <span className="text-muted-gray text-[10px]">{dispatchTime}</span>
-            </div>
-          </div>
-
-          <div className="flex flex-col sm:flex-row gap-3">
-            <a
-              href={buildMailtoHref(brief, { subjectPrefix: copy.mailSubjectPrefix, labels: copy.mail, services: copy.services, budgets: copy.budgets, deadlines: copy.deadlines }, PROFILE.email)}
-              className="flex-1 py-3 px-4 border-2 border-paper-white bg-bebop-red text-space-base text-center font-bold text-xs uppercase tracking-wider hover:bg-paper-white hover:text-space-base transition-all inline-flex items-center justify-center gap-2"
-            >
-              <span>{copy.sendEmailCopy}</span>
-            </a>
-
-            <button
-              type="button"
-              data-new-transmission-btn
-              onClick={handleReset}
-              className="py-3 px-4 border-2 border-paper-white bg-space-base text-paper-white font-bold text-xs uppercase tracking-wider hover:bg-paper-white hover:text-space-base transition-all inline-flex items-center justify-center gap-2 cursor-pointer"
-            >
-              <span>{copy.newTransmission}</span>
-            </button>
-          </div>
-        </div>
+        <DispatchReceipt brief={brief} copy={copy} to={PROFILE.email} dispatchTime={dispatchTime} onReset={handleReset} />
       )}
     </div>
   );

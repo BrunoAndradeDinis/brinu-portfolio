@@ -314,3 +314,78 @@ test('form has no horizontal overflow from 320 to 2560 px in both locales', asyn
     }
   }
 });
+
+const receiptRows = (page) =>
+  page.locator('[data-receipt-row]').evaluateAll((rows) =>
+    Object.fromEntries(rows.map((row) => [row.dataset.receiptRow, row.querySelector('dd').textContent.trim()]))
+  );
+
+test('valid submit shows the receipt from sanitized values', async () => {
+  const { context, page } = await openForm();
+  await fillValid(page);
+  await page.fill('#dispatch-name', `  <b>Ana</b>${ZERO_WIDTH}   Souza  `);
+  await page.check('#dispatch-services input[value="integration"]');
+  await page.check('#dispatch-budget input[value="8k-15k"]');
+  await page.check('#dispatch-deadline input[value="1-3-months"]');
+  await page.fill('#dispatch-message', 'Linha <script>um</script>\n\n\n\n\nLinha dois com detalhes.');
+  await submit(page);
+  await page.waitForSelector('[data-dispatch-receipt]');
+  assert.equal(await page.locator('[data-dispatch-form]').count(), 0);
+  assert.deepEqual(await receiptRows(page), {
+    name: 'bAna/b Souza',
+    company: 'Acme',
+    email: 'ana@acme.com',
+    phone: '(16) 99123-4567',
+    services: 'Sistema web / painel, Integração / API / manutenção',
+    budget: 'R$ 8.000 – R$ 15.000',
+    deadline: '1 a 3 meses',
+    target: PT.statusValue,
+  });
+  const receiptHtml = await page.locator('[data-dispatch-receipt]').innerHTML();
+  assert.doesNotMatch(receiptHtml, /<b>|<script>/);
+
+  const href = await page.getAttribute('[data-dispatch-mailto]', 'href');
+  const url = new URL(href);
+  assert.equal(url.protocol, 'mailto:');
+  assert.equal(url.pathname, PT.statusValue);
+  assert.equal(url.searchParams.get('subject'), '[Bounty Contract] bAna/b Souza // Acme');
+  const body = url.searchParams.get('body');
+  assert.ok(body.includes('Nome: bAna/b Souza'));
+  assert.ok(body.includes('Orçamento: R$ 8.000 – R$ 15.000'));
+  assert.ok(body.endsWith('Detalhes do projeto:\r\nLinha scriptum/script\r\n\r\n\r\nLinha dois com detalhes.'));
+  await context.close();
+});
+
+test('job-only receipt omits budget and deadline and optional blanks', async () => {
+  const { context, page } = await openForm();
+  await fillValid(page);
+  await page.fill('#dispatch-company', '   ');
+  await page.fill('#dispatch-phone', '');
+  await page.uncheck('#dispatch-services input[value="web-system"]');
+  await page.check('#dispatch-services input[value="job"]');
+  await submit(page);
+  await page.waitForSelector('[data-dispatch-receipt]');
+  assert.deepEqual(Object.keys(await receiptRows(page)), ['name', 'email', 'services', 'target']);
+  await context.close();
+});
+
+test('new message restores the first-render state', async () => {
+  const { context, page } = await openForm();
+  await fillValid(page);
+  await page.check('#dispatch-budget input[value="over-15k"]');
+  await page.check('#dispatch-deadline input[value="urgent"]');
+  await submit(page);
+  await page.waitForSelector('[data-dispatch-receipt]');
+  await page.click('[data-new-transmission-btn]');
+  await page.waitForSelector('[data-dispatch-form]');
+  assert.equal(await page.locator('[data-dispatch-receipt]').count(), 0);
+  for (const id of ['dispatch-name', 'dispatch-company', 'dispatch-email', 'dispatch-phone', 'dispatch-message']) {
+    assert.equal(await page.inputValue(`#${id}`), '', `${id} is empty`);
+  }
+  assert.equal(await page.locator('#dispatch-services input:checked').count(), 0);
+  assert.deepEqual(await checkedValue(page, 'dispatch-budget'), ['to-discuss']);
+  assert.deepEqual(await checkedValue(page, 'dispatch-deadline'), ['flexible']);
+  assert.equal(await page.locator('[data-dispatch-form] [aria-invalid="true"]').count(), 0);
+  assert.equal(await page.locator('[id$="-error"]').count(), 0);
+  await context.close();
+});
