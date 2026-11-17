@@ -275,6 +275,22 @@ test('no service shows the service error and disables submit', async () => {
   await context.close();
 });
 
+test('leaving the service group untouched shows the service error', async () => {
+  const { context, page } = await openForm();
+  await page.focus('#dispatch-phone');
+  await page.keyboard.press('Tab');
+  assert.equal(await page.evaluate(() => document.activeElement?.closest('fieldset')?.id), 'dispatch-services');
+  for (let i = 0; i < 3; i++) {
+    await page.keyboard.press('Tab');
+    assert.equal(await page.locator('[data-error-services]').count(), 0, 'no error while focus stays in the group');
+  }
+  await page.keyboard.press('Tab');
+  assert.notEqual(await page.evaluate(() => document.activeElement?.closest('fieldset')?.id), 'dispatch-services');
+  assert.equal((await page.locator('[data-error-services]').innerText()).replace('■', '').trim(), PT.errors['services-required']);
+  assert.equal(await page.locator('#dispatch-services input:checked').count(), 0);
+  await context.close();
+});
+
 test('short message shows the message error and disables submit', async () => {
   const { context, page } = await openForm();
   await fillValid(page);
@@ -295,6 +311,12 @@ test('typing whatsapp digits shows the BR mask', async () => {
   await phone.fill('');
   await phone.pressSequentially('16a9b9123x4567999');
   assert.equal(await phone.inputValue(), '(16) 99123-4567');
+  for (const pasted of ['+55 16 99123-4567', '+55 (16) 99123-4567', '55 16 9 9123 4567']) {
+    await phone.fill('');
+    await phone.focus();
+    await page.keyboard.insertText(pasted);
+    assert.equal(await phone.inputValue(), '(16) 99123-4567', pasted);
+  }
   await context.close();
 });
 

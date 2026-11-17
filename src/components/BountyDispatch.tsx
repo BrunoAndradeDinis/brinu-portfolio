@@ -24,7 +24,7 @@ const INITIAL_VALUES: FormValues = {
 
 const ALL_TOUCHED: Touched = { name: true, email: true, phone: true, services: true, message: true };
 
-const PHONE_MASK_LENGTH = 15;
+const PHONE_PASTE_LENGTH = 25;
 
 export const BountyDispatch: React.FC = () => {
   const { dict: t } = useLocale();
@@ -139,7 +139,7 @@ export const BountyDispatch: React.FC = () => {
             value={values.phone}
             onChange={(value) => update('phone', formatBrPhone(value))}
             placeholder={copy.phonePlaceholder}
-            maxLength={PHONE_MASK_LENGTH}
+            maxLength={PHONE_PASTE_LENGTH}
             autoComplete="tel-national"
             onBlur={() => touch('phone')}
             error={errorText('phone')}
