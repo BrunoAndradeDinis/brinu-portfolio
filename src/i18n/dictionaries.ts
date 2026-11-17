@@ -277,6 +277,7 @@ export interface TranslationSchema {
     servicesKey: string;
     budgetKey: string;
     deadlineKey: string;
+    missingPrefix: string;
     submitCta: string;
     receiptSuccess: string;
     codenameKey: string;
@@ -635,6 +636,7 @@ export const ptBrDict: TranslationSchema = {
     servicesKey: 'SERVIÇOS:',
     budgetKey: 'ORÇAMENTO:',
     deadlineKey: 'PRAZO:',
+    missingPrefix: 'PARA ENVIAR, AJUSTE:',
     emailLabel: '03 // SEU E-MAIL DE RETORNO',
     emailPlaceholder: 'Ex: contato@empresa.com',
     messageLabel: '08 // DETALHES DO PROJETO',
@@ -1001,6 +1003,7 @@ export const enDict = {
     servicesKey: 'SERVICES:',
     budgetKey: 'BUDGET:',
     deadlineKey: 'TIMELINE:',
+    missingPrefix: 'TO SEND, FIX:',
     emailLabel: '03 // RETURN FREQUENCY (YOUR EMAIL)',
     emailPlaceholder: 'e.g. contact@company.com',
     messageLabel: '08 // PROJECT DETAILS',

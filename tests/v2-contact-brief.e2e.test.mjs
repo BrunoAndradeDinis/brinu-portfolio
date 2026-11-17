@@ -98,9 +98,9 @@ async function touchEveryField(page) {
 test('form fields render in the approved order', async () => {
   const { context, page } = await openForm();
   const order = await page.locator('[data-dispatch-form]').evaluate((form) =>
-    [...form.children].map((child) => (child.tagName === 'FIELDSET' ? child.id : child.tagName === 'BUTTON' ? 'submit' : child.querySelector('input, textarea')?.id))
+    [...form.children].map((child) => (child.tagName === 'FIELDSET' ? child.id : child.tagName === 'BUTTON' ? 'submit' : child.matches('[data-dispatch-submit-hint]') ? 'hint' : child.querySelector('input, textarea')?.id))
   );
-  assert.deepEqual(order, ['dispatch-name', 'dispatch-company', 'dispatch-email', 'dispatch-phone', 'dispatch-services', 'dispatch-budget', 'dispatch-deadline', 'dispatch-message', 'submit']);
+  assert.deepEqual(order, ['dispatch-name', 'dispatch-company', 'dispatch-email', 'dispatch-phone', 'dispatch-services', 'dispatch-budget', 'dispatch-deadline', 'dispatch-message', 'submit', 'hint']);
   const labels = await page.locator('[data-dispatch-form] > div > label').allInnerTexts();
   assert.equal(labels.length, 5);
   assert.equal(labels[0].trim(), PT.nameLabel);
@@ -560,5 +560,34 @@ test('enter in a field does not submit an invalid brief', async () => {
   await page.keyboard.press('Enter');
   assert.equal(await page.locator('[data-dispatch-receipt]').count(), 0);
   assert.equal(await page.locator('[data-dispatch-form]').count(), 1);
+  await context.close();
+});
+
+test('disabled submit explains which fields are missing', async () => {
+  const { context, page } = await openForm();
+  const hint = page.locator('[data-dispatch-submit-hint]');
+  const button = page.locator('[data-dispatch-submit-btn]');
+  assert.equal((await hint.textContent()).trim(), 'PARA ENVIAR, AJUSTE: Nome, E-mail, Serviços, Detalhes do projeto');
+  assert.equal(await button.getAttribute('aria-describedby'), 'dispatch-submit-hint');
+  assert.equal(await hint.getAttribute('id'), 'dispatch-submit-hint');
+  await page.fill('#dispatch-name', 'Ana Souza');
+  await page.fill('#dispatch-email', 'ana@acme.com');
+  await page.fill('#dispatch-message', 'Preciso de um painel administrativo.');
+  assert.equal(await page.locator('[id$="-error"]').count(), 0, 'no field error shown for the untouched group');
+  assert.equal((await hint.textContent()).trim(), 'PARA ENVIAR, AJUSTE: Serviços');
+  assert.equal(await button.isDisabled(), true);
+  await page.locator('#dispatch-phone').pressSequentially('1699');
+  assert.equal((await hint.textContent()).trim(), 'PARA ENVIAR, AJUSTE: WhatsApp, Serviços');
+  await page.fill('#dispatch-phone', '');
+  await page.check('#dispatch-services input[value="site"]');
+  assert.equal(await hint.count(), 0);
+  assert.equal(await button.getAttribute('aria-describedby'), null);
+  assert.equal(await button.isDisabled(), false);
+  await page.uncheck('#dispatch-services input[value="site"]');
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await page.click('#nav-lang-toggle-btn');
+  await page.waitForFunction(() => document.documentElement.lang === 'en');
+  await page.locator('#bounty-dispatch-container').scrollIntoViewIfNeeded();
+  assert.equal((await hint.textContent()).trim(), 'TO SEND, FIX: Services');
   await context.close();
 });

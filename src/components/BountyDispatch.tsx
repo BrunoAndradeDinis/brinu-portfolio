@@ -24,6 +24,9 @@ const INITIAL_VALUES: FormValues = {
 
 const ALL_TOUCHED: Touched = { name: true, email: true, phone: true, services: true, message: true };
 
+const FIELD_ORDER: readonly ContactField[] = ['name', 'email', 'phone', 'services', 'message'];
+const SUBMIT_HINT_ID = 'dispatch-submit-hint';
+
 const PHONE_PASTE_LENGTH = 25;
 
 export const BountyDispatch: React.FC = () => {
@@ -36,6 +39,7 @@ export const BountyDispatch: React.FC = () => {
 
   const validation = useMemo(() => validateContactBrief(values), [values]);
   const liveErrors = validation.ok ? {} : validation.errors;
+  const missingFields = FIELD_ORDER.filter((field) => liveErrors[field]).map((field) => copy.mail[field]);
 
   const update = <K extends keyof FormValues>(key: K, value: FormValues[K]) => {
     setValues((prev) => ({ ...prev, [key]: value }));
@@ -194,10 +198,16 @@ export const BountyDispatch: React.FC = () => {
             type="submit"
             data-dispatch-submit-btn
             disabled={!validation.ok}
+            aria-describedby={validation.ok ? undefined : SUBMIT_HINT_ID}
             className="w-full py-3.5 px-6 border-2 border-paper-white bg-bebop-red text-space-base font-mono font-black text-xs sm:text-sm uppercase tracking-wider hover:bg-paper-white hover:text-space-base transition-all duration-150 shadow-[4px_4px_0_var(--color-paper-white)] flex items-center justify-center gap-2 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none disabled:hover:bg-bebop-red"
           >
             <span>{copy.submitCta}</span>
           </button>
+          {!validation.ok && (
+            <p id={SUBMIT_HINT_ID} data-dispatch-submit-hint className="text-[11px] text-muted-gray uppercase tracking-wider">
+              {copy.missingPrefix} {missingFields.join(', ')}
+            </p>
+          )}
         </form>
       ) : (
         <DispatchReceipt brief={brief} copy={copy} to={PROFILE.email} dispatchTime={dispatchTime} onReset={handleReset} />
