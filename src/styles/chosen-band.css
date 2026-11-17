@@ -1,0 +1,168 @@
+.chosen-band {
+  position: fixed;
+  inset: 0;
+  z-index: 10001;
+  display: none;
+  overflow: hidden;
+  pointer-events: none;
+  container-type: size;
+}
+
+.chosen-band .r {
+  position: absolute;
+  inset: 0;
+  background: var(--color-bebop-red);
+}
+
+.chosen-band .k {
+  position: absolute;
+  top: 38%;
+  right: -10%;
+  left: -10%;
+  height: 28%;
+  background: var(--color-space-base);
+  transform: skewY(-6deg) scaleX(0);
+  transform-origin: left;
+}
+
+.chosen-band .n {
+  --chars: 6;
+  position: absolute;
+  top: 47%;
+  right: 0;
+  left: 0;
+  padding-inline: 16px;
+  color: var(--color-paper-white);
+  font: 800 min(130px, max(9vw, 56px), 12vw, calc((100cqi - 32px) / (var(--chars) * 1.25))) / 1 var(--font-display);
+  letter-spacing: -0.03em;
+  text-align: center;
+  text-transform: uppercase;
+  white-space: nowrap;
+  opacity: 0;
+}
+
+.chosen-band.is-in,
+.chosen-band.is-covered,
+.chosen-band.is-out {
+  display: block;
+}
+
+.chosen-band.is-out .r {
+  animation: chosen-band-red 1.25s cubic-bezier(0.7, 0, 0.2, 1) forwards;
+}
+
+.chosen-band.is-out .k {
+  animation: chosen-band-strip 1.25s cubic-bezier(0.7, 0, 0.2, 1) forwards;
+}
+
+.chosen-band.is-out .n {
+  animation: chosen-band-text 1.25s ease forwards;
+}
+
+.chosen-band.is-out :is(.r, .k, .n) {
+  animation-delay: -560ms;
+}
+
+.chosen-band.is-in .r {
+  animation: chosen-band-red-in 560ms cubic-bezier(0.7, 0, 0.2, 1) forwards;
+}
+
+.chosen-band.is-in .k {
+  animation: chosen-band-strip-in 560ms cubic-bezier(0.7, 0, 0.2, 1) forwards;
+}
+
+.chosen-band.is-in .n {
+  animation: chosen-band-text-in 560ms ease forwards;
+}
+
+.chosen-band.is-covered .r {
+  clip-path: polygon(0 0, 120% 0, 100% 100%, -20% 100%);
+}
+
+.chosen-band.is-covered .k {
+  transform: skewY(-6deg) scaleX(1);
+}
+
+.chosen-band.is-covered .n {
+  opacity: 1;
+}
+
+@keyframes chosen-band-red {
+  0% {
+    clip-path: polygon(0 0, 0 0, -20% 100%, -20% 100%);
+  }
+  35%,
+  70% {
+    clip-path: polygon(0 0, 120% 0, 100% 100%, -20% 100%);
+  }
+  100% {
+    clip-path: polygon(120% 0, 120% 0, 100% 100%, 100% 100%);
+  }
+}
+
+@keyframes chosen-band-strip {
+  0%,
+  15% {
+    transform: skewY(-6deg) scaleX(0);
+  }
+  40%,
+  72% {
+    opacity: 1;
+    transform: skewY(-6deg) scaleX(1);
+  }
+  100% {
+    opacity: 0;
+    transform: skewY(-6deg) scaleX(1);
+  }
+}
+
+@keyframes chosen-band-text {
+  0%,
+  30% {
+    opacity: 0;
+    transform: translateX(-60px);
+  }
+  45%,
+  75% {
+    opacity: 1;
+    transform: none;
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(60px);
+  }
+}
+
+@keyframes chosen-band-red-in {
+  0% {
+    clip-path: polygon(0 0, 0 0, -20% 100%, -20% 100%);
+  }
+  78%,
+  100% {
+    clip-path: polygon(0 0, 120% 0, 100% 100%, -20% 100%);
+  }
+}
+
+@keyframes chosen-band-strip-in {
+  0%,
+  33% {
+    transform: skewY(-6deg) scaleX(0);
+  }
+  89%,
+  100% {
+    opacity: 1;
+    transform: skewY(-6deg) scaleX(1);
+  }
+}
+
+@keyframes chosen-band-text-in {
+  0%,
+  67% {
+    opacity: 0;
+    transform: translateX(-60px);
+  }
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}

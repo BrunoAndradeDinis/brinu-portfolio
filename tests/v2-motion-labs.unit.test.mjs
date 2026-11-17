@@ -138,22 +138,18 @@ test('every skill carries its approved description in both locales', async () =>
   }
 });
 
-test('the route wipe reads its timings from motion.ts', async () => {
+test('the route band reads its timings from motion.ts', async () => {
   const fs = await import('node:fs');
-  const { WIPE_TIMING } = await import('../src/utils/motion.ts');
-  assert.deepEqual({ ...WIPE_TIMING }, { coverMs: 140, leaveMs: 200, resetMs: 220 });
-  const wipe = fs.readFileSync('src/utils/page-wipe.ts', 'utf8');
-  const css = fs.readFileSync('src/styles/global.css', 'utf8');
-  assert.match(wipe, /setProperty\('--wipe-cover-duration', `\$\{WIPE_TIMING\.coverMs\}ms`\)/, 'the cover blade duration is written from WIPE_TIMING.coverMs');
-  assert.match(wipe, /setProperty\('--wipe-leave-duration', `\$\{WIPE_TIMING\.leaveMs\}ms`\)/, 'the leave blade duration is written from WIPE_TIMING.leaveMs');
-  assert.match(wipe, /waitFor\(WIPE_TIMING\.coverMs\)/, 'the navigation waits for the cover from WIPE_TIMING.coverMs');
-  assert.match(wipe, /setTimeout\(\(\) => resetWipe\(overlay\), WIPE_TIMING\.resetMs\)/, 'the reset timer reads WIPE_TIMING.resetMs');
-  assert.doesNotMatch(css, /--wipe-(?:cover|leave)-duration\s*:/, 'no stylesheet gives the wipe durations a value of its own');
-  assert.doesNotMatch(wipe, /\b(?:const|let)\s+\w*_MS\s*=\s*\d+/, 'page-wipe.ts declares no timing numbers of its own');
-  const blades = css.match(/#p5-wipe-overlay\.is-(?:covering|leaving) \.p5-wipe-blade-red \{[^}]*\}/g);
-  assert.equal(blades.length, 2);
-  assert.match(blades[0], /transition: transform var\(--wipe-cover-duration\)/);
-  assert.match(blades[1], /transition: transform var\(--wipe-leave-duration\)/);
+  const { ROUTE_BAND_TIMING } = await import('../src/utils/motion.ts');
+  assert.deepEqual({ ...ROUTE_BAND_TIMING }, { coverMs: 560, exitMs: 690 });
+  const band = fs.readFileSync('src/utils/route-band.ts', 'utf8');
+  const css = fs.readFileSync('src/styles/chosen-band.css', 'utf8');
+  assert.match(band, /setTimeout\(resolve, ROUTE_BAND_TIMING\.coverMs\)/, 'the navigation waits for the cover from ROUTE_BAND_TIMING.coverMs');
+  assert.match(band, /setTimeout\(\(\) => setPhase\(band, null\), ROUTE_BAND_TIMING\.exitMs\)/, 'the exit cleanup reads ROUTE_BAND_TIMING.exitMs');
+  assert.doesNotMatch(band, /\b(?:const|let)\s+\w*_MS\s*=\s*\d+/, 'route-band.ts declares no timing numbers of its own');
+  assert.match(css, /\.chosen-band\.is-in \.r \{\s*animation: chosen-band-red-in 560ms/, 'the cover animation lasts coverMs');
+  assert.match(css, /animation-delay: -560ms/, 'the exit starts where the cover ends');
+  assert.match(css, /animation: chosen-band-red 1\.25s/, 'cover plus exit is the 1.25 s hobby timeline');
 });
 
 test('cubes tile the card exactly and come from all four corners', async () => {

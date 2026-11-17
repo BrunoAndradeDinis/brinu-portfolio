@@ -3,12 +3,14 @@ import { Font } from "astro:assets";
 import { ClientRouter } from "astro:transitions";
 import "../styles/tokens.css";
 import "../styles/global.css";
+import "../styles/chosen-band.css";
 import IntroPreloader from "../components/IntroPreloader.astro";
 import ComicNav from "../components/ComicNav.astro";
 import CockpitMenu from "../components/CockpitMenu";
 import CiladaAlert from "../components/CiladaAlert";
 import { ptBrDict } from "../i18n/dictionaries";
 import { PROFILE, buildPersonJsonLd } from "../data/profile";
+import { routeBandTitle } from "../data/route-titles";
 
 interface Props {
   title?: string;
@@ -28,6 +30,7 @@ const {
 
 const canonicalHref = canonicalPath ? (Astro.site ? new URL(canonicalPath, Astro.site).href : canonicalPath) : undefined;
 const personJsonLd = JSON.stringify(buildPersonJsonLd());
+const bandTitle = { pt: routeBandTitle(Astro.url.pathname, "pt-br"), en: routeBandTitle(Astro.url.pathname, "en") };
 ---
 
 <!doctype html>
@@ -85,6 +88,36 @@ const personJsonLd = JSON.stringify(buildPersonJsonLd());
       <div class="p5-wipe-blade-red"></div>
     </div>
 
+    <div
+      id="route-band"
+      class="chosen-band"
+      aria-hidden="true"
+      data-title-en={bandTitle.en}
+    >
+      <div class="r"></div>
+      <div class="k"></div>
+      <div class="n" data-route-band-name style={`--chars: ${bandTitle.pt.length}`}>{bandTitle.pt}</div>
+    </div>
+    <script is:inline>
+      (function () {
+        var band = document.getElementById("route-band");
+        if (!band || window.__brinuRouteBand) return;
+        window.__brinuRouteBand = true;
+        if (/^\/(index\.html)?$/.test(location.pathname)) return;
+        if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+        var english = false;
+        try {
+          english = window.localStorage.getItem("brinu_locale") === "en";
+        } catch (error) {}
+        if (english) {
+          var name = band.querySelector("[data-route-band-name]");
+          name.textContent = band.dataset.titleEn;
+          name.style.setProperty("--chars", String(band.dataset.titleEn.length));
+        }
+        band.classList.add("is-out");
+      })();
+    </script>
+
     <ComicNav />
 
     <div id="app-root" class="pt-[5.5rem] sm:pt-[6.5rem] md:pt-[7rem]">
@@ -100,12 +133,12 @@ const personJsonLd = JSON.stringify(buildPersonJsonLd());
       import { initTelemetry } from "../utils/telemetry";
       import { initI18nBindings } from "../i18n/index";
       import { installRouterLifecycle, onPageReady } from "../utils/page-lifecycle";
-      import { installPageWipe } from "../utils/page-wipe";
+      import { installRouteBand } from "../utils/route-band";
 
       let sessionBooted = false;
 
       installRouterLifecycle();
-      installPageWipe();
+      installRouteBand();
       onPageReady(() => {
         if (!sessionBooted) {
           sessionBooted = true;

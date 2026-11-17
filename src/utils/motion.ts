@@ -39,8 +39,7 @@ export const p5Overshoot: gsap.EaseFunction = initialEases.p5Overshoot;
 
 export const MOTION_EASE = { enter: 'p5Snap', fade: 'power2.out' } as const;
 export const MOTION_DURATION = { seconds: 0.5, ms: 500 } as const;
-/** The route wipe is a cover, not a content transition, so it keeps its own quicker beat. */
-export const WIPE_TIMING = { coverMs: 140, leaveMs: 200, resetMs: 220 } as const;
+export const ROUTE_BAND_TIMING = { coverMs: 560, exitMs: 690 } as const;
 
 // Estado singleton
 let lenisInstance: Lenis | null = null;
