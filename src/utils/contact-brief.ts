@@ -1,3 +1,4 @@
+import { z } from 'zod';
 import {
   BUDGET_IDS,
   CONTACT_BOUNDS,
@@ -50,49 +51,57 @@ export type ContactBriefResult =
   | { readonly ok: false; readonly errors: ContactErrors };
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const { name, company, email, message, phoneDigits } = CONTACT_BOUNDS;
 
 export function isJobOnly(services: readonly string[]): boolean {
   return services.length === 1 && services[0] === JOB_SERVICE_ID;
 }
 
-function pickOption<T extends string>(ids: readonly T[], value: string, fallback: T): T {
-  return (ids as readonly string[]).includes(value) ? (value as T) : fallback;
-}
+const optionOrDefault = <T extends string>(ids: readonly T[], fallback: T) =>
+  z.string().transform((value): T => ((ids as readonly string[]).includes(value) ? (value as T) : fallback));
 
-function outOfRange(value: string, min: number, max: number): boolean {
-  return value.length < min || value.length > max;
-}
+export const contactBriefSchema = z
+  .object({
+    name: z
+      .string()
+      .transform(sanitizeLine)
+      .pipe(z.string().min(name.min, 'name-length').max(name.max, 'name-length')),
+    company: z
+      .string()
+      .transform((value) => sanitizeLine(value).slice(0, company.max) || null),
+    email: z
+      .string()
+      .transform((value) => sanitizeLine(value).toLowerCase())
+      .pipe(z.string().min(1, 'email-required').max(email.max, 'email-invalid').regex(EMAIL_PATTERN, 'email-invalid')),
+    phone: z
+      .string()
+      .transform(digitsOnly)
+      .refine((digits) => !digits || (digits.length >= phoneDigits.min && digits.length <= phoneDigits.max), 'phone-invalid')
+      .transform((digits) => digits || null),
+    services: z
+      .array(z.string())
+      .transform((list) => SERVICE_IDS.filter((id) => list.includes(id)))
+      .pipe(z.array(z.enum(SERVICE_IDS)).min(1, 'services-required')),
+    budget: optionOrDefault(BUDGET_IDS, CONTACT_DEFAULTS.budget),
+    deadline: optionOrDefault(DEADLINE_IDS, CONTACT_DEFAULTS.deadline),
+    message: z
+      .string()
+      .transform(sanitizeMultiline)
+      .pipe(z.string().min(message.min, 'message-length').max(message.max, 'message-length')),
+  })
+  .transform(
+    (brief): ContactBrief =>
+      isJobOnly(brief.services) ? { ...brief, budget: null, deadline: null } : brief
+  );
 
 export function validateContactBrief(raw: RawContactBrief): ContactBriefResult {
-  const name = sanitizeLine(raw.name);
-  const company = sanitizeLine(raw.company).slice(0, CONTACT_BOUNDS.company.max);
-  const email = sanitizeLine(raw.email).toLowerCase();
-  const phone = digitsOnly(raw.phone);
-  const services = SERVICE_IDS.filter((id) => raw.services.includes(id));
-  const message = sanitizeMultiline(raw.message);
+  const parsed = contactBriefSchema.safeParse(raw);
+  if (parsed.success) return { ok: true, brief: parsed.data };
 
   const errors: ContactErrors = {};
-  if (outOfRange(name, CONTACT_BOUNDS.name.min, CONTACT_BOUNDS.name.max)) errors.name = 'name-length';
-  if (!email) errors.email = 'email-required';
-  else if (email.length > CONTACT_BOUNDS.email.max || !EMAIL_PATTERN.test(email)) errors.email = 'email-invalid';
-  if (phone && outOfRange(phone, CONTACT_BOUNDS.phoneDigits.min, CONTACT_BOUNDS.phoneDigits.max)) errors.phone = 'phone-invalid';
-  if (services.length === 0) errors.services = 'services-required';
-  if (outOfRange(message, CONTACT_BOUNDS.message.min, CONTACT_BOUNDS.message.max)) errors.message = 'message-length';
-
-  if (Object.keys(errors).length > 0) return { ok: false, errors };
-
-  const jobOnly = isJobOnly(services);
-  return {
-    ok: true,
-    brief: {
-      name,
-      company: company || null,
-      email,
-      phone: phone || null,
-      services,
-      budget: jobOnly ? null : pickOption(BUDGET_IDS, raw.budget, CONTACT_DEFAULTS.budget),
-      deadline: jobOnly ? null : pickOption(DEADLINE_IDS, raw.deadline, CONTACT_DEFAULTS.deadline),
-      message,
-    },
-  };
+  for (const issue of parsed.error.issues) {
+    const field = issue.path[0] as ContactField;
+    errors[field] ??= issue.message as ContactErrorCode;
+  }
+  return { ok: false, errors };
 }

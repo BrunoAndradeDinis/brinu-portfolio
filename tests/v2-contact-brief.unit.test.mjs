@@ -245,3 +245,34 @@ test('budget and deadline labels match the approved copy in both locales', () =>
   const codes = ['name-length', 'email-required', 'email-invalid', 'phone-invalid', 'services-required', 'message-length'];
   for (const dict of [pt, en]) assert.deepEqual(Object.keys(dict.errors).sort(), [...codes].sort());
 });
+
+const { z } = await import('zod');
+const { contactBriefSchema } = await import('../src/utils/contact-brief.ts');
+
+test('zod schema parses valid briefs and maps issues to error codes', () => {
+  assert.ok(contactBriefSchema instanceof z.ZodType);
+  const parsed = contactBriefSchema.safeParse(raw({ name: ' <i>Ana</i> ', email: 'ANA@ACME.COM', services: ['job'] }));
+  assert.equal(parsed.success, true);
+  assert.deepEqual(parsed.data, {
+    name: 'iAna/i',
+    company: 'Acme',
+    email: 'ana@acme.com',
+    phone: '16991234567',
+    services: ['job'],
+    budget: null,
+    deadline: null,
+    message: 'Preciso de um painel administrativo.',
+  });
+  const failed = contactBriefSchema.safeParse({ name: 'A', company: '', email: 'x', phone: '123', services: ['nope'], budget: '', deadline: '', message: 'curta' });
+  assert.equal(failed.success, false);
+  const firstByField = {};
+  for (const issue of failed.error.issues) firstByField[issue.path[0]] ??= issue.message;
+  assert.deepEqual(firstByField, {
+    name: 'name-length',
+    email: 'email-invalid',
+    phone: 'phone-invalid',
+    services: 'services-required',
+    message: 'message-length',
+  });
+  assert.deepEqual(validateContactBrief({ name: 'A', company: '', email: 'x', phone: '123', services: ['nope'], budget: '', deadline: '', message: 'curta' }), { ok: false, errors: firstByField });
+});
