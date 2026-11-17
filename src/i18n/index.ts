@@ -115,9 +115,11 @@ function bindShowcaseMedia(caseId: string, locale: Locale, subtitle: string): vo
     .querySelectorAll<HTMLImageElement>('[data-showcase-alt]')
     .forEach((image) => image.setAttribute('alt', text.alt[locale]));
   if (text.posterAlt) {
-    showcase.querySelector<HTMLElement>('[data-showcase-video]')?.setAttribute('aria-label', text.posterAlt[locale]);
+    const posterAlt = text.posterAlt;
+    showcase
+      .querySelectorAll<HTMLElement>('[data-showcase-video], [data-showcase-video-duplicate]')
+      .forEach((video) => video.setAttribute('aria-label', posterAlt[locale]));
   }
-  setText('[data-showcase-tag]', text.tag?.[locale]);
   setText('[data-showcase-highlight-label]', text.highlight?.label[locale]);
   setText('[data-showcase-highlight-note]', text.highlight?.note[locale]);
   setText('[data-showcase-cta-full]', text.copy.cta[locale]);

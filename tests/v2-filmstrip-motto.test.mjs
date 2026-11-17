@@ -153,7 +153,7 @@ test('F3: Changing language reactively rebuilds motto characters in the new lang
   await dismissIntroIfPresent(page);
 
   const initialText = await page.locator('[data-motto-text]').innerText();
-  assert.ok(initialText.includes('APRENDI A RESOLVER'), 'Initial text should be Portuguese');
+  assert.ok(initialText.includes('TRANSFORMO REGRAS DE'), 'Initial text should be Portuguese');
 
   // Trigger locale change to EN
   await page.evaluate(() => {
@@ -166,7 +166,7 @@ test('F3: Changing language reactively rebuilds motto characters in the new lang
   await page.waitForTimeout(300);
 
   const updatedText = await page.locator('[data-motto-text]').innerText();
-  assert.ok(updatedText.includes('I LEARNED TO SOLVE'), 'Updated text should be English');
+  assert.ok(updatedText.includes('I TURN'), 'Updated text should be English');
 
   const enCharCount = await page.locator('[data-motto-text] .char-flip').count();
   assert.equal(enCharCount, mottoChars(enDict), `EN motto should retain one .char-flip per character, got ${enCharCount}`);

@@ -245,24 +245,24 @@ test('C24: clicking an evidence chip scrolls to its card', async () => {
   }
 });
 
-test('C28: career lists three roles newest first with localized dates', async () => {
+test('C28: career lists two roles newest first with localized dates', async () => {
   const expected = {
-    'pt-br': ['dez/2025 – atual', 'nov/2019 – nov/2025', 'jun/2017 – out/2019'],
-    en: ['Dec 2025 – present', 'Nov 2019 – Nov 2025', 'Jun 2017 – Oct 2019'],
+    'pt-br': ['dez/2025 – atual', 'nov/2019 – nov/2025'],
+    en: ['Dec 2025 – present', 'Nov 2019 – Nov 2025'],
   };
   for (const locale of ['pt-br', 'en']) {
     const { context, page } = await openHome(locale);
     try {
       const ids = await page.locator('#about [data-career-entry]').evaluateAll((items) => items.map((i) => i.id));
-      assert.deepEqual(ids, ['career-magalu-cloud', 'career-luizalabs', 'career-magazine-luiza']);
+      assert.deepEqual(ids, ['career-magalu-cloud', 'career-luizalabs']);
       const periods = await page.locator('#about [data-career-period]').allInnerTexts();
       assert.deepEqual(periods.map((p) => p.trim().toLowerCase()), expected[locale].map((p) => p.toLowerCase()));
       const orgs = await page.locator('#about [data-career-org]').allInnerTexts();
-      assert.deepEqual(orgs.map((o) => o.trim().toUpperCase()), ['MAGALU CLOUD', 'LUIZALABS', 'MAGAZINE LUIZA']);
+      assert.deepEqual(orgs.map((o) => o.trim().toUpperCase()), ['MAGALU CLOUD', 'LUIZALABS']);
       const roles = await page.locator('#about [data-career-role]').allInnerTexts();
       const expectedRoles = {
-        'pt-br': ['Desenvolvedor de front-end', 'Assistente de helpdesk II', 'Atendente de SAC'],
-        en: ['Frontend Developer', 'Helpdesk Assistant II', 'Customer Service Agent'],
+        'pt-br': ['Desenvolvedor de front-end', 'Assistente de helpdesk II'],
+        en: ['Frontend Developer', 'Helpdesk Assistant II'],
       };
       assert.deepEqual(roles.map((r) => r.trim().toUpperCase()), expectedRoles[locale].map((r) => r.toUpperCase()));
     } finally {
@@ -290,26 +290,26 @@ test('C29: luizalabs entry links its three automations', async () => {
 
 test('C30: education lists the four approved entries with status', async () => {
   const expected = {
-    'pt-br': ['Concluído', 'Concluído', 'Em andamento', 'Em andamento'],
-    en: ['Completed', 'Completed', 'In progress', 'In progress'],
+    'pt-br': ['Concluído', 'Concluído', 'Em andamento', 'Concluído'],
+    en: ['Completed', 'Completed', 'In progress', 'Completed'],
   };
   for (const locale of ['pt-br', 'en']) {
     const { context, page } = await openHome(locale);
     try {
       const ids = await page.locator('#about [data-education-entry]').evaluateAll((items) => items.map((i) => i.id));
-      assert.deepEqual(ids, ['education-ampli', 'education-ebac', 'education-full-stack-club', 'education-alura']);
+      assert.deepEqual(ids, ['education-ebac', 'education-ampli', 'education-full-stack-club', 'education-alura']);
       const statuses = await page.locator('#about [data-education-status]').allInnerTexts();
       assert.deepEqual(statuses.map((s) => s.trim().toUpperCase()), expected[locale].map((s) => s.toUpperCase()));
       const courses = await page.locator('#about [data-education-course]').allInnerTexts();
       const expectedCourses = {
-        'pt-br': ['Desenvolvimento Web', 'Engenheiro de Front-end', 'Developer Fullstack', 'Formação técnica em programação'],
-        en: ['Web Development', 'Frontend Engineer', 'Fullstack Developer', 'Technical programming track'],
+        'pt-br': ['Engenheiro de Front-end', 'Desenvolvimento Web', 'Developer Fullstack', 'Formação técnica em programação'],
+        en: ['Frontend Engineer', 'Web Development', 'Fullstack Developer', 'Technical programming track'],
       };
       assert.deepEqual(courses.map((c) => c.trim()), expectedCourses[locale]);
       const periods = await page.locator('#about [data-education-period]').allInnerTexts();
       const expectedPeriods = {
-        'pt-br': ['mai/2023 – dez/2024', 'nov/2024 – jun/2026', 'jun/2025 – atual', 'mai/2022 – atual'],
-        en: ['May 2023 – Dec 2024', 'Nov 2024 – Jun 2026', 'Jun 2025 – present', 'May 2022 – present'],
+        'pt-br': ['nov/2024 – jun/2026', 'mai/2023 – dez/2024', 'jun/2025 – atual', 'mai/2022'],
+        en: ['Nov 2024 – Jun 2026', 'May 2023 – Dec 2024', 'Jun 2025 – present', 'May 2022'],
       };
       assert.deepEqual(periods.map((p) => p.trim().toLowerCase()), expectedPeriods[locale].map((p) => p.toLowerCase()));
     } finally {
@@ -400,8 +400,8 @@ test('C3: switching to en translates portrait alt and filmstrip captions', async
 
 test('C34: filmstrip motto is the single approved sentence', async () => {
   for (const [locale, dict, expected] of [
-    ['pt-br', ptBrDict, 'APRENDI A RESOLVER PROBLEMAS ATENDENDO PESSOAS — HOJE EU RESOLVO COM INTERFACES.'],
-    ['en', enDict, 'I LEARNED TO SOLVE PROBLEMS BY HELPING PEOPLE — TODAY I SOLVE THEM WITH INTERFACES.'],
+    ['pt-br', ptBrDict, 'TRANSFORMO REGRAS DE NEGÓCIO EM SISTEMAS WEB RÁPIDOS, SEGUROS E EM PRODUÇÃO.'],
+    ['en', enDict, 'I TURN BUSINESS RULES INTO FAST, RELIABLE WEB SYSTEMS IN PRODUCTION.'],
   ]) {
     const { context, page } = await openHome(locale);
     try {
@@ -463,8 +463,8 @@ test('C36: no translated reference copy remains', () => {
 
 test('C37: hero and filmstrip render the approved copy deck', async () => {
   const expectations = {
-    'pt-br': { left: '8 ANOS DE MAGALU DO ATENDIMENTO AO FRONT-END', right: 'INTERFACES COM PERSONALIDADE E CÓDIGO LIMPO', heading: 'CADA FRAME, UM PROJETO ENTREGUE' },
-    en: { left: '8 YEARS AT MAGALU FROM SUPPORT TO FRONTEND', right: 'INTERFACES WITH PERSONALITY AND CLEAN CODE', heading: 'EVERY FRAME, A SHIPPED PROJECT' },
+    'pt-br': { left: 'DO BANCO DE DADOS À INTERFACE EM PRODUÇÃO', right: 'SISTEMAS WEB ESCALÁVEIS E SOB MEDIDA', heading: 'CADA FRAME, UM PROJETO ENTREGUE' },
+    en: { left: 'FROM DATABASE TO PRODUCTION INTERFACE', right: 'CUSTOM & SCALABLE WEB SYSTEMS', heading: 'EVERY FRAME, A SHIPPED PROJECT' },
   };
   for (const [locale, exp] of Object.entries(expectations)) {
     const { context, page } = await openHome(locale);

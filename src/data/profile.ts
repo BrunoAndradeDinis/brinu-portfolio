@@ -47,14 +47,14 @@ export const PROFILE = {
   fullName: 'Bruno de Andrade Dinis',
   handle: 'Brinu',
   birthYear: 1996,
-  operatorId: 'BD-1996',
+  operatorId: 'BAD-1996',
   role: {
     'pt-br': 'Desenvolvedor Frontend & Full Stack',
     en: 'Frontend & Full Stack Developer',
   },
   tagline: {
-    'pt-br': 'Astro & React • Motion de autoridade • Interfaces expressivas',
-    en: 'Astro & React • Signature motion • Expressive interfaces',
+    'pt-br': 'Sistemas Web Full Stack • De interfaces rápidas a APIs e bancos de dados',
+    en: 'Full Stack Web Systems • From fast interfaces to APIs and databases',
   },
   location: {
     city: 'Franca',
@@ -70,8 +70,8 @@ export const PROFILE = {
     },
   },
   family: {
-    'pt-br': 'Pai da Helena & Noivo Apaixonado',
-    en: "Helena's Dad & Devoted Fiancé",
+    'pt-br': 'Sistemas Web Sob Medida & Projetos Full Stack',
+    en: 'Custom Web Systems & Full Stack Projects',
   },
   stampLabel: {
     'pt-br': 'Brinu!',

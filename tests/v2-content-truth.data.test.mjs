@@ -173,13 +173,13 @@ test('C14: quake is an archive entry that states the 80 percent jest threshold',
 
 const { CAREER, EDUCATION, getLocalizedCareer, getLocalizedEducation } = await import('../src/data/career.ts');
 
-test('T4: career lists three roles newest first with linkedin dates', () => {
-  assert.deepEqual(CAREER.map((c) => c.id), ['magalu-cloud', 'luizalabs', 'magazine-luiza']);
+test('T4: career lists two roles newest first with linkedin dates', () => {
+  assert.deepEqual(CAREER.map((c) => c.id), ['magalu-cloud', 'luizalabs']);
   const pt = getLocalizedCareer('pt-br');
   const en = getLocalizedCareer('en');
-  assert.deepEqual(pt.map((c) => c.period), ['dez/2025 – atual', 'nov/2019 – nov/2025', 'jun/2017 – out/2019']);
-  assert.deepEqual(en.map((c) => c.period), ['Dec 2025 – present', 'Nov 2019 – Nov 2025', 'Jun 2017 – Oct 2019']);
-  assert.deepEqual(pt.map((c) => c.role), ['Desenvolvedor de front-end', 'Assistente de helpdesk II', 'Atendente de SAC']);
+  assert.deepEqual(pt.map((c) => c.period), ['dez/2025 – atual', 'nov/2019 – nov/2025']);
+  assert.deepEqual(en.map((c) => c.period), ['Dec 2025 – present', 'Nov 2019 – Nov 2025']);
+  assert.deepEqual(pt.map((c) => c.role), ['Desenvolvedor de front-end', 'Assistente de helpdesk II']);
   assert.deepEqual(
     pt.find((c) => c.id === 'luizalabs').automations.map((a) => [a.name, a.repoUrl]),
     [
@@ -191,12 +191,13 @@ test('T4: career lists three roles newest first with linkedin dates', () => {
 });
 
 test('T4: education lists the four approved entries without fatec', () => {
-  assert.deepEqual(EDUCATION.map((e) => e.id), ['ampli', 'ebac', 'full-stack-club', 'alura']);
+  assert.deepEqual(EDUCATION.map((e) => e.id), ['ebac', 'ampli', 'full-stack-club', 'alura']);
   assert.deepEqual(
     getLocalizedEducation('pt-br').map((e) => [e.institution, e.status]),
-    [['Ampli', 'Concluído'], ['EBAC', 'Concluído'], ['Full Stack Club', 'Em andamento'], ['Alura', 'Em andamento']]
+    [['EBAC', 'Concluído'], ['Ampli - Anhanguera', 'Concluído'], ['Full Stack Club', 'Em andamento'], ['Alura', 'Concluído']]
   );
-  assert.deepEqual(getLocalizedEducation('en').map((e) => e.status), ['Completed', 'Completed', 'In progress', 'In progress']);
+  assert.deepEqual(getLocalizedEducation('en').map((e) => e.status), ['Completed', 'Completed', 'In progress', 'Completed']);
+  assert.equal(getLocalizedEducation('pt-br').at(-1).period, 'mai/2022', 'Alura shows only its start');
   assert.doesNotMatch(fs.readFileSync('src/data/career.ts', 'utf8'), /fatec/i);
 });
 
@@ -262,14 +263,14 @@ test('T7: dictionaries carry the approved copy deck in both locales', () => {
     d.hero.manifestoLeftLine1, d.hero.manifestoLeftLine2, d.hero.manifestoLeftLine3,
     d.hero.manifestoRightLine1, d.hero.manifestoRightLine2, d.hero.manifestoRightLine3,
   ];
-  assert.deepEqual(hero(ptBrDict), ['8 ANOS DE MAGALU', 'DO ATENDIMENTO', 'AO FRONT-END', 'INTERFACES', 'COM PERSONALIDADE', 'E CÓDIGO LIMPO']);
-  assert.deepEqual(hero(enDict), ['8 YEARS AT MAGALU', 'FROM SUPPORT', 'TO FRONTEND', 'INTERFACES', 'WITH PERSONALITY', 'AND CLEAN CODE']);
+  assert.deepEqual(hero(ptBrDict), ['DO BANCO DE DADOS', 'À INTERFACE', 'EM PRODUÇÃO', 'SISTEMAS WEB', 'ESCALÁVEIS E', 'SOB MEDIDA']);
+  assert.deepEqual(hero(enDict), ['FROM DATABASE', 'TO PRODUCTION', 'INTERFACE', 'CUSTOM &', 'SCALABLE', 'WEB SYSTEMS']);
   assert.equal(ptBrDict.filmstrip.heading, 'CADA FRAME, UM PROJETO ENTREGUE');
   assert.equal(enDict.filmstrip.heading, 'EVERY FRAME, A SHIPPED PROJECT');
   assert.match(ptBrDict.about.bioLine1, /^Frontend na Magalu Cloud/);
-  assert.match(ptBrDict.about.bioLine2, /8 anos de SAC e helpdesk no ecossistema Magalu/);
+  assert.match(ptBrDict.about.bioLine2, /8 anos no ecossistema Magalu/);
   assert.match(enDict.about.bioLine1, /^Frontend at Magalu Cloud/);
-  assert.match(ptBrDict.about.baseLine, /Franca \/ SP · Remoto · Pai da Helena$/);
+  assert.match(ptBrDict.about.baseLine, /Franca \/ SP · Remoto · Projetos Full Stack & Consultoria$/);
   assert.match(ptBrDict.meta.title, /Desenvolvedor Frontend/);
   assert.match(ptBrDict.meta.description, /Desenvolvedor Frontend/);
   assert.match(ptBrDict.hero.ticker, /DESENVOLVEDOR FRONTEND/);
