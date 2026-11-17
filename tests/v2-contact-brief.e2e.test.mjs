@@ -311,12 +311,24 @@ test('typing whatsapp digits shows the BR mask', async () => {
   await phone.fill('');
   await phone.pressSequentially('16a9b9123x4567999');
   assert.equal(await phone.inputValue(), '(16) 99123-4567');
-  for (const pasted of ['+55 16 99123-4567', '+55 (16) 99123-4567', '55 16 9 9123 4567']) {
+  for (const pasted of ['+55 16 99123-4567', '+55 (16) 99123-4567', '55 16 9 9123 4567', '0055 16 99123-4567', '016 99123-4567']) {
     await phone.fill('');
     await phone.focus();
     await page.keyboard.insertText(pasted);
     assert.equal(await phone.inputValue(), '(16) 99123-4567', pasted);
   }
+  await phone.fill('');
+  await phone.focus();
+  await page.keyboard.insertText('+351 912 345 678');
+  assert.equal(await phone.inputValue(), '351912345678');
+  await phone.blur();
+  assert.equal((await page.locator('[data-error-phone]').innerText()).replace('■', '').trim(), PT.errors['phone-invalid']);
+  await phone.fill('');
+  await phone.pressSequentially('55991234567');
+  assert.equal(await phone.inputValue(), '(55) 99123-4567');
+  await phone.press('End');
+  await page.keyboard.type('5');
+  assert.equal(await phone.inputValue(), '(55) 99123-4567', 'an extra key keeps a complete area-55 number');
   await context.close();
 });
 

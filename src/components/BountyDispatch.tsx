@@ -4,7 +4,7 @@ import { useLocale } from '../i18n/index';
 import { PROFILE } from '../data/profile';
 import { BUDGET_IDS, CONTACT_BOUNDS, CONTACT_DEFAULTS, DEADLINE_IDS, SERVICE_IDS } from '../data/contact-brief';
 import { isJobOnly, validateContactBrief, type ContactBrief, type ContactField, type RawContactBrief } from '../utils/contact-brief';
-import { formatBrPhone } from '../utils/contact-sanitize';
+import { digitsOnly, formatBrPhone } from '../utils/contact-sanitize';
 import { ChoiceGroup, TextField } from './contact/fields';
 import { DispatchReceipt } from './contact/DispatchReceipt';
 
@@ -28,6 +28,12 @@ const FIELD_ORDER: readonly ContactField[] = ['name', 'email', 'phone', 'service
 const SUBMIT_HINT_ID = 'dispatch-submit-hint';
 
 const PHONE_PASTE_LENGTH = 25;
+
+function nextPhoneValue(previous: string, typed: string): string {
+  const growsByOneKey = typed.length === previous.length + 1;
+  const previousIsComplete = digitsOnly(previous).length === 11;
+  return growsByOneKey && previousIsComplete ? previous : formatBrPhone(typed);
+}
 
 export const BountyDispatch: React.FC = () => {
   const { dict: t } = useLocale();
@@ -141,7 +147,7 @@ export const BountyDispatch: React.FC = () => {
             label={copy.phoneLabel}
             optionalTag={copy.optionalTag}
             value={values.phone}
-            onChange={(value) => update('phone', formatBrPhone(value))}
+            onChange={(value) => update('phone', nextPhoneValue(values.phone, value))}
             placeholder={copy.phonePlaceholder}
             maxLength={PHONE_PASTE_LENGTH}
             autoComplete="tel-national"

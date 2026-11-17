@@ -48,12 +48,12 @@ test('whitespace-only fields count as empty', () => {
   assert.equal(sanitizeMultiline('\n\n  \u200B \n'), '');
 });
 
-test('whatsapp mask formats 10 and 11 digits and caps at 11', () => {
+test('whatsapp mask formats 10 and 11 digits and leaves longer input unformatted', () => {
   assert.equal(digitsOnly('(16) 99123-4567'), '16991234567');
   assert.equal(digitsOnly('+55 abc'), '55');
   assert.equal(formatBrPhone('16991234567'), '(16) 99123-4567');
   assert.equal(formatBrPhone('1633334444'), '(16) 3333-4444');
-  assert.equal(formatBrPhone('169912345678999'), '(16) 99123-4567');
+  assert.equal(formatBrPhone('169912345678999'), '169912345678999');
   assert.equal(formatBrPhone(''), '');
   assert.equal(formatBrPhone('1'), '(1');
   assert.equal(formatBrPhone('169'), '(16) 9');
@@ -339,4 +339,20 @@ test('whatsapp accepts a pasted +55 international number', () => {
   const pasted = validateContactBrief(raw({ phone: '+55 16 99123-4567' }));
   assert.equal(pasted.ok && pasted.brief.phone, '16991234567');
   assert.deepEqual(errorsOf({ phone: '+44 20 7946 0958 12' }), { phone: 'phone-invalid' });
+});
+
+test('whatsapp normalizes international and trunk prefixes without inventing numbers', () => {
+  assert.equal(formatBrPhone('0055 16 99123-4567'), '(16) 99123-4567');
+  assert.equal(formatBrPhone('016 99123-4567'), '(16) 99123-4567');
+  assert.equal(formatBrPhone('+55 (55) 99123-4567'), '(55) 99123-4567');
+  assert.equal(formatBrPhone('(55) 99123-4567'), '(55) 99123-4567');
+  assert.equal(formatBrPhone('55 16 3712 3456'), '(16) 3712-3456');
+  assert.equal(formatBrPhone('+351 912 345 678'), '351912345678');
+  assert.equal(formatBrPhone('16 99123 45678'), '169912345678');
+  assert.deepEqual(errorsOf({ phone: '+351 912 345 678' }), { phone: 'phone-invalid' });
+  assert.deepEqual(errorsOf({ phone: '16 99123 45678' }), { phone: 'phone-invalid' });
+  const trunk = validateContactBrief(raw({ phone: '016 99123-4567' }));
+  assert.equal(trunk.ok && trunk.brief.phone, '16991234567');
+  const area55 = validateContactBrief(raw({ phone: '(55) 99123-4567' }));
+  assert.equal(area55.ok && area55.brief.phone, '55991234567');
 });

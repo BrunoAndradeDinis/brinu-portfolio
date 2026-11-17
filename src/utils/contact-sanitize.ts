@@ -38,13 +38,26 @@ export function digitsOnly(raw: string): string {
   return raw.replace(/\D/g, '');
 }
 
+const BR_COUNTRY_CODE = '55';
+const BR_MAX_DIGITS = 11;
+
 export function phoneDigits(raw: string): string {
-  const digits = digitsOnly(raw);
-  return digits.length > 11 && digits.startsWith('55') ? digits.slice(2) : digits;
+  const international = raw.trim().startsWith('+');
+  let digits = digitsOnly(raw);
+  if (!international && digits.startsWith('00')) return stripCountryCode(digits.slice(2), true);
+  if (international) return stripCountryCode(digits, true);
+  if (digits.startsWith('0')) digits = digits.replace(/^0+/, '');
+  return digits.length > BR_MAX_DIGITS ? stripCountryCode(digits, false) : digits;
+}
+
+function stripCountryCode(digits: string, explicit: boolean): string {
+  if (digits.startsWith(BR_COUNTRY_CODE) && (explicit || digits.length > BR_MAX_DIGITS)) return digits.slice(BR_COUNTRY_CODE.length);
+  return digits;
 }
 
 export function formatBrPhone(raw: string): string {
-  const digits = phoneDigits(raw).slice(0, 11);
+  const digits = phoneDigits(raw);
+  if (digits.length > BR_MAX_DIGITS) return digits;
   if (digits.length <= 2) return digits ? `(${digits}` : '';
   const area = digits.slice(0, 2);
   const rest = digits.slice(2);
