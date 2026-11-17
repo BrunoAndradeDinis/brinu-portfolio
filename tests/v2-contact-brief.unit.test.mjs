@@ -17,7 +17,7 @@ test('contact brief ids, bounds and defaults match the design', () => {
   assert.deepEqual(CONTACT_DEFAULTS, { budget: 'to-discuss', deadline: 'flexible' });
 });
 
-const { sanitizeLine, sanitizeMultiline, digitsOnly, formatBrPhone } = await import('../src/utils/contact-sanitize.ts');
+const { sanitizeLine, sanitizeMultiline, digitsOnly, formatBrPhone, truncate } = await import('../src/utils/contact-sanitize.ts');
 
 test('text fields drop markup, control and zero-width characters', () => {
   assert.equal(sanitizeLine('  <script>alert(1)</script>  Ana  '), 'scriptalert(1)/script Ana');
@@ -275,4 +275,36 @@ test('zod schema parses valid briefs and maps issues to error codes', () => {
     message: 'message-length',
   });
   assert.deepEqual(validateContactBrief({ name: 'A', company: '', email: 'x', phone: '123', services: ['nope'], budget: '', deadline: '', message: 'curta' }), { ok: false, errors: firstByField });
+});
+
+
+test('sanitizer strips lone surrogates, bidi and formatting characters, then normalizes', () => {
+  const S = String.fromCharCode;
+  assert.equal(sanitizeLine('A' + S(0xd834) + 'na' + S(0xdd5e)), 'Ana');
+  assert.equal(sanitizeLine('e' + S(0x200b) + S(0x0301)), S(0x00e9));
+  for (const code of [0x202a, 0x202b, 0x202c, 0x202d, 0x202e, 0x2066, 0x2067, 0x2068, 0x2069, 0x200e, 0x200f, 0x00ad, 0x180e, 0xfff9]) {
+    assert.equal(sanitizeLine('A' + S(code) + 'na'), 'Ana', code.toString(16));
+  }
+  assert.equal(sanitizeLine('A' + String.fromCodePoint(0xe0041) + 'na'), 'Ana');
+  assert.equal(sanitizeLine('Ana ' + S(0x202e) + 'gpj.exe'), 'Ana gpj.exe');
+  assert.equal(sanitizeLine(S(0x0301) + S(0x0301)), '');
+  assert.equal(sanitizeLine('Ana ' + S(0x0301) + 'Souza'), 'Ana Souza');
+  assert.equal(sanitizeMultiline(S(0x0301) + 'linha'), 'linha');
+  assert.equal(truncate('a'.repeat(79) + String.fromCodePoint(0x1d15e), 80), 'a'.repeat(79));
+  assert.equal(truncate('abc', 80), 'abc');
+});
+
+test('lone surrogates and truncated astral characters never break the mail link', () => {
+  const S = String.fromCharCode;
+  for (const overrides of [
+    { company: 'a'.repeat(77) + String.fromCodePoint(0x1d15e) },
+    { name: 'Ana' + S(0xd800) + ' Souza' },
+    { message: 'Mensagem longa o bastante ' + S(0xdc00) + ' fim' },
+  ]) {
+    const result = validateContactBrief(raw(overrides));
+    assert.ok(result.ok, JSON.stringify(Object.keys(overrides)));
+    assert.ok((result.brief.company ?? '').length <= 80);
+    assert.doesNotThrow(() => buildMailtoHref(result.brief, MAILTO_COPY, 'bruno@example.com'));
+    assert.doesNotMatch(JSON.stringify(result.brief), /\\ud[89ab]|\\udc/i);
+  }
 });

@@ -10,7 +10,7 @@ import {
   type DeadlineId,
   type ServiceId,
 } from '../data/contact-brief.ts';
-import { digitsOnly, sanitizeLine, sanitizeMultiline } from './contact-sanitize.ts';
+import { phoneDigits as toPhoneDigits, sanitizeLine, sanitizeMultiline, truncate } from './contact-sanitize.ts';
 
 export interface RawContactBrief {
   readonly name: string;
@@ -68,14 +68,14 @@ export const contactBriefSchema = z
       .pipe(z.string().min(name.min, 'name-length').max(name.max, 'name-length')),
     company: z
       .string()
-      .transform((value) => sanitizeLine(value).slice(0, company.max) || null),
+      .transform((value) => truncate(sanitizeLine(value), company.max) || null),
     email: z
       .string()
       .transform((value) => sanitizeLine(value).toLowerCase())
       .pipe(z.string().min(1, 'email-required').max(email.max, 'email-invalid').regex(EMAIL_PATTERN, 'email-invalid')),
     phone: z
       .string()
-      .transform(digitsOnly)
+      .transform(toPhoneDigits)
       .refine((digits) => !digits || (digits.length >= phoneDigits.min && digits.length <= phoneDigits.max), 'phone-invalid')
       .transform((digits) => digits || null),
     services: z
