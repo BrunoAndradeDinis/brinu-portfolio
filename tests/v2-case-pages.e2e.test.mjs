@@ -458,8 +458,7 @@ test('C21: a navigation during another one ends on the latest page', async () =>
     await page.waitForFunction(() => window.location.pathname === '/cases/efood');
     await page.waitForLoadState('networkidle');
     assert.equal((await page.locator('h1').textContent()).trim(), 'eFood');
-    await page.waitForTimeout(500);
-    assert.equal(await page.evaluate(() => /is-(covering|leaving|wiping)/.test(document.getElementById('p5-wipe-overlay').className)), false);
+    await page.waitForFunction(() => !/is-(in|covered|out)/.test(document.getElementById('route-band').className), null, { timeout: 2000 });
   } finally {
     await context.close();
   }
@@ -548,40 +547,32 @@ test('C27: menu section blades navigate home from a case page', async () => {
   }
 });
 
-test('C8: the red and black wipe crosses during navigation', async () => {
+test('C8: the chosen band covers the swap during navigation', async () => {
   const { context, page } = await freshHome({ reducedMotion: 'no-preference' });
   try {
     await page.keyboard.press('Escape');
     await page.waitForFunction(() => !document.getElementById('intro-preloader'), null, { timeout: 8000 });
     await page.waitForLoadState('networkidle');
     await page.evaluate(() => {
-      const overlay = document.getElementById('p5-wipe-overlay');
-      const blade = overlay.querySelector('.p5-wipe-blade-red');
-      const probe = { wiping: false, coveredAtSwap: false, positions: [], swapped: false };
-      window.__wipe = probe;
+      const probe = { covering: false, coveredAtSwap: false, swapped: false };
+      window.__band = probe;
+      const band = document.getElementById('route-band');
       new MutationObserver(() => {
-        if (overlay.classList.contains('is-covering') || overlay.classList.contains('is-wiping')) probe.wiping = true;
-      }).observe(overlay, { attributes: true, attributeFilter: ['class'] });
+        if (band.classList.contains('is-in')) probe.covering = true;
+      }).observe(band, { attributes: true, attributeFilter: ['class'] });
       document.addEventListener('astro:after-swap', () => {
         probe.swapped = true;
-        const rect = document.getElementById('p5-wipe-overlay').querySelector('.p5-wipe-blade-red').getBoundingClientRect();
-        probe.coveredAtSwap = rect.left < window.innerWidth / 2 && rect.right > window.innerWidth / 2;
+        const next = document.getElementById('route-band');
+        probe.coveredAtSwap = next.classList.contains('is-covered') && getComputedStyle(next).display === 'block';
       });
-      const sample = () => {
-        const rect = blade.getBoundingClientRect();
-        probe.positions.push(Math.round(rect.left));
-        if (!probe.swapped || probe.positions.length < 400) requestAnimationFrame(sample);
-      };
-      requestAnimationFrame(sample);
     });
     await (await homeCaseLink(page, 'uriana')).click();
-    await page.waitForFunction(() => window.location.pathname === '/cases/uriana' && window.__wipe.swapped);
-    await page.waitForTimeout(600);
-    const probe = await page.evaluate(() => window.__wipe);
-    assert.equal(probe.wiping, true, 'the wipe overlay was activated');
-    assert.equal(probe.coveredAtSwap, true, 'the blade covered the screen center when the new page was swapped in');
-    assert.ok(Math.min(...probe.positions) < Math.max(...probe.positions) - 300, `the blade moved across the screen (${probe.positions.slice(0, 20).join(',')})`);
-    assert.equal(await page.evaluate(() => /is-(covering|leaving|wiping)/.test(document.getElementById('p5-wipe-overlay').className)), false);
+    await page.waitForFunction(() => window.location.pathname === '/cases/uriana' && window.__band.swapped);
+    await page.waitForTimeout(900);
+    const probe = await page.evaluate(() => window.__band);
+    assert.equal(probe.covering, true, 'the band swept in');
+    assert.equal(probe.coveredAtSwap, true, 'the band covered the screen when the new page was swapped in');
+    assert.equal(await page.evaluate(() => /is-(in|covered|out)/.test(document.getElementById('route-band').className)), false);
     assert.equal((await page.locator('h1').textContent()).trim(), 'Uriana');
   } finally {
     await context.close();
@@ -592,12 +583,12 @@ test('C14: reduced motion swaps pages with no wipe', async () => {
   const { context, page } = await freshHome({ reducedMotion: 'reduce' });
   try {
     await page.evaluate(() => {
-      const overlay = document.getElementById('p5-wipe-overlay');
+      const band = document.getElementById('route-band');
       const probe = { wiping: false, animations: 0, clickAt: 0, swapAt: 0 };
       window.__reduced = probe;
       new MutationObserver(() => {
-        if (/is-(covering|leaving|wiping)/.test(overlay.className)) probe.wiping = true;
-      }).observe(overlay, { attributes: true, attributeFilter: ['class'] });
+        if (/is-(in|covered|out)/.test(band.className)) probe.wiping = true;
+      }).observe(band, { attributes: true, attributeFilter: ['class'] });
       document.addEventListener('click', () => { probe.clickAt = performance.now(); }, { capture: true });
       document.addEventListener('astro:after-swap', () => { probe.swapAt = performance.now(); });
       const sample = () => {
@@ -614,7 +605,7 @@ test('C14: reduced motion swaps pages with no wipe', async () => {
     await page.waitForTimeout(500);
     const probe = await page.evaluate(() => window.__reduced);
     const elapsed = probe.swapAt - probe.clickAt;
-    assert.equal(probe.wiping, false, 'no wipe overlay activation');
+    assert.equal(probe.wiping, false, 'no band activation');
     assert.equal(probe.animations, 0, 'no view transition animation ran');
     assert.ok(probe.swapAt > 0 && elapsed < 300, `the swap was immediate (${elapsed} ms)`);
   } finally {
@@ -642,7 +633,7 @@ test('C24: rapid double navigation leaves the scroll unlocked', async () => {
       window.scrollTo(0, 400);
       await new Promise((resolve) => setTimeout(resolve, 150));
       return {
-        wiping: /is-(covering|leaving|wiping)/.test(document.getElementById('p5-wipe-overlay').className),
+        wiping: /is-(in|covered|out)/.test(document.getElementById('route-band').className),
         locked: document.documentElement.classList.contains('lenis-stopped'),
         overflow: getComputedStyle(document.documentElement).overflow,
         scrollY: window.scrollY,

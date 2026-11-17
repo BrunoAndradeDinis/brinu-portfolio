@@ -36,10 +36,14 @@ const nameClass =
   "font-display font-extrabold leading-[0.88] tracking-[-0.02em] uppercase";
 const polygon = "[clip-path:polygon(0_1.5%,3%_0,100%_.8%,99.4%_100%,2%_99%)]";
 const card = `relative shrink-0 snap-start overflow-hidden border-[5px] border-space-base bg-space-base ${polygon}`;
-const sizeFirst = "h-[250px] w-[min(330px,calc(100vw-2rem))] md:h-[440px] md:w-[640px] lg:h-[520px] lg:w-[820px]";
-const sizeSecond = "h-[250px] w-[260px] md:h-[440px] md:w-[420px] lg:h-[520px] lg:w-[560px]";
+const sizeFirst = "h-[300px] w-[min(350px,calc(100vw-2rem))] md:h-[504px] md:w-[680px] lg:h-[580px] lg:w-[984px]";
+const sizeSecond = "h-[300px] w-[280px] md:h-[504px] md:w-[460px] lg:h-[580px] lg:w-[640px]";
 const tag =
   "absolute top-5 left-[22px] max-w-[calc(100%-44px)] bg-space-base px-3 py-1.5 font-mono text-xs font-bold tracking-[0.1em] text-paper-white uppercase";
+
+const videoList = media.video
+  ? (media.videos && media.videos.length > 0 ? media.videos : [media.video, media.video, media.video])
+  : [];
 ---
 
 <section id={`case-${caseId}`} data-showcase={caseId} class="bg-paper-white text-space-base">
@@ -54,7 +58,7 @@ const tag =
     aria-label={text.controlsAria}
     data-i18n="showcase.controlsAria"
     data-i18n-attr="aria-label"
-    class="flex h-16 flex-nowrap items-stretch border-b-4 border-space-base bg-paper-white md:h-20 lg:h-24"
+    class="flex h-16 flex-nowrap items-stretch overflow-hidden border-b-4 border-space-base bg-paper-white md:h-20 lg:h-24"
   >
     <a
       data-showcase-prev
@@ -88,7 +92,7 @@ const tag =
     ><span data-showcase-cta data-showcase-cta-full class="max-md:hidden">{copy.cta["pt-br"]}</span><span data-showcase-cta data-showcase-cta-short class="md:hidden">{layout.ctaShort}</span><span aria-hidden="true">↗</span></a>
   </div>
 
-  <div class="@container border-b-4 border-space-base bg-bebop-red px-4 pt-5 pb-4 md:px-9 md:pt-7 md:pb-[22px] lg:hidden">
+  <div data-showcase-banner class="@container border-b-4 border-space-base bg-bebop-red px-4 pt-5 pb-4 md:px-9 md:pt-7 md:pb-[22px] lg:hidden">
     <p
       data-showcase-name
       aria-hidden="true"
@@ -106,7 +110,7 @@ const tag =
         class={`${nameClass} rotate-180 text-[45px] whitespace-nowrap [writing-mode:vertical-rl]`}
       >{layout.name}</span>
     </div>
-    <div class="relative min-w-0 flex-1 overflow-hidden">
+    <div data-showcase-viewport class="relative min-w-0 flex-1 overflow-hidden">
       <div
         data-showcase-track
         tabindex="0"
@@ -114,88 +118,91 @@ const tag =
         aria-label={text.stageAria}
         data-i18n="showcase.stageAria"
         data-i18n-attr="aria-label"
-        class="flex h-full scroll-pl-4 snap-x snap-mandatory items-start md:scroll-pl-9 gap-5 overflow-x-auto overscroll-x-contain pt-7 pl-4 [scrollbar-width:none] md:gap-9 md:pt-10 md:pl-9 lg:gap-11 [&::-webkit-scrollbar]:hidden"
+        class="flex h-full scroll-pl-3 snap-x snap-mandatory items-center gap-3 overflow-x-auto overscroll-x-contain py-3 pl-3 [overflow-anchor:none] [scrollbar-width:none] md:scroll-pl-5 md:gap-5 md:py-4 md:pl-5 lg:scroll-pl-6 lg:gap-6 lg:py-5 lg:pl-6 [&::-webkit-scrollbar]:hidden"
       >
-        {media.video ? (
-          <figure data-showcase-card="media" class={`${card} m-0 ${sizeFirst}`}>
-            <video
-              data-showcase-video
-              class="block h-full w-full object-cover object-top"
-              width={media.video.width}
-              height={media.video.height}
-              poster={media.video.poster.src}
-              preload="none"
-              muted
-              loop
-              playsinline
-              aria-label={media.video.poster.alt["pt-br"]}
-            >
-              <source src={media.video.webm} type="video/webm" />
-              <source src={media.video.mp4} type="video/mp4" />
-            </video>
-            <figcaption data-showcase-tag class={tag}>{media.video.tag["pt-br"]}</figcaption>
-            <button
-              type="button"
-              data-showcase-toggle
-              data-prototype-contrast
-              aria-pressed="false"
-              hidden
-              class="absolute bottom-[22px] left-[22px] inline-flex min-h-11 min-w-11 -rotate-3 items-center justify-center border-[3px] border-space-base bg-bebop-red px-4 py-2 font-mono text-sm font-bold tracking-[0.1em] text-paper-white uppercase hover:bg-space-base focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-bebop-red"
-            ><span aria-hidden="true">▶&nbsp;</span><span data-i18n="showcase.play">{text.play}</span>&nbsp;·&nbsp;<span data-i18n="showcase.pause">{text.pause}</span></button>
-          </figure>
+        {videoList.length > 0 ? (
+          videoList.map((vid, idx) => {
+            const slotName = idx === 0 ? "media" : idx === 1 ? "second" : idx === 2 ? "third" : undefined;
+            return (
+              <figure
+                data-showcase-card={slotName}
+                data-showcase-card-clone={slotName ? undefined : ""}
+                aria-hidden={slotName ? undefined : "true"}
+                class={`${card} m-0 cursor-none ${sizeFirst}`}
+              >
+                <video
+                  data-showcase-video={idx === 0 ? "" : undefined}
+                  data-showcase-video-duplicate={idx > 0 ? "" : undefined}
+                  class="block h-full w-full cursor-none object-cover object-top"
+                  width={vid.width}
+                  height={vid.height}
+                  poster={vid.poster.src}
+                  preload="none"
+                  muted
+                  loop
+                  playsinline
+                  aria-label={vid.poster.alt["pt-br"]}
+                >
+                  <source src={vid.webm} type="video/webm" />
+                  <source src={vid.mp4} type="video/mp4" />
+                </video>
+              </figure>
+            );
+          })
         ) : (
-          <figure data-showcase-card="media" class={`${card} m-0 ${sizeFirst}`}>
-            <img
-              class="block h-full w-full object-cover object-top"
-              src={media.screenshot.src}
-              width={media.screenshot.width}
-              height={media.screenshot.height}
-              data-showcase-alt
-              alt={media.screenshot.alt["pt-br"]}
-              decoding="async"
-            />
-            {media.highlight && (<figcaption data-showcase-highlight-label class={tag}>{media.highlight.label["pt-br"]}</figcaption>)}
-          </figure>
+          <>
+            <figure data-showcase-card="media" class={`${card} m-0 ${sizeFirst}`}>
+              <img
+                class="block h-full w-full object-cover object-top"
+                src={media.screenshot.src}
+                width={media.screenshot.width}
+                height={media.screenshot.height}
+                data-showcase-alt
+                alt={media.screenshot.alt["pt-br"]}
+                decoding="async"
+              />
+              {media.highlight && (<figcaption data-showcase-highlight-label class={tag}>{media.highlight.label["pt-br"]}</figcaption>)}
+            </figure>
+            {media.highlight ? (
+              <div data-showcase-card="second" data-showcase-highlight class={`${card} flex flex-col justify-end gap-2.5 bg-space-base p-9 text-paper-white ${sizeSecond}`}>
+                <p class={`${nameClass} text-[54px] text-bebop-red`}>{media.highlight.value}</p>
+                <p class="font-mono text-[15px] tracking-[0.08em] break-words uppercase">{media.highlight.flow}</p>
+                <p data-showcase-highlight-note class="font-mono text-[13px] tracking-[0.08em] uppercase opacity-70">{media.highlight.note["pt-br"]}</p>
+              </div>
+            ) : (
+              <figure data-showcase-card="second" class={`${card} m-0 ${sizeSecond}`}>
+                <img
+                  class="block h-full w-full object-cover object-top"
+                  src={media.screenshot.src}
+                  width={media.screenshot.width}
+                  height={media.screenshot.height}
+                  data-showcase-alt
+                  alt={media.screenshot.alt["pt-br"]}
+                  loading="lazy"
+                  decoding="async"
+                />
+              </figure>
+            )}
+          </>
         )}
-
-        {media.highlight && !media.video ? (
-          <div data-showcase-card="second" data-showcase-highlight class={`${card} flex flex-col justify-end gap-2.5 bg-space-base p-9 text-paper-white ${sizeSecond}`}>
-            <p class={`${nameClass} text-[54px] text-bebop-red`}>{media.highlight.value}</p>
-            <p class="font-mono text-[15px] tracking-[0.08em] break-words uppercase">{media.highlight.flow}</p>
-            <p data-showcase-highlight-note class="font-mono text-[13px] tracking-[0.08em] uppercase opacity-70">{media.highlight.note["pt-br"]}</p>
-          </div>
-        ) : (
-          <figure data-showcase-card="second" class={`${card} m-0 ${sizeSecond}`}>
-            <img
-              class="block h-full w-full object-cover object-top"
-              src={media.screenshot.src}
-              width={media.screenshot.width}
-              height={media.screenshot.height}
-              data-showcase-alt
-              alt={media.screenshot.alt["pt-br"]}
-              loading="lazy"
-              decoding="async"
-            />
-          </figure>
-        )}
-        <span aria-hidden="true" class="w-4 shrink-0 md:w-9"></span>
+        <span data-showcase-spacer aria-hidden="true" class="w-4 shrink-0 md:w-9"></span>
       </div>
-
-      <img
-        data-showcase-sticker
-        class="pointer-events-none absolute top-1.5 left-[min(268px,calc(100%-92px))] z-[3] w-[84px] rotate-[10deg] [filter:drop-shadow(4px_4px_0_#080808)] md:top-2.5 md:left-[560px] md:w-[120px] lg:left-[760px] lg:w-[150px]"
-        src={media.sticker.src}
-        width="150"
-        height="150"
-        alt=""
-        aria-hidden="true"
-      />
+      {media.video && (
+        <button
+          type="button"
+          data-showcase-toggle
+          data-prototype-contrast
+          aria-pressed="false"
+          hidden
+          class="showcase-video-toggle absolute bottom-8 left-10 z-10 inline-flex min-h-11 min-w-11 cursor-none items-center justify-center border-0 bg-transparent p-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-bebop-red"
+        ><span data-showcase-toggle-ball class="showcase-video-toggle-ball pointer-events-none inline-flex min-h-11 min-w-11 items-center justify-center border-[3px] border-space-base bg-bebop-red px-4 py-2 font-mono text-sm font-bold tracking-[0.1em] text-paper-white uppercase shadow-[4px_4px_0_#080808]"><span data-showcase-play data-i18n="showcase.play">{text.play}</span><span data-showcase-pause data-i18n="showcase.pause" hidden>{text.pause}</span></span></button>
+      )}
     </div>
   </div>
 
   <div class="px-4 pt-6 md:px-9 md:pt-8 lg:flex lg:h-[236px] lg:gap-12 lg:pt-9 lg:pr-12 lg:pl-44">
     <div class="lg:flex-[1.2]">
-      <p aria-hidden="true" class={`${nameClass} hidden text-[56px] lg:block`}>{layout.name}</p>
+      <p data-showcase-copy-title aria-hidden="true" class={`${nameClass} hidden text-[56px] lg:block`}>{layout.name}</p>
       <p data-showcase-kicker data-prototype-contrast class="font-mono text-[11px] font-bold tracking-[0.08em] text-bebop-red uppercase md:text-[13px] lg:mt-3.5 lg:text-sm">{copy.kicker?.["pt-br"] ?? project.subtitle.replace("•", "·")}</p>
     </div>
     <div class="lg:flex-1">
@@ -239,10 +246,37 @@ const tag =
   </nav>
 </section>
 
+<style>
+  .showcase-video-toggle {
+    cursor: none;
+  }
+
+  .showcase-video-toggle-ball {
+    opacity: 0;
+    border-radius: 9999px;
+    transform: scale(0) rotate(-3deg);
+    transform-origin: center center;
+    transition:
+      transform 0.3s ease-in-out,
+      border-radius 0.3s ease-in-out,
+      opacity 0.3s ease-in-out;
+    will-change: transform, border-radius, opacity;
+  }
+
+  [data-showcase-viewport][data-video-hover="true"] .showcase-video-toggle-ball,
+  .showcase-video-toggle:focus-visible .showcase-video-toggle-ball {
+    opacity: 1;
+    border-radius: 0px;
+    transform: scale(1) rotate(-3deg);
+  }
+</style>
+
 <script>
   import { onPageReady } from "../../utils/page-lifecycle";
   import { initShowcaseVideo } from "./showcase-video-bind";
+  import { installShowcaseTransition } from "./showcase-transition";
 
+  installShowcaseTransition();
   onPageReady(() => {
     const showcase = document.querySelector<HTMLElement>("[data-showcase]");
     return showcase ? initShowcaseVideo(showcase) : undefined;

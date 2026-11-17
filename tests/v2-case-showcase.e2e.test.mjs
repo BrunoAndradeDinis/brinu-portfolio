@@ -95,9 +95,10 @@ test('SHOW-01: every case page renders the six showcase blocks', async () => {
       assert.equal(await showcase.locator('h1[data-case-title]').count(), 1, `${id} title in showcase`);
       assert.equal(await showcase.locator('[data-showcase-card="media"]').count(), 1, `${id} media card`);
       assert.equal(await showcase.locator('[data-showcase-card="second"]').count(), 1, `${id} second card`);
+      assert.equal(await showcase.locator('[data-showcase-card="third"]').count(), EXPECTED[id].video ? 1 : 0, `${id} third card`);
       assert.equal(await showcase.locator('[data-showcase-card="media"] video').count(), EXPECTED[id].video ? 1 : 0, `${id} video`);
       const second = showcase.locator('[data-showcase-card="second"]');
-      const hasContent = (await second.locator('img').count()) > 0 || (await second.getAttribute('data-showcase-highlight')) !== null;
+      const hasContent = (await second.locator('img, video').count()) > 0 || (await second.getAttribute('data-showcase-highlight')) !== null;
       assert.ok(hasContent, `${id} second content`);
       assert.ok((await showcase.locator('[data-showcase-lead]').textContent()).trim().length > 0, `${id} description`);
       assert.equal(await showcase.locator('[data-showcase-chip]').count(), 3, `${id} stack chips`);
@@ -208,15 +209,18 @@ test('SHOW-05: the play button toggles the video and exposes its state', async (
       const button = page.locator('[data-showcase-toggle]');
       await waitPlaying(page, true);
       assert.equal(await button.isVisible(), true);
+      assert.equal(await button.evaluate((node) => getComputedStyle(node).cursor), 'none');
       assert.equal(await button.getAttribute('aria-pressed'), 'true');
       const { play, pause } = DICTIONARIES[locale].showcase;
-      assert.equal((await button.innerText()).replace(/\s+/g, ' ').trim(), `▶ ${play} · ${pause}`, `${locale} button name`);
+      assert.equal((await button.innerText()).replace(/\s+/g, ' ').trim(), pause, `${locale} playing button shows pause`);
       await button.click();
       await waitPlaying(page, false);
       assert.equal(await button.getAttribute('aria-pressed'), 'false');
+      assert.equal((await button.innerText()).replace(/\s+/g, ' ').trim(), play, `${locale} paused button shows play`);
       await button.click();
       await waitPlaying(page, true);
       assert.equal(await button.getAttribute('aria-pressed'), 'true');
+      assert.equal((await button.innerText()).replace(/\s+/g, ' ').trim(), pause, `${locale} resumed button shows pause`);
     } finally {
       await context.close();
     }
@@ -367,7 +371,6 @@ test('SHOW-09: showcase text updates in place on locale change', async () => {
       assert.equal(await page.locator('[data-showcase-card="media"] img, [data-showcase-video]').first().evaluate((node) => node.getAttribute('alt') ?? node.getAttribute('aria-label')), media.video ? media.video.poster.alt.en : media.screenshot.alt.en);
       const imageAlts = await page.locator('[data-showcase-card] img').evaluateAll((nodes) => nodes.map((node) => node.getAttribute('alt')));
       assert.ok(imageAlts.every((alt) => alt === media.screenshot.alt.en), `${id} screenshot alts ${imageAlts}`);
-      if (media.video) assert.equal(await text('[data-showcase-tag]'), media.video.tag.en);
       if (media.highlight) {
         assert.equal(await text('[data-showcase-highlight-label]'), media.highlight.label.en);
         assert.equal(await text('[data-showcase-highlight-note]'), media.highlight.note.en);
@@ -452,7 +455,7 @@ test('TAB-02: the 768px stage scrolls its own track and keeps the sticker inside
       const media = await rectOf(page, '[data-showcase-card="media"]');
       const second = await rectOf(page, '[data-showcase-card="second"]');
       assert.ok(media.x >= stage.x && media.right <= stage.right, `${id} media card fully inside the stage`);
-      if (EXPECTED[id].video) assert.ok(Math.abs(media.width - 640) <= 1, `${id} video card width ${media.width}`);
+      if (EXPECTED[id].video) assert.ok(Math.abs(media.width - 680) <= 1, `${id} video card width ${media.width}`);
       const trackBox = await rectOf(page, '[data-showcase-track]');
       const visible = Math.min(second.right, trackBox.right) - Math.max(second.x, trackBox.x);
       assert.ok(visible >= 24 && visible < second.width - 24, `${id} second card shows ${visible}px of ${second.width}px`);
@@ -463,8 +466,7 @@ test('TAB-02: the 768px stage scrolls its own track and keeps the sticker inside
       }));
       assert.ok(['auto', 'scroll'].includes(track.overflowX) && track.snap.includes('x'), `${id} track ${JSON.stringify(track)}`);
       assert.equal(track.scrollable, true, `${id} track scrolls`);
-      const sticker = await rectOf(page, '[data-showcase-sticker]');
-      assert.ok(sticker.x >= stage.x && sticker.right <= stage.right && sticker.y >= stage.y && sticker.bottom <= stage.bottom, `${id} sticker inside the stage`);
+      assert.equal(await page.locator('[data-showcase-sticker]').count(), 0, `${id} no sticker`);
       const before = await page.evaluate(() => document.documentElement.scrollWidth);
       await page.locator('[data-showcase-track]').evaluate((node) => { node.scrollLeft = node.scrollWidth; });
       const after = await page.evaluate(() => ({ sw: document.documentElement.scrollWidth, x: window.scrollX }));
@@ -505,10 +507,9 @@ test('MOB-01: the 390px and 320px showcase has zero horizontal overflow', async 
           assert.ok(unbroken <= 0, `${label} a title word does not fit (${unbroken}px)`);
           const stage = await rectOf(page, '[data-showcase-stage]');
           const media = await rectOf(page, '[data-showcase-card="media"]');
-          const sticker = await rectOf(page, '[data-showcase-sticker]');
           assert.ok(media.x >= stage.x && media.right <= stage.right, `${label} media card inside the stage`);
-          if (width === 390 && EXPECTED[id].video) assert.ok(Math.abs(media.width - 330) <= 1, `${label} video card ${media.width}px`);
-          assert.ok(sticker.x >= stage.x && sticker.right <= stage.right, `${label} sticker inside the stage`);
+          if (width === 390 && EXPECTED[id].video) assert.ok(Math.abs(media.width - 350) <= 1, `${label} video card ${media.width}px`);
+          assert.equal(await page.locator('[data-showcase-sticker]').count(), 0, `${label} no sticker`);
           const tiles = await page.locator('[data-showcase-tiles] a').evaluateAll((nodes) => nodes.map((node) => { const { x, y } = node.getBoundingClientRect(); return { x: Math.round(x), y: Math.round(y) }; }));
           assert.ok(tiles[0].y === tiles[1].y && tiles[2].y === tiles[3].y && tiles[2].y > tiles[0].y && tiles[0].x === tiles[2].x, `${label} tiles 2x2`);
           const site = (await page.locator('[data-showcase-site]').innerText()).trim();
@@ -756,9 +757,9 @@ test('QUA-04: the showcase title scales fluidly without breaking a word', async 
 });
 
 const PROTOTYPE = {
-  1440: { bar: 96, cells: [128, 128, 220], rail: 128, stage: 620, first: [820, 520], second: [560, 520], sticker: 150, text: 236, tilesRow: 150, tile: 130, name: 45, cols: 4 },
-  768: { bar: 80, cells: [80, 80, 140], rail: 0, stage: 540, first: [640, 440], second: [420, 440], sticker: 120, tile: 128, name: 84, cols: 2 },
-  390: { bar: 64, cells: [56, 56, 76], rail: 0, stage: 330, first: [330, 250], second: [260, 250], sticker: 84, tile: 96, name: 44, cols: 2 },
+  1440: { bar: 96, cells: [128, 128, 220], rail: 128, stage: 620, first: [984, 580], second: [984, 580], text: 236, tilesRow: 150, tile: 130, name: 45, cols: 4 },
+  768: { bar: 80, cells: [80, 80, 140], rail: 0, stage: 540, first: [680, 504], second: [680, 504], tile: 128, name: 84, cols: 2 },
+  390: { bar: 64, cells: [56, 56, 76], rail: 0, stage: 330, first: [350, 300], second: [350, 300], tile: 96, name: 44, cols: 2 },
 };
 
 test('PROTO: the magalu showcase keeps the prototype measures at 1440, 768 and 390px', async () => {
@@ -776,7 +777,8 @@ test('PROTO: the magalu showcase keeps the prototype measures at 1440, 768 and 3
       near(first.height, want.first[1], 'video card height');
       near(second.width, want.second[0], 'screenshot card width');
       near(second.height, want.second[1], 'screenshot card height');
-      near((await page.locator('[data-showcase-sticker]').evaluate((node) => node.offsetWidth)), want.sticker, 'sticker width');
+      assert.equal(await page.locator('[data-showcase-sticker]').count(), 0, 'no sticker');
+      assert.equal(await page.locator('[data-showcase-card="second"] video').count(), 1, 'second card has duplicated video');
       const tile = await rectOf(page, '[data-showcase-tiles] a');
       near(tile.height, want.tile, 'tile height');
       const rows = await page.locator('[data-showcase-tiles] a').evaluateAll((nodes) => new Set(nodes.map((node) => Math.round(node.getBoundingClientRect().y))).size);
@@ -791,8 +793,8 @@ test('PROTO: the magalu showcase keeps the prototype measures at 1440, 768 and 3
       }
       const fontSize = await page.locator('[data-showcase-name]').evaluateAll((nodes) => parseFloat(getComputedStyle(nodes.find((node) => node.getClientRects().length > 0)).fontSize));
       near(fontSize, want.name, 'case name font size', 1);
-      assert.equal(await page.locator('[data-showcase-tag]').innerText(), 'VÍDEO · NAVEGAÇÃO NO SITE');
-      assert.equal((await page.locator('[data-showcase-toggle]').innerText()).replace(/\s+/g, ' '), '▶ PLAY · PAUSE');
+      assert.equal(await page.locator('[data-showcase-tag]').count(), 0);
+      assert.equal((await page.locator('[data-showcase-toggle]').innerText()).replace(/\s+/g, ' ').trim(), 'PLAY');
       const toggleBox = await rectOf(page, '[data-showcase-toggle]');
       const card = await rectOf(page, '[data-showcase-card="media"]');
       assert.ok(toggleBox.x > card.x && toggleBox.bottom < card.bottom, `${width}px the play pill sits over the video`);
@@ -800,5 +802,112 @@ test('PROTO: the magalu showcase keeps the prototype measures at 1440, 768 and 3
     } finally {
       await context.close();
     }
+  }
+});
+
+test('SHOW-10: switching between cases exits each element of the current case and enters each element of the next case without the route band', async () => {
+  const { context, page } = await openPath('/cases/magalu-cloud', { reducedMotion: 'no-preference' });
+  try {
+    await page.waitForFunction(() => !/is-(in|covered|out)/.test(document.getElementById('route-band').className), null, { timeout: 2500 });
+    await page.evaluate(() => {
+      const record = {
+        bandTriggered: false,
+        exited: false,
+        enteredAtSwap: false,
+        states: [],
+        stackAppearTimes: [null, null, null],
+      };
+      window.__caseTransition = record;
+      const band = document.getElementById('route-band');
+      new MutationObserver(() => {
+        if (/is-(in|covered|out)/.test(band.className)) record.bandTriggered = true;
+      }).observe(band, { attributes: true, attributeFilter: ['class'] });
+
+      const observeShowcase = (node) => {
+        if (!node) return;
+        const pushState = () => {
+          const state = node.dataset.showcaseTransition;
+          if (state && record.states.at(-1) !== `${node.dataset.showcase}:${state}`) {
+            record.states.push(`${node.dataset.showcase}:${state}`);
+          }
+          if (state === 'exiting') record.exited = true;
+        };
+        pushState();
+        new MutationObserver(pushState).observe(node, { attributes: true, attributeFilter: ['data-showcase-transition'] });
+      };
+      observeShowcase(document.querySelector('[data-showcase]'));
+      document.addEventListener('astro:after-swap', () => {
+        const next = document.querySelector('[data-showcase]');
+        if (next?.dataset.showcaseTransition === 'entering') record.enteredAtSwap = true;
+        observeShowcase(next);
+        const sampleStack = () => {
+          if (!next || next.dataset.showcaseTransition !== 'entering') return;
+          const items = next.querySelectorAll('[data-showcase-bar-stack]');
+          items.forEach((item, idx) => {
+            if (record.stackAppearTimes[idx] === null && parseFloat(getComputedStyle(item).opacity) > 0.05) {
+              record.stackAppearTimes[idx] = performance.now();
+            }
+          });
+          requestAnimationFrame(sampleStack);
+        };
+        requestAnimationFrame(sampleStack);
+      });
+    });
+
+    await page.locator('[data-showcase-next]').click();
+    await page.waitForFunction(
+      () => location.pathname === '/cases/uriana' && document.querySelector('[data-showcase]')?.dataset.showcaseTransition === 'idle',
+      null,
+      { timeout: 8000 }
+    );
+
+    const record = await page.evaluate(() => window.__caseTransition);
+    assert.equal(record.bandTriggered, false, 'case-to-case transition does not trigger #route-band');
+    assert.equal(record.exited, true, 'outgoing case ran exitShowcase');
+    assert.equal(record.enteredAtSwap, true, 'incoming case was prepared for enterShowcase at swap');
+    assert.deepEqual(record.states, ['magalu-cloud:exiting', 'uriana:entering', 'uriana:idle']);
+    assert.ok(
+      record.stackAppearTimes.every((t) => typeof t === 'number') &&
+        record.stackAppearTimes[1] - record.stackAppearTimes[0] >= 80 &&
+        record.stackAppearTimes[2] - record.stackAppearTimes[1] >= 80,
+      `stack items appear sequentially one after another: ${JSON.stringify(record.stackAppearTimes)}`
+    );
+  } finally {
+    await context.close();
+  }
+});
+
+test('SHOW-11: the video cards form an infinite carousel that advances when clicking the peeked card', async () => {
+  const { context, page } = await openPath('/cases/magalu-cloud', { viewport: { width: 1900, height: 992 }, reducedMotion: 'no-preference' });
+  try {
+    await waitPlaying(page, true);
+    const button = page.locator('[data-showcase-toggle]');
+    const firstBox = await rectOf(page, '[data-showcase-card="media"]');
+    await page.mouse.move(firstBox.x + 200, firstBox.y + 200);
+    assert.equal((await button.innerText()).trim(), 'PAUSE', 'hovering active playing card shows PAUSE');
+
+    const secondBox = await rectOf(page, '[data-showcase-card="second"]');
+    await page.mouse.move(secondBox.x + 80, secondBox.y + 200);
+    assert.equal((await button.innerText()).trim(), 'PLAY', 'hovering peeked next card shows PLAY');
+
+    for (let step = 1; step <= 3; step += 1) {
+      await page.mouse.move(secondBox.x + 80, secondBox.y + 200);
+      await page.mouse.click(secondBox.x + 80, secondBox.y + 200);
+      await page.waitForFunction(
+        (expected) => document.querySelector('[data-showcase-track]')?.dataset.carouselSteps === String(expected),
+        step,
+        { timeout: 4000 }
+      );
+      await waitPlaying(page, true);
+      assert.equal(await page.locator('[data-showcase-card="media"]').count(), 1);
+      assert.equal(await page.locator('[data-showcase-card="second"]').count(), 1);
+      assert.equal(await page.locator('[data-showcase-card="third"]').count(), 1);
+      const scrollLeft = await page.locator('[data-showcase-track]').evaluate((node) => node.scrollLeft);
+      assert.equal(scrollLeft, 0, `step ${step}: track scrollLeft stays 0 so active card is never cut off on the left`);
+      const afterBox = await rectOf(page, '[data-showcase-card="media"]');
+      assert.ok(Math.abs(afterBox.x - firstBox.x) <= 2, `step ${step}: active card stays at ${firstBox.x}px (got ${afterBox.x}px)`);
+    }
+  } finally {
+    await context.close();
   }
 });
