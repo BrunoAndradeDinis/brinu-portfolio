@@ -2,230 +2,246 @@ import React, { useState } from 'react';
 import { audioSynth } from '../utils/audio';
 import { useLocale } from '../i18n/index';
 import { PROFILE } from '../data/profile';
+import { BUDGET_IDS, CONTACT_BOUNDS, CONTACT_DEFAULTS, DEADLINE_IDS, SERVICE_IDS } from '../data/contact-brief';
+import {
+  isJobOnly,
+  validateContactBrief,
+  type ContactBrief,
+  type ContactErrors,
+  type ContactField,
+  type RawContactBrief,
+} from '../utils/contact-brief';
+import { buildMailtoHref } from '../utils/contact-mailto';
+import { formatBrPhone } from '../utils/contact-sanitize';
+import { ChoiceGroup, TextField } from './contact/fields';
 
-interface FormErrors {
-  name?: string;
-  email?: string;
-  message?: string;
+type FormValues = { -readonly [K in keyof RawContactBrief]: RawContactBrief[K] };
+
+const INITIAL_VALUES: FormValues = {
+  name: '',
+  company: '',
+  email: '',
+  phone: '',
+  services: [],
+  budget: CONTACT_DEFAULTS.budget,
+  deadline: CONTACT_DEFAULTS.deadline,
+  message: '',
+};
+
+const FIELD_ORDER: readonly ContactField[] = ['name', 'email', 'phone', 'services', 'message'];
+
+const FIELD_ELEMENT_ID: Readonly<Record<ContactField, string>> = {
+  name: 'dispatch-name',
+  email: 'dispatch-email',
+  phone: 'dispatch-phone',
+  services: 'dispatch-services',
+  message: 'dispatch-message',
+};
+
+const PHONE_MASK_LENGTH = 15;
+
+function focusField(field: ContactField): void {
+  const element = document.getElementById(FIELD_ELEMENT_ID[field]);
+  const target = element instanceof HTMLFieldSetElement ? element.querySelector('input') : element;
+  target?.focus();
 }
 
 export const BountyDispatch: React.FC = () => {
   const { dict: t } = useLocale();
-  const [name, setName] = useState<string>('');
-  const [email, setEmail] = useState<string>('');
-  const [message, setMessage] = useState<string>('');
-  const [errors, setErrors] = useState<FormErrors>({});
-  const [isSubmitted, setIsSubmitted] = useState<boolean>(false);
+  const copy = t.dispatch;
+  const [values, setValues] = useState<FormValues>(INITIAL_VALUES);
+  const [errors, setErrors] = useState<ContactErrors>({});
+  const [brief, setBrief] = useState<ContactBrief | null>(null);
   const [dispatchTime, setDispatchTime] = useState<string>('');
 
-  const validate = (): boolean => {
-    const nextErrors: FormErrors = {};
-
-    if (!name.trim()) {
-      nextErrors.name = t.dispatch.nameError;
+  const update = <K extends keyof FormValues>(key: K, value: FormValues[K]) => {
+    setValues((prev) => ({ ...prev, [key]: value }));
+    if (key in FIELD_ELEMENT_ID && errors[key as ContactField]) {
+      setErrors((prev) => ({ ...prev, [key]: undefined }));
     }
+  };
 
-    if (!email.trim()) {
-      nextErrors.email = t.dispatch.emailRequiredError;
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      nextErrors.email = t.dispatch.emailInvalidError;
-    }
+  const toggleService = (id: string) => {
+    const next = values.services.includes(id) ? values.services.filter((s) => s !== id) : [...values.services, id];
+    update('services', next);
+  };
 
-    if (!message.trim()) {
-      nextErrors.message = t.dispatch.messageEmptyError;
-    } else if (message.trim().length < 10) {
-      nextErrors.message = t.dispatch.messageShortError;
-    }
-
-    setErrors(nextErrors);
-    return Object.keys(nextErrors).length === 0;
+  const errorText = (field: ContactField): string | undefined => {
+    const code = errors[field];
+    return code ? copy.errors[code] : undefined;
   };
 
   const handleSubmit = (e: React.SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
+    const result = validateContactBrief(values);
 
-    if (!validate()) {
-      if (!audioSynth.isMuted()) {
-        audioSynth.playAlarm8Bit(1);
-      }
+    if (!result.ok) {
+      setErrors(result.errors);
+      const first = FIELD_ORDER.find((field) => result.errors[field]);
+      if (first) requestAnimationFrame(() => focusField(first));
+      if (!audioSynth.isMuted()) audioSynth.playAlarm8Bit(1);
       return;
     }
 
-    setIsSubmitted(true);
+    setErrors({});
+    setBrief(result.brief);
     setDispatchTime(new Date().toUTCString());
-
-    if (!audioSynth.isMuted()) {
-      audioSynth.playBountyAcquired();
-    }
+    if (!audioSynth.isMuted()) audioSynth.playBountyAcquired();
   };
 
   const handleReset = () => {
-    setName('');
-    setEmail('');
-    setMessage('');
+    setValues(INITIAL_VALUES);
     setErrors({});
-    setIsSubmitted(false);
+    setBrief(null);
   };
+
+  const showBudgetAndDeadline = !isJobOnly(values.services);
 
   return (
     <div
       data-bounty-dispatch
       className="border-4 border-space-base bg-space-base p-6 sm:p-8 font-mono shadow-[8px_8px_0_var(--color-bebop-red)] text-paper-white relative overflow-hidden"
     >
-      <div className="flex items-center justify-between pb-4 mb-6 border-b-2 border-bebop-red">
-        <div className="flex items-center gap-2.5">
-          <span className="w-3 h-3 bg-bebop-red" />
-          <span className="font-bold text-xs uppercase tracking-widest text-bebop-red">
-            {t.dispatch.headerTitle}
-          </span>
+      <div className="flex items-center justify-between gap-3 pb-4 mb-6 border-b-2 border-bebop-red">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <span className="w-3 h-3 shrink-0 bg-bebop-red" />
+          <span className="font-bold text-xs uppercase tracking-widest text-bebop-red">{copy.headerTitle}</span>
         </div>
 
-        <span className="text-[10px] sm:text-xs text-muted-gray uppercase">
-          {t.dispatch.headerSub}
-        </span>
+        <span className="text-[10px] sm:text-xs text-muted-gray uppercase text-right">{copy.headerSub}</span>
       </div>
 
-      {!isSubmitted ? (
-        <form onSubmit={handleSubmit} noValidate className="space-y-5">
-          <div>
-            <label
-              htmlFor="dispatch-name"
-              className="block text-xs uppercase tracking-wider text-paper-white mb-1.5 font-bold"
-            >
-              {t.dispatch.nameLabel}
-            </label>
-            <input
-              id="dispatch-name"
-              data-input-name
-              type="text"
-              value={name}
-              onChange={(e) => {
-                setName(e.target.value);
-                if (errors.name) setErrors((prev) => ({ ...prev, name: undefined }));
-              }}
-              placeholder={t.dispatch.namePlaceholder}
-              className={`w-full px-4 py-3 border-2 bg-space-base text-paper-white placeholder:text-muted-gray/60 text-xs sm:text-sm font-mono focus:outline-none transition-all ${
-                errors.name
-                  ? 'border-bebop-red focus:ring-2 focus:ring-bebop-red'
-                  : 'border-paper-white focus:border-bebop-red'
-              }`}
-            />
-            {errors.name && (
-              <span data-error-name className="text-bebop-red text-[11px] mt-1.5 flex items-center gap-1.5 font-bold">
-                <span>■</span>
-                <span>{errors.name}</span>
-              </span>
-            )}
-          </div>
-
-          <div>
-            <label
-              htmlFor="dispatch-email"
-              className="block text-xs uppercase tracking-wider text-paper-white mb-1.5 font-bold"
-            >
-              {t.dispatch.emailLabel}
-            </label>
-            <input
-              id="dispatch-email"
-              data-input-email
-              type="email"
-              value={email}
-              onChange={(e) => {
-                setEmail(e.target.value);
-                if (errors.email) setErrors((prev) => ({ ...prev, email: undefined }));
-              }}
-              placeholder={t.dispatch.emailPlaceholder}
-              className={`w-full px-4 py-3 border-2 bg-space-base text-paper-white placeholder:text-muted-gray/60 text-xs sm:text-sm font-mono focus:outline-none transition-all ${
-                errors.email
-                  ? 'border-bebop-red focus:ring-2 focus:ring-bebop-red'
-                  : 'border-paper-white focus:border-bebop-red'
-              }`}
-            />
-            {errors.email && (
-              <span data-error-email className="text-bebop-red text-[11px] mt-1.5 flex items-center gap-1.5 font-bold">
-                <span>■</span>
-                <span>{errors.email}</span>
-              </span>
-            )}
-          </div>
-
-          <div>
-            <label
-              htmlFor="dispatch-message"
-              className="block text-xs uppercase tracking-wider text-paper-white mb-1.5 font-bold"
-            >
-              {t.dispatch.messageLabel}
-            </label>
-            <textarea
-              id="dispatch-message"
-              data-input-message
-              rows={4}
-              value={message}
-              onChange={(e) => {
-                setMessage(e.target.value);
-                if (errors.message) setErrors((prev) => ({ ...prev, message: undefined }));
-              }}
-              placeholder={t.dispatch.messagePlaceholder}
-              className={`w-full px-4 py-3 border-2 bg-space-base text-paper-white placeholder:text-muted-gray/60 text-xs sm:text-sm font-mono focus:outline-none transition-all resize-none ${
-                errors.message
-                  ? 'border-bebop-red focus:ring-2 focus:ring-bebop-red'
-                  : 'border-paper-white focus:border-bebop-red'
-              }`}
-            />
-            {errors.message && (
-              <span data-error-message className="text-bebop-red text-[11px] mt-1.5 flex items-center gap-1.5 font-bold">
-                <span>■</span>
-                <span>{errors.message}</span>
-              </span>
-            )}
-          </div>
+      {!brief ? (
+        <form onSubmit={handleSubmit} noValidate className="space-y-5" data-dispatch-form>
+          <TextField
+            id="dispatch-name"
+            field="name"
+            label={copy.nameLabel}
+            value={values.name}
+            onChange={(value) => update('name', value)}
+            placeholder={copy.namePlaceholder}
+            maxLength={CONTACT_BOUNDS.name.max}
+            autoComplete="name"
+            error={errorText('name')}
+          />
+          <TextField
+            id="dispatch-company"
+            field="company"
+            label={copy.companyLabel}
+            optionalTag={copy.optionalTag}
+            value={values.company}
+            onChange={(value) => update('company', value)}
+            placeholder={copy.companyPlaceholder}
+            maxLength={CONTACT_BOUNDS.company.max}
+            autoComplete="organization"
+          />
+          <TextField
+            id="dispatch-email"
+            field="email"
+            type="email"
+            inputMode="email"
+            label={copy.emailLabel}
+            value={values.email}
+            onChange={(value) => update('email', value)}
+            placeholder={copy.emailPlaceholder}
+            maxLength={CONTACT_BOUNDS.email.max}
+            autoComplete="email"
+            error={errorText('email')}
+          />
+          <TextField
+            id="dispatch-phone"
+            field="phone"
+            type="tel"
+            inputMode="tel"
+            label={copy.phoneLabel}
+            optionalTag={copy.optionalTag}
+            value={values.phone}
+            onChange={(value) => update('phone', formatBrPhone(value))}
+            placeholder={copy.phonePlaceholder}
+            maxLength={PHONE_MASK_LENGTH}
+            autoComplete="tel-national"
+            error={errorText('phone')}
+          />
+          <ChoiceGroup
+            id="dispatch-services"
+            field="services"
+            type="checkbox"
+            legend={copy.servicesLegend}
+            options={SERVICE_IDS.map((id) => ({ value: id, label: copy.services[id] }))}
+            selected={values.services}
+            onSelect={toggleService}
+            error={errorText('services')}
+          />
+          {showBudgetAndDeadline && (
+            <>
+              <ChoiceGroup
+                id="dispatch-budget"
+                field="budget"
+                type="radio"
+                legend={copy.budgetLegend}
+                options={BUDGET_IDS.map((id) => ({ value: id, label: copy.budgets[id] }))}
+                selected={[values.budget]}
+                onSelect={(value) => update('budget', value)}
+              />
+              <ChoiceGroup
+                id="dispatch-deadline"
+                field="deadline"
+                type="radio"
+                legend={copy.deadlineLegend}
+                options={DEADLINE_IDS.map((id) => ({ value: id, label: copy.deadlines[id] }))}
+                selected={[values.deadline]}
+                onSelect={(value) => update('deadline', value)}
+              />
+            </>
+          )}
+          <TextField
+            id="dispatch-message"
+            field="message"
+            multiline
+            label={copy.messageLabel}
+            value={values.message}
+            onChange={(value) => update('message', value)}
+            placeholder={copy.messagePlaceholder}
+            maxLength={CONTACT_BOUNDS.message.max}
+            error={errorText('message')}
+          />
 
           <button
             type="submit"
             data-dispatch-submit-btn
             className="w-full py-3.5 px-6 border-2 border-paper-white bg-bebop-red text-space-base font-mono font-black text-xs sm:text-sm uppercase tracking-wider hover:bg-paper-white hover:text-space-base transition-all duration-150 shadow-[4px_4px_0_var(--color-paper-white)] flex items-center justify-center gap-2 cursor-pointer"
           >
-            <span>{t.dispatch.submitCta}</span>
+            <span>{copy.submitCta}</span>
           </button>
         </form>
       ) : (
         <div data-dispatch-receipt className="space-y-6 animate-in fade-in duration-300">
           <div className="flex items-center gap-3 p-3.5 bg-bebop-red border-2 border-paper-white text-space-base">
             <span className="w-2.5 h-2.5 bg-space-base animate-ping" />
-            <span className="font-bold text-xs uppercase tracking-wider">
-              {t.dispatch.receiptSuccess}
-            </span>
+            <span className="font-bold text-xs uppercase tracking-wider">{copy.receiptSuccess}</span>
           </div>
 
           <div className="p-4 border-2 border-paper-white bg-space-base space-y-2.5 text-xs">
-            <div className="flex justify-between border-b border-paper-white/30 pb-1.5">
-              <span className="text-muted-gray">{t.dispatch.codenameKey}</span>
-              <span className="text-paper-white font-bold">{name}</span>
+            <div className="flex justify-between gap-3 border-b border-paper-white/30 pb-1.5">
+              <span className="text-muted-gray">{copy.codenameKey}</span>
+              <span className="text-paper-white font-bold break-words text-right min-w-0">{brief.name}</span>
             </div>
-            <div className="flex justify-between border-b border-paper-white/30 pb-1.5">
-              <span className="text-muted-gray">{t.dispatch.frequencyKey}</span>
-              <span className="text-bebop-red font-bold">{email}</span>
+            <div className="flex justify-between gap-3 border-b border-paper-white/30 pb-1.5">
+              <span className="text-muted-gray">{copy.frequencyKey}</span>
+              <span className="text-bebop-red font-bold break-all text-right min-w-0">{brief.email}</span>
             </div>
-            <div className="flex justify-between border-b border-paper-white/30 pb-1.5">
-              <span className="text-muted-gray">{t.dispatch.statusKey}</span>
-              <span className="text-paper-white font-bold">{t.dispatch.statusValue}</span>
-            </div>
-            <div className="flex justify-between pt-1">
-              <span className="text-muted-gray">{t.dispatch.timestampKey}</span>
+            <div className="flex justify-between gap-3 pt-1">
+              <span className="text-muted-gray">{copy.timestampKey}</span>
               <span className="text-muted-gray text-[10px]">{dispatchTime}</span>
             </div>
           </div>
 
           <div className="flex flex-col sm:flex-row gap-3">
             <a
-              href={`mailto:${PROFILE.email}?subject=${encodeURIComponent(
-                `[Bounty Contract] Proposta de ${name}`
-              )}&body=${encodeURIComponent(
-                `Codename: ${name}\nEmail: ${email}\n\nMensagem:\n${message}`
-              )}`}
+              href={buildMailtoHref(brief, { subjectPrefix: copy.mailSubjectPrefix, labels: copy.mail, services: copy.services, budgets: copy.budgets, deadlines: copy.deadlines }, PROFILE.email)}
               className="flex-1 py-3 px-4 border-2 border-paper-white bg-bebop-red text-space-base text-center font-bold text-xs uppercase tracking-wider hover:bg-paper-white hover:text-space-base transition-all inline-flex items-center justify-center gap-2"
             >
-              <span>{t.dispatch.sendEmailCopy}</span>
+              <span>{copy.sendEmailCopy}</span>
             </a>
 
             <button
@@ -234,7 +250,7 @@ export const BountyDispatch: React.FC = () => {
               onClick={handleReset}
               className="py-3 px-4 border-2 border-paper-white bg-space-base text-paper-white font-bold text-xs uppercase tracking-wider hover:bg-paper-white hover:text-space-base transition-all inline-flex items-center justify-center gap-2 cursor-pointer"
             >
-              <span>{t.dispatch.newTransmission}</span>
+              <span>{copy.newTransmission}</span>
             </button>
           </div>
         </div>

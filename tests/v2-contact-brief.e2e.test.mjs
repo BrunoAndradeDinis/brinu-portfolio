@@ -1,0 +1,316 @@
+import { test, before, after } from 'node:test';
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
+import http from 'node:http';
+import { chromium } from 'playwright';
+
+const { DICTIONARIES } = await import('../src/i18n/dictionaries.ts');
+const PT = DICTIONARIES['pt-br'].dispatch;
+const EN = DICTIONARIES.en.dispatch;
+const ZERO_WIDTH = String.fromCharCode(0x200b);
+
+const MIME_TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'application/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.svg': 'image/svg+xml', '.jpg': 'image/jpeg', '.png': 'image/png', '.webp': 'image/webp', '.woff2': 'font/woff2', '.json': 'application/json; charset=utf-8' };
+let server;
+let baseUrl = '';
+let browser;
+
+before(async () => {
+  const distDir = path.resolve('dist');
+  server = http.createServer((req, res) => {
+    let pathname = decodeURIComponent(new URL(req.url || '/', 'http://127.0.0.1').pathname);
+    if (pathname.endsWith('/')) pathname += 'index.html';
+    else if (!path.extname(pathname)) pathname += '/index.html';
+    const filePath = path.join(distDir, pathname);
+    if (!filePath.startsWith(distDir) || !fs.existsSync(filePath)) {
+      res.writeHead(404);
+      res.end('Not found');
+      return;
+    }
+    res.writeHead(200, { 'Content-Type': MIME_TYPES[path.extname(filePath).toLowerCase()] || 'application/octet-stream' });
+    fs.createReadStream(filePath).pipe(res);
+  });
+  await new Promise((resolve) => server.listen(0, '127.0.0.1', () => {
+    baseUrl = `http://127.0.0.1:${server.address().port}`;
+    resolve();
+  }));
+  const launchOptions = { headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox'] };
+  if (fs.existsSync('/usr/bin/google-chrome')) launchOptions.executablePath = '/usr/bin/google-chrome';
+  browser = await chromium.launch(launchOptions);
+});
+
+after(async () => {
+  if (browser) await browser.close();
+  if (server) await new Promise((resolve) => server.close(resolve));
+});
+
+async function openForm({ locale = 'pt-br', width = 1440, height = 900 } = {}) {
+  const context = await browser.newContext({ viewport: { width, height }, reducedMotion: 'reduce' });
+  await context.addInitScript((loc) => window.localStorage.setItem('brinu_locale', loc), locale);
+  const page = await context.newPage();
+  await page.goto(`${baseUrl}/`, { waitUntil: 'load' });
+  await page.evaluate(() => {
+    const intro = document.getElementById('intro-preloader');
+    if (intro) {
+      intro.click();
+      intro.remove();
+    }
+    window.dispatchEvent(new CustomEvent('intro-complete'));
+  });
+  await page.locator('#bounty-dispatch-container').scrollIntoViewIfNeeded();
+  await page.waitForFunction(() => !document.querySelector('astro-island[component-url*="BountyDispatch"][ssr]'));
+  await page.waitForSelector('[data-dispatch-form]');
+  return { context, page };
+}
+
+async function fillValid(page) {
+  await page.fill('#dispatch-name', 'Ana Souza');
+  await page.fill('#dispatch-company', 'Acme');
+  await page.fill('#dispatch-email', 'ana@acme.com');
+  await page.locator('#dispatch-phone').pressSequentially('16991234567');
+  await page.check('#dispatch-services input[value="web-system"]');
+  await page.fill('#dispatch-message', 'Preciso de um painel administrativo completo.');
+}
+
+const submit = (page) => page.click('[data-dispatch-submit-btn]');
+const groupLabels = (page, id) => page.locator(`#${id} label`).allInnerTexts().then((list) => list.map((text) => text.trim()));
+const checkedValue = (page, id) => page.locator(`#${id} input:checked`).evaluateAll((inputs) => inputs.map((input) => input.value));
+
+async function assertErrorWithoutReceipt(page, field, message) {
+  const error = page.locator(`[data-error-${field}]`);
+  assert.equal((await error.innerText()).replace('■', '').trim(), message);
+  assert.equal(await page.locator('[data-dispatch-receipt]').count(), 0);
+  assert.equal(await page.locator('[data-dispatch-form]').count(), 1);
+}
+
+test('form fields render in the approved order', async () => {
+  const { context, page } = await openForm();
+  const order = await page.locator('[data-dispatch-form]').evaluate((form) =>
+    [...form.children].map((child) => (child.tagName === 'FIELDSET' ? child.id : child.tagName === 'BUTTON' ? 'submit' : child.querySelector('input, textarea')?.id))
+  );
+  assert.deepEqual(order, ['dispatch-name', 'dispatch-company', 'dispatch-email', 'dispatch-phone', 'dispatch-services', 'dispatch-budget', 'dispatch-deadline', 'dispatch-message', 'submit']);
+  const labels = await page.locator('[data-dispatch-form] > div > label').allInnerTexts();
+  assert.equal(labels.length, 5);
+  assert.equal(labels[0].trim(), PT.nameLabel);
+  assert.match(labels[1], /^02 \/\/ EMPRESA\s*\(OPCIONAL\)$/);
+  assert.equal(labels[2].trim(), PT.emailLabel);
+  assert.match(labels[3], /^04 \/\/ WHATSAPP\s*\(OPCIONAL\)$/);
+  assert.equal(labels[4].trim(), PT.messageLabel);
+  assert.equal((await page.locator('#dispatch-services legend').innerText()).trim(), PT.servicesLegend);
+  assert.equal((await page.locator('#dispatch-budget legend').innerText()).trim(), PT.budgetLegend);
+  assert.equal((await page.locator('#dispatch-deadline legend').innerText()).trim(), PT.deadlineLegend);
+  assert.deepEqual(await groupLabels(page, 'dispatch-services'), ['Sistema web / painel', 'Site / landing page', 'Integração / API / manutenção', 'Oportunidade de vaga']);
+  assert.equal(await page.locator('#dispatch-services input:checked').count(), 0);
+  await context.close();
+});
+
+test('budget offers five options with A combinar checked', async () => {
+  const { context, page } = await openForm();
+  assert.deepEqual(await groupLabels(page, 'dispatch-budget'), ['Até R$ 3.000', 'R$ 3.000 – R$ 8.000', 'R$ 8.000 – R$ 15.000', 'Acima de R$ 15.000', 'A combinar']);
+  assert.equal(await page.locator('#dispatch-budget input[type="radio"]').count(), 5);
+  assert.deepEqual(await checkedValue(page, 'dispatch-budget'), ['to-discuss']);
+  assert.equal((await page.locator('#dispatch-budget label:has(input:checked)').innerText()).trim(), 'A combinar');
+  await context.close();
+});
+
+test('deadline offers three options with Flexível checked', async () => {
+  const { context, page } = await openForm();
+  assert.deepEqual(await groupLabels(page, 'dispatch-deadline'), ['Urgente (até 1 mês)', '1 a 3 meses', 'Flexível']);
+  assert.equal(await page.locator('#dispatch-deadline input[type="radio"]').count(), 3);
+  assert.deepEqual(await checkedValue(page, 'dispatch-deadline'), ['flexible']);
+  assert.equal((await page.locator('#dispatch-deadline label:has(input:checked)').innerText()).trim(), 'Flexível');
+  await context.close();
+});
+
+test('job-only hides budget and deadline', async () => {
+  const { context, page } = await openForm();
+  await page.check('#dispatch-services input[value="job"]');
+  assert.equal(await page.locator('#dispatch-budget').count(), 0);
+  assert.equal(await page.locator('#dispatch-deadline').count(), 0);
+  assert.ok(await page.locator('#dispatch-services').isVisible());
+  await page.check('#dispatch-services input[value="site"]');
+  assert.ok(await page.locator('#dispatch-budget').isVisible());
+  assert.ok(await page.locator('#dispatch-deadline').isVisible());
+  await context.close();
+});
+
+test('unchecking job-only restores budget and deadline', async () => {
+  const { context, page } = await openForm();
+  await page.check('#dispatch-services input[value="job"]');
+  assert.equal(await page.locator('#dispatch-budget').count(), 0);
+  await page.uncheck('#dispatch-services input[value="job"]');
+  assert.ok(await page.locator('#dispatch-budget').isVisible());
+  assert.ok(await page.locator('#dispatch-deadline').isVisible());
+  assert.deepEqual(await checkedValue(page, 'dispatch-budget'), ['to-discuss']);
+  await context.close();
+});
+
+test('locale switch translates the form and keeps typed values', async () => {
+  const { context, page } = await openForm();
+  await page.fill('#dispatch-name', 'Ana Souza');
+  await page.fill('#dispatch-message', 'Mensagem curta');
+  await submit(page);
+  assert.equal((await page.locator('[data-error-email]').innerText()).replace('■', '').trim(), PT.errors['email-required']);
+
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await page.click('#nav-lang-toggle-btn');
+  await page.waitForFunction(() => document.documentElement.lang === 'en');
+  await page.locator('#bounty-dispatch-container').scrollIntoViewIfNeeded();
+  await page.waitForFunction((label) => document.querySelector('label[for="dispatch-name"]')?.textContent?.trim() === label, EN.nameLabel);
+
+  assert.equal(await page.inputValue('#dispatch-name'), 'Ana Souza');
+  assert.equal(await page.inputValue('#dispatch-message'), 'Mensagem curta');
+  assert.equal(await page.getAttribute('#dispatch-name', 'placeholder'), EN.namePlaceholder);
+  assert.equal((await page.locator('#dispatch-services legend').innerText()).trim(), EN.servicesLegend);
+  assert.deepEqual(await groupLabels(page, 'dispatch-services'), ['Web system / dashboard', 'Website / landing page', 'Integration / API / maintenance', 'Job opportunity']);
+  assert.deepEqual(await groupLabels(page, 'dispatch-budget'), ['Up to R$ 3,000', 'R$ 3,000 – R$ 8,000', 'R$ 8,000 – R$ 15,000', 'Over R$ 15,000', 'To be discussed']);
+  assert.deepEqual(await groupLabels(page, 'dispatch-deadline'), ['Urgent (within 1 month)', '1 to 3 months', 'Flexible']);
+  assert.equal((await page.locator('[data-error-email]').innerText()).replace('■', '').trim(), EN.errors['email-required']);
+  assert.equal((await page.locator('[data-error-message]').innerText()).replace('■', '').trim(), EN.errors['message-length']);
+  assert.ok((await page.locator('[data-dispatch-submit-btn]').innerText()).includes(EN.submitCta));
+  await context.close();
+});
+
+test('groups are fieldsets with legends and inputs have labels', async () => {
+  const { context, page } = await openForm();
+  const groups = await page.locator('[data-dispatch-form] fieldset').evaluateAll((sets) =>
+    sets.map((set) => ({ id: set.id, legend: set.firstElementChild?.tagName, inputs: set.querySelectorAll('input').length }))
+  );
+  assert.deepEqual(groups, [
+    { id: 'dispatch-services', legend: 'LEGEND', inputs: 4 },
+    { id: 'dispatch-budget', legend: 'LEGEND', inputs: 5 },
+    { id: 'dispatch-deadline', legend: 'LEGEND', inputs: 3 },
+  ]);
+  for (const id of ['dispatch-name', 'dispatch-company', 'dispatch-email', 'dispatch-phone', 'dispatch-message']) {
+    const labelText = await page.locator(`label[for="${id}"]`).innerText();
+    assert.ok(labelText.trim().length > 0, `${id} has a label`);
+    const accessibleName = await page.getByLabel(labelText.trim(), { exact: true }).getAttribute('id');
+    assert.equal(accessibleName, id);
+  }
+  const unlabeledChoices = await page.locator('[data-dispatch-form] fieldset input').evaluateAll((inputs) => inputs.filter((input) => !input.closest('label')).length);
+  assert.equal(unlabeledChoices, 0);
+  await context.close();
+});
+
+test('invalid name shows the name error and no receipt', async () => {
+  const { context, page } = await openForm();
+  await fillValid(page);
+  await page.fill('#dispatch-name', `  A${ZERO_WIDTH}  `);
+  await submit(page);
+  await assertErrorWithoutReceipt(page, 'name', PT.errors['name-length']);
+  await page.evaluate(() => document.getElementById('dispatch-name').removeAttribute('maxlength'));
+  await page.fill('#dispatch-name', 'a'.repeat(81));
+  await submit(page);
+  await assertErrorWithoutReceipt(page, 'name', PT.errors['name-length']);
+  await context.close();
+});
+
+test('invalid email shows the matching error and no receipt', async () => {
+  const { context, page } = await openForm();
+  await fillValid(page);
+  await page.fill('#dispatch-email', '');
+  await submit(page);
+  await assertErrorWithoutReceipt(page, 'email', PT.errors['email-required']);
+  await page.fill('#dispatch-email', 'ana@acme');
+  await submit(page);
+  await assertErrorWithoutReceipt(page, 'email', PT.errors['email-invalid']);
+  await context.close();
+});
+
+test('invalid whatsapp shows the whatsapp error and no receipt', async () => {
+  const { context, page } = await openForm();
+  await fillValid(page);
+  await page.fill('#dispatch-phone', '');
+  await page.locator('#dispatch-phone').pressSequentially('169912345');
+  await submit(page);
+  await assertErrorWithoutReceipt(page, 'phone', PT.errors['phone-invalid']);
+  await context.close();
+});
+
+test('no service shows the service error and no receipt', async () => {
+  const { context, page } = await openForm();
+  await fillValid(page);
+  await page.uncheck('#dispatch-services input[value="web-system"]');
+  await submit(page);
+  await assertErrorWithoutReceipt(page, 'services', PT.errors['services-required']);
+  await context.close();
+});
+
+test('short message shows the message error and no receipt', async () => {
+  const { context, page } = await openForm();
+  await fillValid(page);
+  await page.fill('#dispatch-message', 'a'.repeat(19));
+  await submit(page);
+  await assertErrorWithoutReceipt(page, 'message', PT.errors['message-length']);
+  await context.close();
+});
+
+test('typing whatsapp digits shows the BR mask', async () => {
+  const { context, page } = await openForm();
+  const phone = page.locator('#dispatch-phone');
+  await phone.pressSequentially('16991234567');
+  assert.equal(await phone.inputValue(), '(16) 99123-4567');
+  await phone.fill('');
+  await phone.pressSequentially('1633334444');
+  assert.equal(await phone.inputValue(), '(16) 3333-4444');
+  await phone.fill('');
+  await phone.pressSequentially('16a9b9123x4567999');
+  assert.equal(await phone.inputValue(), '(16) 99123-4567');
+  await context.close();
+});
+
+test('text inputs carry maxlength at their bounds', async () => {
+  const { context, page } = await openForm();
+  const lengths = {};
+  for (const id of ['dispatch-name', 'dispatch-company', 'dispatch-email', 'dispatch-message']) lengths[id] = await page.getAttribute(`#${id}`, 'maxlength');
+  assert.deepEqual(lengths, { 'dispatch-name': '80', 'dispatch-company': '80', 'dispatch-email': '254', 'dispatch-message': '2000' });
+  await context.close();
+});
+
+test('invalid submit focuses the first error with aria wiring', async () => {
+  const { context, page } = await openForm();
+  await fillValid(page);
+  await page.fill('#dispatch-email', 'ana@acme');
+  await page.fill('#dispatch-message', 'curta');
+  await page.focus('[data-dispatch-submit-btn]');
+  await submit(page);
+  await page.waitForFunction(() => document.activeElement?.id === 'dispatch-email');
+  assert.equal(await page.getAttribute('#dispatch-email', 'aria-invalid'), 'true');
+  const describedBy = await page.getAttribute('#dispatch-email', 'aria-describedby');
+  assert.equal(describedBy, 'dispatch-email-error');
+  assert.equal((await page.locator(`#${describedBy}`).innerText()).replace('■', '').trim(), PT.errors['email-invalid']);
+  assert.equal(await page.getAttribute('#dispatch-message', 'aria-invalid'), 'true');
+  assert.equal(await page.getAttribute('#dispatch-name', 'aria-invalid'), null);
+  await context.close();
+});
+
+test('message textarea holds at most 2000 characters', async () => {
+  const { context, page } = await openForm();
+  await page.focus('#dispatch-message');
+  await page.keyboard.insertText('x'.repeat(2500));
+  assert.equal((await page.inputValue('#dispatch-message')).length, 2000);
+  await context.close();
+});
+
+test('form has no horizontal overflow from 320 to 2560 px in both locales', async () => {
+  for (const locale of ['pt-br', 'en']) {
+    for (const width of [320, 768, 1440, 2560]) {
+      const { context, page } = await openForm({ locale, width });
+      await submit(page);
+      await page.waitForSelector('[data-error-message]');
+      const metrics = await page.evaluate(() => {
+        const contact = document.getElementById('contact');
+        const form = document.querySelector('[data-bounty-dispatch]');
+        return {
+          doc: [document.documentElement.scrollWidth, document.documentElement.clientWidth],
+          contact: [contact.scrollWidth, contact.clientWidth],
+          form: [form.scrollWidth, form.clientWidth],
+        };
+      });
+      for (const [name, [scroll, client]] of Object.entries(metrics)) {
+        assert.ok(scroll <= client, `${locale} @${width}px ${name}: ${scroll} > ${client}`);
+      }
+      await context.close();
+    }
+  }
+});

@@ -254,15 +254,10 @@ export interface TranslationSchema {
     headerSub: string;
     nameLabel: string;
     namePlaceholder: string;
-    nameError: string;
     emailLabel: string;
     emailPlaceholder: string;
-    emailRequiredError: string;
-    emailInvalidError: string;
     messageLabel: string;
     messagePlaceholder: string;
-    messageEmptyError: string;
-    messageShortError: string;
     companyLabel: string;
     companyPlaceholder: string;
     phoneLabel: string;
@@ -640,15 +635,10 @@ export const ptBrDict: TranslationSchema = {
     servicesKey: 'SERVIÇOS:',
     budgetKey: 'ORÇAMENTO:',
     deadlineKey: 'PRAZO:',
-    nameError: 'Identificador/Nome obrigatório.',
     emailLabel: '03 // SEU E-MAIL DE RETORNO',
     emailPlaceholder: 'Ex: contato@empresa.com',
-    emailRequiredError: 'E-mail de retorno obrigatório.',
-    emailInvalidError: 'Formato de e-mail inválido.',
     messageLabel: '08 // DETALHES DO PROJETO',
     messagePlaceholder: 'Conte sobre o sistema web, painel, site ou integração, objetivos e prazo estimado...',
-    messageEmptyError: 'A mensagem da proposta não pode ficar vazia.',
-    messageShortError: 'A proposta deve conter pelo menos 10 caracteres.',
     submitCta: 'ENVIAR PROPOSTA DE PROJETO',
     receiptSuccess: 'TRANSMISSÃO PREPARADA // 100% VALIDADA!',
     codenameKey: 'REMETENTE:',
@@ -1011,15 +1001,10 @@ export const enDict = {
     servicesKey: 'SERVICES:',
     budgetKey: 'BUDGET:',
     deadlineKey: 'TIMELINE:',
-    nameError: 'Sender name/codename is required.',
     emailLabel: '03 // RETURN FREQUENCY (YOUR EMAIL)',
     emailPlaceholder: 'e.g. contact@company.com',
-    emailRequiredError: 'Return email address is required.',
-    emailInvalidError: 'Invalid email address format.',
     messageLabel: '08 // PROJECT DETAILS',
     messagePlaceholder: 'Tell me about the web system, dashboard, site or integration, goals, and timeline...',
-    messageEmptyError: 'Proposal payload cannot be empty.',
-    messageShortError: 'Proposal payload must be at least 10 characters.',
     submitCta: 'SEND PROJECT PROPOSAL',
     receiptSuccess: 'TRANSMISSION PREPARED // 100% VALIDATED!',
     codenameKey: 'SENDER:',
