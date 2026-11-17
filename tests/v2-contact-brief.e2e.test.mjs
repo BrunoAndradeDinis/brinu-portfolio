@@ -148,6 +148,11 @@ test('unchecking job-only restores budget and deadline', async () => {
 test('locale switch translates the form and keeps typed values', async () => {
   const { context, page } = await openForm();
   await page.fill('#dispatch-name', 'Ana Souza');
+  await page.fill('#dispatch-company', 'Acme');
+  await page.locator('#dispatch-phone').pressSequentially('16991234567');
+  await page.check('#dispatch-services input[value="site"]');
+  await page.check('#dispatch-budget input[value="over-15k"]');
+  await page.check('#dispatch-deadline input[value="urgent"]');
   await page.fill('#dispatch-message', 'Mensagem curta');
   await submit(page);
   assert.equal((await page.locator('[data-error-email]').innerText()).replace('■', '').trim(), PT.errors['email-required']);
@@ -160,8 +165,31 @@ test('locale switch translates the form and keeps typed values', async () => {
 
   assert.equal(await page.inputValue('#dispatch-name'), 'Ana Souza');
   assert.equal(await page.inputValue('#dispatch-message'), 'Mensagem curta');
-  assert.equal(await page.getAttribute('#dispatch-name', 'placeholder'), EN.namePlaceholder);
+  assert.equal(await page.inputValue('#dispatch-company'), 'Acme');
+  assert.equal(await page.inputValue('#dispatch-phone'), '(16) 99123-4567');
+  assert.deepEqual(await checkedValue(page, 'dispatch-services'), ['site']);
+  assert.deepEqual(await checkedValue(page, 'dispatch-budget'), ['over-15k']);
+  assert.deepEqual(await checkedValue(page, 'dispatch-deadline'), ['urgent']);
+  const labelTexts = (await page.locator('[data-dispatch-form] > div > label').allInnerTexts()).map((text) => text.replace(/\s+/g, ' ').trim());
+  assert.deepEqual(labelTexts, [
+    EN.nameLabel,
+    `${EN.companyLabel} ${EN.optionalTag}`,
+    EN.emailLabel,
+    `${EN.phoneLabel} ${EN.optionalTag}`,
+    EN.messageLabel,
+  ]);
+  const placeholders = {};
+  for (const id of ['name', 'company', 'email', 'phone', 'message']) placeholders[id] = await page.getAttribute(`#dispatch-${id}`, 'placeholder');
+  assert.deepEqual(placeholders, {
+    name: EN.namePlaceholder,
+    company: EN.companyPlaceholder,
+    email: EN.emailPlaceholder,
+    phone: EN.phonePlaceholder,
+    message: EN.messagePlaceholder,
+  });
   assert.equal((await page.locator('#dispatch-services legend').innerText()).trim(), EN.servicesLegend);
+  assert.equal((await page.locator('#dispatch-budget legend').innerText()).trim(), EN.budgetLegend);
+  assert.equal((await page.locator('#dispatch-deadline legend').innerText()).trim(), EN.deadlineLegend);
   assert.deepEqual(await groupLabels(page, 'dispatch-services'), ['Web system / dashboard', 'Website / landing page', 'Integration / API / maintenance', 'Job opportunity']);
   assert.deepEqual(await groupLabels(page, 'dispatch-budget'), ['Up to R$ 3,000', 'R$ 3,000 – R$ 8,000', 'R$ 8,000 – R$ 15,000', 'Over R$ 15,000', 'To be discussed']);
   assert.deepEqual(await groupLabels(page, 'dispatch-deadline'), ['Urgent (within 1 month)', '1 to 3 months', 'Flexible']);
@@ -345,6 +373,28 @@ test('form has no horizontal overflow from 320 to 2560 px in both locales', asyn
       });
       for (const [name, [scroll, client]] of Object.entries(metrics)) {
         assert.ok(scroll <= client, `${locale} @${width}px ${name}: ${scroll} > ${client}`);
+      }
+      await page.fill('#dispatch-name', 'N'.repeat(80));
+      await page.fill('#dispatch-company', 'C'.repeat(80));
+      await page.fill('#dispatch-email', `${'e'.repeat(64)}@${'d'.repeat(185)}.com`);
+      await page.locator('#dispatch-phone').pressSequentially('16991234567');
+      await page.check('#dispatch-services input[value="web-system"]');
+      await page.check('#dispatch-services input[value="site"]');
+      await page.check('#dispatch-services input[value="integration"]');
+      await page.fill('#dispatch-message', 'W'.repeat(2000));
+      await submit(page);
+      await page.waitForSelector('[data-dispatch-receipt]');
+      const receiptMetrics = await page.evaluate(() => {
+        const contact = document.getElementById('contact');
+        const card = document.querySelector('[data-bounty-dispatch]');
+        return {
+          doc: [document.documentElement.scrollWidth, document.documentElement.clientWidth],
+          contact: [contact.scrollWidth, contact.clientWidth],
+          receipt: [card.scrollWidth, card.clientWidth],
+        };
+      });
+      for (const [name, [scroll, client]] of Object.entries(receiptMetrics)) {
+        assert.ok(scroll <= client, `${locale} @${width}px receipt ${name}: ${scroll} > ${client}`);
       }
       await context.close();
     }

@@ -27,7 +27,12 @@ const FieldError: React.FC<FieldErrorProps> = ({ id, field, message }) => (
 );
 
 const OptionalTag: React.FC<{ text?: string }> = ({ text }) =>
-  text ? <span className="ml-2 text-muted-gray font-normal">{text}</span> : null;
+  text ? (
+    <>
+      {' '}
+      <span className="ml-1 text-muted-gray font-normal">{text}</span>
+    </>
+  ) : null;
 
 interface TextFieldProps {
   id: string;
