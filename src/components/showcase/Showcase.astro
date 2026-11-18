@@ -3,6 +3,7 @@ import { getLocalizedCases, MAIN_CASES } from "../../data/cases";
 import { SHOWCASE_MEDIA } from "../../data/showcase";
 import { SHOWCASE_LAYOUT } from "../../data/showcase-layout";
 import { ptBrDict } from "../../i18n/dictionaries";
+import PanelClose from "../p5/PanelClose.astro";
 import { casePath } from "../../utils/case-pages";
 import { showcaseNeighbors, showcasePosition, showcaseTiles } from "../../utils/showcase-nav";
 
@@ -40,6 +41,14 @@ const sizeFirst = "h-[300px] w-[min(350px,calc(100vw-2rem))] md:h-[504px] md:w-[
 const sizeSecond = "h-[300px] w-[280px] md:h-[504px] md:w-[460px] lg:h-[580px] lg:w-[640px]";
 const tag =
   "absolute top-5 left-[22px] max-w-[calc(100%-44px)] bg-space-base px-3 py-1.5 font-mono text-xs font-bold tracking-[0.1em] text-paper-white uppercase";
+
+const CASE_VIDEO_ATTRS = {
+  muted: true,
+  playsinline: true,
+  disablepictureinpicture: true,
+  disableremoteplayback: true,
+  controlslist: "nofullscreen nodownload noremoteplayback noplaybackrate",
+};
 
 const videoList = media.video
   ? (media.videos && media.videos.length > 0 ? media.videos : [media.video, media.video, media.video])
@@ -118,6 +127,8 @@ const videoList = media.video
         aria-label={text.stageAria}
         data-i18n="showcase.stageAria"
         data-i18n-attr="aria-label"
+        aria-describedby={videoList.length > 0 ? `showcase-fullscreen-hint-${caseId}` : undefined}
+        aria-keyshortcuts={videoList.length > 0 ? "F Enter" : undefined}
         class="flex h-full scroll-pl-3 snap-x snap-mandatory items-center gap-3 overflow-x-auto overscroll-x-contain py-3 pl-3 [overflow-anchor:none] [scrollbar-width:none] md:scroll-pl-5 md:gap-5 md:py-4 md:pl-5 lg:scroll-pl-6 lg:gap-6 lg:py-5 lg:pl-6 [&::-webkit-scrollbar]:hidden"
       >
         {videoList.length > 0 ? (
@@ -128,6 +139,7 @@ const videoList = media.video
                 data-showcase-card={slotName}
                 data-showcase-card-clone={slotName ? undefined : ""}
                 aria-hidden={slotName ? undefined : "true"}
+                data-video-index={idx}
                 class={`${card} m-0 cursor-none ${sizeFirst}`}
               >
                 <video
@@ -138,14 +150,26 @@ const videoList = media.video
                   height={vid.height}
                   poster={vid.poster.src}
                   preload="none"
-                  muted
+                  {...CASE_VIDEO_ATTRS}
                   loop
-                  playsinline
                   aria-label={vid.poster.alt["pt-br"]}
+                  aria-description={text.hintTitle}
+                  data-i18n="showcase.hintTitle"
+                  data-i18n-attr="aria-description"
                 >
                   <source src={vid.webm} type="video/webm" />
                   <source src={vid.mp4} type="video/mp4" />
                 </video>
+                <span data-showcase-hint aria-hidden="true" class="showcase-hint pointer-events-none absolute right-4 bottom-4 z-[5] flex max-w-[calc(100%-2rem)] items-center gap-2 border-2 border-paper-white bg-space-base px-2.5 py-1.5 font-mono text-[11px] font-bold tracking-[0.1em] whitespace-nowrap text-paper-white uppercase shadow-[3px_3px_0_var(--color-bebop-red)] md:right-6 md:bottom-6 md:text-xs">
+                  <span data-hint-variant="dblclick" class="items-center gap-2">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="square" focusable="false"><path d="M7 3v9l-2.5-2L3 11.5 8 20h9l2-8-6-1.5V3z" /></svg>
+                    <span data-i18n="showcase.hintDoubleClick">{text.hintDoubleClick}</span>
+                  </span>
+                  <span data-hint-variant="rotate" class="items-center gap-2">
+                    <svg class="showcase-hint-phone" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="square" focusable="false"><rect x="7" y="3" width="10" height="18" /><path d="M11 18h2" /></svg>
+                    <span data-i18n="showcase.hintRotate">{text.hintRotate}</span>
+                  </span>
+                </span>
               </figure>
             );
           })
@@ -244,9 +268,143 @@ const videoList = media.video
       </a>
     ))}
   </nav>
+
+  {videoList.length > 0 && (
+    <>
+      <span id={`showcase-fullscreen-hint-${caseId}`} hidden data-i18n="showcase.fullscreenOpenAria">{text.fullscreenOpenAria}</span>
+      <script type="application/json" data-showcase-videos-data set:html={JSON.stringify(videoList)} />
+      <dialog
+        data-showcase-fullscreen-modal
+        data-lenis-prevent
+        aria-label={text.stageAria}
+        class="fixed inset-0 z-[10000] m-0 h-dvh max-h-none w-screen max-w-none border-0 bg-space-base/95 p-0 text-paper-white backdrop-blur-md flex flex-col justify-between items-center select-none overflow-hidden"
+      >
+        <div class="w-full shrink-0 flex items-center justify-between gap-3 px-4 py-3 sm:px-6 sm:py-4 bg-space-base border-b-2 border-bebop-red">
+          <div class="flex items-center gap-3 min-w-0">
+            <span class="shrink-0 inline-block px-2 py-0.5 border border-paper-white bg-bebop-red font-mono text-[10px] sm:text-xs font-black uppercase text-paper-white tracking-wider">
+              {layout.name}
+            </span>
+            <span data-showcase-modal-tag class="font-mono text-xs sm:text-sm text-paper-white font-bold tracking-wider uppercase truncate"></span>
+          </div>
+
+          <div class="flex items-center gap-3 shrink-0">
+            <span data-showcase-modal-counter class="font-mono text-xs sm:text-sm font-bold tracking-widest text-paper-white">
+              01 / {String(videoList.length).padStart(2, "0")}
+            </span>
+
+            <PanelClose tone="paper" inline />
+          </div>
+        </div>
+
+        <div class="relative w-full flex-1 min-h-0 flex items-center justify-center p-3 sm:p-6 md:p-10">
+          <button
+            type="button"
+            data-showcase-modal-prev
+            aria-label={text.fullscreenPrev}
+            data-i18n="showcase.fullscreenPrev"
+            data-i18n-attr="aria-label"
+            class="absolute left-2 sm:left-6 md:left-10 z-30 flex h-12 w-12 sm:h-14 sm:w-14 md:h-16 md:w-16 items-center justify-center border-3 border-paper-white bg-space-base text-paper-white font-display text-2xl sm:text-3xl font-black uppercase hover:bg-bebop-red hover:text-paper-white transition-all cursor-pointer shadow-[4px_4px_0_var(--color-bebop-red)] active:translate-x-0.5 active:translate-y-0.5"
+          >
+            <span aria-hidden="true">←</span>
+          </button>
+
+          <div class="relative max-w-full max-h-full flex items-center justify-center border-4 border-paper-white bg-space-base shadow-[10px_10px_0_var(--color-bebop-red)] overflow-hidden">
+            <video
+              data-showcase-modal-video
+              width={1920}
+              height={1080}
+              class="max-w-[85vw] sm:max-w-[78vw] md:max-w-[75vw] max-h-[65vh] sm:max-h-[72vh] md:max-h-[76vh] object-contain block bg-space-base"
+              {...CASE_VIDEO_ATTRS}
+              controls
+              preload="auto"
+            ></video>
+          </div>
+
+          <button
+            type="button"
+            data-showcase-modal-next
+            aria-label={text.fullscreenNext}
+            data-i18n="showcase.fullscreenNext"
+            data-i18n-attr="aria-label"
+            class="absolute right-2 sm:right-6 md:right-10 z-30 flex h-12 w-12 sm:h-14 sm:w-14 md:h-16 md:w-16 items-center justify-center border-3 border-paper-white bg-space-base text-paper-white font-display text-2xl sm:text-3xl font-black uppercase hover:bg-bebop-red hover:text-paper-white transition-all cursor-pointer shadow-[4px_4px_0_var(--color-bebop-red)] active:translate-x-0.5 active:translate-y-0.5"
+          >
+            <span aria-hidden="true">→</span>
+          </button>
+        </div>
+
+        <div class="w-full shrink-0 flex items-center justify-center gap-4 py-2.5 px-4 bg-space-base border-t-2 border-space-base/50 font-mono text-[10px] sm:text-xs text-muted-gray uppercase">
+          <span data-i18n="showcase.fullscreenHint">{text.fullscreenHint}</span>
+        </div>
+      </dialog>
+    </>
+  )}
 </section>
 
 <style>
+  dialog[data-showcase-fullscreen-modal] {
+    display: none;
+  }
+
+  dialog[data-showcase-fullscreen-modal][open] {
+    display: flex;
+  }
+
+  dialog[data-showcase-fullscreen-modal]::backdrop {
+    background-color: rgba(8, 8, 8, 0.95);
+    backdrop-filter: blur(8px);
+  }
+
+  video::-webkit-media-controls-mute-button,
+  video::-webkit-media-controls-volume-slider,
+  video::-webkit-media-controls-volume-control-container,
+  video::-webkit-media-controls-fullscreen-button,
+  video::-webkit-media-controls-overflow-button {
+    display: none;
+  }
+
+  .showcase-hint {
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
+  }
+
+  .showcase-hint [data-hint-variant] {
+    display: none;
+  }
+
+  [data-showcase-hint-on] [data-showcase-card="media"] .showcase-hint {
+    opacity: 1;
+  }
+
+  [data-showcase-hint-mode="dblclick"] [data-showcase-card="media"] [data-hint-variant="dblclick"],
+  [data-showcase-hint-mode="rotate"] [data-showcase-card="media"] [data-hint-variant="rotate"] {
+    display: inline-flex;
+  }
+
+  .showcase-hint-phone {
+    transform-box: fill-box;
+    transform-origin: center;
+  }
+
+  [data-showcase-hint-mode="rotate"][data-showcase-hint-on] .showcase-hint-phone {
+    animation: showcase-hint-rotate 1.5s ease-in-out infinite;
+  }
+
+  @keyframes showcase-hint-rotate {
+    0%, 20% { transform: rotate(0deg); }
+    60%, 100% { transform: rotate(-90deg); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .showcase-hint {
+      transition: none;
+    }
+
+    [data-showcase-hint-mode="rotate"] .showcase-hint-phone {
+      animation: none;
+      transform: rotate(-90deg);
+    }
+  }
+
   .showcase-video-toggle {
     cursor: none;
   }
@@ -274,11 +432,21 @@ const videoList = media.video
 <script>
   import { onPageReady } from "../../utils/page-lifecycle";
   import { initShowcaseVideo } from "./showcase-video-bind";
+  import { initShowcaseFullscreen } from "./showcase-fullscreen";
+  import { initShowcaseHint } from "./showcase-hint";
   import { installShowcaseTransition } from "./showcase-transition";
 
   installShowcaseTransition();
   onPageReady(() => {
     const showcase = document.querySelector<HTMLElement>("[data-showcase]");
-    return showcase ? initShowcaseVideo(showcase) : undefined;
+    if (!showcase) return undefined;
+    const teardownVideo = initShowcaseVideo(showcase);
+    const teardownFullscreen = initShowcaseFullscreen(showcase);
+    const teardownHint = initShowcaseHint(showcase);
+    return () => {
+      teardownVideo?.();
+      teardownFullscreen?.();
+      teardownHint();
+    };
   });
 </script>

@@ -917,3 +917,256 @@ test('SHOW-11: the video cards form an infinite carousel that advances when clic
     await context.close();
   }
 });
+
+test('SHOW-12: double-clicking the case video opens the fullscreen carousel with the shared close button', async () => {
+  const viewports = [
+    { label: 'mobile', width: 375, height: 812 },
+    { label: 'tablet', width: 768, height: 1024 },
+    { label: 'desktop', width: 1280, height: 800 },
+  ];
+
+  for (const vp of viewports) {
+    const { context, page } = await openPath('/cases/magalu-cloud', { viewport: vp, reducedMotion: 'reduce' });
+    try {
+      assert.equal(await page.locator('[data-showcase-fullscreen-trigger]').count(), 0, `${vp.label}: no fullscreen button on the video`);
+      const visibleFullscreenText = await page.locator('[data-showcase-viewport]').innerText();
+      assert.doesNotMatch(visibleFullscreenText, /FULLSCREEN|TELA CHEIA/i, `${vp.label}: no fullscreen label on the video`);
+
+      const modal = page.locator('[data-showcase-fullscreen-modal]');
+      const active = page.locator('[data-showcase-card="media"]');
+      await active.dblclick();
+      await page.waitForTimeout(200);
+      assert.equal(await modal.evaluate((el) => el.open), true, `${vp.label}: dblclick opens the lightbox`);
+
+      const closeBtn = modal.locator('[data-panel-close]');
+      assert.equal(await closeBtn.count(), 1, `${vp.label}: lightbox uses the shared PanelClose`);
+      const close = await closeBtn.evaluate((el) => {
+        const r = el.getBoundingClientRect();
+        return { text: el.textContent.trim(), aria: el.getAttribute('aria-label'), w: Math.round(r.width), h: Math.round(r.height), svg: !!el.querySelector('svg path') };
+      });
+      assert.deepEqual(close, { text: '', aria: 'Fechar', w: 44, h: 44, svg: true }, `${vp.label}: icon-only 44px X close`);
+      assert.equal(await closeBtn.isVisible(), true);
+
+      const counter = page.locator('[data-showcase-modal-counter]');
+      assert.equal((await counter.textContent()).trim(), '01 / 08', `${vp.label}: initial counter is 01 / 08`);
+      await page.locator('[data-showcase-modal-prev]').click();
+      await page.waitForTimeout(150);
+      assert.equal((await counter.textContent()).trim(), '08 / 08', `${vp.label}: carousel wraps to the last video`);
+      await page.locator('[data-showcase-modal-next]').click();
+      await page.waitForTimeout(150);
+      assert.equal((await counter.textContent()).trim(), '01 / 08', `${vp.label}: carousel wraps to the first video`);
+
+      await closeBtn.click();
+      await page.waitForTimeout(200);
+      assert.equal(await modal.evaluate((el) => !el.open), true, `${vp.label}: close button closes the lightbox`);
+
+      await page.locator('[data-showcase-track]').focus();
+      await page.keyboard.press('f');
+      await page.waitForTimeout(200);
+      assert.equal(await modal.evaluate((el) => el.open), true, `${vp.label}: F on the focused stage opens the lightbox`);
+      await page.keyboard.press('Escape');
+      await page.waitForTimeout(200);
+      assert.equal(await modal.evaluate((el) => !el.open), true, `${vp.label}: Esc closes the lightbox`);
+    } finally {
+      await context.close();
+    }
+  }
+});
+
+test('SHOW-13: every case video hides fullscreen, volume, download and picture-in-picture controls', async () => {
+  const { context, page } = await openPath('/cases/aurastream', { locale: 'en' });
+  try {
+    const videos = await page.$$eval('[data-showcase] video', (list) => list.map((v) => ({
+      muted: v.muted && v.hasAttribute('muted'),
+      pip: v.disablePictureInPicture,
+      remote: v.hasAttribute('disableremoteplayback'),
+      list: [...v.controlsList],
+    })));
+    assert.ok(videos.length > 1, 'case renders inline and lightbox videos');
+    for (const video of videos) {
+      assert.equal(video.muted, true);
+      assert.equal(video.pip, true);
+      assert.equal(video.remote, true);
+      for (const token of ['nofullscreen', 'nodownload', 'noremoteplayback']) assert.ok(video.list.includes(token), `controlsList has ${token}`);
+    }
+    const hidden = await page.evaluate(() => {
+      const css = [...document.styleSheets].flatMap((sheet) => { try { return [...sheet.cssRules].map((r) => r.cssText); } catch { return []; } }).join('\n');
+      return ['mute-button', 'volume-slider', 'fullscreen-button', 'overflow-button'].filter((part) => !new RegExp(`::-webkit-media-controls-${part}[^{]*\\{[^}]*display: none`).test(css));
+    });
+    assert.deepEqual(hidden, [], 'native mute, volume, fullscreen and overflow controls are hidden');
+
+    const box = await page.locator('[data-showcase-card="media"]').boundingBox();
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+    await page.mouse.dblclick(box.x + box.width / 2, box.y + box.height / 2);
+    await page.waitForTimeout(200);
+    assert.equal(await page.locator('[data-showcase-fullscreen-modal]').evaluate((el) => el.open), true, 'dblclick through the cursor ball opens the lightbox');
+    const aria = await page.locator('[data-showcase-fullscreen-modal] [data-panel-close]').getAttribute('aria-label');
+    assert.equal(aria, 'Close', 'close label follows the active locale');
+  } finally {
+    await context.close();
+  }
+});
+
+async function hintState(page) {
+  return page.evaluate(() => {
+    const root = document.querySelector('[data-showcase]');
+    const hint = document.querySelector('[data-showcase-card="media"] [data-showcase-hint]');
+    const variant = [...hint.querySelectorAll('[data-hint-variant]')].find((el) => getComputedStyle(el).display !== 'none');
+    const r = hint.getBoundingClientRect();
+    const card = hint.closest('figure').getBoundingClientRect();
+    return {
+      on: root.hasAttribute('data-showcase-hint-on'),
+      opacity: Number(getComputedStyle(hint).opacity),
+      pointerEvents: getComputedStyle(hint).pointerEvents,
+      variant: variant?.dataset.hintVariant ?? null,
+      text: variant?.textContent.trim() ?? '',
+      inside: r.left >= card.left && r.right <= card.right && r.top >= card.top && r.bottom <= card.bottom,
+      overflow: document.documentElement.scrollWidth > document.documentElement.clientWidth,
+    };
+  });
+}
+
+const DBL_KEY = 'brinu_showcase_hint_dblclick_seen';
+const ROTATE_KEY = 'brinu_showcase_hint_rotate_seen';
+
+async function hoverActiveCard(page) {
+  const box = await page.locator('[data-showcase-card="media"]').boundingBox();
+  await page.mouse.move(box.x - 40, box.y + 40);
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+  return box;
+}
+
+test('SHOW-14: the double-click badge shows once per visitor and never blocks the double-click', async () => {
+  const { context, page } = await openPath('/cases/uriana', { reducedMotion: 'reduce' });
+  try {
+    assert.equal(await page.locator('[data-showcase-card="media"] video').getAttribute('aria-description'), 'Clique 2x para ampliar');
+    assert.equal((await hintState(page)).on, false, 'hint stays hidden before hover');
+    assert.equal(await page.evaluate((k) => localStorage.getItem(k), DBL_KEY), null, 'not marked as seen on load');
+
+    const box = await hoverActiveCard(page);
+    const shown = await hintState(page);
+    assert.deepEqual(
+      { on: shown.on, opacity: shown.opacity, variant: shown.variant, text: shown.text, pointerEvents: shown.pointerEvents, inside: shown.inside },
+      { on: true, opacity: 1, variant: 'dblclick', text: 'CLIQUE 2X', pointerEvents: 'none', inside: true },
+    );
+    assert.equal(await page.evaluate((k) => localStorage.getItem(k), DBL_KEY), '1', 'marked as seen once shown');
+
+    const hintBox = await page.locator('[data-showcase-card="media"] [data-showcase-hint]').boundingBox();
+    await page.mouse.dblclick(hintBox.x + hintBox.width / 2, hintBox.y + hintBox.height / 2);
+    await page.waitForTimeout(200);
+    assert.equal(await page.locator('[data-showcase-fullscreen-modal]').evaluate((el) => el.open), true, 'dblclick on the badge still opens the lightbox');
+    await page.keyboard.press('Escape');
+    await page.waitForTimeout(200);
+
+    await page.waitForTimeout(3300);
+    assert.equal((await hintState(page)).on, false, 'hint clears after three seconds');
+    await hoverActiveCard(page);
+    assert.equal((await hintState(page)).on, false, 'no hint on re-entry');
+
+    await page.mouse.click(box.x + box.width + 60, box.y + box.height / 2);
+    await page.waitForTimeout(400);
+    await hoverActiveCard(page);
+    assert.equal((await hintState(page)).on, false, 'no hint on the next video');
+
+    await page.reload({ waitUntil: 'networkidle' });
+    await page.evaluate(() => { document.getElementById('intro-preloader')?.remove(); window.dispatchEvent(new CustomEvent('intro-complete')); });
+    await hoverActiveCard(page);
+    assert.equal((await hintState(page)).on, false, 'no hint after a reload');
+
+    await page.goto(`${baseUrl}/cases/aurastream`, { waitUntil: 'networkidle' });
+    await page.evaluate(() => { document.getElementById('intro-preloader')?.remove(); window.dispatchEvent(new CustomEvent('intro-complete')); });
+    await hoverActiveCard(page);
+    assert.equal((await hintState(page)).on, false, 'no hint on another case');
+
+    await page.evaluate((k) => localStorage.removeItem(k), DBL_KEY);
+    await page.reload({ waitUntil: 'networkidle' });
+    await page.evaluate(() => { document.getElementById('intro-preloader')?.remove(); window.dispatchEvent(new CustomEvent('intro-complete')); });
+    await hoverActiveCard(page);
+    assert.equal((await hintState(page)).on, true, 'clearing the key brings the hint back');
+    assert.equal(await page.evaluate((k) => localStorage.getItem(k), ROTATE_KEY), null, 'desktop hint leaves the phone flag alone');
+
+    await page.locator('#cockpit-trigger-btn').click();
+    await page.locator('[data-cockpit-lang="en"]').click();
+    await page.waitForFunction(() => document.documentElement.getAttribute('data-locale') === 'en');
+    const copy = await page.locator('[data-showcase-card="media"] [data-hint-variant="dblclick"]').textContent();
+    assert.equal(copy.trim(), 'DOUBLE CLICK', 'badge copy follows the locale');
+    assert.equal(await page.locator('[data-showcase-card="media"] video').getAttribute('aria-description'), 'Double-click to enlarge', 'description stays after the hint was seen');
+  } finally {
+    await context.close();
+  }
+});
+
+test('SHOW-15: on a phone in portrait the rotate hint shows once per visitor, never in landscape, independent from desktop', async () => {
+  const phone = { isMobile: true, hasTouch: true, reducedMotion: 'reduce' };
+  const showsRotate = async (page) => {
+    await page.locator('[data-showcase-stage]').scrollIntoViewIfNeeded();
+    return page
+      .waitForFunction(() => document.querySelector('[data-showcase]').hasAttribute('data-showcase-hint-on'), null, { timeout: 1500 })
+      .then(() => true, () => false);
+  };
+  const ready = (page) => page.evaluate(() => { document.getElementById('intro-preloader')?.remove(); window.dispatchEvent(new CustomEvent('intro-complete')); });
+
+  const portrait = await openPath('/cases/uriana', { viewport: { width: 375, height: 812 }, ...phone });
+  try {
+    const { page } = portrait;
+    await page.evaluate((k) => localStorage.setItem(k, '1'), DBL_KEY);
+    assert.equal(await showsRotate(page), true, 'rotate hint shows even when the desktop hint was seen');
+    const state = await hintState(page);
+    assert.deepEqual({ variant: state.variant, text: state.text, inside: state.inside, overflow: state.overflow }, { variant: 'rotate', text: 'VIRE A TELA', inside: true, overflow: false });
+    assert.equal(await page.evaluate((k) => localStorage.getItem(k), ROTATE_KEY), '1');
+    await page.waitForTimeout(3300);
+    assert.equal((await hintState(page)).on, false, 'rotate hint clears after three seconds');
+
+    await page.evaluate(() => window.scrollTo(0, 0));
+    await page.waitForTimeout(200);
+    assert.equal(await showsRotate(page), false, 'no rotate hint when the video re-enters view');
+
+    await page.reload({ waitUntil: 'networkidle' });
+    await ready(page);
+    assert.equal(await showsRotate(page), false, 'no rotate hint after a reload');
+
+    await page.goto(`${baseUrl}/cases/efood`, { waitUntil: 'networkidle' });
+    await ready(page);
+    assert.equal(await showsRotate(page), false, 'no rotate hint on another case');
+
+    await page.evaluate((k) => localStorage.removeItem(k), ROTATE_KEY);
+    await page.reload({ waitUntil: 'networkidle' });
+    await ready(page);
+    assert.equal(await showsRotate(page), true, 'clearing the key brings the rotate hint back');
+  } finally {
+    await portrait.context.close();
+  }
+
+  const landscape = await openPath('/cases/uriana', { viewport: { width: 812, height: 375 }, ...phone });
+  try {
+    await landscape.page.locator('[data-showcase-stage]').scrollIntoViewIfNeeded();
+    await landscape.page.locator('[data-showcase-card="media"]').tap();
+    await landscape.page.waitForTimeout(400);
+    assert.equal((await hintState(landscape.page)).on, false, 'no rotate hint in landscape');
+    assert.equal(await landscape.page.evaluate((k) => localStorage.getItem(k), ROTATE_KEY), null, 'landscape does not mark the hint as seen');
+  } finally {
+    await landscape.context.close();
+  }
+});
+
+test('SHOW-16: the hint fits inside the video without overflow from 320 to 2560px', async () => {
+  for (const width of [320, 768, 1440, 2560]) {
+    const { context, page } = await openPath('/cases/aurastream', { viewport: { width, height: 900 }, locale: 'en', reducedMotion: 'reduce' });
+    try {
+      await page.evaluate(() => {
+        const root = document.querySelector('[data-showcase]');
+        root.dataset.showcaseHintMode = 'rotate';
+        root.dataset.showcaseHintOn = '';
+      });
+      const rotate = await hintState(page);
+      await page.evaluate(() => { document.querySelector('[data-showcase]').dataset.showcaseHintMode = 'dblclick'; });
+      const dbl = await hintState(page);
+      for (const s of [rotate, dbl]) {
+        assert.equal(s.inside, true, `${width}px: ${s.variant} badge fits inside the video`);
+        assert.equal(s.overflow, false, `${width}px: no horizontal overflow`);
+      }
+    } finally {
+      await context.close();
+    }
+  }
+});
