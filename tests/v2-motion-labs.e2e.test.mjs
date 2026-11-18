@@ -1602,8 +1602,8 @@ test('phone cards keep the open link and hide the external links', async () => {
 
 
 const MENU_SECTIONS = {
-  'pt-br': [['#hero', '01 // INÍCIO & MANIFESTO'], ['#works', '02 // ARQUIVO DE PROJETOS'], ['#about', '03 // DOSSIÊ CONFIDANT & SKILLS'], ['#contact', '04 // ENVIAR PROPOSTA'], ['/whoami', '05 // TERMINAL /WHOAMI']],
-  en: [['#hero', '01 // HOME & MANIFESTO'], ['#works', '02 // BOUNTY ARCHIVE (WORKS)'], ['#about', '03 // CONFIDANT DOSSIER & SKILLS'], ['#contact', '04 // TRANSMIT A BOUNTY'], ['/whoami', '05 // TERMINAL /WHOAMI']],
+  'pt-br': [['#hero', 'INÍCIO & SERVIÇOS'], ['#works', 'PROJETOS'], ['#about', 'TRAJETÓRIA'], ['#contact', 'ORÇAMENTO'], ['/whoami', 'TERMINAL']],
+  en: [['#hero', 'HOME & SERVICES'], ['#works', 'PROJECTS'], ['#about', 'CAREER & STACK'], ['#contact', 'GET A QUOTE'], ['/whoami', 'TERMINAL']],
 };
 
 test('the home has no lab section and the menu lists five sections', async () => {

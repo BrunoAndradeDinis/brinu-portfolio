@@ -281,11 +281,11 @@ test('C5: all 5 navigation blades render with index codes and active blade track
   await page.waitForSelector('#cockpit-menu-overlay:not(.hidden)');
 
   const expectedBladesPt = [
-    { id: 'hero', code: '00', label: '01 // INÍCIO & MANIFESTO' },
-    { id: 'works', code: '01', label: '02 // ARQUIVO DE PROJETOS' },
-    { id: 'about', code: '02', label: '03 // DOSSIÊ CONFIDANT & SKILLS' },
-    { id: 'contact', code: '03', label: '04 // ENVIAR PROPOSTA' },
-    { id: 'whoami', code: '04', label: '05 // TERMINAL /WHOAMI' },
+    { id: 'hero', code: '00', label: 'INÍCIO & SERVIÇOS' },
+    { id: 'works', code: '01', label: 'PROJETOS' },
+    { id: 'about', code: '02', label: 'TRAJETÓRIA' },
+    { id: 'contact', code: '03', label: 'ORÇAMENTO' },
+    { id: 'whoami', code: '04', label: 'TERMINAL' },
   ];
 
   const bladesPt = await page.$$eval(
@@ -300,6 +300,7 @@ test('C5: all 5 navigation blades render with index codes and active blade track
           label: labelSpan?.textContent?.trim() || '',
           active: el.getAttribute('data-active-blade'),
           ariaCurrent: el.getAttribute('aria-current'),
+          overflows: labelSpan ? labelSpan.scrollWidth > labelSpan.clientWidth : false,
         };
       })
   );
@@ -311,6 +312,7 @@ test('C5: all 5 navigation blades render with index codes and active blade track
     assert.equal(actual.id, exp.id, `Blade ${i} has expected id ${exp.id}`);
     assert.equal(actual.code, exp.code, `Blade ${exp.id} has index code ${exp.code}`);
     assert.equal(actual.label, exp.label, `Blade ${exp.id} has localized label '${exp.label}'`);
+    assert.equal(actual.overflows, false, `Blade ${exp.id} text must not overflow or truncate`);
   }
 
   const heroBlade = bladesPt.find((b) => b.id === 'hero');
@@ -325,11 +327,11 @@ test('C5: all 5 navigation blades render with index codes and active blade track
   await page.waitForTimeout(100);
 
   const expectedBladesEn = [
-    { id: 'hero', code: '00', label: '01 // HOME & MANIFESTO' },
-    { id: 'works', code: '01', label: '02 // BOUNTY ARCHIVE (WORKS)' },
-    { id: 'about', code: '02', label: '03 // CONFIDANT DOSSIER & SKILLS' },
-    { id: 'contact', code: '03', label: '04 // TRANSMIT A BOUNTY' },
-    { id: 'whoami', code: '04', label: '05 // TERMINAL /WHOAMI' },
+    { id: 'hero', code: '00', label: 'HOME & SERVICES' },
+    { id: 'works', code: '01', label: 'PROJECTS' },
+    { id: 'about', code: '02', label: 'CAREER & STACK' },
+    { id: 'contact', code: '03', label: 'GET A QUOTE' },
+    { id: 'whoami', code: '04', label: 'TERMINAL' },
   ];
 
   const bladesEn = await page.$$eval(

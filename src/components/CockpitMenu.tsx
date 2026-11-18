@@ -346,13 +346,13 @@ export const CockpitMenu: React.FC = () => {
       </div>
 
       {/* Fullscreen Content Container */}
-      <div className="relative z-10 w-full min-h-full box-border flex flex-col justify-between pt-20 sm:pt-24 md:pt-28 pb-6 sm:pb-8 px-4 sm:px-8 md:px-12 lg:px-20 max-w-7xl mx-auto">
+      <div className="relative z-10 w-full min-h-full box-border flex flex-col justify-between pt-20 sm:pt-24 md:pt-28 pb-6 sm:pb-8 px-3 sm:px-6 md:px-8 lg:px-12 max-w-7xl mx-auto">
         <div>
           {/* Header Row */}
           <div className="relative border-b-4 border-paper-white pb-5 mb-8" />
 
           {/* Oversized Persona 5 Navigation Blades */}
-          <nav ref={bladesContainerRef} aria-label={t.menu.title} className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mb-10">
+          <nav ref={bladesContainerRef} aria-label={t.menu.title} className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-5 mb-10">
             {COCKPIT_NAV_ITEMS.map((item, idx) => {
               const label = t.menu.navItems[item.labelKey];
               const isEven = idx % 2 === 0;
@@ -376,7 +376,7 @@ export const CockpitMenu: React.FC = () => {
                     audioSynth.playKeypressBeep(740, 0.025, 0.06);
                     closeMenu();
                   }}
-                  className={`group relative flex items-center justify-between border-4 border-paper-white px-5 sm:px-7 py-4 sm:py-5 font-display text-lg sm:text-2xl font-black uppercase tracking-wider transition-all duration-150 -skew-x-6 sm:-skew-x-12 ${
+                  className={`group relative flex items-center justify-between border-4 border-paper-white px-2.5 sm:px-5 py-2.5 sm:py-3.5 font-display text-[11px] min-[360px]:text-xs sm:text-sm md:text-base lg:text-base xl:text-lg font-black uppercase tracking-tight transition-all duration-150 -skew-x-6 sm:-skew-x-12 ${
                     isActive
                       ? 'bg-bebop-red text-paper-white shadow-[8px_8px_0_var(--color-paper-white)] scale-[1.01]'
                       : isEven
@@ -384,8 +384,8 @@ export const CockpitMenu: React.FC = () => {
                         : 'bg-paper-white text-space-base hover:bg-bebop-red hover:text-paper-white shadow-[6px_6px_0_var(--color-bebop-red)]'
                   } hover:-translate-y-1`}
                 >
-                  <span className="truncate pr-3 skew-x-6 sm:skew-x-12">{label}</span>
-                  <span className="font-mono text-xs sm:text-sm font-bold px-2.5 py-1 border-2 border-current shrink-0 skew-x-6 sm:skew-x-12">
+                  <span className="truncate pr-1.5 sm:pr-3 skew-x-6 sm:skew-x-12">{label}</span>
+                  <span className="font-mono text-xs sm:text-sm font-bold px-1.5 py-0.5 sm:px-2.5 sm:py-1 border-2 border-current shrink-0 skew-x-6 sm:skew-x-12">
                     {item.code}
                   </span>
                 </a>
