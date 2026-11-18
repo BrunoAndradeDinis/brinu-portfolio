@@ -9,11 +9,37 @@
 import Lenis from 'lenis';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { CustomEase } from 'gsap/CustomEase';
 
-// Registra o ScrollTrigger no GSAP imediatamente se no cliente
+gsap.registerPlugin(CustomEase);
 if (typeof window !== 'undefined') {
   gsap.registerPlugin(ScrollTrigger);
 }
+
+let cachedEases: {
+  readonly p5Snap: gsap.EaseFunction;
+  readonly p5Overshoot: gsap.EaseFunction;
+} | null = null;
+
+export function registerP5Eases(): {
+  readonly p5Snap: gsap.EaseFunction;
+  readonly p5Overshoot: gsap.EaseFunction;
+} {
+  if (!cachedEases) {
+    const snap = CustomEase.create('p5Snap', 'M0,0 C0.12,0.98 0.24,1 1,1');
+    const overshoot = CustomEase.create('p5Overshoot', 'M0,0 C0.18,1.28 0.36,1 1,1');
+    cachedEases = { p5Snap: snap, p5Overshoot: overshoot };
+  }
+  return cachedEases;
+}
+
+const initialEases = registerP5Eases();
+export const p5Snap: gsap.EaseFunction = initialEases.p5Snap;
+export const p5Overshoot: gsap.EaseFunction = initialEases.p5Overshoot;
+
+export const MOTION_EASE = { enter: 'p5Snap', fade: 'power2.out' } as const;
+export const MOTION_DURATION = { seconds: 0.5, ms: 500 } as const;
+export const ROUTE_BAND_TIMING = { coverMs: 560, exitMs: 690 } as const;
 
 // Estado singleton
 let lenisInstance: Lenis | null = null;
@@ -22,12 +48,90 @@ let isInitialized = false;
 let mediaQueryList: MediaQueryList | null = null;
 let handleMediaChange: ((e: MediaQueryListEvent) => void) | null = null;
 let handleAnchorClick: ((e: MouseEvent) => void) | null = null;
+let handleViewportBgSync: (() => void) | null = null;
+
+/**
+ * Calcula a distância vertical do topo da viewport até pelo menos 8px abaixo dos controles compactos visíveis da nav.
+ */
+export function getNavClearanceOffset(): number {
+  if (typeof document === 'undefined') return 100;
+  const avatar = document.querySelector<HTMLElement>('#comic-nav-logo [data-nav-avatar]');
+  const trigger = document.getElementById('cockpit-trigger-btn');
+  const avatarBottom = avatar ? avatar.getBoundingClientRect().bottom : 0;
+  const triggerBottom = trigger ? trigger.getBoundingClientRect().bottom : 0;
+  const maxBottom = Math.max(avatarBottom, triggerBottom);
+  const gap = 16;
+  if (maxBottom > 0) {
+    return Math.ceil(maxBottom + gap);
+  }
+  return 100;
+}
+
+/**
+ * Sincroniza o background-color do <html> e <body> com a seção que ocupa o topo da viewport.
+ */
+export function syncHtmlBackgroundToViewportTop(): void {
+  if (typeof window === 'undefined' || typeof document === 'undefined') return;
+
+  const sections = Array.from(
+    document.querySelectorAll<HTMLElement>('#main-content > section, footer[data-bebop-footer]')
+  );
+  if (sections.length === 0) return;
+
+  const probeY = 8;
+  let active: HTMLElement | null = null;
+
+  for (const sec of sections) {
+    const rect = sec.getBoundingClientRect();
+    if (rect.top <= probeY && rect.bottom > probeY) {
+      active = sec;
+      break;
+    }
+  }
+
+  if (!active) {
+    const firstRect = sections[0]?.getBoundingClientRect();
+    if (firstRect && firstRect.top > probeY) {
+      active = sections[0] ?? null;
+    } else {
+      active = sections[sections.length - 1] ?? null;
+    }
+  }
+
+  if (!active) return;
+  const computedBg = window.getComputedStyle(active).backgroundColor;
+  if (computedBg && computedBg !== 'rgba(0, 0, 0, 0)' && computedBg !== 'transparent') {
+    document.documentElement.style.backgroundColor = computedBg;
+    document.body.style.backgroundColor = computedBg;
+  }
+}
 
 /**
  * Retorna a instância ativa do Lenis Smooth Scroll, se inicializada.
  */
 export function getLenis(): Lenis | null {
   return lenisInstance;
+}
+
+/**
+ * Salta imediatamente para a posição vertical informada, sem animação (usado após navegação entre páginas).
+ */
+export function jumpScrollTo(top: number): void {
+  if (typeof window === 'undefined') return;
+  if (lenisInstance) {
+    lenisInstance.scrollTo(top, { immediate: true, force: true });
+  } else {
+    window.scrollTo({ top, behavior: 'auto' });
+  }
+}
+
+export function smoothScrollTo(top: number, duration: number): void {
+  if (typeof window === 'undefined') return;
+  if (lenisInstance) {
+    lenisInstance.scrollTo(top, { duration, force: true });
+  } else {
+    window.scrollTo({ top, behavior: 'auto' });
+  }
 }
 
 /**
@@ -63,7 +167,7 @@ function setupAnchorInterception(): void {
 
   handleAnchorClick = (event: MouseEvent) => {
     // Ignora cliques que não sejam com o botão principal (esquerdo) ou com teclas modificadoras (abrir em nova aba)
-    if (event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) {
+    if (event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey || event.defaultPrevented) {
       return;
     }
 
@@ -87,14 +191,19 @@ function setupAnchorInterception(): void {
     event.preventDefault();
 
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const clearance = getNavClearanceOffset();
+    const targetY = Math.max(
+      0,
+      window.scrollY + targetElement.getBoundingClientRect().top - clearance
+    );
 
     if (lenisInstance && !prefersReducedMotion) {
-      lenisInstance.scrollTo(targetElement, {
-        offset: 0,
-        duration: 1.2,
+      lenisInstance.scrollTo(targetY, {
+        duration: 0.75,
+        force: true,
       });
     } else {
-      targetElement.scrollIntoView({ behavior: 'smooth' });
+      window.scrollTo({ top: targetY, behavior: 'auto' });
     }
   };
 
@@ -126,6 +235,7 @@ function createLenis(): void {
 
   // Notifica o ScrollTrigger a cada passo de scroll do Lenis
   lenisInstance.on('scroll', ScrollTrigger.update);
+  lenisInstance.on('scroll', syncHtmlBackgroundToViewportTop);
 
   // Sincroniza o RAF do Lenis ao ticker do GSAP para evitar corrida de quadros
   tickerCallback = (time: number) => {
@@ -152,6 +262,13 @@ export function initMotionCoordinator(): void {
 
   // Interceptação de âncoras suaves (#works, etc.)
   setupAnchorInterception();
+
+  handleViewportBgSync = () => {
+    syncHtmlBackgroundToViewportTop();
+  };
+  window.addEventListener('scroll', handleViewportBgSync, { passive: true });
+  window.addEventListener('resize', handleViewportBgSync, { passive: true });
+  syncHtmlBackgroundToViewportTop();
 
   // Monitora alterações dinâmicas de prefers-reduced-motion
   mediaQueryList = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -209,6 +326,12 @@ export function destroyMotionCoordinator(): void {
   if (handleAnchorClick) {
     document.removeEventListener('click', handleAnchorClick);
     handleAnchorClick = null;
+  }
+
+  if (handleViewportBgSync) {
+    window.removeEventListener('scroll', handleViewportBgSync);
+    window.removeEventListener('resize', handleViewportBgSync);
+    handleViewportBgSync = null;
   }
 
   if (mediaQueryList && handleMediaChange && 'removeEventListener' in mediaQueryList) {

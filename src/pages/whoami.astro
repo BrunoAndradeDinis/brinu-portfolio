@@ -1,233 +1,297 @@
 ---
-/**
- * whoami.astro
- * Rota secreta de terminal de bordo da nave Bebop.
- * Simula digitação em tempo real (typing simulator) em uma janela de terminal CRT retrofuturista.
- */
 import BaseLayout from "../layouts/BaseLayout.astro";
+import { ptBrDict } from "../i18n/dictionaries";
+import { PROFILE } from "../data/profile";
+import { MAX_INPUT_LENGTH } from "../utils/terminal/sanitize";
 ---
 
 <BaseLayout
-  title="Bruno Dinis // Brinu — Terminal Secreto /whoami"
-  description="Terminal de bordo interativo da nave Bebop: dados de telemetria, biografia autoral e diretrizes de engenharia de Bruno Dinis."
+  title={ptBrDict.meta.whoamiTitle}
+  description={ptBrDict.meta.whoamiDescription}
 >
-  <main class="min-h-screen bg-space-base px-4 py-12 sm:px-8 sm:py-16 md:px-12 md:py-20 flex flex-col justify-center items-center select-none">
-    <div class="w-full max-w-4xl">
-      <!-- Janela de Terminal CRT Brutalista -->
+  <main
+    id="main-content"
+    data-whoami-main
+    tabindex="-1"
+    class="relative -mt-[5.5rem] sm:-mt-[6.5rem] md:-mt-[7rem] min-h-[100dvh] box-border bg-space-base px-4 py-16 sm:px-8 md:px-12 flex flex-col justify-center items-center select-none focus:outline-none"
+  >
+    <div class="w-full max-w-[57rem] my-auto">
       <div
         data-terminal-window
-        class="rounded-3xl border-4 border-space-border bg-space-surface-1 shadow-comic-lg overflow-hidden text-paper-white"
+        data-lenis-prevent
+        class="flex h-[clamp(27rem,calc(100dvh-8rem),45rem)] flex-col border-4 border-paper-white bg-space-surface-1 shadow-[10px_10px_0_var(--color-bebop-red)] overflow-hidden text-paper-white"
       >
-        <!-- Barra Superior de Controle do Terminal -->
-        <div class="flex items-center justify-between px-5 py-3.5 bg-space-surface-2 border-b-2 border-space-border font-mono text-xs">
-          {/* Botões clássicos de janela (Vermelho, Amarelo, Verde) */}
+        <div class="flex shrink-0 flex-wrap items-center justify-between gap-2 px-5 py-3.5 bg-space-base border-b-4 border-bebop-red font-mono text-xs">
           <div class="flex items-center gap-2">
-            <span class="w-3.5 h-3.5 rounded-full bg-bebop-red border border-space-base inline-block" />
-            <span class="w-3.5 h-3.5 rounded-full bg-bebop-amber border border-space-base inline-block" />
-            <span class="w-3.5 h-3.5 rounded-full bg-acid-green border border-space-base inline-block" />
+            <span class="w-3.5 h-3.5 bg-bebop-red border border-paper-white inline-block" />
+            <span class="w-3.5 h-3.5 bg-paper-white border border-paper-white inline-block" />
+            <span class="w-3.5 h-3.5 bg-space-base border border-paper-white inline-block" />
           </div>
 
-          <div class="text-[11px] sm:text-xs text-muted-gray font-bold tracking-wider uppercase text-center truncate px-2">
-            BEBOP SHELL v4.2 // /dev/pts/0 — [WHOAMI SESSION]
+          <div class="text-[11px] sm:text-xs text-paper-white font-bold tracking-wider uppercase text-center truncate px-2">
+            PHANTOM SHELL v2.0 // {PROFILE.handle} — {PROFILE.location.label}
           </div>
 
-          <div class="flex items-center gap-3">
+          <div class="flex items-center gap-2.5">
+            <button
+              type="button"
+              id="whoami-lang-toggle-btn"
+              data-lang-toggle
+              data-active-locale="pt-br"
+              class="inline-flex items-center justify-center border-2 border-paper-white bg-bebop-red px-2.5 py-1 font-mono text-[10px] font-black uppercase tracking-wider text-paper-white hover:bg-paper-white hover:text-space-base transition-colors cursor-pointer"
+              aria-label={ptBrDict.nav.langToggleAria}
+              data-i18n="nav.langToggleAria"
+              data-i18n-attr="aria-label"
+            >
+              <span data-lang-toggle-label>PT-BR</span>
+            </button>
+
             <button
               id="skip-typing-btn"
               type="button"
-              class="inline-flex items-center gap-1.5 px-3 py-1 rounded-md border border-space-border bg-space-base text-[10px] font-mono font-bold text-muted-gray hover:text-paper-white hover:border-acid-green focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-acid-green transition-all shadow-comic-xs cursor-pointer"
+              class="inline-flex items-center gap-1.5 px-3 py-1 border-2 border-paper-white bg-space-base text-[10px] font-mono font-bold text-paper-white hover:bg-bebop-red hover:text-paper-white transition-all cursor-pointer"
             >
-              <svg class="size-3 shrink-0" aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M13 5l7 7-7 7M5 5l7 7-7 7" />
-              </svg>
-              <span>PULAR</span>
+              <span data-i18n="whoami.skipCta">{ptBrDict.whoami.skipCta}</span>
             </button>
-            <span class="inline-flex items-center gap-1.5 text-acid-green font-bold text-[10px] hidden sm:inline-flex">
-              <span class="w-2 h-2 rounded-full bg-acid-green animate-ping" />
-              ONLINE
+
+            <span class="inline-flex items-center gap-1.5 text-bebop-red font-bold text-[10px] hidden sm:inline-flex">
+              <span class="w-2 h-2 bg-bebop-red animate-ping" />
+              <span data-i18n="whoami.onlineBadge">{ptBrDict.whoami.onlineBadge}</span>
             </span>
           </div>
         </div>
 
-        <!-- Corpo do Terminal (Linhas de Comando e Saída) -->
-        <div
-          id="terminal-output"
-          data-terminal-body
-          class="p-6 sm:p-8 md:p-10 font-mono text-xs sm:text-sm leading-relaxed space-y-6 min-h-[26rem] bg-space-base/95 overflow-x-auto relative"
-        >
-          <!-- Efeito sutil de linhas de varredura CRT no terminal -->
-          <div class="pointer-events-none absolute inset-0 bg-repeat bg-[radial-gradient(#11111E_1px,transparent_1px)] [background-size:16px_16px] opacity-20" />
-
-          {/* O conteúdo dinâmico será injetado pelo script do simulador */}
+        <div class="flex min-h-0 flex-1 flex-col bg-space-base select-text">
+          <div
+            id="terminal-output"
+            data-terminal-body
+            data-lenis-prevent
+            role="log"
+            aria-live="polite"
+            aria-relevant="additions"
+            class="px-6 pt-6 sm:px-8 sm:pt-8 md:px-10 md:pt-10 pb-2 font-mono text-xs sm:text-sm leading-relaxed scroll-area min-h-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-contain"
+          ></div>
+          <form data-terminal-form class="flex shrink-0 items-center gap-2 px-6 pb-6 sm:px-8 sm:pb-8 md:px-10 md:pb-10 font-mono text-xs sm:text-sm" autocomplete="off">
+            <label for="terminal-input" class="shrink-0 font-bold text-bebop-red">
+              <span class="sr-only" data-i18n="whoami.promptLabel">{ptBrDict.whoami.promptLabel}</span>
+              <span aria-hidden="true">{PROFILE.handle.toLowerCase()}@bebop:~$</span>
+            </label>
+            <input
+              id="terminal-input"
+              data-terminal-input
+              type="text"
+              inputmode="text"
+              maxlength={MAX_INPUT_LENGTH}
+              spellcheck="false"
+              autocapitalize="off"
+              autocomplete="off"
+              enterkeyhint="send"
+              placeholder={ptBrDict.whoami.inputPlaceholder}
+              data-i18n="whoami.inputPlaceholder"
+              data-i18n-attr="placeholder"
+              class="min-w-0 flex-1 border-0 border-b-2 border-paper-white/30 bg-transparent px-1 py-1 text-paper-white caret-bebop-red outline-none placeholder:text-muted-gray focus:border-bebop-red"
+            />
+          </form>
         </div>
 
-        <!-- Rodapé do Terminal com Botão de Retorno à Home -->
-        <div class="px-6 py-4 bg-space-surface-2 border-t-2 border-space-border flex flex-col sm:flex-row items-center justify-between gap-4 font-mono text-xs">
+        <div class="shrink-0 px-6 py-4 bg-space-surface-1 border-t-2 border-bebop-red flex flex-col sm:flex-row items-center justify-between gap-4 font-mono text-xs">
           <div class="text-muted-gray text-[11px] text-center sm:text-left">
-            <span>PRESSIONE QUALQUER TECLA PARA PULAR OU CLIQUE NO RETORNO</span>
+            <span data-i18n="whoami.footerHint">{ptBrDict.whoami.footerHint}</span>
           </div>
 
           <a
             id="return-home-btn"
             href="/"
             data-return-home
-            class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border-2 border-space-base bg-paper-white text-space-base font-display font-black text-xs uppercase tracking-wider hover:bg-acid-green hover:border-space-base focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-space-base transition-all duration-200 shadow-comic-sm active:translate-x-0.5 active:translate-y-0.5"
+            class="inline-flex items-center gap-2 px-5 py-2.5 border-2 border-paper-white bg-bebop-red text-paper-white font-display font-black text-xs uppercase tracking-wider hover:bg-paper-white hover:text-space-base transition-all duration-150 shadow-[4px_4px_0_var(--color-paper-white)]"
           >
-            <svg class="size-4 shrink-0" aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-            </svg>
-            <span>RETORNAR À PONTE DE COMANDO</span>
+            <span aria-hidden="true">←</span>
+            <span data-i18n="whoami.returnHomeCta">{ptBrDict.whoami.returnHomeCta}</span>
           </a>
         </div>
       </div>
     </div>
   </main>
 
-  <!-- Script do Simulador de Digitação Humana (Typing Simulator) -->
   <script>
     import { audioSynth } from "../utils/audio";
+    import { getLocale, setLocale } from "../i18n/index";
+    import { onPageReady } from "../utils/page-lifecycle";
+    import { runCommand, completeInput, type TerminalLine, type TerminalResult } from "../utils/terminal/commands";
 
-    interface CommandStep {
-      command: string;
-      output: string;
-      highlightClass?: string;
-    }
+    const OPENING = ["whoami", "help"] as const;
+    const TYPE_MS = 45;
+    const TONES: Record<TerminalLine["tone"], string> = {
+      plain: "text-paper-white",
+      accent: "text-bebop-red font-bold",
+      strong: "text-paper-white font-bold",
+      muted: "text-muted-gray",
+    };
 
-    const COMMAND_STEPS: CommandStep[] = [
-      {
-        command: "whoami",
-        output: "Bruno de Andrade Dinis (@Brinu) — Software Engineer & Cloud Architect",
-        highlightClass: "text-paper-white font-bold",
-      },
-      {
-        command: "uptime",
-        output: "Pai da Helena · Noivo apaixonado · 7+ anos construindo sistemas distribuídos e interfaces 60 FPS",
-        highlightClass: "text-bebop-amber font-semibold",
-      },
-      {
-        command: "cat /etc/current-mission",
-        output: "Magalu Cloud · Cloud Compute & Object Storage S3 — Engenharia de Nuvem Soberana e Alta Disponibilidade",
-        highlightClass: "text-crt-cyan font-semibold",
-      },
-      {
-        command: "ls -la skills/",
-        output: "total 8\ndrwxr-xr-x  typescript/  react/  nextjs/  astro/\ndrwxr-xr-x  threejs/     gsap/   docker/  nodejs/  web-audio/",
-        highlightClass: "text-acid-green",
-      },
-      {
-        command: "echo $PHILOSOPHY",
-        output: '"Interface fluida em 60 FPS, arquitetura limpa, código resiliente na nuvem e paixão inegociável pelo que construo."',
-        highlightClass: "text-paper-white italic font-bold",
-      },
-    ];
+    const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+    const prefersStill = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-    const terminalEl = document.getElementById("terminal-output");
-    const skipBtn = document.getElementById("skip-typing-btn");
+    function bootTerminal(): (() => void) | undefined {
+      const output = document.querySelector<HTMLElement>("[data-terminal-body]");
+      const form = document.querySelector<HTMLFormElement>("[data-terminal-form]");
+      const input = document.querySelector<HTMLInputElement>("[data-terminal-input]");
+      const skipBtn = document.getElementById("skip-typing-btn");
+      if (!output || !form || !input) return undefined;
 
-    let isSkipped = false;
+      const history: string[] = [];
+      let cursor = 0;
+      let opening = true;
+      let disposed = false;
 
-    // Função de renderização instantânea
-    function renderAllInstant(): void {
-      if (!terminalEl) return;
-      isSkipped = true;
-      terminalEl.innerHTML = "";
+      const scrollDown = () => {
+        output.scrollTop = output.scrollHeight;
+      };
 
-      COMMAND_STEPS.forEach((step) => {
-        const block = document.createElement("div");
-        block.className = "space-y-1.5";
-        block.innerHTML = `
-          <div class="flex items-center gap-2 text-acid-green font-bold">
-            <span class="text-bebop-amber">&gt;</span>
-            <span>${step.command}</span>
-          </div>
-          <div class="pl-4 border-l-2 border-space-border/50 ${step.highlightClass || "text-paper-white"} whitespace-pre-line">
-            ${step.output}
-          </div>
-        `;
-        terminalEl.appendChild(block);
-      });
+      const echo = (command: string) => {
+        const row = document.createElement("div");
+        row.className = "mt-4 first:mt-0 flex gap-2 font-bold";
+        const prompt = document.createElement("span");
+        prompt.className = "shrink-0 text-bebop-red";
+        prompt.setAttribute("aria-hidden", "true");
+        prompt.textContent = "$";
+        const text = document.createElement("span");
+        text.dataset.terminalEcho = "";
+        text.className = "min-w-0 text-paper-white [overflow-wrap:anywhere]";
+        text.textContent = command;
+        row.append(prompt, text);
+        output.append(row);
+        return text;
+      };
 
-      const sessionComplete = document.createElement("div");
-      sessionComplete.className = "pt-4 text-xs font-bold text-muted-gray tracking-wider uppercase flex items-center gap-2 border-t border-space-border/40 mt-6";
-      sessionComplete.innerHTML = `<span class="w-2 h-2 rounded-full bg-acid-green"></span> [SESSION COMPLETE // 100% TELEMETRY VERIFIED]`;
-      terminalEl.appendChild(sessionComplete);
-    }
-
-    // Função de digitação simulada passo a passo
-    async function runTypingSimulator(): Promise<void> {
-      if (!terminalEl) return;
-      terminalEl.innerHTML = "";
-
-      for (const step of COMMAND_STEPS) {
-        if (isSkipped) return;
-
-        const block = document.createElement("div");
-        block.className = "space-y-1.5";
-
-        // Linha do prompt com cursor piscante
-        const promptLine = document.createElement("div");
-        promptLine.className = "flex items-center gap-2 text-acid-green font-bold";
-        promptLine.innerHTML = `<span class="text-bebop-amber">&gt;</span> <span class="typed-command"></span><span class="cursor inline-block w-2 h-4 bg-acid-green animate-pulse"></span>`;
-        block.appendChild(promptLine);
-        terminalEl.appendChild(block);
-
-        const commandSpan = promptLine.querySelector(".typed-command");
-        const cursorEl = promptLine.querySelector(".cursor");
-
-        // Digita caractere por caractere
-        for (let i = 0; i < step.command.length; i++) {
-          if (isSkipped) {
-            renderAllInstant();
-            return;
+      const print = (lines: readonly TerminalLine[]) => {
+        for (const entry of lines) {
+          const row = document.createElement("div");
+          row.dataset.terminalLine = entry.tone;
+          if (entry.term && entry.detail) {
+            row.className = "flex flex-wrap gap-x-3 [overflow-wrap:anywhere]";
+            const term = document.createElement("span");
+            term.className = "min-w-[19ch] font-bold text-paper-white";
+            term.textContent = entry.term;
+            const detail = document.createElement("span");
+            detail.className = "text-muted-gray";
+            detail.textContent = entry.detail;
+            row.append(term, detail);
+          } else {
+            row.className = `whitespace-pre-wrap [overflow-wrap:anywhere] ${TONES[entry.tone]}`;
+            row.textContent = entry.text;
           }
-          if (commandSpan) commandSpan.textContent += step.command[i];
-          if (!audioSynth.isMuted()) {
-            audioSynth.playKeypressBeep(800 + Math.random() * 200, 0.03, 0.08);
+          output.append(row);
+        }
+        scrollDown();
+      };
+
+      const download = (filename: string, href: string) => {
+        const link = document.createElement("a");
+        link.href = href;
+        link.download = filename;
+        link.hidden = true;
+        document.body.append(link);
+        link.click();
+        link.remove();
+      };
+
+      const apply = (result: TerminalResult) => {
+        const effect = result.effect;
+        if (!effect) return;
+        if (effect.type === "clear") output.replaceChildren();
+        else if (effect.type === "download") download(effect.filename, effect.href);
+        else if (effect.type === "locale") setLocale(effect.locale, { animate: false });
+        else if (effect.type === "navigate") window.location.assign(effect.href);
+        else if (effect.type === "mail") window.location.href = effect.href;
+        else if (effect.type === "cilada") window.dispatchEvent(new CustomEvent("bebop:cilada-trigger"));
+      };
+
+      const execute = (raw: string) => {
+        const result = runCommand(raw, getLocale());
+        echo(result.input);
+        print(result.lines);
+        apply(result);
+        return result;
+      };
+
+      const finishOpening = () => {
+        if (!opening) return;
+        opening = false;
+        output.replaceChildren();
+        OPENING.forEach((command) => execute(command));
+        input.focus({ preventScroll: true });
+      };
+
+      const typeOpening = async () => {
+        for (const command of OPENING) {
+          const text = echo("");
+          for (const char of command) {
+            if (!opening || disposed) return;
+            text.textContent += char;
+            if (!audioSynth.isMuted()) audioSynth.playKeypressBeep(800 + Math.random() * 200, 0.03, 0.08);
+            await wait(TYPE_MS);
           }
-          await new Promise((r) => setTimeout(r, 35 + Math.random() * 40));
+          if (!opening || disposed) return;
+          print(runCommand(command, getLocale()).lines);
+          await wait(240);
         }
+        if (!opening || disposed) return;
+        opening = false;
+        input.focus({ preventScroll: true });
+      };
 
-        // Remove o cursor da linha anterior
-        if (cursorEl) cursorEl.remove();
-
-        // Pausa antes da saída
-        await new Promise((r) => setTimeout(r, 200));
-        if (isSkipped) {
-          renderAllInstant();
-          return;
+      const onSubmit = (event: SubmitEvent) => {
+        event.preventDefault();
+        finishOpening();
+        const result = execute(input.value);
+        if (result.input) {
+          history.push(result.input);
+          cursor = history.length;
         }
+        input.value = "";
+      };
 
-        // Exibe a saída do comando
-        const outputLine = document.createElement("div");
-        outputLine.className = `pl-4 border-l-2 border-space-border/50 ${step.highlightClass || "text-paper-white"} whitespace-pre-line animate-in fade-in duration-150`;
-        outputLine.textContent = step.output;
-        block.appendChild(outputLine);
+      const onInputKey = (event: KeyboardEvent) => {
+        if (event.key === "ArrowUp" || event.key === "ArrowDown") {
+          if (!history.length) return;
+          event.preventDefault();
+          cursor = Math.min(history.length, Math.max(0, cursor + (event.key === "ArrowUp" ? -1 : 1)));
+          input.value = history[cursor] ?? "";
+          input.setSelectionRange(input.value.length, input.value.length);
+        } else if (event.key === "Tab" && input.value.trim()) {
+          event.preventDefault();
+          const completion = completeInput(input.value, getLocale());
+          if (completion.value) input.value = completion.value;
+          else if (completion.options.length > 1) {
+            echo(input.value);
+            print([{ text: completion.options.join("  "), tone: "muted" }]);
+          }
+        }
+      };
 
-        // Rola até o final do terminal
-        terminalEl.scrollTop = terminalEl.scrollHeight;
+      const onWindowKey = (event: KeyboardEvent) => {
+        if (opening && event.key !== "Tab") finishOpening();
+      };
 
-        await new Promise((r) => setTimeout(r, 350));
-      }
+      const onSkip = () => finishOpening();
 
-      // Adiciona etiqueta final de sessão concluída
-      const sessionComplete = document.createElement("div");
-      sessionComplete.className = "pt-4 text-xs font-bold text-muted-gray tracking-wider uppercase flex items-center gap-2 border-t border-space-border/40 mt-6";
-      sessionComplete.innerHTML = `<span class="w-2 h-2 rounded-full bg-acid-green"></span> [SESSION COMPLETE // 100% TELEMETRY VERIFIED]`;
-      terminalEl.appendChild(sessionComplete);
+      form.addEventListener("submit", onSubmit);
+      input.addEventListener("keydown", onInputKey);
+      window.addEventListener("keydown", onWindowKey);
+      skipBtn?.addEventListener("click", onSkip);
+
+      if (prefersStill()) finishOpening();
+      else void typeOpening();
+
+      return () => {
+        disposed = true;
+        form.removeEventListener("submit", onSubmit);
+        input.removeEventListener("keydown", onInputKey);
+        window.removeEventListener("keydown", onWindowKey);
+        skipBtn?.removeEventListener("click", onSkip);
+      };
     }
 
-    if (skipBtn) {
-      skipBtn.addEventListener("click", () => renderAllInstant());
-    }
-
-    // Tecla qualquer pula a digitação
-    window.addEventListener("keydown", (e) => {
-      if (!isSkipped && e.key !== "Tab") {
-        renderAllInstant();
-      }
-    });
-
-    // Inicia simulador
-    runTypingSimulator();
+    onPageReady(bootTerminal);
   </script>
 </BaseLayout>

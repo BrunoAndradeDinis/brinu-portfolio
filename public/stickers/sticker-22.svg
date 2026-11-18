@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" fill="none">
+<circle cx="200" cy="125" r="85" fill="#080808" stroke="#FE0000" stroke-width="10"/>
+<line x1="134" y1="55" x2="134" y2="195" stroke="#FBFAF4" stroke-width="5"/>
+<line x1="156" y1="55" x2="156" y2="195" stroke="#FBFAF4" stroke-width="5"/>
+<line x1="178" y1="55" x2="178" y2="195" stroke="#FBFAF4" stroke-width="5"/>
+<line x1="200" y1="55" x2="200" y2="195" stroke="#FBFAF4" stroke-width="5"/>
+<line x1="222" y1="55" x2="222" y2="195" stroke="#FBFAF4" stroke-width="5"/>
+<line x1="244" y1="55" x2="244" y2="195" stroke="#FBFAF4" stroke-width="5"/>
+<line x1="266" y1="55" x2="266" y2="195" stroke="#FBFAF4" stroke-width="5"/>
+<line x1="130" y1="73" x2="270" y2="73" stroke="#FBFAF4" stroke-width="5"/>
+<line x1="130" y1="99" x2="270" y2="99" stroke="#FBFAF4" stroke-width="5"/>
+<line x1="130" y1="125" x2="270" y2="125" stroke="#FBFAF4" stroke-width="5"/>
+<line x1="130" y1="151" x2="270" y2="151" stroke="#FBFAF4" stroke-width="5"/>
+<line x1="130" y1="177" x2="270" y2="177" stroke="#FBFAF4" stroke-width="5"/>
+<polygon points="170,205 230,205 218,285 182,285" fill="#FE0000" stroke="#080808" stroke-width="8"/>
+<rect x="20" y="300" width="360" height="84" fill="#080808"/><path d="M67.5 312h20v5h-20zM67.5 317h5v5h-5zM87.5 317h5v5h-5zM67.5 322h5v5h-5zM87.5 322h5v5h-5zM67.5 327h20v5h-20zM67.5 332h5v5h-5zM77.5 332h5v5h-5zM67.5 337h5v5h-5zM82.5 337h5v5h-5zM67.5 342h5v5h-5zM87.5 342h5v5h-5zM102.5 312h15v5h-15zM97.5 317h5v5h-5zM117.5 317h5v5h-5zM97.5 322h5v5h-5zM117.5 322h5v5h-5zM97.5 327h25v5h-25zM97.5 332h5v5h-5zM117.5 332h5v5h-5zM97.5 337h5v5h-5zM117.5 337h5v5h-5zM97.5 342h5v5h-5zM117.5 342h5v5h-5zM132.5 312h20v5h-20zM127.5 317h5v5h-5zM127.5 322h5v5h-5zM127.5 327h5v5h-5zM127.5 332h5v5h-5zM127.5 337h5v5h-5zM132.5 342h20v5h-20zM157.5 312h25v5h-25zM167.5 317h5v5h-5zM167.5 322h5v5h-5zM167.5 327h5v5h-5zM167.5 332h5v5h-5zM167.5 337h5v5h-5zM157.5 342h25v5h-25zM192.5 312h15v5h-15zM187.5 317h5v5h-5zM207.5 317h5v5h-5zM187.5 322h5v5h-5zM207.5 322h5v5h-5zM187.5 327h5v5h-5zM207.5 327h5v5h-5zM187.5 332h5v5h-5zM207.5 332h5v5h-5zM187.5 337h5v5h-5zM207.5 337h5v5h-5zM192.5 342h15v5h-15zM217.5 312h5v5h-5zM237.5 312h5v5h-5zM217.5 317h10v5h-10zM237.5 317h5v5h-5zM217.5 322h10v5h-10zM237.5 322h5v5h-5zM217.5 327h5v5h-5zM227.5 327h5v5h-5zM237.5 327h5v5h-5zM217.5 332h5v5h-5zM232.5 332h10v5h-10zM217.5 337h5v5h-5zM232.5 337h10v5h-10zM217.5 342h5v5h-5zM237.5 342h5v5h-5zM252.5 312h15v5h-15zM247.5 317h5v5h-5zM267.5 317h5v5h-5zM247.5 322h5v5h-5zM267.5 322h5v5h-5zM247.5 327h25v5h-25zM247.5 332h5v5h-5zM267.5 332h5v5h-5zM247.5 337h5v5h-5zM267.5 337h5v5h-5zM247.5 342h5v5h-5zM267.5 342h5v5h-5zM277.5 312h25v5h-25zM287.5 317h5v5h-5zM287.5 322h5v5h-5zM287.5 327h5v5h-5zM287.5 332h5v5h-5zM287.5 337h5v5h-5zM277.5 342h25v5h-25zM312.5 312h20v5h-20zM307.5 317h5v5h-5zM307.5 322h5v5h-5zM312.5 327h15v5h-15zM327.5 332h5v5h-5zM327.5 337h5v5h-5zM307.5 342h20v5h-20z" fill="#FBFAF4"/><path d="M154 350h4v4h-4zM170 350h4v4h-4zM154 354h8v4h-8zM166 354h8v4h-8zM154 358h4v4h-4zM162 358h4v4h-4zM170 358h4v4h-4zM154 362h4v4h-4zM162 362h4v4h-4zM170 362h4v4h-4zM154 366h4v4h-4zM170 366h4v4h-4zM154 370h4v4h-4zM170 370h4v4h-4zM154 374h4v4h-4zM170 374h4v4h-4zM182 350h16v4h-16zM178 354h4v4h-4zM178 358h4v4h-4zM178 362h4v4h-4zM178 366h4v4h-4zM178 370h4v4h-4zM182 374h16v4h-16zM210 350h4v4h-4zM210 354h4v4h-4zM206 358h4v4h-4zM230 350h16v4h-16zM226 354h4v4h-4zM226 358h4v4h-4zM230 362h12v4h-12zM242 366h4v4h-4zM242 370h4v4h-4zM226 374h16v4h-16z" fill="#FE0000"/>
+</svg>

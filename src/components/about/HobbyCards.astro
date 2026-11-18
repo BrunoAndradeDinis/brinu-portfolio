@@ -1,0 +1,303 @@
+---
+import { ptBrDict } from "../../i18n/dictionaries";
+import { getLocalizedHobbies } from "../../data/hobbies";
+import PanelClose from "../p5/PanelClose.astro";
+
+const hobbies = getLocalizedHobbies("pt-br");
+---
+
+<div data-hobbies class="mx-auto mt-8 w-full max-w-[24rem] sm:max-w-[26rem]">
+  <h4 class="mb-4 font-mono text-xs font-black uppercase tracking-widest text-bebop-red" data-i18n="hobbies.title">
+    {ptBrDict.hobbies.title}
+  </h4>
+  <ul
+    data-hobby-list
+    aria-label={ptBrDict.hobbies.listAria}
+    data-i18n="hobbies.listAria"
+    data-i18n-attr="aria-label"
+    class="hobby-grid m-0 grid list-none gap-3 p-0"
+  >
+    {
+      hobbies.map((hobby) => (
+        <li data-hobby-item class="hobby-item">
+          <button
+            type="button"
+            data-hobby-card={hobby.id}
+            aria-haspopup="dialog"
+            aria-labelledby={`hobby-card-name-${hobby.id} hobby-card-rating-${hobby.id}`}
+            class="hobby-card"
+          >
+            <span class="hobby-card-face">
+              <span class="hobby-card-top">
+                <span id={`hobby-card-rating-${hobby.id}`} data-hobby-rating class="hobby-card-rating">{hobby.rating}</span>
+                <span data-hobby-position class="hobby-card-position" aria-hidden="true">{hobby.position.code}</span>
+              </span>
+              <span class="hobby-card-icon" aria-hidden="true">
+                <img src={hobby.sticker} alt="" width="40" height="40" loading="lazy" />
+              </span>
+              <span id={`hobby-card-name-${hobby.id}`} data-hobby-card-name class="hobby-card-name">{hobby.name}</span>
+              <span class="hobby-card-stats" aria-hidden="true">
+                {hobby.stats.map((entry) => (
+                  <span class="hobby-card-stat">
+                    <b>{entry.value}</b> <span data-hobby-stat-code>{entry.code}</span>
+                  </span>
+                ))}
+              </span>
+            </span>
+          </button>
+        </li>
+      ))
+    }
+  </ul>
+
+  <dialog
+    data-hobby-panel
+    data-lenis-prevent
+    aria-labelledby="hobby-panel-title"
+    class="fixed inset-y-0 right-0 left-auto m-0 h-dvh max-h-none w-full max-w-[36rem] overflow-hidden border-0 border-l-8 border-bebop-red bg-paper-white p-0 text-space-base select-text backdrop:bg-space-base/60"
+  >
+    <div data-hobby-panel-body class="scroll-area scrollbar-paper relative h-full overflow-y-auto overscroll-contain p-5 sm:p-8">
+      <PanelClose />
+      <div class="flex items-end gap-5">
+        <div class="hobby-panel-sticker flex h-32 w-32 shrink-0 items-center justify-center bg-space-base sm:h-40 sm:w-40" aria-hidden="true">
+          <img data-hobby-panel-sticker alt="" width="160" height="160" class="h-[80%] w-[80%] object-contain" />
+        </div>
+        <p class="m-0 flex flex-col font-mono text-xs font-black uppercase tracking-widest">
+          <span data-hobby-panel-rating class="font-display text-5xl leading-none tracking-tight sm:text-6xl"></span>
+          <span data-hobby-panel-position class="mt-1"></span>
+        </p>
+      </div>
+      <h3 id="hobby-panel-title" data-hobby-panel-title class="mt-6 border-b-4 border-space-base pb-3 font-display text-2xl font-black uppercase leading-tight [overflow-wrap:anywhere] sm:text-4xl"></h3>
+      <ul data-hobby-panel-stats class="m-0 mt-4 grid list-none grid-cols-1 gap-x-6 gap-y-2 p-0 font-mono text-xs uppercase sm:grid-cols-2"></ul>
+      <p data-hobby-panel-text class="mt-5 font-body text-sm leading-relaxed sm:text-base"></p>
+    </div>
+  </dialog>
+</div>
+
+<script>
+  import { onPageReady } from "../../utils/page-lifecycle";
+  import { getLocale, LOCALE_CHANGE_EVENT } from "../../i18n/index";
+  import { getLocalizedHobbies, type LocalizedHobby } from "../../data/hobbies";
+  import { createPanelTransition } from "../../utils/panel-transition";
+  import { bindPanelDismiss } from "../../utils/panel-dismiss";
+
+  function statRow(entry: LocalizedHobby["stats"][number]): HTMLLIElement {
+    const row = document.createElement("li");
+    row.className = "flex items-baseline gap-2 border-b-2 border-space-base/15 pb-1";
+    const value = document.createElement("b");
+    value.className = "font-display text-base";
+    value.textContent = String(entry.value);
+    const code = document.createElement("span");
+    code.className = "font-black";
+    code.textContent = entry.code;
+    const label = document.createElement("span");
+    label.textContent = entry.label;
+    row.append(value, code, label);
+    return row;
+  }
+
+  function setupHobbyPanel() {
+    const root = document.querySelector<HTMLElement>("[data-hobbies]");
+    const list = root?.querySelector<HTMLElement>("[data-hobby-list]");
+    const panel = root?.querySelector<HTMLDialogElement>("[data-hobby-panel]");
+    if (!root || !list || !panel) return;
+
+    const cards = Array.from(list.querySelectorAll<HTMLButtonElement>("[data-hobby-card]"));
+    const items = Array.from(list.querySelectorAll<HTMLElement>("[data-hobby-item]"));
+    const field = <T extends HTMLElement>(selector: string) => panel.querySelector<T>(selector);
+    const transition = createPanelTransition(panel, list, items);
+    let opener: HTMLButtonElement | null = null;
+
+    const fill = (id: string | undefined) => {
+      const hobby = getLocalizedHobbies(getLocale()).find((entry) => entry.id === id);
+      const sticker = field<HTMLImageElement>("[data-hobby-panel-sticker]");
+      const title = field("[data-hobby-panel-title]");
+      const rating = field("[data-hobby-panel-rating]");
+      const position = field("[data-hobby-panel-position]");
+      const stats = field("[data-hobby-panel-stats]");
+      const text = field("[data-hobby-panel-text]");
+      if (!hobby || !sticker || !title || !rating || !position || !stats || !text) return false;
+      sticker.src = hobby.sticker;
+      title.textContent = hobby.name;
+      rating.textContent = String(hobby.rating);
+      position.textContent = `${hobby.position.code} · ${hobby.position.label}`;
+      stats.replaceChildren(...hobby.stats.map(statRow));
+      text.textContent = hobby.text;
+      return true;
+    };
+
+    const onCardClick = (event: Event) => {
+      const card = event.currentTarget as HTMLButtonElement;
+      if (!fill(card.dataset.hobbyCard)) return;
+      opener = card;
+      if (panel.open) return;
+      transition.open();
+    };
+    const onClose = () => opener?.focus();
+    const onLocale = () => {
+      const hobbies = getLocalizedHobbies(getLocale());
+      cards.forEach((card) => {
+        const hobby = hobbies.find((entry) => entry.id === card.dataset.hobbyCard);
+        if (!hobby) return;
+        const name = card.querySelector<HTMLElement>("[data-hobby-card-name]");
+        const position = card.querySelector<HTMLElement>("[data-hobby-position]");
+        if (name) name.textContent = hobby.name;
+        if (position) position.textContent = hobby.position.code;
+        card.querySelectorAll<HTMLElement>("[data-hobby-stat-code]").forEach((code, index) => {
+          code.textContent = hobby.stats[index].code;
+        });
+      });
+      if (panel.open) fill(opener?.dataset.hobbyCard);
+    };
+
+    cards.forEach((card) => card.addEventListener("click", onCardClick));
+    const unbindDismiss = bindPanelDismiss(panel, () => transition.close());
+    panel.addEventListener("close", onClose);
+    window.addEventListener(LOCALE_CHANGE_EVENT, onLocale);
+    if (getLocale() !== "pt-br") onLocale();
+
+    return () => {
+      cards.forEach((card) => card.removeEventListener("click", onCardClick));
+      unbindDismiss();
+      panel.removeEventListener("close", onClose);
+      window.removeEventListener(LOCALE_CHANGE_EVENT, onLocale);
+      transition.destroy();
+    };
+  }
+
+  onPageReady(setupHobbyPanel);
+</script>
+
+<style is:global>
+  #about .hobby-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  @media (min-width: 640px) {
+    #about .hobby-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+
+  #about .hobby-item {
+    display: flex;
+  }
+
+  #about .hobby-item:has(.hobby-card:focus-visible) {
+    outline: 3px dashed var(--color-paper-white);
+    outline-offset: 4px;
+  }
+
+  #about .hobby-card {
+    --cut: polygon(10% 0, 92% 2%, 100% 9%, 97% 85%, 52% 100%, 3% 88%, 0 8%);
+    position: relative;
+    display: flex;
+    width: 100%;
+    padding: 3px;
+    border: 0;
+    background: var(--color-bebop-red);
+    color: var(--color-paper-white);
+    cursor: pointer;
+    clip-path: var(--cut);
+    transition: transform 0.15s, background-color 0.15s;
+  }
+
+  #about .hobby-card:hover,
+  #about .hobby-card:focus-visible {
+    background: var(--color-paper-white);
+    outline: none;
+    transform: translateY(-4px) rotate(-1.5deg);
+  }
+
+  #about .hobby-card-face {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 12px 8px 22px;
+    background: var(--color-space-base);
+    clip-path: var(--cut);
+    text-align: center;
+  }
+
+  #about .hobby-card-top {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    line-height: 1;
+  }
+
+  #about .hobby-card-rating {
+    font: 800 1.75rem/1 var(--font-display);
+    letter-spacing: -0.02em;
+  }
+
+  #about .hobby-card-position {
+    margin-top: 2px;
+    color: var(--color-bebop-red);
+    font: 700 0.625rem var(--font-mono);
+    letter-spacing: 0.18em;
+  }
+
+  #about .hobby-card-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    background: var(--color-paper-white);
+    clip-path: polygon(6% 0, 100% 5%, 94% 100%, 0 95%);
+    transform: rotate(-4deg);
+  }
+
+  #about .hobby-card-icon img {
+    width: 36px;
+    height: 36px;
+    object-fit: contain;
+  }
+
+  #about .hobby-card-name {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 2.2em;
+    width: 100%;
+    padding-bottom: 6px;
+    border-bottom: 2px solid var(--color-bebop-red);
+    font: 800 0.6875rem/1.1 var(--font-display);
+    text-transform: uppercase;
+    overflow-wrap: anywhere;
+  }
+
+  #about .hobby-card-stats {
+    display: grid;
+    margin-top: auto;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 2px 6px;
+    width: 100%;
+    font: 400 0.625rem/1.4 var(--font-mono);
+    color: var(--color-muted-gray);
+    white-space: nowrap;
+  }
+
+  #about .hobby-card-stat b {
+    color: var(--color-paper-white);
+  }
+
+  #about .hobby-panel-sticker {
+    clip-path: polygon(4% 0, 100% 4%, 96% 100%, 0 96%);
+    transform: rotate(-4deg);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    #about .hobby-card {
+      transition: none;
+    }
+
+    #about .hobby-card:hover,
+    #about .hobby-card:focus-visible {
+      transform: none;
+    }
+  }
+</style>

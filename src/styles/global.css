@@ -14,6 +14,7 @@ html {
   color: var(--color-paper-white);
   font-family: var(--font-body);
   overflow-x: clip;
+  scroll-padding-top: 39px;
   scrollbar-gutter: stable;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -28,7 +29,75 @@ body {
   background-color: var(--color-space-base);
   color: var(--color-paper-white);
   font-family: var(--font-body);
+  font-weight: 500;
   line-height: 1.5;
+}
+
+.scrollbar-paper {
+  --scrollbar-thumb: var(--color-space-base);
+  --scrollbar-thumb-active: var(--color-bebop-red);
+  --scrollbar-track: var(--color-paper-white);
+}
+
+@property --scrollbar-thumb-paint {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #fe0000;
+}
+
+:root,
+body > *,
+.scroll-area {
+  --scrollbar-thumb-paint: var(--scrollbar-thumb);
+}
+
+:root,
+.scroll-area {
+  transition: --scrollbar-thumb-paint 0.4s ease-in-out;
+}
+
+:root[data-scrollbar-hot],
+.scroll-area[data-scrollbar-hot] {
+  --scrollbar-thumb-paint: var(--scrollbar-thumb-active);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root,
+  .scroll-area {
+    transition: none;
+  }
+}
+
+@supports not selector(::-webkit-scrollbar) {
+  :root,
+  .scroll-area {
+    scrollbar-color: var(--scrollbar-thumb-paint) var(--scrollbar-track);
+    scrollbar-width: thin;
+  }
+}
+
+::-webkit-scrollbar {
+  width: var(--scrollbar-size);
+  height: var(--scrollbar-size);
+  background: var(--scrollbar-track);
+}
+
+::-webkit-scrollbar-track,
+::-webkit-scrollbar-corner {
+  background: var(--scrollbar-track);
+}
+
+::-webkit-scrollbar-thumb {
+  min-height: 48px;
+  border: var(--scrollbar-edge) solid var(--scrollbar-track);
+  border-radius: var(--radius-none);
+  background: var(--scrollbar-thumb-paint);
+}
+
+::-webkit-scrollbar-button {
+  display: none;
+  width: 0;
+  height: 0;
 }
 
 ::selection {
@@ -40,31 +109,46 @@ body {
    2. TYPOGRAPHY CLASSES
    ========================================================================== */
 
-.font-display {
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+}
+
+:where(.font-display) {
   font-family: var(--font-display);
   font-weight: 900;
   text-transform: uppercase;
 }
 
-.font-spray {
+:where(.font-spray) {
   font-family: var(--font-spray);
   font-weight: 400;
   line-height: 1.0;
   text-transform: uppercase;
 }
 
-.font-mono {
+:where(.font-mono) {
   font-family: var(--font-mono);
-  font-weight: 400;
+  font-weight: 500;
   line-height: 1.5;
   letter-spacing: 0.04em;
 }
 
-.font-body {
+:where(.font-body) {
   font-family: var(--font-body);
-  font-weight: 400;
+  font-weight: 500;
   line-height: 1.5;
   letter-spacing: -0.01em;
+}
+
+.font-body.font-black {
+  font-weight: 900;
+  font-variation-settings: "wdth" 112;
+}
+
+.font-body.font-bold {
+  font-weight: 700;
 }
 
 /* ==========================================================================
@@ -91,7 +175,7 @@ body {
   text-transform: uppercase;
   letter-spacing: -0.02em;
   color: var(--color-space-base);
-  background-color: var(--color-contrast-pink);
+  background-color: var(--color-paper-white);
   border: var(--border-comic-heavy) solid var(--color-space-base);
   border-radius: var(--radius-pill);
   cursor: pointer;
@@ -113,7 +197,7 @@ body {
 }
 
 .btn-brutalist--acid {
-  background-color: var(--color-acid-green);
+  background-color: var(--color-paper-white);
   color: var(--color-space-base);
 }
 
@@ -123,7 +207,7 @@ body {
 }
 
 .btn-brutalist--amber {
-  background-color: var(--color-bebop-amber);
+  background-color: var(--color-bebop-red);
   color: var(--color-space-base);
 }
 
@@ -190,7 +274,7 @@ body {
   background-color: var(--color-space-surface-1);
   border: 1px solid var(--color-space-border);
   border-radius: var(--radius-md);
-  color: var(--color-bebop-amber);
+  color: var(--color-bebop-red);
   font-family: var(--font-mono);
   font-size: 1.2rem;
   letter-spacing: 0.1em;
@@ -198,8 +282,8 @@ body {
 }
 
 .hud-badge--green {
-  color: var(--color-acid-green);
-  border-color: rgba(46, 254, 12, 0.3);
+  color: var(--color-paper-white);
+  border-color: rgba(251, 250, 244, 0.3);
 }
 
 .hud-badge--red {
@@ -263,7 +347,113 @@ body {
 }
 
 /* ==========================================================================
-   6. LENIS SMOOTH SCROLL INTEGRATION
+   6. PERSONA 5 BRUTALIST GEOMETRY & DIAGONAL WIPE
+   ========================================================================== */
+
+.p5-angle-card {
+  clip-path: polygon(0 0, 100% 0, 98.5% 100%, 1.5% 98.5%);
+}
+
+.p5-blade {
+  clip-path: polygon(2% 0, 100% 0, 98% 100%, 0 100%);
+}
+
+.p5-slash-header {
+  clip-path: polygon(0 0, 100% 6%, 98% 100%, 2% 94%);
+}
+
+.p5-panel {
+  clip-path: var(--clip-p5-panel-a, polygon(0.8% 0%, 100% 0.6%, 99.1% 100%, 0% 99.2%));
+}
+
+.p5-panel--a {
+  clip-path: var(--clip-p5-panel-a, polygon(0.8% 0%, 100% 0.6%, 99.1% 100%, 0% 99.2%));
+}
+
+.p5-panel--b {
+  clip-path: var(--clip-p5-panel-b, polygon(0% 0.7%, 99.2% 0%, 100% 99.1%, 0.9% 100%));
+}
+
+.p5-badge {
+  clip-path: var(--clip-p5-badge, polygon(5% 0%, 100% 0%, 95% 100%, 0% 100%));
+}
+
+.p5-section-cut {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: clamp(2.25rem, 4vw, 3.75rem);
+  pointer-events: none;
+}
+
+.p5-section-cut--left {
+  clip-path: var(--clip-p5-cut-left, polygon(0% 0%, 100% 72%, 100% 100%, 0% 100%));
+}
+
+.p5-section-cut--right {
+  clip-path: var(--clip-p5-cut-right, polygon(0% 72%, 100% 0%, 100% 100%, 0% 100%));
+}
+
+.p5-select-poly {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-color: var(--color-bebop-red);
+  clip-path: var(--clip-p5-select, polygon(3% 0%, 100% 6%, 97% 100%, 0% 94%));
+  opacity: 0;
+  transform: scale(0.82) skewX(-6deg);
+  transition: opacity 90ms cubic-bezier(0.12, 0.98, 0.24, 1),
+    transform 110ms cubic-bezier(0.18, 1.28, 0.36, 1);
+}
+
+a[data-case-open]:hover,
+a[data-case-open]:focus,
+a[data-case-open]:focus-visible {
+  color: var(--color-paper-white);
+}
+
+a[data-case-open]:hover .p5-select-poly,
+a[data-case-open]:focus-visible .p5-select-poly,
+a[data-case-open]:focus .p5-select-poly,
+a[data-case-link]:hover .p5-select-poly,
+a[data-case-link]:focus-visible .p5-select-poly,
+a[data-case-link]:focus .p5-select-poly {
+  opacity: 1;
+  transform: scale(1) skewX(-3deg);
+}
+
+#p5-wipe-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9998;
+  pointer-events: none;
+  opacity: 0;
+  overflow: hidden;
+}
+
+#p5-wipe-overlay .p5-wipe-blade-red {
+  position: absolute;
+  inset: -25%;
+  background-color: var(--color-bebop-red);
+  border-top: 8px solid var(--color-paper-white);
+  border-bottom: 8px solid var(--color-space-base);
+  transform: translate3d(-120%, 0, 0) skewX(-16deg);
+  transition: transform 0.28s cubic-bezier(0.85, 0, 0.15, 1);
+}
+
+#p5-wipe-overlay.p5-wipe-active,
+#p5-wipe-overlay.is-wiping {
+  opacity: 1;
+}
+
+#p5-wipe-overlay.p5-wipe-active .p5-wipe-blade-red,
+#p5-wipe-overlay.is-wiping .p5-wipe-blade-red {
+  transform: translate3d(120%, 0, 0) skewX(-16deg);
+}
+
+/* ==========================================================================
+   7. LENIS SMOOTH SCROLL INTEGRATION
    ========================================================================== */
 
 html.lenis,
@@ -280,8 +470,22 @@ html.lenis.lenis-smooth {
 }
 
 html.lenis-stopped,
-body.lenis-stopped {
-  overflow: hidden;
+body.lenis-stopped,
+html.cockpit-menu-open,
+body.cockpit-menu-open {
+  overflow: hidden !important;
+  scrollbar-gutter: auto !important;
+}
+
+#cockpit-menu-overlay {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+#cockpit-menu-overlay::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
 }
 
 .lenis.lenis-smooth iframe {
@@ -308,3 +512,18 @@ body.lenis-stopped {
   }
 }
 
+
+::view-transition-group(*),
+::view-transition-old(*),
+::view-transition-new(*) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}

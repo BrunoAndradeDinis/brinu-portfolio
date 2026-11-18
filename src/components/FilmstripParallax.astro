@@ -1,0 +1,531 @@
+---
+import { ptBrDict, enDict } from "../i18n/dictionaries";
+import { buildMottoTokens, type NarrativeToken } from "./filmstrip/motto";
+import P5Title from "./p5/P5Title.astro";
+import PassionFrame from "./PassionFrame.astro";
+
+interface FilmSlide {
+  id: string;
+  index: 1 | 2 | 3 | 4 | 5 | 6;
+  href: string;
+  bgColor: string;
+  imgSrc: string;
+}
+
+interface PassionSlide {
+  index: 1 | 2 | 3 | 4 | 5 | 6;
+  bgColor: string;
+}
+
+const FILM_SLIDES: FilmSlide[] = [
+  { id: "slide-aurastream", index: 1, href: "#case-aurastream", bgColor: "#FE0000", imgSrc: "/assets/filmstrip/slide-1.svg" },
+  { id: "slide-quake-parser", index: 2, href: "#archive-quake-log-parser", bgColor: "#080808", imgSrc: "/assets/filmstrip/slide-2.svg" },
+  { id: "slide-jokenpo-franky", index: 3, href: "#archive-jokenpo", bgColor: "#FE0000", imgSrc: "/assets/filmstrip/slide-3.svg" },
+  { id: "slide-the-warriors", index: 4, href: "#archive-the-warriors", bgColor: "#080808", imgSrc: "/assets/filmstrip/slide-4.svg" },
+  { id: "slide-magalu-cloud", index: 5, href: "#case-magalu-cloud", bgColor: "#FE0000", imgSrc: "/assets/filmstrip/slide-5.svg" },
+  { id: "slide-space-cowboy", index: 6, href: "#about", bgColor: "#080808", imgSrc: "/assets/filmstrip/slide-6.svg" },
+];
+
+const slideText = (slide: FilmSlide) => {
+  const key = `s${slide.index}` as const;
+  const slides = ptBrDict.filmstrip.slides;
+  return {
+    reelKey: `filmstrip.slides.${key}Reel`,
+    reel: slides[`${key}Reel`],
+    titleKey: `filmstrip.slides.${key}Title`,
+    title: slides[`${key}Title`],
+    altKey: `filmstrip.slides.${key}Alt`,
+    alt: slides[`${key}Alt`],
+  };
+};
+
+const PASSION_SLIDES: PassionSlide[] = [
+  { index: 1, bgColor: "#FE0000" },
+  { index: 2, bgColor: "#080808" },
+  { index: 3, bgColor: "#FE0000" },
+  { index: 4, bgColor: "#080808" },
+  { index: 5, bgColor: "#FE0000" },
+  { index: 6, bgColor: "#080808" },
+];
+
+const REVERSED_PASSION_SLIDES = [...PASSION_SLIDES].reverse();
+
+const NARRATIVE_CONFIG: Record<string, NarrativeToken[][]> = {
+  "pt-br": buildMottoTokens(ptBrDict),
+  en: buildMottoTokens(enDict),
+};
+
+function splitWords(text: string): string[] {
+  return text.trim().split(/\s+/).filter(Boolean);
+}
+---
+
+<section
+  id="filmstrip-motto"
+  data-filmstrip-section
+  aria-label={ptBrDict.filmstrip.sectionAria}
+  data-i18n="filmstrip.sectionAria"
+  data-i18n-attr="aria-label"
+  class="motto relative z-[3] overflow-hidden border-t-4 border-space-base bg-bebop-red text-space-base select-none"
+>
+  <div class="relative overflow-hidden pt-10 sm:pt-14">
+    <div class="mx-auto max-w-[140rem] px-4 text-center">
+      <P5Title
+        text={ptBrDict.filmstrip.heading}
+        class="title-xxl font-display text-[clamp(1.75rem,5.2vw,4.75rem)] font-black uppercase leading-[0.95] tracking-tight text-space-base mx-auto max-w-[90rem]"
+        data-i18n="filmstrip.heading"
+      />
+    </div>
+  </div>
+
+  <div class="overflow-hidden pt-14 pb-16 sm:pt-24 sm:pb-24">
+    <div data-film-wrapper class="relative z-[2] rotate-[2.5deg] scale-[1.2] origin-center">
+      <div class="flex pl-[100vw]">
+        <div
+          data-filmstrip-parallax
+          class="parallax relative flex items-stretch"
+          style="--x: 0px; --progress: 0;"
+        >
+          <div class="relative flex shrink-0 self-stretch bg-space-base py-3 sm:py-5">
+            <figure class="media relative media-fit mx-2 sm:mx-3.5 w-[1rem] sm:w-[1.25rem] self-stretch overflow-hidden">
+              <img
+                src="/film-strip-border.svg"
+                alt=""
+                decoding="async"
+                draggable="false"
+                class="media__image is-loaded absolute inset-0 h-full w-full object-contain"
+              />
+            </figure>
+          </div>
+
+          {FILM_SLIDES.map((slide) => {
+            const text = slideText(slide);
+            return (
+            <a
+              href={slide.href}
+              data-film-slide
+              data-film-link={slide.href}
+              class="relative block shrink-0 bg-space-base py-3 pr-3 sm:py-5 sm:pr-5 focus-visible:outline-2 focus-visible:outline-offset-[-6px] focus-visible:outline-paper-white"
+            >
+              <figure
+                class="media relative media-fill min-w-[18rem] max-w-[18rem] sm:min-w-[28rem] sm:max-w-[28rem] lg:min-w-[36rem] lg:max-w-[36rem] overflow-hidden border-2 border-paper-white"
+              >
+                <div class="pt-[62%]"></div>
+                <div
+                  class="absolute inset-0"
+                  style={`background-color: ${slide.bgColor};`}
+                ></div>
+                <img
+                  src={slide.imgSrc}
+                  alt={text.alt}
+                  data-i18n={text.altKey}
+                  data-i18n-attr="alt"
+                  decoding="async"
+                  draggable="false"
+                  class="media__image is-loaded absolute inset-0 h-full w-full object-cover"
+                />
+                <figcaption class="pointer-events-none absolute top-2.5 left-2.5 z-10 flex items-center gap-1.5 border-2 border-paper-white bg-space-base/95 px-2.5 py-1 font-mono text-[9px] sm:text-[11px] font-bold tracking-wider text-paper-white uppercase">
+                  <span class="inline-block h-1.5 w-1.5 bg-bebop-red"></span>
+                  <span data-i18n={text.reelKey}>{text.reel}</span>
+                  <span class="hidden sm:inline text-muted-gray">::</span>
+                  <span class="hidden sm:inline" data-i18n={text.titleKey}>{text.title}</span>
+                </figcaption>
+              </figure>
+            </a>
+            );
+          })}
+
+          <div class="relative -ml-2 sm:-ml-3.5 flex shrink-0 self-stretch bg-space-base py-3 sm:py-5">
+            <figure class="media relative media-fit mx-2 sm:mx-3.5 w-[1rem] sm:w-[1.25rem] self-stretch overflow-hidden">
+              <img
+                src="/film-strip-border.svg"
+                alt=""
+                decoding="async"
+                draggable="false"
+                class="media__image is-loaded absolute inset-0 h-full w-full object-contain"
+              />
+            </figure>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="py-12 sm:py-24 px-4 sm:px-8">
+    <div class="site-max --s mx-auto flex max-w-[90rem] flex-col items-center">
+      <div
+        data-motto-text
+        class="motto__text title-m w-full max-w-[82rem] text-center font-body text-[clamp(1.5rem,3.6vw,3.5rem)] font-black leading-[1.08] tracking-tight text-space-base uppercase"
+      >
+        {NARRATIVE_CONFIG["pt-br"].map((paragraphTokens) => (
+          <p>
+            {paragraphTokens.map((token) => {
+              const words = splitWords(token.text);
+              if (token.badgeClass) {
+                return (
+                  <>
+                    <span class={token.badgeClass}>
+                      <span class={token.badgeInnerClass || "inline-block"}>
+                        {words.map((word, wIdx) => (
+                          <>
+                            <span class="motto__word" style="position:relative;display:inline-block;">
+                              {Array.from(word).map((ch) => (
+                                <span
+                                  class="char char-flip"
+                                  data-char-flip
+                                  style="position: relative; display: inline-block; transform: rotateX(90deg);"
+                                >{ch}</span>
+                              ))}
+                            </span>
+                            {wIdx < words.length - 1 ? " " : ""}
+                          </>
+                        ))}
+                      </span>
+                    </span>{" "}
+                  </>
+                );
+              }
+              return words.map((word) => (
+                <>
+                  <span class="motto__word" style="position:relative;display:inline-block;">
+                    {Array.from(word).map((ch) => (
+                      <span
+                        class="char char-flip"
+                        data-char-flip
+                        style="position: relative; display: inline-block; transform: rotateX(90deg);"
+                      >{ch}</span>
+                    ))}
+                  </span>{" "}
+                </>
+              ));
+            })}
+          </p>
+        ))}
+      </div>
+    </div>
+  </div>
+
+
+  <!-- Container de Overflow para a Segunda Esteira de Filme (Inclinada -2.5deg, Direção Inversa) -->
+  <div class="overflow-hidden pt-10 pb-16 sm:pt-16 sm:pb-24">
+    <div data-film-wrapper-reverse class="relative z-[2] -rotate-[2.5deg] scale-[1.2] origin-center">
+      <div class="flex">
+        <div
+          data-filmstrip-parallax-reverse
+          class="parallax-reverse relative flex items-stretch"
+          style="--x-rev: 0px; --progress-rev: 0;"
+        >
+          <div class="relative flex shrink-0 self-stretch bg-space-base py-3 sm:py-5">
+            <figure class="media relative media-fit mx-2 sm:mx-3.5 w-[1rem] sm:w-[1.25rem] self-stretch overflow-hidden">
+              <img
+                src="/film-strip-border.svg"
+                alt=""
+                decoding="async"
+                draggable="false"
+                class="media__image is-loaded absolute inset-0 h-full w-full object-contain"
+              />
+            </figure>
+          </div>
+
+          {REVERSED_PASSION_SLIDES.map((slide) => (
+            <PassionFrame index={slide.index} bgColor={slide.bgColor} />
+          ))}
+
+          <div class="relative -ml-2 sm:-ml-3.5 flex shrink-0 self-stretch bg-space-base py-3 sm:py-5">
+            <figure class="media relative media-fit mx-2 sm:mx-3.5 w-[1rem] sm:w-[1.25rem] self-stretch overflow-hidden">
+              <img
+                src="/film-strip-border.svg"
+                alt=""
+                decoding="async"
+                draggable="false"
+                class="media__image is-loaded absolute inset-0 h-full w-full object-contain"
+              />
+            </figure>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { onPageReady } from "../utils/page-lifecycle";
+  import { gsap, ScrollTrigger } from "../utils/motion";
+  import { LOCALE_CHANGE_EVENT, type Locale, getLocale } from "../i18n";
+  import { ptBrDict, enDict } from "../i18n/dictionaries";
+  import { buildMottoTokens, type NarrativeToken } from "./filmstrip/motto";
+
+  const NARRATIVE_CONFIG: Record<string, NarrativeToken[][]> = {
+    "pt-br": buildMottoTokens(ptBrDict),
+    en: buildMottoTokens(enDict),
+  };
+
+  function buildMottoHTML(tokensByParagraph: NarrativeToken[][]): string {
+    return tokensByParagraph.map((tokens) => {
+      const paragraphContent = tokens.map((token) => {
+        const words = token.text.trim().split(/\s+/).filter(Boolean);
+        const wordsHtml = words.map((word, wIdx) => {
+          const charsHtml = Array.from(word).map((ch) =>
+            `<span class="char char-flip" data-char-flip style="position: relative; display: inline-block; transform: rotateX(90deg);">${ch}</span>`
+          ).join("");
+          const space = wIdx < words.length - 1 ? " " : "";
+          return `<span class="motto__word" style="position:relative;display:inline-block;">${charsHtml}</span>${space}`;
+        }).join("");
+
+        if (token.badgeClass) {
+          return `<span class="${token.badgeClass}"><span class="${token.badgeInnerClass || 'inline-block'}">${wordsHtml}</span></span> `;
+        }
+        return `${wordsHtml} `;
+      }).join("");
+
+      return `<p>${paragraphContent}</p>`;
+    }).join("");
+  }
+
+  let cleanupFilmstrip: (() => void) | null = null;
+
+  function initFilmstripParallax() {
+    if (cleanupFilmstrip) {
+      cleanupFilmstrip();
+      cleanupFilmstrip = null;
+    }
+
+    const mottoSection = document.querySelector<HTMLElement>("[data-filmstrip-section]");
+    const parallaxEl = document.querySelector<HTMLElement>("[data-filmstrip-parallax]");
+    const parallaxRevEl = document.querySelector<HTMLElement>("[data-filmstrip-parallax-reverse]");
+    const mottoText = document.querySelector<HTMLElement>("[data-motto-text]");
+
+    if (!mottoSection || !parallaxEl || !parallaxRevEl || !mottoText) return;
+
+    const initialLocale = getLocale();
+    if (initialLocale !== "pt-br") {
+      mottoText.innerHTML = buildMottoHTML(NARRATIVE_CONFIG[initialLocale] || NARRATIVE_CONFIG["pt-br"]);
+    }
+
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    const updateParallaxBounds = () => {
+      // Top reel
+      const slides = parallaxEl.querySelectorAll<HTMLElement>("[data-film-slide]");
+      const lastSlide = slides[slides.length - 1];
+      if (lastSlide) {
+        parallaxEl.style.setProperty("--x", "0px");
+        const rect = lastSlide.getBoundingClientRect();
+        const windowWidth = window.innerWidth;
+        const scaleFactor = lastSlide.offsetWidth > 0 ? rect.width / lastSlide.offsetWidth : 1;
+        const travelDistance = -(rect.right - windowWidth) / scaleFactor;
+        parallaxEl.style.setProperty("--x", `${travelDistance}px`);
+      }
+
+      // Bottom reel (reverse direction from left to right)
+      const passionSlides = parallaxRevEl.querySelectorAll<HTMLElement>("[data-passion-slide]");
+      const lastPassionSlide = passionSlides[passionSlides.length - 1];
+      const firstPassionSlide = passionSlides[0];
+      if (lastPassionSlide && firstPassionSlide) {
+        parallaxRevEl.style.setProperty("--x-rev", "0px");
+        const windowWidth = window.innerWidth;
+        const scaleFactor = firstPassionSlide.offsetWidth > 0 ? firstPassionSlide.getBoundingClientRect().width / firstPassionSlide.offsetWidth : 1;
+        const totalReelWidth = (lastPassionSlide.getBoundingClientRect().right - firstPassionSlide.getBoundingClientRect().left) / scaleFactor;
+        const travelDistanceRev = Math.max(windowWidth * 0.85, totalReelWidth - windowWidth * 0.25);
+        parallaxRevEl.style.setProperty("--x-rev", `${travelDistanceRev}px`);
+      }
+    };
+
+    updateParallaxBounds();
+
+    if (prefersReducedMotion) {
+      parallaxEl.style.setProperty("--progress", "0.25");
+      parallaxRevEl.style.setProperty("--progress-rev", "0.5");
+      mottoSection.classList.add("is-active");
+      const chars = Array.from(mottoText.querySelectorAll<HTMLElement>(".char-flip"));
+      chars.forEach((ch) => {
+        ch.style.transform = "rotateX(0deg)";
+        ch.style.opacity = "1";
+      });
+      return;
+    }
+
+    const parallaxTween = gsap.fromTo(
+      parallaxEl,
+      { "--progress": 0 },
+      {
+        "--progress": 1,
+        ease: "none",
+        scrollTrigger: {
+          trigger: parallaxEl,
+          start: "top 85%",
+          end: "bottom 15%",
+          scrub: 0.25,
+          invalidateOnRefresh: true,
+        },
+      }
+    );
+
+    const parallaxRevTween = gsap.fromTo(
+      parallaxRevEl,
+      { "--progress-rev": 0 },
+      {
+        "--progress-rev": 1,
+        ease: "none",
+        scrollTrigger: {
+          trigger: parallaxRevEl,
+          start: "top 90%",
+          end: "bottom 10%",
+          scrub: 0.25,
+          invalidateOnRefresh: true,
+        },
+      }
+    );
+
+    let textTween: gsap.core.Tween | null = null;
+    let textTrigger: ScrollTrigger | null = null;
+    let maxProgress = 0;
+
+    const setupTextTween = () => {
+      if (textTrigger) {
+        textTrigger.kill();
+        textTrigger = null;
+      }
+      if (textTween) {
+        textTween.kill();
+        textTween = null;
+      }
+
+      const chars = Array.from(mottoText.querySelectorAll<HTMLElement>(".char-flip"));
+
+      textTween = gsap.fromTo(
+        chars,
+        {
+          rotateX: 90,
+        },
+        {
+          rotateX: 0,
+          duration: 0.03,
+          stagger: 0.03,
+          ease: "none",
+          paused: true,
+        }
+      );
+
+      textTrigger = ScrollTrigger.create({
+        trigger: mottoText,
+        start: "top 82%",
+        end: "bottom 35%",
+        scrub: 0.25,
+        onUpdate: (self) => {
+          if (self.progress > maxProgress) {
+            maxProgress = self.progress;
+            textTween?.progress(maxProgress);
+          }
+          if (maxProgress >= 0.95) {
+            mottoSection.classList.add("is-active");
+          }
+        },
+        onLeave: () => {
+          maxProgress = 1;
+          textTween?.progress(1);
+          mottoSection.classList.add("is-active");
+        },
+      });
+
+      if (maxProgress > 0) {
+        textTween.progress(maxProgress);
+      }
+    };
+
+    setupTextTween();
+
+    const onLocaleChange = (e: Event) => {
+      const custom = e as CustomEvent<{ locale: Locale }>;
+      const nextLocale = custom.detail?.locale || getLocale();
+      const tokens = NARRATIVE_CONFIG[nextLocale] || NARRATIVE_CONFIG["pt-br"];
+      mottoText.innerHTML = buildMottoHTML(tokens);
+
+      if (prefersReducedMotion) {
+        const chars = Array.from(mottoText.querySelectorAll<HTMLElement>(".char-flip"));
+        chars.forEach((ch) => {
+          ch.style.transform = "rotateX(0deg)";
+          ch.style.opacity = "1";
+        });
+        return;
+      }
+
+      setupTextTween();
+      ScrollTrigger.refresh();
+    };
+
+    window.addEventListener(LOCALE_CHANGE_EVENT, onLocaleChange);
+
+    const onResize = () => {
+      updateParallaxBounds();
+    };
+
+    window.addEventListener("resize", onResize, { passive: true });
+    ScrollTrigger.addEventListener("refreshInit", updateParallaxBounds);
+
+    cleanupFilmstrip = () => {
+      window.removeEventListener("resize", onResize);
+      window.removeEventListener(LOCALE_CHANGE_EVENT, onLocaleChange);
+      ScrollTrigger.removeEventListener("refreshInit", updateParallaxBounds);
+      parallaxTween.scrollTrigger?.kill();
+      parallaxTween.kill();
+      parallaxRevTween.scrollTrigger?.kill();
+      parallaxRevTween.kill();
+      if (textTrigger) {
+        textTrigger.kill();
+        textTrigger = null;
+      }
+      if (textTween) {
+        textTween.kill();
+        textTween = null;
+      }
+    };
+  }
+
+  onPageReady(() => {
+    initFilmstripParallax();
+    return () => {
+      cleanupFilmstrip?.();
+      cleanupFilmstrip = null;
+    };
+  });
+</script>
+
+<style>
+  .parallax {
+    --x: 0px;
+    --progress: 0;
+    transform: translateX(calc(var(--progress) * var(--x)));
+    will-change: transform;
+  }
+
+  .parallax-reverse {
+    --x-rev: 0px;
+    --progress-rev: 0;
+    transform: translateX(calc((var(--progress-rev) - 1) * var(--x-rev)));
+    will-change: transform;
+  }
+
+  .radius-fix {
+    border-radius: 0.75rem;
+  }
+
+  .motto__text {
+    perspective: 1000px;
+  }
+
+  .motto__text > :not(:last-child) {
+    margin-bottom: 2.5rem;
+  }
+
+  @media (min-width: 640px) {
+    .motto__text > :not(:last-child) {
+      margin-bottom: 4rem;
+    }
+  }
+
+  .char-flip {
+    transform-origin: 50% 50%;
+    backface-visibility: hidden;
+  }
+</style>

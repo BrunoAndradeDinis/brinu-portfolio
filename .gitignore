@@ -34,6 +34,8 @@ brainstorm-data.md
 
 # Test artifacts
 scripts/*.png
+test-results/
+scratch/
 
 # Agents
 .agents/
@@ -43,3 +45,7 @@ scripts/*.png
 
 # Skills Lock
 skills-lock.json
+
+
+# scripts
+scripts/

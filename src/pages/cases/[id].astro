@@ -1,0 +1,33 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import Showcase from "../../components/showcase/Showcase.astro";
+import { getLocalizedCases } from "../../data/cases";
+import { ptBrDict } from "../../i18n/dictionaries";
+import { caseMeta, casePath, caseStaticPaths } from "../../utils/case-pages";
+
+export function getStaticPaths() {
+  return caseStaticPaths();
+}
+
+const { id } = Astro.params;
+const project = getLocalizedCases("pt-br").find((entry) => entry.id === id);
+if (!project) throw new Error(`Unknown case: ${id}`);
+
+const meta = caseMeta(project, ptBrDict.casePage.titleSuffix);
+---
+
+<BaseLayout title={meta.title} description={meta.description} canonicalPath={casePath(project.id)}>
+  <main id="main-content" tabindex="-1" class="min-h-screen bg-paper-white text-space-base focus:outline-none">
+    <Showcase caseId={project.id} />
+  </main>
+</BaseLayout>
+
+<script>
+  import { onPageReady } from "../../utils/page-lifecycle";
+  import { enterRoute } from "../../utils/route-band";
+
+  onPageReady(() => {
+    const content = document.getElementById("main-content");
+    if (content) enterRoute(content);
+  });
+</script>

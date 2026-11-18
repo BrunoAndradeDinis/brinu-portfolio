@@ -1,237 +1,331 @@
 ---
-/**
- * About.astro
- * Dossiê do Autor: Trajetória Técnica, Avatar Oficial em Moldura HQ & Storyboard Mangá.
- * ATO 3: OPERATOR DOSSIER // LOG 1996
- * 100% Bebop Design Tokens + Tailwind CSS v4.
- */
-import SkillsGrid from "./SkillsGrid.astro";
+import { PROFILE } from "../data/profile";
+import { ptBrDict } from "../i18n/dictionaries";
+import { CAREER, getLocalizedCareer, getLocalizedEducation } from "../data/career";
+import P5Title from "./p5/P5Title.astro";
+import P5Badge from "./p5/P5Badge.astro";
+import P5Panel from "./p5/P5Panel.astro";
+import CareerIcon from "./about/CareerIcon.astro";
+import HobbyCards from "./about/HobbyCards.astro";
+
+const career = getLocalizedCareer("pt-br");
+const education = getLocalizedEducation("pt-br");
+const currentId = CAREER.find((entry) => entry.end === "present")?.id;
 ---
 
 <section
   id="about"
-  class="relative border-t-[0.7rem] border-space-base bg-space-base px-4 py-16 sm:px-8 sm:py-20 md:px-12 md:py-24 text-paper-white select-none overflow-hidden"
-  aria-label="Dossiê do Autor: Bruno Dinis"
+  class="relative bg-space-base px-4 pb-16 sm:px-8 sm:pb-20 md:px-12 md:pb-24 text-paper-white select-none overflow-hidden"
+  aria-label={ptBrDict.about.sectionAria}
+  data-i18n="about.sectionAria"
+  data-i18n-attr="aria-label"
 >
-  <!-- Faixa Editorial de Cabeçalho de Dossiê -->
+  <div
+    data-p5-section-cut="works-to-about"
+    aria-hidden="true"
+    class="p5-section-cut p5-section-cut--right -mx-4 sm:-mx-8 md:-mx-12 mb-12 sm:mb-16 bg-paper-white"
+  ></div>
+
   <div class="mx-auto mb-12 sm:mb-16 max-w-[140rem]">
-    <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 pb-4 border-b border-space-border/60">
+    <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 pb-4 border-b-4 border-bebop-red">
       <div>
-        <span class="mb-2 block font-mono text-xs sm:text-sm tracking-widest text-bebop-amber uppercase">
-          [ ACT II // OPERATOR DOSSIER • LOG 1996 ]
-        </span>
-        <h2
-          data-about-title
-          class="font-display text-[clamp(2.2rem,6vw,5rem)] font-black tracking-tight text-paper-white leading-none uppercase"
+        <span
+          class="mb-2 block font-mono text-xs sm:text-sm font-bold tracking-widest text-bebop-red uppercase"
+          data-i18n="about.actTag"
         >
-          DOSSIER: BRINU
-        </h2>
+          {ptBrDict.about.actTag}
+        </span>
+        <P5Title
+          text={ptBrDict.about.title}
+          data-about-title
+          data-i18n="about.title"
+          class="font-display text-[clamp(2.2rem,6vw,5rem)] font-black tracking-tight text-paper-white leading-none uppercase"
+        />
       </div>
 
       <div class="flex flex-col sm:items-end text-left sm:text-right font-mono text-xs text-muted-gray">
-        <span class="font-bold text-acid-green">STATUS: ACTIVE // DEPLOYED</span>
-        <span class="text-[10px] sm:text-xs text-muted-gray tracking-wider">
-          MAGALU CLOUD • DISTRIBUTED SYSTEMS • CREATIVE TECHNOLOGIST
+        <P5Badge class="font-bold text-space-base bg-bebop-red px-2.5 py-0.5 border border-paper-white" data-i18n="about.statusBadge">
+          {ptBrDict.about.statusBadge}
+        </P5Badge>
+        <span class="mt-1.5 text-[10px] sm:text-xs text-muted-gray tracking-wider" data-i18n="about.domainLine">
+          {ptBrDict.about.domainLine}
         </span>
       </div>
     </div>
   </div>
 
-  <!-- Container Editorial de Dois Painéis Estilizados (Estilo Mangá Noir) -->
   <div class="mx-auto max-w-[140rem] grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
-    <!-- Painel 1: Moldura do Avatar Oficial com Efeito Celuloide 35mm e Contornos HQ -->
     <div
       data-about-avatar-panel
-      class="lg:col-span-5 flex flex-col items-center lg:items-start"
+      class="lg:col-span-5 flex flex-col items-center"
     >
-      <div
-        class="relative w-full max-w-[24rem] sm:max-w-[26rem] mx-auto lg:mx-0 rounded-2xl sm:rounded-3xl border-4 sm:border-[0.5rem] border-space-base bg-space-surface-2 p-3 sm:p-4 shadow-comic-lg overflow-hidden group transition-transform duration-300 hover:-translate-y-1"
-      >
-        <!-- Overlay de Celuloide / Scanlines Analógicas -->
+      <div data-about-portrait class="relative w-full max-w-[24rem] sm:max-w-[26rem] mx-auto pb-4">
         <div
-          class="pointer-events-none absolute inset-0 z-10 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.35)_50%)] bg-[length:100%_4px] opacity-40 mix-blend-overlay"
-          aria-hidden="true"
-        />
-
-        <!-- Carimbo de Identificação Superior 35mm -->
-        <div
-          class="absolute top-4 sm:top-5 right-4 sm:right-5 z-20 rounded bg-space-base/90 border border-space-border/80 px-2.5 py-0.5 font-mono text-[9px] sm:text-[10px] font-bold text-bebop-amber uppercase tracking-wider backdrop-blur-xs"
+          data-about-portrait-frame
+          class="relative rotate-[-4deg] outline-none bg-bebop-red p-[0.45rem] sm:p-[0.6rem] [clip-path:polygon(7%_0%,100%_5%,93%_100%,0%_95%)]"
         >
-          FRAME // 35MM NOIR
+          <div class="relative overflow-hidden bg-space-base [clip-path:polygon(7%_0%,100%_5%,93%_100%,0%_95%)]">
+            <img
+              id="about-official-avatar"
+              src="/assets/brinu-avatar.jpg"
+              alt={ptBrDict.about.portraitAlt}
+              data-i18n="about.portraitAlt"
+              data-i18n-attr="alt"
+              width={341}
+              height={394}
+              class="w-full h-auto aspect-[341/394] object-cover contrast-125 rotate-[4deg] scale-[1.12]"
+              loading="lazy"
+              decoding="async"
+            />
+          </div>
         </div>
-
-        <!-- Avatar Oficial com Dimensões Explícitas e Proporção Fixa (CLS = 0) -->
-        <div class="relative overflow-hidden rounded-xl sm:rounded-2xl border-2 border-space-base bg-space-base">
-          <img
-            id="about-official-avatar"
-            src="/assets/brinu-avatar.jpg"
-            alt="Retrato oficial ilustrado em estilo mangá noir de Bruno Dinis"
-            width={341}
-            height={394}
-            class="w-full h-auto aspect-[341/394] object-cover filter contrast-[1.05] brightness-[0.98] transition-transform duration-500 group-hover:scale-[1.03]"
-            loading="lazy"
-            decoding="async"
-          />
-        </div>
-
-        <!-- Badge de Operador Inferior Estilo Estêncil -->
-        <div class="mt-3 flex items-center justify-between font-mono text-xs">
+        <span id="about-portrait-replay-hint" hidden data-i18n="about.portraitReplayHint">{ptBrDict.about.portraitReplayHint}</span>
+        <div class="mt-4 flex items-center justify-between gap-3 font-mono text-xs">
           <span
-            class="inline-flex items-center gap-1.5 rounded border border-space-base bg-bebop-red px-2.5 py-1 text-[11px] font-display font-black text-paper-white shadow-comic-xs uppercase tracking-wide"
+            class="inline-flex items-center gap-1.5 border-2 border-paper-white bg-bebop-red px-2.5 py-1 text-[11px] font-display font-black text-space-base uppercase tracking-wider"
+            data-i18n="about.operatorTag"
           >
-            <span>OPERATOR: BRINU</span>
+            {ptBrDict.about.operatorTag}
           </span>
-          <span class="text-[10px] sm:text-xs text-muted-gray uppercase font-semibold">
-            ID: BD-1996
-          </span>
-        </div>
-      </div>
-    </div>
-
-    <!-- Painel 2: Crônica Editorial, Manifesto do Engenheiro & Ficha Técnica -->
-    <div
-      data-about-content-panel
-      class="lg:col-span-7 flex flex-col justify-between rounded-2xl sm:rounded-3xl border border-space-border/80 bg-space-surface-1/40 p-6 sm:p-8 md:p-10 backdrop-blur-xs shadow-comic-md"
-    >
-      <div>
-        <!-- Cabeçalho do Perfil -->
-        <div class="mb-6 border-b border-space-border/60 pb-5">
-          <div class="flex items-center gap-2 mb-1.5">
-            <span class="inline-block w-2.5 h-2.5 rounded-full bg-acid-green animate-pulse" aria-hidden="true"></span>
-            <span class="font-mono text-xs font-bold uppercase tracking-widest text-bebop-amber">
-              // BIOGRAPHICAL DOSSIER • ARCHITECT & MAKER
-            </span>
-          </div>
-          <h3 class="font-display text-2xl sm:text-3xl md:text-4xl font-black text-paper-white leading-tight uppercase">
-            THE SYSTEM OPERATOR
-          </h3>
-          <p class="mt-1.5 font-mono text-xs sm:text-sm font-semibold text-acid-green">
-            MAGALU CLOUD • DISTRIBUTED SYSTEMS • CREATIVE TECHNOLOGIST
-          </p>
-        </div>
-
-        <!-- Crônica Autoral Editorial (Storyboard Narrativo) -->
-        <div class="space-y-4 font-body text-sm sm:text-base text-paper-white/90 leading-relaxed mb-8">
-          <p>
-            Engenheiro de Software com foco na arquitetura de sistemas distribuídos de alta disponibilidade, computação em nuvem resiliente e pipelines de mídia assíncrona na <strong class="text-paper-white font-bold underline decoration-bebop-amber decoration-2 underline-offset-4">Magalu Cloud</strong>. Minha rotina é forjada no desafio contínuo de orquestrar streaming 24/7 sem interrupções, domar concorrência pesada e projetar serviços robustos onde falhas simplesmente não são uma opção.
-          </p>
-          <p>
-            Mas a engenharia não termina no terminal de comando. Trago como assinatura uma obsessão estética inspirada no cinema analógico dos anos 90, na narrativa afiada de <em>Cowboy Bebop</em> e no impacto gráfico brutalista dos quadrinhos noir: interfaces táteis, expressivas e fluidas que rejeitam o padrão corporativo asséptico para operar a <strong>60 quadros por segundo</strong>.
-          </p>
-          <p>
-            Acima de qualquer arquitetura em nuvem ou cluster distribuído, o fundamento essencial é humano: pai dedicado da <strong class="text-contrast-pink font-semibold">Helena</strong> — fonte diária de entusiasmo, imaginação e propósito — e noivo comprometido com a parceira com quem compartilho os melhores capítulos dessa trajetória.
-          </p>
-        </div>
-
-        <!-- Citação / Manifesto Estêncil em Quadrinhos -->
-        <div class="relative mb-8 rounded-xl border-2 border-space-border bg-space-surface-2/60 p-4 sm:p-5 shadow-comic-sm">
-          <div class="absolute -top-3 left-4 rounded bg-bebop-amber px-2 py-0.5 font-mono text-[10px] font-bold text-space-base uppercase tracking-wider shadow-comic-xs">
-            CORE MANIFESTO
-          </div>
-          <blockquote class="font-display text-xs sm:text-sm md:text-base text-paper-white italic font-bold leading-snug pt-1">
-            "Software de altíssimo rendimento arquitetural sem abrir mão de caráter estético, calor humano e alma autoral."
-          </blockquote>
-          <div class="mt-2 text-right font-spray text-sm text-acid-green">
-            — Brinu (Bruno Dinis)
-          </div>
-        </div>
-
-        <!-- Ficha Técnica do Operador (Estilo Cupom Fiscal / Telemetria Bebop) -->
-        <div class="rounded-xl border border-space-border/80 bg-space-base/60 p-5 font-mono text-xs space-y-2.5">
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-muted-gray border-b border-space-border/40 pb-2">
-            <span class="text-bebop-amber font-bold uppercase tracking-wider">CURRENT POSITION //</span>
-            <span class="text-paper-white font-semibold">Software Engineer @ Magalu Cloud</span>
-          </div>
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-muted-gray border-b border-space-border/40 pb-2">
-            <span class="text-acid-green font-bold uppercase tracking-wider">PRIMARY DOMAINS //</span>
-            <span class="text-paper-white font-semibold">Cloud Infrastructure, Video Streaming & Expressive UI</span>
-          </div>
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-muted-gray border-b border-space-border/40 pb-2">
-            <span class="text-contrast-pink font-bold uppercase tracking-wider">HUMAN CORE //</span>
-            <span class="text-paper-white font-semibold">Pai da Helena • Noivo Apaixonado</span>
-          </div>
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-muted-gray border-b border-space-border/40 pb-2">
-            <span class="text-crt-cyan font-bold uppercase tracking-wider">ESSENTIAL TOOLING //</span>
-            <span class="text-paper-white font-semibold">Go • Node.js/TS • Docker/K8s • FFmpeg • Astro • GSAP</span>
-          </div>
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-muted-gray pt-1">
-            <span class="text-paper-white/60 font-bold uppercase tracking-wider">PHILOSOPHY //</span>
-            <span class="text-paper-white italic">"High architectural throughput with uncompromising aesthetic character."</span>
+          <div class="flex flex-col items-end text-[10px] sm:text-xs text-paper-white font-mono font-bold leading-tight uppercase whitespace-nowrap">
+            <span>ID: {PROFILE.operatorId}</span>
+            <span>Loc: {PROFILE.location.city} - {PROFILE.location.state}</span>
           </div>
         </div>
       </div>
+      <HobbyCards />
     </div>
-  </div>
 
-  <!-- Matriz de Habilidades em Vinhetas de HQ -->
-  <div class="mx-auto max-w-[140rem]">
-    <SkillsGrid />
+    <div data-about-content-panel class="lg:col-span-7 flex flex-col gap-6">
+      <P5Panel as="div" cut="a" data-about-card="bio" class="bg-space-surface-1 border-l-8 border-bebop-red p-6 sm:p-8 text-paper-white">
+        <p data-about-bio-line data-i18n="about.bioLine1" class="font-display text-lg sm:text-2xl font-black uppercase leading-tight">
+          {ptBrDict.about.bioLine1}
+        </p>
+        <p data-about-bio-line data-i18n="about.bioLine2" class="mt-3 font-body text-sm sm:text-base leading-relaxed text-paper-white">
+          {ptBrDict.about.bioLine2}
+        </p>
+        <p data-about-base-line data-i18n="about.baseLine" class="mt-5 inline-block bg-bebop-red px-3 py-1 font-mono text-[11px] sm:text-xs font-black uppercase tracking-wider text-space-base">
+          {ptBrDict.about.baseLine}
+        </p>
+      </P5Panel>
+
+      <P5Panel as="div" cut="b" data-about-card="career" class="bg-space-surface-1 p-6 sm:p-8 text-paper-white">
+        <h4 class="mb-5 font-mono text-xs font-black uppercase tracking-widest text-bebop-red" data-i18n="about.careerTitle">
+          {ptBrDict.about.careerTitle}
+        </h4>
+        <ol data-career class="flex flex-col gap-5 border-l-4 border-bebop-red pl-4">
+          {career.map((entry, index) => (
+            <li id={`career-${entry.id}`} data-career-entry class="flex flex-col gap-2">
+              <div class="flex items-start gap-3">
+                <span data-career-icon-wrap class="mt-0.5 flex h-11 w-11 shrink-0 items-center justify-center border-2 border-paper-white bg-space-base text-bebop-red">
+                  <CareerIcon id={entry.id} />
+                </span>
+                <div class="flex min-w-0 flex-col gap-1">
+                  <span class="flex flex-wrap items-center gap-2 font-mono text-[11px] font-black uppercase">
+                    <span data-career-rank class="bg-paper-white px-2 py-0.5 text-space-base">
+                      <span data-i18n="about.rankLabel">{ptBrDict.about.rankLabel}</span> {career.length - index}
+                    </span>
+                    {entry.id === currentId && (
+                      <span data-career-current class="bg-bebop-red px-2 py-0.5 text-space-base" data-i18n="about.currentMarker">{ptBrDict.about.currentMarker}</span>
+                    )}
+                    <span data-career-period class="text-paper-white">{entry.period}</span>
+                  </span>
+                  <span class="font-display text-base sm:text-lg font-black uppercase text-paper-white [overflow-wrap:anywhere]">
+                    <span data-career-role>{entry.role}</span> <span class="text-bebop-red">@</span> <span data-career-org>{entry.org}</span>
+                  </span>
+                </div>
+              </div>
+
+              <div role="tablist" aria-label={ptBrDict.about.careerTitle} data-i18n="about.careerTitle" data-i18n-attr="aria-label" class="flex flex-wrap gap-2 font-mono text-[11px] font-black uppercase">
+                {(["info", "details", "learned"] as const).map((key, tabIndex) => (
+                  <button
+                    type="button"
+                    role="tab"
+                    id={`career-${entry.id}-tab-${key}`}
+                    aria-controls={`career-${entry.id}-panel-${key}`}
+                    aria-selected={tabIndex === 0 ? "true" : "false"}
+                    tabindex={tabIndex === 0 ? 0 : -1}
+                    data-career-tab={key}
+                    data-i18n={`about.tab${key === "info" ? "Info" : key === "details" ? "Details" : "Learned"}`}
+                    class="cursor-pointer border-2 border-paper-white px-2.5 py-1 text-paper-white transition-colors duration-150 aria-selected:bg-paper-white aria-selected:text-space-base hover:bg-bebop-red hover:text-space-base focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-paper-white"
+                  >
+                    {key === "info" ? ptBrDict.about.tabInfo : key === "details" ? ptBrDict.about.tabDetails : ptBrDict.about.tabLearned}
+                  </button>
+                ))}
+              </div>
+
+              <div role="tabpanel" id={`career-${entry.id}-panel-info`} aria-labelledby={`career-${entry.id}-tab-info`} data-career-panel="info" class="flex flex-col gap-2">
+                <p data-career-summary data-typed class="font-body text-sm text-paper-white leading-relaxed">{entry.summary}</p>
+                {entry.automations.length > 0 && (
+                  <div class="flex flex-wrap items-center gap-2 font-mono text-[11px]">
+                    <span class="font-black uppercase text-bebop-red" data-i18n="about.automationsLabel">{ptBrDict.about.automationsLabel}</span>
+                    {entry.automations.map((automation) => (
+                      <a
+                        href={automation.repoUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        data-automation-link={automation.id}
+                        class="border border-paper-white px-2 py-0.5 font-bold uppercase text-paper-white transition-colors duration-150 hover:bg-paper-white hover:text-space-base focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-paper-white"
+                      >
+                        {automation.name} ↗
+                      </a>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div role="tabpanel" id={`career-${entry.id}-panel-details`} aria-labelledby={`career-${entry.id}-tab-details`} data-career-panel="details" class="flex flex-col gap-2">
+                <ul class="flex list-disc flex-col gap-1 pl-5 font-body text-sm leading-relaxed text-paper-white marker:text-bebop-red">
+                  {entry.details.map((detail) => (
+                    <li data-career-detail data-typed>{detail}</li>
+                  ))}
+                </ul>
+              </div>
+
+              <div role="tabpanel" id={`career-${entry.id}-panel-learned`} aria-labelledby={`career-${entry.id}-tab-learned`} data-career-panel="learned" class="flex flex-col gap-3">
+                <div>
+                  <span class="font-mono text-[11px] font-black uppercase text-bebop-red" data-i18n="about.hardSkillsLabel">{ptBrDict.about.hardSkillsLabel}</span>
+                  <ul class="mt-1 flex list-disc flex-col gap-1 pl-5 font-body text-sm leading-relaxed text-paper-white marker:text-bebop-red">
+                    {entry.hardSkills.map((skill) => (
+                      <li data-career-hard data-typed>{skill}</li>
+                    ))}
+                  </ul>
+                </div>
+                {entry.softSkills.length > 0 && (
+                <div>
+                  <span class="font-mono text-[11px] font-black uppercase text-bebop-red" data-i18n="about.softSkillsLabel">{ptBrDict.about.softSkillsLabel}</span>
+                  <ul class="mt-1 flex list-disc flex-col gap-1 pl-5 font-body text-sm leading-relaxed text-paper-white marker:text-bebop-red">
+                    {entry.softSkills.map((skill) => (
+                      <li data-career-soft data-typed>{skill}</li>
+                    ))}
+                  </ul>
+                </div>
+                )}
+              </div>
+            </li>
+          ))}
+        </ol>
+      </P5Panel>
+      <script is:inline>
+        document.querySelectorAll('[data-career-panel]:not([data-career-panel="info"])').forEach((panel) => { panel.hidden = true; });
+      </script>
+
+      <P5Panel as="div" cut="a" data-about-card="education" class="bg-space-surface-1 p-6 sm:p-8 text-paper-white">
+        <h4 class="mb-5 font-mono text-xs font-black uppercase tracking-widest text-bebop-red" data-i18n="about.educationTitle">
+          {ptBrDict.about.educationTitle}
+        </h4>
+        <ul data-education class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {education.map((entry) => (
+            <li id={`education-${entry.id}`} data-education-entry class="border-2 border-paper-white/60 p-3">
+              <span class="block font-display text-sm font-black uppercase text-paper-white">{entry.institution}</span>
+              <span data-education-course class="block font-body text-sm text-paper-white">{entry.course}</span>
+              <span class="mt-1 flex flex-wrap gap-2 font-mono text-[10px] uppercase">
+                <span data-education-period class="text-paper-white">{entry.period}</span>
+                <span data-education-status class="font-black text-bebop-red">{entry.status}</span>
+              </span>
+            </li>
+          ))}
+        </ul>
+      </P5Panel>
+    </div>
   </div>
 </section>
 
 <script>
-  import { gsap } from "../utils/motion";
+  import { onPageReady } from "../utils/page-lifecycle";
+  import { initDossier } from "./about/dossier";
+  import { initCareerTabs } from "./about/career-tabs";
+  import { bindRubikPortrait } from "./about/rubik-bind";
+  import { bindPortraitParticles } from "./about/portrait-particles";
 
-  let isAboutInitialized = false;
-
-  function setupAboutScroll() {
-    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (prefersReducedMotion) return;
-    if (isAboutInitialized) return;
-    isAboutInitialized = true;
-
-    const aboutSection = document.getElementById("about");
-    const avatarPanel = document.querySelector("[data-about-avatar-panel]");
-    const contentPanel = document.querySelector("[data-about-content-panel]");
-    const skillsMatrix = document.querySelector("[data-skills-matrix]");
-
-    if (aboutSection && avatarPanel && contentPanel) {
-      gsap.fromTo(
-        [avatarPanel, contentPanel],
-        { opacity: 0, y: 35 },
-        {
-          scrollTrigger: {
-            trigger: aboutSection,
-            start: "top 80%",
-            once: true,
-          },
-          opacity: 1,
-          y: 0,
-          duration: 0.8,
-          stagger: 0.2,
-          ease: "power2.out",
-          force3D: true,
-        }
-      );
-    }
-
-    if (skillsMatrix) {
-      gsap.fromTo(
-        skillsMatrix,
-        { opacity: 0, y: 30 },
-        {
-          scrollTrigger: {
-            trigger: skillsMatrix,
-            start: "top 85%",
-            once: true,
-          },
-          opacity: 1,
-          y: 0,
-          duration: 0.8,
-          ease: "power2.out",
-          force3D: true,
-        }
-      );
-    }
+  function boot() {
+    const about = document.getElementById("about");
+    if (!about) return undefined;
+    const stopDossier = initDossier(about);
+    const stopTabs = initCareerTabs(about);
+    const portraitHost = about.querySelector<HTMLElement>("[data-about-portrait]");
+    const frame = about.querySelector<HTMLElement>("[data-about-portrait-frame]");
+    const portrait = about.querySelector<HTMLImageElement>("#about-official-avatar");
+    const stopCube = portraitHost && frame && portrait ? bindRubikPortrait(portraitHost, frame, portrait) : undefined;
+    const stopParticles = frame ? bindPortraitParticles(frame) : undefined;
+    return () => {
+      stopParticles?.();
+      stopDossier?.();
+      stopTabs();
+      stopCube?.();
+    };
   }
 
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", setupAboutScroll);
-  } else {
-    setupAboutScroll();
-  }
-  document.addEventListener("astro:page-load", () => {
-    isAboutInitialized = false;
-    setupAboutScroll();
-  });
+  onPageReady(boot);
 </script>
+
+<style is:global>
+  #about .rubik-stage {
+    position: absolute;
+    z-index: 5;
+    display: grid;
+    place-items: center;
+    perspective: 1100px;
+    pointer-events: none;
+  }
+
+  #about .rubik-root {
+    position: relative;
+    transform-style: preserve-3d;
+  }
+
+  #about .rubik-piece {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform-style: preserve-3d;
+  }
+
+  #about .rubik-sticker {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    border: 2px solid #080808;
+    border-radius: 3px;
+    backface-visibility: hidden;
+  }
+
+  /* The frame's clip-path would cut its own focus ring, so the unclipped block around it shows focus. */
+  #about [data-about-portrait]:has([data-about-portrait-frame]:focus-visible) {
+    outline: 4px solid #fbfaf4;
+    outline-offset: 6px;
+  }
+
+  #about [data-about-portrait-frame][data-replayable] {
+    cursor: pointer;
+  }
+
+  #about .portrait-particles {
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    overflow: hidden;
+    pointer-events: none;
+  }
+
+  #about .portrait-particle {
+    position: absolute;
+    box-sizing: border-box;
+    border: 1.5px solid #080808;
+    will-change: transform, opacity;
+  }
+
+  #about .rubik-photo {
+    position: absolute;
+    inset: 9%;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: contain;
+  }
+
+  #about .rubik-slice {
+    position: absolute;
+    inset: 0;
+    background-repeat: no-repeat;
+  }
+</style>

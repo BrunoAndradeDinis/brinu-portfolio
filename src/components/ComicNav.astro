@@ -1,56 +1,65 @@
 ---
-/**
- * ComicNav.astro
- * Barra de navegação superior estilo manga brutalista inspirado em mew.xyz.
- * Estilizada integralmente via Tailwind CSS v4 & Bebop Design Tokens.
- * Layout relative (fluxo natural com a página) conforme especificação do projeto.
- */
+import { ptBrDict } from "../i18n/dictionaries";
 ---
 
 <header
-  class="relative z-hud flex h-[7rem] w-full items-center justify-between border-b-[3.5px] border-space-base bg-bebop-red px-4 sm:px-8 md:px-10 lg:px-20 select-none box-border"
+  id="comic-nav-header"
+  transition:persist="comic-nav"
+  data-cockpit-open="false"
+  data-scrolled="false"
+  class="fixed top-0 inset-x-0 z-[9999] flex h-[5.5rem] sm:h-[6.5rem] md:h-[7rem] w-full items-center justify-between border-b-4 border-space-base bg-bebop-red px-4 sm:px-6 md:px-8 lg:px-16 select-none box-border transition-colors duration-200"
 >
-  <!-- Brand / Avatar Micro-Badge & Nome Editorial -->
   <a
     id="comic-nav-logo"
     data-brinu-logo
     href="/"
-    class="group flex items-center gap-3 sm:gap-5 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-space-base rounded-full cursor-pointer"
-    aria-label="Ir para o topo da página — Bruno Dinis (Brinu)"
+    class="group flex items-center gap-2.5 sm:gap-3.5 md:gap-4 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-space-base cursor-pointer shrink-0 pointer-events-auto"
+    aria-label={ptBrDict.nav.topAria}
+    data-i18n="nav.topAria"
+    data-i18n-attr="aria-label"
   >
     <div
-      class="flex h-12 w-12 sm:h-16 sm:w-16 shrink-0 items-center justify-center overflow-hidden rounded-full border-4 sm:border-[0.35rem] border-space-base bg-paper-white shadow-[0_3px_0_var(--color-space-base)] transition-transform duration-200 group-hover:scale-105 group-hover:-rotate-3"
+      data-nav-avatar
+      class="flex h-11 w-11 sm:h-12 sm:w-12 md:h-14 md:w-14 shrink-0 items-center justify-center overflow-hidden border-3 sm:border-4 border-space-base bg-paper-white shadow-[3px_3px_0_var(--color-space-base)] transition-transform duration-200 group-hover:scale-105 group-hover:-rotate-3"
     >
       <img
         src="/assets/brinu-avatar.jpg"
-        alt="Micro-badge de Bruno Dinis (Brinu)"
+        alt="Bruno Dinis (Brinu)"
+        data-nav-avatar-img
         class="h-full w-full object-cover contrast-125"
       />
     </div>
     <span
-      class="font-display text-lg sm:text-2xl lg:text-3xl font-black tracking-tight text-space-base leading-none transition-opacity duration-150 group-hover:opacity-90"
+      data-nav-nameplate
+      class="hidden sm:inline-flex items-center border-2 sm:border-3 border-space-base bg-paper-white px-2.5 sm:px-3 py-1 font-display text-xs sm:text-sm md:text-base font-black tracking-tight text-space-base shadow-[3px_3px_0_var(--color-space-base)] -skew-x-6 transition-all duration-150 group-hover:bg-space-base group-hover:text-paper-white group-hover:border-paper-white"
     >
-      <span class="hidden sm:inline">BRUNO DINIS // BRINU</span>
-      <span class="inline sm:hidden">BRINU</span>
+      <span class="skew-x-6">
+        <span class="hidden lg:inline">BRUNO DINIS // BRINU</span>
+        <span class="inline lg:hidden">BRINU</span>
+      </span>
     </span>
   </a>
 
-  <!-- Ações de Navegação Editorial -->
   <nav
-    class="flex items-center gap-2.5 sm:gap-4"
-    aria-label="Navegação Principal"
+    class="flex items-center gap-2 sm:gap-2.5 md:gap-3 shrink-0"
+    aria-label={ptBrDict.a11y.mainNavAria}
+    data-i18n="a11y.mainNavAria"
+    data-i18n-attr="aria-label"
   >
-    <!-- Botão Pílula Selected Works -->
     <a
+      id="nav-works-btn"
+      data-nav-works
       href="#works"
-      class="group inline-flex h-10 sm:h-14 items-center gap-1.5 sm:gap-2.5 rounded-full border-3 sm:border-4 border-space-base bg-contrast-pink px-3.5 sm:px-8 font-display text-xs sm:text-base lg:text-lg font-black text-space-base shadow-[0_3px_0_var(--color-space-base)] transition-all duration-150 hover:-translate-y-0.5 hover:bg-paper-white hover:shadow-[0_4px_0_var(--color-space-base)] active:translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-space-base leading-none"
-      aria-label="Ir para a seção de projetos selecionados (Selected Works)"
+      class="nav-secondary-item group hidden sm:inline-flex h-10 md:h-12 items-center gap-1.5 md:gap-2 border-3 sm:border-4 border-space-base bg-paper-white px-3 md:px-5 font-display text-xs md:text-sm font-black text-space-base shadow-[3px_3px_0_var(--color-space-base)] transition-all duration-150 hover:-translate-y-0.5 hover:bg-space-base hover:text-paper-white active:translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-space-base leading-none"
+      aria-label={ptBrDict.nav.worksAria}
+      data-i18n="nav.worksAria"
+      data-i18n-attr="aria-label"
     >
-      <span class="hidden xs:inline sm:inline">SELECTED WORKS</span>
-      <span class="inline xs:hidden sm:hidden">WORKS</span>
+      <span class="hidden md:inline" data-i18n="nav.worksCta">{ptBrDict.nav.worksCta}</span>
+      <span class="inline md:hidden" data-i18n="nav.worksCtaShort">{ptBrDict.nav.worksCtaShort}</span>
       <svg
         aria-hidden="true"
-        class="size-3 sm:size-3.5 transition-transform duration-200 group-hover:translate-y-0.5"
+        class="size-3 md:size-3.5 transition-transform duration-200 group-hover:translate-y-0.5"
         fill="none"
         viewBox="0 0 24 24"
         stroke="currentColor"
@@ -60,29 +69,43 @@
       </svg>
     </a>
 
-    <!-- Botão Circular Verde Ácido com Ícone Estilizado de Quadrinhos -->
+    <button
+      type="button"
+      id="nav-lang-toggle-btn"
+      data-lang-toggle
+      data-active-locale="pt-br"
+      class="nav-secondary-item inline-flex h-10 md:h-12 items-center justify-center border-3 sm:border-4 border-space-base bg-space-base px-2.5 md:px-3.5 font-mono text-xs md:text-sm font-black uppercase tracking-wider text-paper-white shadow-[3px_3px_0_var(--color-paper-white)] transition-all duration-150 hover:-translate-y-0.5 hover:bg-paper-white hover:text-space-base cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-space-base"
+      aria-label={ptBrDict.nav.langToggleAria}
+      data-i18n="nav.langToggleAria"
+      data-i18n-attr="aria-label"
+    >
+      <span data-lang-toggle-label>PT-BR</span>
+    </button>
+
     <button
       type="button"
       id="cockpit-trigger-btn"
-      class="group relative flex h-10 w-10 sm:h-14 sm:w-14 shrink-0 items-center justify-center rounded-full border-3 sm:border-4 border-space-base bg-acid-green shadow-[0_3px_0_var(--color-space-base)] transition-all duration-200 hover:-translate-y-0.5 hover:scale-105 hover:shadow-[0_5px_0_var(--color-space-base)] active:translate-y-0.5 cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-space-base"
-      aria-label="Abrir Menu Cockpit"
+      class="group relative flex h-11 w-11 md:h-12 md:w-12 shrink-0 items-center justify-center border-3 sm:border-4 border-space-base bg-paper-white shadow-[3px_3px_0_var(--color-space-base)] transition-all duration-200 hover:-translate-y-0.5 hover:scale-105 active:translate-y-0.5 cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-space-base pointer-events-auto"
+      aria-label={ptBrDict.nav.menuTriggerAria}
+      data-i18n="nav.menuTriggerAria"
+      data-i18n-attr="aria-label"
       aria-expanded="false"
     >
       <span
-        class="relative flex flex-col justify-center gap-1 sm:gap-1.5 w-4 sm:w-6 h-4 sm:h-6"
+        class="relative flex flex-col justify-center gap-1 sm:gap-1.5 w-4 md:w-5 h-4 md:h-5"
         aria-hidden="true"
       >
         <span
           id="menu-bar-1"
-          class="block h-[2.5px] sm:h-[3.5px] w-full rounded-sm bg-space-base transition-all duration-200 origin-center"
+          class="block h-[2.5px] md:h-[3px] w-full bg-space-base transition-all duration-200 origin-center"
         ></span>
         <span
           id="menu-bar-2"
-          class="block h-[2.5px] sm:h-[3.5px] w-3/4 self-end rounded-sm bg-space-base transition-all duration-200"
+          class="block h-[2.5px] md:h-[3px] w-3/4 self-end bg-bebop-red transition-all duration-200"
         ></span>
         <span
           id="menu-bar-3"
-          class="block h-[2.5px] sm:h-[3.5px] w-full rounded-sm bg-space-base transition-all duration-200 origin-center"
+          class="block h-[2.5px] md:h-[3px] w-full bg-space-base transition-all duration-200 origin-center"
         ></span>
       </span>
     </button>
@@ -90,22 +113,26 @@
 </header>
 
 <script>
+  import { onPageReady } from "../utils/page-lifecycle";
+  import { initStickerSwap } from "./nav/sticker-swap";
+
   function setupCockpitTrigger() {
     const cockpitBtn = document.getElementById("cockpit-trigger-btn");
     const bar1 = document.getElementById("menu-bar-1");
     const bar2 = document.getElementById("menu-bar-2");
     const bar3 = document.getElementById("menu-bar-3");
+    const header = document.getElementById("comic-nav-header");
 
-    if (!cockpitBtn) return;
+    if (!cockpitBtn || cockpitBtn.dataset.bound === "true") return;
+    cockpitBtn.dataset.bound = "true";
 
-    cockpitBtn.addEventListener("click", () => {
-      const isExpanded = cockpitBtn.getAttribute("aria-expanded") === "true";
-      const nextState = !isExpanded;
-      cockpitBtn.setAttribute("aria-expanded", String(nextState));
-
-      // Transição tátil das barras estilizadas de quadrinhos
+    const updateBars = (isOpen: boolean) => {
+      cockpitBtn.setAttribute("aria-expanded", String(isOpen));
+      if (header) {
+        header.dataset.cockpitOpen = String(isOpen);
+      }
       if (bar1 && bar2 && bar3) {
-        if (nextState) {
+        if (isOpen) {
           bar1.classList.add("rotate-45", "translate-y-[6.5px]", "sm:translate-y-[8.5px]");
           bar2.classList.add("opacity-0", "scale-x-0");
           bar3.classList.add("-rotate-45", "-translate-y-[6.5px]", "sm:-translate-y-[8.5px]");
@@ -115,6 +142,23 @@
           bar3.classList.remove("-rotate-45", "-translate-y-[6.5px]", "sm:-translate-y-[8.5px]");
         }
       }
+    };
+
+    cockpitBtn.addEventListener("click", () => {
+      const isExpanded = cockpitBtn.getAttribute("aria-expanded") === "true";
+      const nextState = !isExpanded;
+      if (
+        nextState &&
+        !document.documentElement.classList.contains("cockpit-menu-open")
+      ) {
+        const scrollbarWidth =
+          window.innerWidth - document.documentElement.clientWidth;
+        document.documentElement.style.setProperty(
+          "--cockpit-scrollbar-comp",
+          `${Math.max(0, scrollbarWidth)}px`
+        );
+      }
+      updateBars(nextState);
 
       window.dispatchEvent(
         new CustomEvent("cockpit:open", {
@@ -122,17 +166,56 @@
         })
       );
     });
+
+    window.addEventListener("cockpit:open", (e: Event) => {
+      const detail = (e as CustomEvent<{ isOpen?: boolean }>).detail;
+      if (typeof detail?.isOpen === "boolean") {
+        updateBars(detail.isOpen);
+      }
+    });
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && cockpitBtn.getAttribute("aria-expanded") === "true") {
+        updateBars(false);
+        const overlay = document.getElementById("cockpit-menu-overlay");
+        if (overlay) overlay.setAttribute("aria-hidden", "true");
+        window.dispatchEvent(
+          new CustomEvent("cockpit:open", { detail: { isOpen: false } })
+        );
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
   }
 
   function setupCiladaTripleClick() {
     const logo = document.getElementById("comic-nav-logo");
-    if (!logo) return;
+    const cockpitBtn = document.getElementById("cockpit-trigger-btn");
+    if (!logo || logo.dataset.bound === "true") return;
+    logo.dataset.bound = "true";
 
     let clickCount = 0;
     let timer: ReturnType<typeof setTimeout> | null = null;
 
     logo.addEventListener("click", (e) => {
+      const isHome = window.location.pathname === "/" || window.location.pathname === "";
+
+      const isMenuOpen = cockpitBtn?.getAttribute("aria-expanded") === "true";
+      if (isMenuOpen) {
+        window.dispatchEvent(
+          new CustomEvent("cockpit:open", {
+            detail: { isOpen: false },
+          })
+        );
+      }
+
+      if (!isHome) {
+        return;
+      }
+
       e.preventDefault();
+      const wasTouch = logo.dataset.pointerType === "touch";
+      delete logo.dataset.pointerType;
+
       clickCount++;
       if (timer) clearTimeout(timer);
 
@@ -142,7 +225,12 @@
         return;
       }
 
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      if (!wasTouch) {
+        if (window.location.hash) {
+          history.pushState(null, "", "/");
+        }
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
 
       timer = setTimeout(() => {
         clickCount = 0;
@@ -150,15 +238,158 @@
     });
   }
 
-  function initNav() {
-    setupCockpitTrigger();
-    setupCiladaTripleClick();
+  function setupScrollWatcher() {
+    const header = document.getElementById("comic-nav-header");
+    if (!header || header.dataset.scrollBound === "true") return;
+    header.dataset.scrollBound = "true";
+
+    const onScroll = () => {
+      const isScrolled = window.scrollY > 20;
+      const nextVal = String(isScrolled);
+      if (header.dataset.scrolled !== nextVal) {
+        header.dataset.scrolled = nextVal;
+      }
+    };
+
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
   }
 
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", initNav);
-  } else {
-    initNav();
+  function setupStickerSwap() {
+    const logo = document.getElementById("comic-nav-logo");
+    if (logo) initStickerSwap(logo);
   }
-  document.addEventListener("astro:page-load", initNav);
+
+  function initNav() {
+    setupStickerSwap();
+    setupCockpitTrigger();
+    setupCiladaTripleClick();
+    setupScrollWatcher();
+    const header = document.getElementById("comic-nav-header");
+    if (header) {
+      header.dataset.minimal = String(Boolean(document.querySelector("[data-not-found], [data-whoami-main]")));
+    }
+    const isStickers = Boolean(document.querySelector("[data-stickers-main]"));
+    const worksBtn = document.getElementById("nav-works-btn");
+    if (worksBtn) {
+      if (isStickers) {
+        worksBtn.classList.add("hidden-on-page");
+      } else {
+        worksBtn.classList.remove("hidden-on-page");
+      }
+    }
+  }
+
+  onPageReady(initNav);
 </script>
+
+<style>
+  [data-nav-avatar] {
+    position: relative;
+  }
+
+  :global([data-nav-avatar] [data-nav-sticker]) {
+    display: none;
+    position: absolute;
+    inset: -8px;
+    width: calc(100% + 16px);
+    height: calc(100% + 16px);
+    max-width: none;
+    object-fit: contain;
+    pointer-events: none;
+  }
+
+  [data-nav-avatar][data-sticker-active="true"] {
+    overflow: visible;
+    background-color: transparent;
+    border-color: transparent;
+    box-shadow: none;
+  }
+
+  :global([data-nav-avatar][data-sticker-active="true"] [data-nav-sticker]) {
+    display: block;
+  }
+
+  [data-nav-avatar][data-sticker-active="true"] [data-nav-avatar-img] {
+    visibility: hidden;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    :global([data-nav-avatar][data-sticker-active="true"] [data-nav-sticker]) {
+      animation: stickerPop 160ms cubic-bezier(0.2, 1.4, 0.4, 1) both;
+    }
+  }
+
+  @keyframes stickerPop {
+    from {
+      transform: scale(0.7) rotate(-8deg);
+    }
+    to {
+      transform: scale(1) rotate(0deg);
+    }
+  }
+
+  #comic-nav-header {
+    transition: background-color 250ms ease, border-color 250ms ease;
+  }
+
+  #comic-nav-header[data-scrolled="true"],
+  #comic-nav-header[data-cockpit-open="true"],
+  #comic-nav-header[data-minimal="true"],
+  :global(body:has([data-not-found])) #comic-nav-header,
+  :global(body:has([data-whoami-main])) #comic-nav-header {
+    background-color: transparent !important;
+    border-bottom-color: transparent !important;
+    pointer-events: none;
+  }
+
+
+  :global(html.cockpit-menu-open) #comic-nav-header,
+  #comic-nav-header[data-cockpit-open="true"] {
+    width: auto !important;
+    right: var(--cockpit-scrollbar-comp, 0px) !important;
+  }
+
+  :global(body:has([data-stickers-main])) #comic-nav-header [data-nav-works],
+  :global(body:has([data-stickers-main])) #comic-nav-header a[href="#works"],
+  #nav-works-btn.hidden-on-page {
+    display: none !important;
+  }
+
+  #comic-nav-header[data-scrolled="true"] .nav-secondary-item,
+  #comic-nav-header[data-minimal="true"] .nav-secondary-item,
+  #comic-nav-header[data-scrolled="true"] [data-nav-nameplate],
+  #comic-nav-header[data-minimal="true"] [data-nav-nameplate],
+  :global(body:has([data-not-found])) #comic-nav-header .nav-secondary-item,
+  :global(body:has([data-not-found])) #comic-nav-header [data-nav-nameplate],
+  :global(body:has([data-whoami-main])) #comic-nav-header .nav-secondary-item,
+  :global(body:has([data-whoami-main])) #comic-nav-header [data-nav-nameplate] {
+    display: none !important;
+  }
+
+  #comic-nav-header[data-scrolled="true"] .nav-secondary-item,
+  #comic-nav-header[data-cockpit-open="true"] .nav-secondary-item,
+  #comic-nav-header[data-minimal="true"] .nav-secondary-item,
+  #comic-nav-header[data-scrolled="true"] [data-nav-nameplate],
+  #comic-nav-header[data-cockpit-open="true"] [data-nav-nameplate],
+  #comic-nav-header[data-minimal="true"] [data-nav-nameplate],
+  :global(body:has([data-not-found])) #comic-nav-header .nav-secondary-item,
+  :global(body:has([data-not-found])) #comic-nav-header [data-nav-nameplate],
+  :global(body:has([data-whoami-main])) #comic-nav-header .nav-secondary-item,
+  :global(body:has([data-whoami-main])) #comic-nav-header [data-nav-nameplate] {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transform: translateY(-4px) scale(0.95);
+  }
+
+  #comic-nav-header .nav-secondary-item,
+  #comic-nav-header [data-nav-nameplate] {
+    transition: opacity 200ms ease, transform 200ms ease;
+  }
+
+  #comic-nav-header #comic-nav-logo,
+  #comic-nav-header #cockpit-trigger-btn {
+    pointer-events: auto;
+  }
+</style>

@@ -1,0 +1,29 @@
+---
+import type { HTMLAttributes } from "astro/types";
+
+interface Props extends HTMLAttributes<"article"> {
+  as?: "article" | "div" | "section";
+  cut?: "a" | "b";
+  class?: string;
+}
+
+const {
+  as: Tag = "article",
+  cut = "a",
+  class: className = "",
+  ...rest
+} = Astro.props;
+---
+
+<Tag
+  data-p5-panel
+  data-p5-cut={cut}
+  class:list={[
+    "p5-panel",
+    cut === "b" ? "p5-panel--b" : "p5-panel--a",
+    className,
+  ]}
+  {...rest}
+>
+  <slot />
+</Tag>

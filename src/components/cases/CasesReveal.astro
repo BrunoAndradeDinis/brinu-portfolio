@@ -1,0 +1,334 @@
+---
+import { getLocalizedCases, type MainCaseId } from "../../data/cases";
+import { getLocalizedArchive } from "../../data/archive";
+import { SHOWCASE_MEDIA } from "../../data/showcase";
+import { ptBrDict } from "../../i18n/dictionaries";
+import P5Title from "../p5/P5Title.astro";
+import P5Panel from "../p5/P5Panel.astro";
+import P5Badge from "../p5/P5Badge.astro";
+import { CASE_VARIANTS } from "./case-variants";
+import { casePath } from "../../utils/case-pages";
+
+const cases = getLocalizedCases("pt-br");
+const archive = getLocalizedArchive("pt-br");
+---
+
+<section
+  id="works"
+  data-cases-reveal
+  data-cases-mode="static"
+  class="relative bg-paper-white px-4 pb-12 sm:px-8 sm:pb-16 md:px-12 md:pb-20 text-space-base select-none overflow-hidden"
+  aria-label={ptBrDict.works.sectionAria}
+  data-i18n="works.sectionAria"
+  data-i18n-attr="aria-label"
+>
+  <div
+    data-p5-section-cut="filmstrip-to-works"
+    aria-hidden="true"
+    class="p5-section-cut p5-section-cut--left -mx-4 sm:-mx-8 md:-mx-12 bg-bebop-red"
+  ></div>
+
+  <div
+    id="tank-jump-cut-strip"
+    data-tank-strip
+    class="relative -mx-4 sm:-mx-8 md:-mx-12 mb-12 sm:mb-16 md:mb-20 overflow-hidden border-y-4 border-space-base bg-space-base py-3 sm:py-4"
+  >
+    <div class="mx-auto flex w-full max-w-[140rem] flex-wrap items-center justify-between gap-3 px-4 sm:px-8 py-1.5">
+      <div class="flex items-center gap-3">
+        <P5Badge
+          data-jump-cut-badge
+          data-i18n="works.jumpCutBadge"
+          class="border-2 border-paper-white bg-bebop-red px-2.5 py-1 font-display text-[11px] sm:text-xs md:text-sm font-black uppercase tracking-wider text-space-base"
+        >
+          {ptBrDict.works.jumpCutBadge}
+        </P5Badge>
+        <span
+          class="font-mono text-[10px] sm:text-xs tracking-widest text-paper-white uppercase font-bold"
+          data-i18n="works.jumpCutSub"
+        >
+          {ptBrDict.works.jumpCutSub}
+        </span>
+      </div>
+      <div class="flex items-center gap-3 font-mono text-[9px] sm:text-xs tracking-wider text-paper-white uppercase">
+        <P5Badge class="border-2 border-paper-white bg-space-surface-1 px-2.5 py-0.5 font-bold text-paper-white" data-i18n="works.sessionTag">
+          {ptBrDict.works.sessionTag}
+        </P5Badge>
+      </div>
+    </div>
+  </div>
+
+  <div class="mx-auto mb-12 sm:mb-16 max-w-[140rem]">
+    <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 pb-4 border-b-4 border-space-base">
+      <div>
+        <span class="mb-2 block font-mono text-xs sm:text-sm font-bold tracking-widest text-space-base uppercase" data-i18n="works.actTag">
+          {ptBrDict.works.actTag}
+        </span>
+        <P5Title
+          text={ptBrDict.works.title}
+          data-bounty-title
+          data-i18n="works.title"
+          class="font-display text-[clamp(2.2rem,6vw,5rem)] font-black tracking-tight text-space-base leading-none uppercase"
+        />
+      </div>
+      <div class="flex flex-col sm:items-end text-left sm:text-right font-mono text-xs text-space-base uppercase">
+        <span class="font-black" data-i18n="works.countLabel">{ptBrDict.works.countLabel}</span>
+        <span class="text-[10px] sm:text-xs tracking-wider text-space-base" data-i18n="works.domainLabel">
+          {ptBrDict.works.domainLabel}
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <div data-cases-stage class="cases-stage relative mx-auto max-w-[140rem] bg-paper-white">
+    <ol data-cases-list class="cases-list grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-10">
+      {cases.map((project, index) => {
+        const v = project.track === 1 ? CASE_VARIANTS.red : CASE_VARIANTS.black;
+        const { screenshot } = SHOWCASE_MEDIA[project.id as MainCaseId];
+        return (
+          <li data-case-item class="cases-item flex min-w-0">
+            <P5Panel
+              as="article"
+              cut={index % 2 === 0 ? "a" : "b"}
+              id={`case-${project.id}`}
+              data-reveal-case
+              data-reel-card
+              data-case-index={index}
+              class:list={["@container group relative w-full transition-all duration-150", v.card]}
+            >
+              <div class="relative z-10 grid grid-cols-1 gap-5 p-5 sm:p-8 @3xl:grid-cols-2 @3xl:items-center @3xl:gap-8">
+                <div data-case-el="media" class:list={["cases-media overflow-hidden border-2", project.track === 1 ? "border-space-base" : "border-paper-white"]}>
+                  <img
+                    src={screenshot.src}
+                    width={screenshot.width}
+                    height={screenshot.height}
+                    alt=""
+                    loading="lazy"
+                    decoding="async"
+                    class="block h-full w-full object-cover object-top"
+                  />
+                </div>
+                <div class="min-w-0">
+                  <div
+                    data-case-el="meta"
+                    class:list={["mb-4 flex flex-wrap items-center justify-between gap-2 pb-3 font-mono text-xs font-black uppercase", v.head, v.meta]}
+                  >
+                    <span data-case-reel data-type="label">[ {project.reelNumber} ] // {project.category}</span>
+                    <P5Badge data-case-badge class:list={["px-2.5 py-0.5 text-[10px] sm:text-xs font-black", v.badge]}>
+                      {project.badge}
+                    </P5Badge>
+                  </div>
+                  <h3
+                    data-case-el="title"
+                    data-case-title
+                    style={`view-transition-name: case-title-${project.id}`}
+                    class:list={["font-display text-[clamp(0.9rem,5.4cqw,1.875rem)] font-black uppercase leading-tight tracking-tight break-words", v.title]}
+                  >
+                    {project.title}
+                  </h3>
+                  <div data-case-el="summary">
+                    <p data-case-subtitle data-type="label" class:list={["mt-1 mb-3 font-mono text-xs font-bold uppercase", v.subtitle]}>
+                      {project.subtitle}
+                    </p>
+                    <p data-case-description data-type="paragraph" class:list={["font-body text-sm sm:text-base leading-relaxed", v.body]}>
+                      {project.description}
+                    </p>
+                  </div>
+                  <div data-case-el="link" class:list={["mt-5 flex flex-wrap items-center gap-3 pt-4", v.links]}>
+                    <a
+                      href={casePath(project.id)}
+                      data-case-open
+                      class:list={["inline-flex items-center gap-2 px-3.5 py-1.5 font-mono text-xs font-black uppercase transition-colors duration-100 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-space-base", v.link]}
+                    >
+                      <span data-p5-select-poly aria-hidden="true" class="p5-select-poly"></span>
+                      <span data-i18n="works.openCase" class="relative z-10">{ptBrDict.works.openCase}</span>
+                      <span aria-hidden="true" class="relative z-10">→</span>
+                    </a>
+                    {project.links.map((link) => (
+                      <a
+                        href={link.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label={link.ariaLabel}
+                        data-case-link
+                        class:list={["inline-flex items-center gap-2 px-3.5 py-1.5 font-mono text-xs font-black uppercase transition-colors duration-100 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-space-base", v.link]}
+                      >
+                        <span data-p5-select-poly aria-hidden="true" class="p5-select-poly"></span>
+                        <span data-case-link-label class="relative z-10">{link.label}</span>
+                        <span aria-hidden="true" class="relative z-10">↗</span>
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </P5Panel>
+          </li>
+        );
+      })}
+    </ol>
+    <div class="flex justify-end pt-3">
+      <button
+        type="button"
+        data-cases-next
+        hidden
+        class="inline-flex items-center border-2 border-space-base bg-space-base px-4 py-2 font-mono text-xs font-black uppercase text-paper-white transition-colors duration-100 hover:bg-bebop-red hover:text-space-base focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-space-base"
+        data-i18n="casePage.nextCase"
+      >
+        {ptBrDict.casePage.nextCase}
+      </button>
+    </div>
+  </div>
+
+  <div data-archive class="mx-auto max-w-[140rem] mt-16 sm:mt-20 pt-10 border-t-4 border-space-base">
+    <span class="mb-2 block font-mono text-xs sm:text-sm font-bold tracking-widest text-space-base uppercase" data-i18n="works.archiveTag">
+      {ptBrDict.works.archiveTag}
+    </span>
+    <h3 class="mb-8 font-display text-[clamp(1.8rem,4vw,3rem)] font-black tracking-tight text-space-base leading-none uppercase" data-i18n="works.archiveTitle">
+      {ptBrDict.works.archiveTitle}
+    </h3>
+    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5 sm:gap-6">
+      {archive.map((entry, aIdx) => (
+        <P5Panel
+          as="article"
+          cut={aIdx % 2 === 0 ? "a" : "b"}
+          id={`archive-${entry.id}`}
+          data-archive-card
+          class="flex flex-col justify-between gap-4 border-4 border-space-base bg-space-base p-5 text-paper-white shadow-[6px_6px_0_var(--color-space-base)]"
+        >
+          <div>
+            <div class="mb-2 flex flex-wrap items-start justify-between gap-2">
+              <h4 data-archive-title class="font-display text-lg sm:text-xl font-black uppercase leading-tight text-paper-white">{entry.title}</h4>
+              {entry.status && (
+                <P5Badge data-archive-status class="shrink-0 bg-bebop-red px-2.5 py-0.5 font-mono text-[10px] font-black uppercase text-space-base">
+                  {entry.status}
+                </P5Badge>
+              )}
+            </div>
+            <p data-archive-description class="font-body text-sm leading-relaxed text-paper-white">{entry.description}</p>
+          </div>
+          <div class="flex flex-wrap gap-1.5 font-mono text-[10px] uppercase">
+            {entry.stack.map((tech) => (
+              <span data-archive-stack-item class="border border-paper-white px-2 py-0.5 font-bold text-paper-white">{tech}</span>
+            ))}
+          </div>
+          <div class="flex flex-wrap gap-2 border-t-2 border-bebop-red pt-3">
+            {entry.links.map((link) => (
+              <a
+                href={link.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                data-archive-link={link.type}
+                class="inline-flex items-center gap-1.5 border-2 border-paper-white px-2.5 py-1 font-mono text-[11px] font-black uppercase text-paper-white transition-colors duration-150 hover:bg-paper-white hover:text-space-base focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-paper-white"
+              >
+                <span data-archive-link-label>{link.label}</span>
+                <span aria-hidden="true">↗</span>
+              </a>
+            ))}
+          </div>
+        </P5Panel>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style is:global>
+  .cases-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .cases-media {
+    aspect-ratio: 16 / 10;
+    max-height: 30svh;
+    width: 100%;
+  }
+
+  @container (min-width: 48rem) {
+    .cases-media {
+      max-height: 52svh;
+    }
+  }
+
+  #works[data-cases-mode="reveal"] .cases-stage {
+    display: grid;
+    grid-template-rows: minmax(0, 1fr) auto;
+    box-sizing: border-box;
+    height: 100svh;
+    padding-top: var(--cases-clearance, 6rem);
+    padding-bottom: 1rem;
+  }
+
+  #works[data-cases-mode="reveal"] .cases-list {
+    grid-template-columns: minmax(0, 1fr);
+    align-items: center;
+    gap: 0;
+    min-height: 0;
+  }
+
+  #works[data-cases-mode="reveal"] .cases-item {
+    grid-area: 1 / 1;
+    width: 100%;
+    max-width: 76rem;
+    margin-inline: auto;
+    visibility: hidden;
+  }
+
+  #works[data-cases-mode="reveal"] .cases-item[data-case-active="true"] {
+    visibility: visible;
+  }
+
+  #works[data-cases-mode="reveal"] .cases-item {
+    position: relative;
+  }
+
+  #works .case-cubes {
+    position: absolute;
+    z-index: 20;
+    pointer-events: none;
+    perspective: 900px;
+  }
+
+  #works .case-cube {
+    position: absolute;
+    box-sizing: border-box;
+    border: 1px solid;
+    box-shadow: inset -4px -4px 0 rgb(0 0 0 / 0.28);
+    backface-visibility: hidden;
+    transform-style: preserve-3d;
+    will-change: transform, opacity;
+  }
+
+  /* The global scroll lock drops the scrollbar gutter, which reflows the page and moves it out of the pin range. */
+  html.lenis-stopped:not(.cockpit-menu-open):has(#works[data-cases-pinned="true"]) {
+    overflow-x: clip !important;
+    overflow-y: visible !important;
+    scrollbar-gutter: stable !important;
+  }
+
+  @container (max-width: 47.99rem) {
+    #works[data-cases-mode="reveal"] .cases-media {
+      max-height: 22svh;
+    }
+
+    #works[data-cases-mode="reveal"] a[data-case-link] {
+      display: none;
+    }
+  }
+</style>
+
+<script>
+  import { onPageReady } from "../../utils/page-lifecycle";
+  import { bindCasesReveal } from "./cases-reveal-bind";
+  import { bindTypedText } from "../../utils/text-type-bind";
+
+  onPageReady(() => {
+    const section = document.querySelector<HTMLElement>("[data-cases-reveal]");
+    if (!section) return;
+    const unbindTyping = bindTypedText(section);
+    const unbindReveal = bindCasesReveal(section);
+    return () => {
+      unbindReveal();
+      unbindTyping();
+    };
+  });
+</script>

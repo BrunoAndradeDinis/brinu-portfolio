@@ -1,263 +1,291 @@
-import React, { useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
+import { toast } from 'sonner';
 import { audioSynth } from '../utils/audio';
+import { useLocale } from '../i18n/index';
+import { PROFILE } from '../data/profile';
+import { BUDGET_IDS, CONTACT_BOUNDS, CONTACT_DEFAULTS, CONTACT_ENDPOINT, DEADLINE_IDS, SERVICE_IDS } from '../data/contact-brief';
+import { isJobOnly, validateContactBrief, type ContactBrief, type ContactField, type RawContactBrief } from '../utils/contact-brief';
+import { buildMailtoHref } from '../utils/contact-mailto';
+import { sendBrief } from '../utils/contact-relay';
+import { digitsOnly, formatBrPhone } from '../utils/contact-sanitize';
+import { ChoiceGroup, TextField } from './contact/fields';
+import { DispatchReceipt } from './contact/DispatchReceipt';
+import { DispatchToaster } from './contact/DispatchToaster';
 
-interface FormErrors {
-  name?: string;
-  email?: string;
-  message?: string;
+type FormValues = { -readonly [K in keyof RawContactBrief]: RawContactBrief[K] };
+type Touched = Partial<Record<ContactField, true>>;
+
+const INITIAL_VALUES: FormValues = {
+  name: '',
+  company: '',
+  email: '',
+  phone: '',
+  services: [],
+  budget: CONTACT_DEFAULTS.budget,
+  deadline: CONTACT_DEFAULTS.deadline,
+  message: '',
+};
+
+const ALL_TOUCHED: Touched = { name: true, email: true, phone: true, services: true, message: true };
+
+const FIELD_ORDER: readonly ContactField[] = ['name', 'email', 'phone', 'services', 'message'];
+const SUBMIT_HINT_ID = 'dispatch-submit-hint';
+const HONEYPOT_ID = 'dispatch-bounty-ref';
+
+const PHONE_PASTE_LENGTH = 25;
+
+function nextPhoneValue(previous: string, typed: string): string {
+  const growsByOneKey = typed.length === previous.length + 1;
+  const previousIsComplete = digitsOnly(previous).length === 11;
+  return growsByOneKey && previousIsComplete ? previous : formatBrPhone(typed);
 }
 
 export const BountyDispatch: React.FC = () => {
-  const [name, setName] = useState<string>('');
-  const [email, setEmail] = useState<string>('');
-  const [message, setMessage] = useState<string>('');
-  const [errors, setErrors] = useState<FormErrors>({});
-  const [isSubmitted, setIsSubmitted] = useState<boolean>(false);
-  const [dispatchTime, setDispatchTime] = useState<string>('');
+  const { dict: t, locale } = useLocale();
+  const copy = t.dispatch;
+  const [values, setValues] = useState<FormValues>(INITIAL_VALUES);
+  const [touched, setTouched] = useState<Touched>({});
+  const [honeypot, setHoneypot] = useState('');
+  const [brief, setBrief] = useState<ContactBrief | null>(null);
+  const [sentAt, setSentAt] = useState<Date | null>(null);
+  const [sending, setSending] = useState(false);
+  const [failed, setFailed] = useState(false);
+  const inFlight = useRef(false);
 
-  const validate = (): boolean => {
-    const nextErrors: FormErrors = {};
+  const validation = useMemo(() => validateContactBrief(values), [values]);
+  const liveErrors = validation.ok ? {} : validation.errors;
+  const missingFields = FIELD_ORDER.filter((field) => liveErrors[field]).map((field) => copy.mail[field]);
 
-    if (!name.trim()) {
-      nextErrors.name = 'Identificador/Codename obrigatório.';
-    }
-
-    if (!email.trim()) {
-      nextErrors.email = 'Frequência de comunicação (e-mail) obrigatória.';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      nextErrors.email = 'Frequência de e-mail inválida.';
-    }
-
-    if (!message.trim()) {
-      nextErrors.message = 'Payload da proposta não pode ser vazio.';
-    } else if (message.trim().length < 10) {
-      nextErrors.message = 'Payload deve conter pelo menos 10 caracteres.';
-    }
-
-    setErrors(nextErrors);
-    return Object.keys(nextErrors).length === 0;
+  const update = <K extends keyof FormValues>(key: K, value: FormValues[K]) => {
+    setValues((prev) => ({ ...prev, [key]: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const touch = (field: ContactField) => {
+    setTouched((prev) => (prev[field] ? prev : { ...prev, [field]: true }));
+  };
 
-    if (!validate()) {
-      if (!audioSynth.isMuted()) {
-        audioSynth.playAlarm8Bit(1);
-      }
+  const toggleService = (id: string) => {
+    const next = values.services.includes(id) ? values.services.filter((s) => s !== id) : [...values.services, id];
+    update('services', next);
+    touch('services');
+  };
+
+  const errorText = (field: ContactField): string | undefined => {
+    const code = liveErrors[field];
+    return touched[field] && code ? copy.errors[code] : undefined;
+  };
+
+  const handleSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!validation.ok) {
+      setTouched(ALL_TOUCHED);
+      return;
+    }
+    if (inFlight.current) return;
+
+    inFlight.current = true;
+    setSending(true);
+    setFailed(false);
+    const submitted = validation.brief;
+    const submittedAt = new Date();
+    const result = await sendBrief({ endpoint: CONTACT_ENDPOINT, brief: submitted, honeypot, locale });
+    inFlight.current = false;
+    setSending(false);
+
+    if (result.ok) {
+      setBrief(submitted);
+      setSentAt(submittedAt);
+      toast.success(copy.toastSuccessTitle, { description: copy.toastSuccessBody });
+      if (!audioSynth.isMuted()) audioSynth.playBountyAcquired();
       return;
     }
 
-    // Sucesso na validação e transmissão
-    setIsSubmitted(true);
-    setDispatchTime(new Date().toUTCString());
-
-    if (!audioSynth.isMuted()) {
-      audioSynth.playBountyAcquired();
+    setFailed(true);
+    if (result.code === 'rate-limited') {
+      toast.error(copy.toastRateLimitedTitle, { description: copy.toastRateLimitedBody });
+    } else {
+      toast.error(copy.toastErrorTitle, { description: copy.toastErrorBody });
     }
   };
 
   const handleReset = () => {
-    setName('');
-    setEmail('');
-    setMessage('');
-    setErrors({});
-    setIsSubmitted(false);
+    setValues(INITIAL_VALUES);
+    setTouched({});
+    setHoneypot('');
+    setFailed(false);
+    setBrief(null);
+    setSentAt(null);
   };
+
+  const fallbackHref =
+    failed && validation.ok
+      ? buildMailtoHref(
+          validation.brief,
+          { subjectPrefix: copy.mailSubjectPrefix, labels: copy.mail, services: copy.services, budgets: copy.budgets, deadlines: copy.deadlines },
+          PROFILE.email,
+        )
+      : null;
+
+  const showBudgetAndDeadline = !isJobOnly(values.services);
 
   return (
     <div
       data-bounty-dispatch
-      className="rounded-3xl border-4 border-space-base bg-space-surface-2/95 p-6 sm:p-8 font-mono shadow-comic-lg text-paper-white relative overflow-hidden"
+      className="border-4 border-space-base bg-space-base p-6 sm:p-8 font-mono shadow-[8px_8px_0_var(--color-bebop-red)] text-paper-white relative overflow-hidden"
     >
-      {/* Cabeçalho do Terminal de Dispatch */}
-      <div className="flex items-center justify-between pb-4 mb-6 border-b-2 border-space-border/60">
-        <div className="flex items-center gap-2.5">
-          <span className="w-3 h-3 rounded-full bg-bebop-amber" />
-          <span className="font-bold text-xs uppercase tracking-widest text-bebop-amber">
-            // BOUNTY DISPATCH CONSOLE
-          </span>
+      <div className="flex items-center justify-between gap-3 pb-4 mb-6 border-b-2 border-bebop-red">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <span className="w-3 h-3 shrink-0 bg-bebop-red" />
+          <span className="font-bold text-xs uppercase tracking-widest text-bebop-red">{copy.headerTitle}</span>
         </div>
 
-        <span className="text-[10px] sm:text-xs text-muted-gray uppercase">
-          SECURE QUANTUM CHANNEL
-        </span>
+        <span className="text-[10px] sm:text-xs text-muted-gray uppercase text-right">{copy.headerSub}</span>
       </div>
 
-      {!isSubmitted ? (
-        /* Formulário Ativo */
-        <form onSubmit={handleSubmit} noValidate className="space-y-5">
-          {/* Campo Nome / Codename */}
-          <div>
-            <label
-              htmlFor="dispatch-name"
-              className="block text-xs uppercase tracking-wider text-muted-gray mb-1.5 font-bold"
-            >
-              01 // SENDER CODENAME (SEU NOME / EMPRESA)
-            </label>
+      <DispatchToaster />
+
+      {!brief || !sentAt ? (
+        <form onSubmit={handleSubmit} noValidate aria-busy={sending} className="space-y-5" data-dispatch-form>
+          <div aria-hidden="true" className="absolute -left-[10000px] top-auto w-px h-px overflow-hidden">
+            <label htmlFor={HONEYPOT_ID}>{copy.honeypotLabel}</label>
             <input
-              id="dispatch-name"
-              data-input-name
+              id={HONEYPOT_ID}
+              name="bounty_ref"
               type="text"
-              value={name}
-              onChange={(e) => {
-                setName(e.target.value);
-                if (errors.name) setErrors((prev) => ({ ...prev, name: undefined }));
-              }}
-              placeholder="Ex: Spike Spiegel / Redline Syndicate"
-              className={`w-full px-4 py-3 rounded-xl border-2 bg-space-base text-paper-white placeholder:text-muted-gray/50 text-xs sm:text-sm font-mono focus:outline-none transition-all shadow-comic-xs ${
-                errors.name
-                  ? 'border-bebop-red focus:ring-2 focus:ring-bebop-red'
-                  : 'border-space-border focus:border-acid-green focus:ring-2 focus:ring-acid-green/40'
-              }`}
+              tabIndex={-1}
+              autoComplete="off"
+              data-lpignore="true"
+              data-1p-ignore="true"
+              data-bwignore="true"
+              data-form-type="other"
+              value={honeypot}
+              onChange={(e) => setHoneypot(e.target.value)}
+              data-dispatch-honeypot
             />
-            {errors.name && (
-              <span data-error-name className="text-bebop-red text-[11px] mt-1.5 flex items-center gap-1.5 font-bold">
-                <svg className="size-3.5 shrink-0" aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                </svg>
-                <span>{errors.name}</span>
-              </span>
-            )}
           </div>
+          <TextField
+            id="dispatch-name"
+            field="name"
+            label={copy.nameLabel}
+            value={values.name}
+            onChange={(value) => update('name', value)}
+            placeholder={copy.namePlaceholder}
+            maxLength={CONTACT_BOUNDS.name.max}
+            autoComplete="name"
+            onBlur={() => touch('name')}
+            error={errorText('name')}
+          />
+          <TextField
+            id="dispatch-company"
+            field="company"
+            label={copy.companyLabel}
+            optionalTag={copy.optionalTag}
+            value={values.company}
+            onChange={(value) => update('company', value)}
+            placeholder={copy.companyPlaceholder}
+            maxLength={CONTACT_BOUNDS.company.max}
+            autoComplete="organization"
+          />
+          <TextField
+            id="dispatch-email"
+            field="email"
+            type="email"
+            inputMode="email"
+            label={copy.emailLabel}
+            value={values.email}
+            onChange={(value) => update('email', value)}
+            placeholder={copy.emailPlaceholder}
+            maxLength={CONTACT_BOUNDS.email.max}
+            autoComplete="email"
+            onBlur={() => touch('email')}
+            error={errorText('email')}
+          />
+          <TextField
+            id="dispatch-phone"
+            field="phone"
+            type="tel"
+            inputMode="tel"
+            label={copy.phoneLabel}
+            optionalTag={copy.optionalTag}
+            value={values.phone}
+            onChange={(value) => update('phone', nextPhoneValue(values.phone, value))}
+            placeholder={copy.phonePlaceholder}
+            maxLength={PHONE_PASTE_LENGTH}
+            autoComplete="tel-national"
+            onBlur={() => touch('phone')}
+            error={errorText('phone')}
+          />
+          <ChoiceGroup
+            id="dispatch-services"
+            field="services"
+            type="checkbox"
+            legend={copy.servicesLegend}
+            options={SERVICE_IDS.map((id) => ({ value: id, label: copy.services[id] }))}
+            selected={values.services}
+            onSelect={toggleService}
+            onLeave={() => touch('services')}
+            error={errorText('services')}
+          />
+          {showBudgetAndDeadline && (
+            <>
+              <ChoiceGroup
+                id="dispatch-budget"
+                field="budget"
+                type="radio"
+                legend={copy.budgetLegend}
+                options={BUDGET_IDS.map((id) => ({ value: id, label: copy.budgets[id] }))}
+                selected={[values.budget]}
+                onSelect={(value) => update('budget', value)}
+              />
+              <ChoiceGroup
+                id="dispatch-deadline"
+                field="deadline"
+                type="radio"
+                legend={copy.deadlineLegend}
+                options={DEADLINE_IDS.map((id) => ({ value: id, label: copy.deadlines[id] }))}
+                selected={[values.deadline]}
+                onSelect={(value) => update('deadline', value)}
+              />
+            </>
+          )}
+          <TextField
+            id="dispatch-message"
+            field="message"
+            multiline
+            label={copy.messageLabel}
+            value={values.message}
+            onChange={(value) => update('message', value)}
+            placeholder={copy.messagePlaceholder}
+            maxLength={CONTACT_BOUNDS.message.max}
+            onBlur={() => touch('message')}
+            error={errorText('message')}
+          />
 
-          {/* Campo E-mail / Frequência */}
-          <div>
-            <label
-              htmlFor="dispatch-email"
-              className="block text-xs uppercase tracking-wider text-muted-gray mb-1.5 font-bold"
-            >
-              02 // COMM FREQUENCY (SEU E-MAIL DE RETORNO)
-            </label>
-            <input
-              id="dispatch-email"
-              data-input-email
-              type="email"
-              value={email}
-              onChange={(e) => {
-                setEmail(e.target.value);
-                if (errors.email) setErrors((prev) => ({ ...prev, email: undefined }));
-              }}
-              placeholder="Ex: contato@empresa.com"
-              className={`w-full px-4 py-3 rounded-xl border-2 bg-space-base text-paper-white placeholder:text-muted-gray/50 text-xs sm:text-sm font-mono focus:outline-none transition-all shadow-comic-xs ${
-                errors.email
-                  ? 'border-bebop-red focus:ring-2 focus:ring-bebop-red'
-                  : 'border-space-border focus:border-acid-green focus:ring-2 focus:ring-acid-green/40'
-              }`}
-            />
-            {errors.email && (
-              <span data-error-email className="text-bebop-red text-[11px] mt-1.5 flex items-center gap-1.5 font-bold">
-                <svg className="size-3.5 shrink-0" aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                </svg>
-                <span>{errors.email}</span>
-              </span>
-            )}
-          </div>
-
-          {/* Campo Mensagem / Payload */}
-          <div>
-            <label
-              htmlFor="dispatch-message"
-              className="block text-xs uppercase tracking-wider text-muted-gray mb-1.5 font-bold"
-            >
-              03 // CONTRACT PAYLOAD (DETALHES DA PROPOSTA / ESCOPO)
-            </label>
-            <textarea
-              id="dispatch-message"
-              data-input-message
-              rows={4}
-              value={message}
-              onChange={(e) => {
-                setMessage(e.target.value);
-                if (errors.message) setErrors((prev) => ({ ...prev, message: undefined }));
-              }}
-              placeholder="Descreva o escopo do projeto, prazos e expectativas técnicas..."
-              className={`w-full px-4 py-3 rounded-xl border-2 bg-space-base text-paper-white placeholder:text-muted-gray/50 text-xs sm:text-sm font-mono focus:outline-none transition-all resize-none shadow-comic-xs ${
-                errors.message
-                  ? 'border-bebop-red focus:ring-2 focus:ring-bebop-red'
-                  : 'border-space-border focus:border-acid-green focus:ring-2 focus:ring-acid-green/40'
-              }`}
-            />
-            {errors.message && (
-              <span data-error-message className="text-bebop-red text-[11px] mt-1.5 flex items-center gap-1.5 font-bold">
-                <svg className="size-3.5 shrink-0" aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                </svg>
-                <span>{errors.message}</span>
-              </span>
-            )}
-          </div>
-
-          {/* Botão de Envio de Transmissão */}
           <button
             type="submit"
             data-dispatch-submit-btn
-            className="w-full py-3.5 px-6 rounded-xl border-2 border-space-base bg-paper-white text-space-base font-mono font-black text-xs sm:text-sm uppercase tracking-wider hover:bg-acid-green hover:border-space-base transition-all duration-200 shadow-comic-sm active:translate-x-0.5 active:translate-y-0.5 flex items-center justify-center gap-2 cursor-pointer"
+            disabled={!validation.ok || sending}
+            aria-describedby={validation.ok ? undefined : SUBMIT_HINT_ID}
+            className="w-full py-3.5 px-6 border-2 border-paper-white bg-bebop-red text-space-base font-mono font-black text-xs sm:text-sm uppercase tracking-wider hover:bg-paper-white hover:text-space-base transition-all duration-150 shadow-[4px_4px_0_var(--color-paper-white)] flex items-center justify-center gap-2 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none disabled:hover:bg-bebop-red"
           >
-            <span>TRANSMIT CONTRACT PAYLOAD</span>
-            <svg className="size-4 shrink-0" aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-            </svg>
+            <span>{sending ? copy.sendingCta : copy.submitCta}</span>
           </button>
+          {!validation.ok && (
+            <p id={SUBMIT_HINT_ID} data-dispatch-submit-hint className="text-[11px] text-muted-gray uppercase tracking-wider">
+              {copy.missingPrefix} {missingFields.join(', ')}
+            </p>
+          )}
+          {fallbackHref && (
+            <p data-dispatch-fallback className="text-[11px] text-paper-white uppercase tracking-wider flex flex-wrap items-center gap-x-2 gap-y-1">
+              <span>{copy.fallbackLead}</span>
+              <a href={fallbackHref} data-dispatch-mailto className="text-bebop-red font-bold underline underline-offset-2 break-words">
+                {copy.sendEmailCopy}
+              </a>
+            </p>
+          )}
         </form>
       ) : (
-        /* Recibo de Confirmação HUD */
-        <div data-dispatch-receipt className="space-y-6 animate-in fade-in duration-300">
-          <div className="flex items-center gap-3 p-3.5 rounded-xl bg-acid-green/15 border border-acid-green text-acid-green">
-            <span className="w-2.5 h-2.5 rounded-full bg-acid-green animate-ping" />
-            <span className="font-bold text-xs uppercase tracking-wider">
-              TRANSMISSION ENCRYPTED // 100% DISPATCHED!
-            </span>
-          </div>
-
-          <div className="p-4 rounded-xl border border-space-border/80 bg-space-base/90 space-y-2.5 text-xs">
-            <div className="flex justify-between border-b border-space-border/40 pb-1.5">
-              <span className="text-muted-gray">CODENAME:</span>
-              <span className="text-paper-white font-bold">{name}</span>
-            </div>
-            <div className="flex justify-between border-b border-space-border/40 pb-1.5">
-              <span className="text-muted-gray">FREQUENCY:</span>
-              <span className="text-acid-green font-bold">{email}</span>
-            </div>
-            <div className="flex justify-between border-b border-space-border/40 pb-1.5">
-              <span className="text-muted-gray">STATUS:</span>
-              <span className="text-crt-cyan font-bold">RECEIVED ON BEBOP SENSORS</span>
-            </div>
-            <div className="flex justify-between pt-1">
-              <span className="text-muted-gray">TIMESTAMP:</span>
-              <span className="text-muted-gray text-[10px]">{dispatchTime}</span>
-            </div>
-          </div>
-
-          <div className="flex flex-col sm:flex-row gap-3">
-            <a
-              href={`mailto:bruno.a.dinis96@gmail.com?subject=[Bounty%20Contract]%20Proposta%20de%20${encodeURIComponent(
-                name
-              )}&body=${encodeURIComponent(
-                `Codename: ${name}\nEmail: ${email}\n\nMensagem:\n${message}`
-              )}`}
-              className="flex-1 py-3 px-4 rounded-xl border-2 border-space-base bg-bebop-red text-paper-white text-center font-bold text-xs uppercase tracking-wider hover:bg-paper-white hover:text-space-base transition-all shadow-comic-xs inline-flex items-center justify-center gap-2"
-            >
-              <span>ENVIAR CÓPIA POR E-MAIL</span>
-              <svg className="size-4 shrink-0" aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-              </svg>
-            </a>
-
-            <button
-              type="button"
-              data-new-transmission-btn
-              onClick={handleReset}
-              className="py-3 px-4 rounded-xl border-2 border-space-border bg-space-surface-1 text-paper-white font-bold text-xs uppercase tracking-wider hover:border-acid-green hover:text-acid-green transition-all shadow-comic-xs inline-flex items-center justify-center gap-2 cursor-pointer"
-            >
-              <span>NOVA TRANSMISSÃO</span>
-              <svg className="size-4 shrink-0" aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-              </svg>
-            </button>
-          </div>
-        </div>
+        <DispatchReceipt brief={brief} copy={copy} locale={locale} sentAt={sentAt} onReset={handleReset} />
       )}
     </div>
   );

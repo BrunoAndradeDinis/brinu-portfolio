@@ -1,0 +1,15 @@
+---
+import { ptBrDict } from "../../i18n/dictionaries";
+---
+
+<button
+  type="button"
+  data-panel-close
+  aria-label={ptBrDict.panel.closeLabel}
+  data-i18n-aria="panel.closeLabel"
+  class="absolute right-4 top-4 z-10 flex h-11 w-11 cursor-pointer items-center justify-center border-2 border-space-base bg-space-base text-paper-white transition-colors duration-100 hover:bg-bebop-red hover:text-space-base focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-space-base sm:right-6 sm:top-6"
+>
+  <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="square" aria-hidden="true" focusable="false">
+    <path d="M5 5l14 14M19 5L5 19" />
+  </svg>
+</button>

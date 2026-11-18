@@ -1,25 +1,36 @@
 ---
-/**
- * BaseLayout.astro
- * Root HTML shell for the Bebop Brutalist Portfolio.
- * Centralizes design tokens, global styles, Google Fonts typography, Intro Preloader, and CRT overlay.
- */
+import { Font } from "astro:assets";
+import { ClientRouter } from "astro:transitions";
 import "../styles/tokens.css";
 import "../styles/global.css";
-// import CrtOverlay from '../components/CrtOverlay.astro';
+import "../styles/chosen-band.css";
 import IntroPreloader from "../components/IntroPreloader.astro";
-import RightClickGuard from "../components/RightClickGuard";
+import ComicNav from "../components/ComicNav.astro";
+import CockpitMenu from "../components/CockpitMenu";
 import CiladaAlert from "../components/CiladaAlert";
+import { ptBrDict } from "../i18n/dictionaries";
+import { PROFILE, buildPersonJsonLd } from "../data/profile";
+import { routeBandTitle } from "../data/route-titles";
 
 interface Props {
   title?: string;
   description?: string;
+  ogImage?: string;
+  canonicalPath?: string;
+  intro?: boolean;
 }
 
 const {
-  title = "Bruno Dinis // Brinu — Software Engineer & Creative Technologist",
-  description = "Portfólio de engenharia de software e experiências digitais de Bruno de Andrade Dinis (Brinu). Foco em TypeScript, React, Astro e arquitetura de alta performance.",
+  title = ptBrDict.meta.title,
+  description = ptBrDict.meta.description,
+  ogImage = "/assets/brinu-avatar.jpg",
+  canonicalPath,
+  intro = false,
 } = Astro.props;
+
+const canonicalHref = canonicalPath ? (Astro.site ? new URL(canonicalPath, Astro.site).href : canonicalPath) : undefined;
+const personJsonLd = JSON.stringify(buildPersonJsonLd());
+const bandTitle = { pt: routeBandTitle(Astro.url.pathname, "pt-br"), en: routeBandTitle(Astro.url.pathname, "en") };
 ---
 
 <!doctype html>
@@ -29,54 +40,116 @@ const {
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="generator" content={Astro.generator} />
+    <ClientRouter />
 
-    <!-- Google Fonts Preconnect & Load (Syne, Permanent Marker, Space Mono, Inter) -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Permanent+Marker&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@700;800;900&display=swap"
-      rel="stylesheet"
-    />
+    <Font cssVariable="--font-syne" preload />
+    <Font cssVariable="--font-archivo" preload />
+    <Font cssVariable="--font-space-mono" />
+    <Font cssVariable="--font-permanent-marker" />
 
     <title>{title}</title>
     <meta name="description" content={description} />
+    <meta name="author" content={PROFILE.fullName} />
+    <meta name="theme-color" content="#FE0000" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    {canonicalHref && <link rel="canonical" href={canonicalHref} />}
+    {canonicalHref && <meta property="og:url" content={canonicalHref} />}
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:locale" content="pt_BR" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
+
+    <script
+      is:inline
+      type="application/ld+json"
+      id="profile-jsonld"
+      set:html={personJsonLd}
+    />
   </head>
   <body>
-    <!-- Abertura Cinemática com Transição de Cortina "BRINU" -->
-    <IntroPreloader />
+    <a
+      id="skip-to-content-link"
+      href="#main-content"
+      data-i18n="a11y.skipToContent"
+      class="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[9999] focus:border-4 focus:border-paper-white focus:bg-bebop-red focus:px-5 focus:py-3 focus:font-mono focus:text-xs focus:font-black focus:uppercase focus:tracking-widest focus:text-paper-white focus:shadow-[6px_6px_0_var(--color-space-base)] focus:outline-none"
+    >
+      {ptBrDict.a11y.skipToContent}
+    </a>
 
-    <div id="app-root">
+    {intro && <IntroPreloader />}
+
+    <div id="p5-wipe-overlay" aria-hidden="true" transition:persist="p5-wipe-overlay">
+      <div class="p5-wipe-blade-red"></div>
+    </div>
+
+    <div
+      id="route-band"
+      class="chosen-band"
+      aria-hidden="true"
+      data-title-en={bandTitle.en}
+    >
+      <div class="r"></div>
+      <div class="k"></div>
+      <div class="n" data-route-band-name style={`--chars: ${bandTitle.pt.length}`}>{bandTitle.pt}</div>
+    </div>
+    <script is:inline>
+      (function () {
+        var band = document.getElementById("route-band");
+        if (!band || window.__brinuRouteBand) return;
+        window.__brinuRouteBand = true;
+        if (/^\/(index\.html)?$/.test(location.pathname)) return;
+        if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+        var english = false;
+        try {
+          english = window.localStorage.getItem("brinu_locale") === "en";
+        } catch (error) {}
+        if (english) {
+          var name = band.querySelector("[data-route-band-name]");
+          name.textContent = band.dataset.titleEn;
+          name.style.setProperty("--chars", String(band.dataset.titleEn.length));
+        }
+        band.classList.add("is-out");
+      })();
+    </script>
+
+    <ComicNav />
+
+    <div id="app-root" class="pt-[5.5rem] sm:pt-[6.5rem] md:pt-[7rem]">
       <slot />
     </div>
 
-    <!-- Intercepção Divertida do Botão Direito (Guia para F12 / DevTools) -->
-    <RightClickGuard client:load />
+    <div transition:persist="cockpit-menu"><CockpitMenu client:load /></div>
+    <div transition:persist="cilada-alert"><CiladaAlert client:load /></div>
 
-    <!-- Sequência de Emergência: É uma cilada, Brinu! -->
-    <CiladaAlert client:load />
-
-    <!-- Retro CRT Scanline & Phosphor Overlay (Sutil e Atmosférico) -->
-    {/*<CrtOverlay />*/}
-
-    <!-- Coordenador de Movimento Unificado (Lenis + GSAP ScrollTrigger) & Áudio Nativo -->
     <script>
       import { initMotionCoordinator } from "../utils/motion";
       import { audioSynth } from "../utils/audio";
       import { initTelemetry } from "../utils/telemetry";
+      import { initI18nBindings } from "../i18n/index";
+      import { installRouterLifecycle, onPageReady } from "../utils/page-lifecycle";
+      import { installRouteBand } from "../utils/route-band";
+      import { installScrollbarHover } from "../utils/scrollbar-hover";
 
-      if (typeof window !== "undefined") {
-        (window as unknown as { bebopAudio: typeof audioSynth }).bebopAudio = audioSynth;
-        initTelemetry();
-      }
+      let sessionBooted = false;
 
-      if (document.readyState === "loading") {
-        document.addEventListener("DOMContentLoaded", () => {
-          initMotionCoordinator();
-        });
-      } else {
+      installRouterLifecycle();
+      installRouteBand();
+      installScrollbarHover();
+      onPageReady(() => {
+        if (!sessionBooted) {
+          sessionBooted = true;
+          (window as unknown as { bebopAudio: typeof audioSynth }).bebopAudio = audioSynth;
+          initTelemetry();
+        }
+        initI18nBindings();
         initMotionCoordinator();
-      }
+      });
     </script>
   </body>
 </html>
-

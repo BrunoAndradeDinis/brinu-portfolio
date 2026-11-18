@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120">
+  <defs>
+    <pattern id="p5-halftone" width="24" height="24" patternUnits="userSpaceOnUse" patternTransform="rotate(-14)">
+      <circle cx="6" cy="6" r="3.4" fill="#080808" />
+      <circle cx="18" cy="6" r="2.2" fill="#FE0000" />
+      <circle cx="12" cy="15" r="4.1" fill="#080808" />
+      <circle cx="22" cy="18" r="1.8" fill="#080808" />
+    </pattern>
+  </defs>
+  <rect width="120" height="120" fill="url(#p5-halftone)" />
+</svg>

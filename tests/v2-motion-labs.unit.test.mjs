@@ -1,0 +1,179 @@
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+
+test('routes share one ease and one duration', async () => {
+  const { MOTION_EASE, MOTION_DURATION, gsap, p5Snap } = await import('../src/utils/motion.ts');
+  assert.deepEqual(MOTION_EASE, { enter: 'p5Snap', fade: 'power2.out' });
+  assert.equal(gsap.parseEase(MOTION_EASE.enter), p5Snap, 'the enter ease is the registered p5Snap curve');
+  assert.equal(typeof gsap.parseEase(MOTION_EASE.fade), 'function');
+  assert.deepEqual(Object.keys(MOTION_DURATION).sort(), ['ms', 'seconds']);
+  assert.equal(MOTION_DURATION.ms, MOTION_DURATION.seconds * 1000, 'one duration in two units');
+  assert.ok(MOTION_DURATION.ms >= 400 && MOTION_DURATION.ms <= 600, `transitions land in 400-600 ms (${MOTION_DURATION.ms})`);
+});
+
+const textType = () => import('../src/utils/text-type.ts');
+
+test('label duration stays between 400 and 600 ms', async () => {
+  const { typeDuration } = await textType();
+  for (const length of [0, 1, 5, 10, 12, 15, 16, 40, 400, 5000]) {
+    const duration = typeDuration(length, 'label');
+    assert.ok(duration >= 400 && duration <= 600, `label of ${length} chars types in ${duration} ms`);
+  }
+});
+
+test('paragraph duration is 40 ms per character capped at 4000 ms', async () => {
+  const { typeDuration } = await textType();
+  for (const length of [0, 1, 10, 99, 100, 101, 500, 5000]) {
+    assert.equal(typeDuration(length, 'paragraph'), Math.min(4000, length * 40), `paragraph of ${length} chars`);
+  }
+});
+
+test('visible characters grow from none to the full text over the duration', async () => {
+  const { typeDuration, visibleChars } = await textType();
+  for (const [length, kind] of [[8, 'label'], [30, 'label'], [60, 'paragraph'], [300, 'paragraph']]) {
+    const duration = typeDuration(length, kind);
+    assert.equal(visibleChars(length, kind, 0), 0, `${kind} ${length} starts empty`);
+    assert.equal(visibleChars(length, kind, duration), length, `${kind} ${length} is complete at its duration`);
+    assert.equal(visibleChars(length, kind, duration / 2), Math.floor(length / 2), `${kind} ${length} is half typed at half time`);
+    let previous = 0;
+    for (let elapsed = 0; elapsed <= duration; elapsed += 16) {
+      const visible = visibleChars(length, kind, elapsed);
+      assert.ok(visible >= previous && visible <= length, `${kind} ${length} never goes back at ${elapsed} ms`);
+      previous = visible;
+    }
+  }
+});
+
+test('visible characters clamp outside the typing window and for empty text', async () => {
+  const { visibleChars } = await textType();
+  assert.equal(visibleChars(20, 'label', -50), 0);
+  assert.equal(visibleChars(20, 'label', 10_000), 20);
+  assert.equal(visibleChars(200, 'paragraph', 10_000), 200);
+  assert.equal(visibleChars(0, 'paragraph', 0), 0);
+  assert.equal(visibleChars(0, 'paragraph', 100), 0);
+  assert.equal(visibleChars(0, 'label', 300), 0);
+});
+
+const casesReveal = () => import('../src/components/cases/cases-reveal.ts');
+
+test('next advances exactly one case at a time', async () => {
+  const { createCaseSteps } = await casesReveal();
+  const { MAIN_CASES } = await import('../src/data/cases.ts');
+  const steps = createCaseSteps(MAIN_CASES.length);
+  assert.equal(steps.index, 0, 'starts on the first case');
+  for (let expected = 1; expected < MAIN_CASES.length; expected += 1) {
+    assert.deepEqual(steps.next(), { index: expected, done: false });
+    assert.equal(steps.index, expected);
+  }
+});
+
+test('next from the last case reports done and keeps the index', async () => {
+  const { createCaseSteps } = await casesReveal();
+  for (const count of [1, 2, 4, 9]) {
+    const steps = createCaseSteps(count);
+    for (let move = 1; move < count; move += 1) steps.next();
+    assert.deepEqual(steps.next(), { index: count - 1, done: true }, `count ${count}`);
+    assert.deepEqual(steps.next(), { index: count - 1, done: true }, `count ${count}, repeated`);
+    assert.equal(steps.index, count - 1);
+  }
+});
+
+test('previous steps back one case and clamps at the first', async () => {
+  const { createCaseSteps } = await casesReveal();
+  const steps = createCaseSteps(4);
+  assert.deepEqual(steps.previous(), { index: 0, done: true });
+  steps.next();
+  steps.next();
+  assert.deepEqual(steps.previous(), { index: 1, done: false });
+  assert.deepEqual(steps.previous(), { index: 0, done: false });
+  assert.deepEqual(steps.previous(), { index: 0, done: true });
+  assert.deepEqual(steps.goTo(99), { index: 3, done: false });
+  assert.deepEqual(steps.goTo(-5), { index: 0, done: false });
+  assert.equal(steps.index, 0);
+});
+
+test('each case element starts before the previous one ends', async () => {
+  const { elementOffsets, CASE_REVEAL_ELEMENTS } = await casesReveal();
+  assert.deepEqual([...CASE_REVEAL_ELEMENTS], ['title', 'meta', 'media', 'summary', 'link']);
+  for (const duration of [0.4, 0.5, 0.6, 500]) {
+    const offsets = elementOffsets(CASE_REVEAL_ELEMENTS.length, duration);
+    assert.equal(offsets.length, CASE_REVEAL_ELEMENTS.length);
+    assert.equal(offsets[0], 0);
+    for (let position = 1; position < offsets.length; position += 1) {
+      assert.ok(offsets[position] > offsets[position - 1], `element ${position} starts after element ${position - 1}`);
+      const overlap = offsets[position - 1] + duration - offsets[position];
+      assert.ok(overlap > 0, `element ${position} starts ${overlap} before the previous one ends`);
+    }
+  }
+  assert.deepEqual(elementOffsets(0, 0.5), []);
+});
+
+const APPROVED_SKILL_DESCRIPTIONS = {
+  TypeScript: ['Tipagem em todos os meus cases, do site da Magalu Cloud ao AuraStream.', 'Typing across all my cases, from the Magalu Cloud website to AuraStream.'],
+  'React / Next.js': ['Interfaces do site da Magalu Cloud, do Uriana e do eFood.', 'Interfaces for the Magalu Cloud website, Uriana and eFood.'],
+  Astro: ['Páginas do site institucional da Magalu Cloud.', 'Pages of the Magalu Cloud corporate website.'],
+  'Tailwind CSS': ['Estilos do site da Magalu Cloud e do Uriana.', 'Styling for the Magalu Cloud website and Uriana.'],
+  GSAP: ['Transições e animações de scroll deste portfólio.', 'Transitions and scroll animations in this portfolio.'],
+  'Node.js / Express': ['API do Quake Log Parser.', 'The Quake Log Parser API.'],
+  'PostgreSQL + Prisma': ['Banco de dados de estoque e vendas do Uriana.', 'Inventory and sales database for Uriana.'],
+  MongoDB: ['Persistência dos dados do Quake Log Parser.', 'Data persistence for the Quake Log Parser.'],
+  'Object Storage': ['Armazenamento do AuraStream no Object Storage da Magalu Cloud.', 'AuraStream storage on Magalu Cloud Object Storage.'],
+  'FFmpeg / streaming': ['Captura e transmissão de vídeo no AuraStream.', 'Video capture and streaming in AuraStream.'],
+  Jest: ['Testes da API do Quake Log Parser.', 'Tests for the Quake Log Parser API.'],
+  Playwright: ['Testes de ponta a ponta deste portfólio.', 'End-to-end tests for this portfolio.'],
+  'Docker Compose': ['Ambiente local do Quake Log Parser.', 'Local environment for the Quake Log Parser.'],
+  Zod: ['Validação de dados no Uriana.', 'Data validation in Uriana.'],
+  'Figma / GitLab': ['Handoff de design e versionamento no time da Magalu Cloud.', 'Design handoff and version control on the Magalu Cloud team.'],
+};
+
+test('every skill carries its approved description in both locales', async () => {
+  const { ARSENAL, getLocalizedArsenal } = await import('../src/data/arsenal.ts');
+  const skills = ARSENAL.flatMap((domain) => domain.skills);
+  assert.deepEqual(skills.map((skill) => skill.name).sort(), Object.keys(APPROVED_SKILL_DESCRIPTIONS).sort());
+  for (const [locale, column] of [['pt-br', 0], ['en', 1]]) {
+    const localized = getLocalizedArsenal(locale).flatMap((domain) => domain.skills);
+    for (const skill of localized) {
+      assert.equal(skill.description, APPROVED_SKILL_DESCRIPTIONS[skill.name][column], `${locale} ${skill.name}`);
+    }
+  }
+});
+
+test('the route band reads its timings from motion.ts', async () => {
+  const fs = await import('node:fs');
+  const { ROUTE_BAND_TIMING } = await import('../src/utils/motion.ts');
+  assert.deepEqual({ ...ROUTE_BAND_TIMING }, { coverMs: 560, exitMs: 690 });
+  const band = fs.readFileSync('src/utils/route-band.ts', 'utf8');
+  const css = fs.readFileSync('src/styles/chosen-band.css', 'utf8');
+  assert.match(band, /setTimeout\(resolve, ROUTE_BAND_TIMING\.coverMs\)/, 'the navigation waits for the cover from ROUTE_BAND_TIMING.coverMs');
+  assert.match(band, /setTimeout\(\(\) => setPhase\(band, null\), ROUTE_BAND_TIMING\.exitMs\)/, 'the exit cleanup reads ROUTE_BAND_TIMING.exitMs');
+  assert.doesNotMatch(band, /\b(?:const|let)\s+\w*_MS\s*=\s*\d+/, 'route-band.ts declares no timing numbers of its own');
+  assert.match(css, /\.chosen-band\.is-in \.r \{\s*animation: chosen-band-red-in 560ms/, 'the cover animation lasts coverMs');
+  assert.match(css, /animation-delay: -560ms/, 'the exit starts where the cover ends');
+  assert.match(css, /animation: chosen-band-red 1\.25s/, 'cover plus exit is the 1.25 s hobby timeline');
+});
+
+test('cubes tile the card exactly and come from all four corners', async () => {
+  const { layoutCubes, MAX_CUBES } = await import('../src/components/cases/case-cubes.ts');
+  for (const [width, height] of [[1200, 420], [358, 640], [57, 30], [2400, 900]]) {
+    const cubes = layoutCubes(width, height, 700, 450, 7);
+    assert.ok(cubes.length > 0 && cubes.length <= MAX_CUBES, `${width}x${height}: ${cubes.length} cubes`);
+    const area = cubes.reduce((sum, cube) => sum + cube.width * cube.height, 0);
+    assert.ok(Math.abs(area - width * height) < 1e-6 * width * height, `${width}x${height}: the cubes cover the card exactly`);
+    const right = Math.max(...cubes.map((cube) => cube.left + cube.width));
+    const bottom = Math.max(...cubes.map((cube) => cube.top + cube.height));
+    assert.ok(Math.abs(right - width) < 1e-6 && Math.abs(bottom - height) < 1e-6, `${width}x${height}: the grid ends on the card's edges`);
+    if (cubes.length >= 4) {
+      const corners = new Set(cubes.map((cube) => `${Math.sign(cube.fromX)},${Math.sign(cube.fromY)}`));
+      assert.deepEqual([...corners].sort(), ['-1,-1', '-1,1', '1,-1', '1,1'], `${width}x${height}: cubes come from all four corners`);
+    }
+    for (const cube of cubes) {
+      const offX = cube.left + cube.width / 2 - width / 2;
+      const offY = cube.top + cube.height / 2 - height / 2;
+      if (Math.abs(offX) > 1e-6) assert.equal(Math.sign(cube.fromX), Math.sign(offX), 'each cube comes from its own side');
+      if (Math.abs(offY) > 1e-6) assert.equal(Math.sign(cube.fromY), Math.sign(offY), 'each cube comes from its own side');
+      assert.ok(cube.turnAt >= 0 && cube.turnAt <= 1);
+    }
+  }
+  assert.deepEqual(layoutCubes(1200, 420, 700, 450, 7), layoutCubes(1200, 420, 700, 450, 7), 'the same seed gives the same cubes');
+  assert.deepEqual(layoutCubes(0, 420, 700, 450), []);
+});
