@@ -616,7 +616,7 @@ test('C20: locale change during the intro updates hero texts without restarting 
     await page.locator('#nav-lang-toggle-btn').dispatchEvent('click');
     await waitForComplete(page);
     const left = await page.locator('[data-hero-manifesto="left"]').evaluate((el) => el.innerText.replace(/\s+/g, ' ').trim().toUpperCase());
-    assert.ok(left.includes('8 YEARS AT MAGALU'), `hero should be in English, got "${left}"`);
+    assert.ok(left.includes('FROM DATABASE'), `hero should be in English, got "${left}"`);
     for (const name of ['intro:start', 'intro:exit-start', 'intro:beat-cut', 'intro:beat-fly', 'intro:complete']) {
       assert.equal((await markTime(page, name)).length, 1, `${name} must run exactly once`);
     }
