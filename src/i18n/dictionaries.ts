@@ -188,13 +188,6 @@ export interface TranslationSchema {
     tilesAria: string;
     stackAria: string;
     stageAria: string;
-    fullscreen: string;
-    fullscreenOpenAria: string;
-    fullscreenCloseAria: string;
-    fullscreenClose: string;
-    fullscreenPrev: string;
-    fullscreenNext: string;
-    fullscreenHint: string;
   };
   casePage: {
     sectionAria: string;
@@ -581,13 +574,6 @@ export const ptBrDict: TranslationSchema = {
     tilesAria: 'Todos os cases',
     stackAria: 'Tecnologias do case',
     stageAria: 'Mídia do case',
-    fullscreen: 'FULLSCREEN',
-    fullscreenOpenAria: 'Assistir vídeo em tela cheia',
-    fullscreenCloseAria: 'Fechar tela cheia',
-    fullscreenClose: 'FECHAR',
-    fullscreenPrev: 'Vídeo anterior',
-    fullscreenNext: 'Próximo vídeo',
-    fullscreenHint: 'USE ← → OU DESLIZE PARA NAVEGAR • ESC PARA FECHAR',
   },
   casePage: {
     sectionAria: 'Página do case',
@@ -1008,13 +994,6 @@ export const enDict = {
     tilesAria: 'All cases',
     stackAria: 'Case technologies',
     stageAria: 'Case media',
-    fullscreen: 'FULLSCREEN',
-    fullscreenOpenAria: 'Watch video in fullscreen',
-    fullscreenCloseAria: 'Close fullscreen',
-    fullscreenClose: 'CLOSE',
-    fullscreenPrev: 'Previous video',
-    fullscreenNext: 'Next video',
-    fullscreenHint: 'USE ← → OR SWIPE TO NAVIGATE • ESC TO CLOSE',
   },
   casePage: {
     sectionAria: 'Case page',
