@@ -42,11 +42,10 @@ const BR_COUNTRY_CODE = '55';
 const BR_MAX_DIGITS = 11;
 
 export function phoneDigits(raw: string): string {
-  const international = raw.trim().startsWith('+');
   let digits = digitsOnly(raw);
-  if (!international && digits.startsWith('00')) return stripCountryCode(digits.slice(2), true);
-  if (international) return stripCountryCode(digits, true);
-  if (digits.startsWith('0')) digits = digits.replace(/^0+/, '');
+  if (raw.trim().startsWith('+')) digits = stripCountryCode(digits, true);
+  else if (digits.startsWith('00')) digits = stripCountryCode(digits.slice(2), true);
+  digits = digits.replace(/^0+/, '');
   return digits.length > BR_MAX_DIGITS ? stripCountryCode(digits, false) : digits;
 }
 

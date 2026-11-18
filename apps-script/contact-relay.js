@@ -36,7 +36,7 @@ const EMAIL_PATTERN =
 function doPost(e) {
   const raw = parseBody(e);
   if (!raw) return reply({ ok: false, code: 'invalid' });
-  if (text(raw.website)) return reply({ ok: true });
+  if (raw.website !== undefined && raw.website !== null && raw.website !== '') return reply({ ok: true });
 
   const brief = validateBrief(raw);
   if (!brief) return reply({ ok: false, code: 'invalid' });
@@ -49,9 +49,10 @@ function doPost(e) {
   }
   try {
     const cache = CacheService.getScriptCache();
+    const now = Date.now();
     const keys = [rateKey('overall'), rateKey('mail:' + brief.email)];
-    const [overall, perEmail] = keys.map((key) => readWindow(cache, key));
-    if (overall.count >= RATE_LIMIT.overall || perEmail.count >= RATE_LIMIT.perEmail) {
+    const [overall, perEmail] = keys.map((key) => recentSends(cache, key, now));
+    if (overall.length >= RATE_LIMIT.overall || perEmail.length >= RATE_LIMIT.perEmail) {
       return reply({ ok: false, code: 'rate-limited' });
     }
 
@@ -59,8 +60,8 @@ function doPost(e) {
     if (!recipient) return reply({ ok: false, code: 'server-error' });
     MailApp.sendEmail({ to: recipient, replyTo: brief.email, subject: mailSubject(brief), body: mailBody(brief) });
 
-    writeWindow(cache, keys[0], overall);
-    writeWindow(cache, keys[1], perEmail);
+    recordSend(cache, keys[0], overall, now);
+    recordSend(cache, keys[1], perEmail, now);
     return reply({ ok: true });
   } catch (error) {
     return reply({ ok: false, code: 'server-error' });
@@ -116,11 +117,10 @@ function truncate(value, max) {
 }
 
 function phoneDigits(raw) {
-  const international = raw.trim().startsWith('+');
   let digits = raw.replace(/\D/g, '');
-  if (!international && digits.startsWith('00')) return stripCountryCode(digits.slice(2), true);
-  if (international) return stripCountryCode(digits, true);
-  if (digits.startsWith('0')) digits = digits.replace(/^0+/, '');
+  if (raw.trim().startsWith('+')) digits = stripCountryCode(digits, true);
+  else if (digits.startsWith('00')) digits = stripCountryCode(digits.slice(2), true);
+  digits = digits.replace(/^0+/, '');
   return digits.length > BOUNDS.phoneMax ? stripCountryCode(digits, false) : digits;
 }
 
@@ -195,19 +195,18 @@ function rateKey(scope) {
   return 'rate:' + Utilities.base64EncodeWebSafe(digest);
 }
 
-function readWindow(cache, key) {
-  const now = Date.now();
+function recentSends(cache, key, now) {
   try {
-    const stored = JSON.parse(cache.get(key) || 'null');
-    if (stored && typeof stored.count === 'number' && typeof stored.start === 'number' && now - stored.start < RATE_LIMIT.windowSeconds * 1000) {
-      return stored;
-    }
-  } catch (error) {}
-  return { count: 0, start: now };
+    const stored = JSON.parse(cache.get(key) || '[]');
+    const windowStart = now - RATE_LIMIT.windowSeconds * 1000;
+    return Array.isArray(stored) ? stored.filter((time) => typeof time === 'number' && time > windowStart && time <= now) : [];
+  } catch (error) {
+    return [];
+  }
 }
 
-function writeWindow(cache, key, window) {
-  const elapsed = Math.floor((Date.now() - window.start) / 1000);
-  const ttl = Math.max(1, RATE_LIMIT.windowSeconds - elapsed);
-  cache.put(key, JSON.stringify({ count: window.count + 1, start: window.start }), ttl);
+function recordSend(cache, key, sends, now) {
+  try {
+    cache.put(key, JSON.stringify(sends.concat(now)), RATE_LIMIT.windowSeconds);
+  } catch (error) {}
 }

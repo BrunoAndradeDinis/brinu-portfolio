@@ -133,7 +133,12 @@ test('relay drops honeypot posts silently', () => {
   const relay = loadRelay();
   assert.deepEqual(relay.post({ ...VALID, website: 'https://spam.example' }), { ok: true });
   assert.deepEqual(relay.post({ website: 'x' }), { ok: true });
+  for (const website of [1, 0, true, false, ['x'], {}, ' ']) {
+    assert.deepEqual(relay.post({ ...VALID, website }), { ok: true }, JSON.stringify(website));
+  }
   assert.equal(relay.sent.length, 0);
+  assert.deepEqual(relay.post({ ...VALID, website: null }), { ok: true });
+  assert.equal(relay.sent.length, 1, 'a null or empty honeypot is a person');
 });
 
 test('relay rate limits per e-mail and overall', () => {
@@ -144,7 +149,21 @@ test('relay rate limits per e-mail and overall', () => {
   assert.equal(relay.sent.length, 3);
 
   relay.setNow(1_000_000 + 3600 * 1000);
-  assert.deepEqual(relay.post(VALID), { ok: true }, 'window resets after an hour');
+  assert.deepEqual(relay.post(VALID), { ok: true }, 'the oldest brief leaves the window after an hour');
+
+  const sliding = loadRelay();
+  const start = 50_000_000;
+  sliding.setNow(start);
+  assert.deepEqual(sliding.post(VALID), { ok: true });
+  sliding.setNow(start + 59 * 60_000);
+  assert.deepEqual(sliding.post(VALID), { ok: true });
+  assert.deepEqual(sliding.post(VALID), { ok: true });
+  sliding.setNow(start + 60 * 60_000 + 1);
+  assert.deepEqual(sliding.post(VALID), { ok: true }, 'only the first brief has left the last hour');
+  assert.deepEqual(sliding.post(VALID), { ok: false, code: 'rate-limited' }, 'three briefs already in the last hour');
+  sliding.setNow(start + 119 * 60_000 + 1);
+  assert.deepEqual(sliding.post(VALID), { ok: true });
+  assert.equal(sliding.sent.length, 5);
 
   const overall = loadRelay();
   overall.setNow(5_000_000);
@@ -268,4 +287,53 @@ test('relay copy exists in both locales', async () => {
   assert.equal(dictionaries.en.dispatch.toastSuccessTitle, 'BRIEF SENT!');
   assert.equal(dictionaries.en.dispatch.toastRateLimitedTitle, 'SEND LIMIT REACHED');
   assert.notEqual(dictionaries['pt-br'].dispatch.toastRateLimitedTitle, dictionaries['pt-br'].dispatch.toastErrorTitle);
+});
+
+test('sendBrief gives up after 15 seconds by default', async (t) => {
+  const { sendBrief, RELAY_TIMEOUT_MS } = await import('../src/utils/contact-relay.ts');
+  assert.equal(RELAY_TIMEOUT_MS, 15_000);
+  t.mock.timers.enable({ apis: ['setTimeout'] });
+  let settled = null;
+  const hang = (url, init) =>
+    new Promise((_, reject) => init.signal.addEventListener('abort', () => reject(new DOMException('aborted', 'AbortError'))));
+  const pending = sendBrief({ endpoint: 'https://relay.test/exec', brief: BRIEF, honeypot: '', locale: 'pt-br', fetchImpl: hang }).then((r) => (settled = r));
+  t.mock.timers.tick(14_999);
+  await new Promise((resolve) => setImmediate(resolve));
+  assert.equal(settled, null, 'still waiting at 14.999 s');
+  t.mock.timers.tick(1);
+  await pending;
+  assert.deepEqual(settled, { ok: false, code: 'timeout' });
+});
+
+test('relay accepts every brief the client accepts with the same phone', async () => {
+  const { validateContactBrief } = await import('../src/utils/contact-brief.ts');
+  const { phoneDigits } = await import('../src/utils/contact-sanitize.ts');
+  const phones = [
+    '',
+    '16 99123-4567',
+    '(16) 3333-4444',
+    '+55 16 99123-4567',
+    '+55 0 16 9912-3456',
+    '+55 0 16 9912-345',
+    '+55 00 16 99123456',
+    '0055 0 16 99123-456',
+    '0055 16 99123-4567',
+    '016 99123-4567',
+    '00 16 99123 4567',
+    '5516991234567',
+    '55 16 3333 4444',
+    '+5516991234567',
+    '016991234567',
+  ];
+  for (const raw of phones) {
+    assert.equal(phoneDigits(phoneDigits(raw)), phoneDigits(raw), `phoneDigits is idempotent for ${raw}`);
+    const checked = validateContactBrief({ ...VALID, phone: raw });
+    if (!checked.ok) continue;
+    const relay = loadRelay();
+    assert.deepEqual(relay.post({ ...checked.brief, website: '', locale: 'pt-br' }), { ok: true }, `relay accepts ${raw}`);
+    const digits = checked.brief.phone;
+    const expected = digits ? `WhatsApp: (${digits.slice(0, 2)}) ${digits.slice(2, digits.length - 4)}-${digits.slice(-4)}` : null;
+    if (expected) assert.match(relay.sent[0].body, new RegExp(`^${expected.replace(/[()]/g, '\\$&')}$`, 'm'), raw);
+    else assert.doesNotMatch(relay.sent[0].body, /WhatsApp/, raw);
+  }
 });
