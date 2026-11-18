@@ -278,6 +278,15 @@ export interface TranslationSchema {
     budgetKey: string;
     deadlineKey: string;
     missingPrefix: string;
+    sendingCta: string;
+    honeypotLabel: string;
+    fallbackLead: string;
+    toastSuccessTitle: string;
+    toastSuccessBody: string;
+    toastErrorTitle: string;
+    toastErrorBody: string;
+    toastRateLimitedTitle: string;
+    toastRateLimitedBody: string;
     submitCta: string;
     receiptSuccess: string;
     codenameKey: string;
@@ -637,12 +646,21 @@ export const ptBrDict: TranslationSchema = {
     budgetKey: 'ORÇAMENTO:',
     deadlineKey: 'PRAZO:',
     missingPrefix: 'PARA ENVIAR, AJUSTE:',
+    sendingCta: 'TRANSMITINDO...',
+    honeypotLabel: 'Não preencha este campo',
+    fallbackLead: 'O ENVIO FALHOU? MANDE PELO SEU E-MAIL:',
+    toastSuccessTitle: 'PROPOSTA ENVIADA!',
+    toastSuccessBody: 'Recebi sua mensagem e respondo no e-mail informado.',
+    toastErrorTitle: 'FALHA NA TRANSMISSÃO',
+    toastErrorBody: 'Não consegui enviar agora. Suas respostas continuam no formulário: tente de novo ou use o e-mail abaixo.',
+    toastRateLimitedTitle: 'LIMITE DE ENVIOS ATINGIDO',
+    toastRateLimitedBody: 'Muitos envios na última hora. Tente mais tarde ou use o e-mail abaixo.',
     emailLabel: '03 // SEU E-MAIL DE RETORNO',
     emailPlaceholder: 'Ex: contato@empresa.com',
     messageLabel: '08 // DETALHES DO PROJETO',
     messagePlaceholder: 'Conte sobre o sistema web, painel, site ou integração, objetivos e prazo estimado...',
     submitCta: 'ENVIAR PROPOSTA DE PROJETO',
-    receiptSuccess: 'TRANSMISSÃO PREPARADA // 100% VALIDADA!',
+    receiptSuccess: 'TRANSMISSÃO ENVIADA // 100% CONFIRMADA!',
     codenameKey: 'REMETENTE:',
     frequencyKey: 'E-MAIL:',
     statusKey: 'DESTINO:',
@@ -1004,12 +1022,21 @@ export const enDict = {
     budgetKey: 'BUDGET:',
     deadlineKey: 'TIMELINE:',
     missingPrefix: 'TO SEND, FIX:',
+    sendingCta: 'TRANSMITTING...',
+    honeypotLabel: 'Leave this field empty',
+    fallbackLead: 'SEND FAILED? USE YOUR E-MAIL:',
+    toastSuccessTitle: 'BRIEF SENT!',
+    toastSuccessBody: 'I got your message and will reply at the e-mail you gave.',
+    toastErrorTitle: 'TRANSMISSION FAILED',
+    toastErrorBody: "I couldn't send it right now. Your answers are still in the form: try again or use the e-mail link below.",
+    toastRateLimitedTitle: 'SEND LIMIT REACHED',
+    toastRateLimitedBody: 'Too many sends in the last hour. Try again later or use the e-mail link below.',
     emailLabel: '03 // RETURN FREQUENCY (YOUR EMAIL)',
     emailPlaceholder: 'e.g. contact@company.com',
     messageLabel: '08 // PROJECT DETAILS',
     messagePlaceholder: 'Tell me about the web system, dashboard, site or integration, goals, and timeline...',
     submitCta: 'SEND PROJECT PROPOSAL',
-    receiptSuccess: 'TRANSMISSION PREPARED // 100% VALIDATED!',
+    receiptSuccess: 'TRANSMISSION SENT // 100% CONFIRMED!',
     codenameKey: 'SENDER:',
     frequencyKey: 'EMAIL:',
     statusKey: 'TARGET:',

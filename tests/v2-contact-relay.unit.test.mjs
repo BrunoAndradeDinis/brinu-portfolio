@@ -243,3 +243,29 @@ test('dispatch time is formatted in the given time zone and locale', async () =>
   assert.equal(formatDispatchTime(instant, 'en', 'America/Sao_Paulo'), 'Nov 17, 2026, 20:57:05 GMT-3');
   assert.equal(formatDispatchTime(instant, 'en', 'Asia/Tokyo'), 'Nov 18, 2026, 08:57:05 GMT+9');
 });
+
+test('relay copy exists in both locales', async () => {
+  const { DICTIONARIES: dictionaries } = await import('../src/i18n/dictionaries.ts');
+  const keys = [
+    'sendingCta',
+    'honeypotLabel',
+    'fallbackLead',
+    'toastSuccessTitle',
+    'toastSuccessBody',
+    'toastErrorTitle',
+    'toastErrorBody',
+    'toastRateLimitedTitle',
+    'toastRateLimitedBody',
+  ];
+  for (const locale of ['pt-br', 'en']) {
+    for (const key of keys) {
+      const value = dictionaries[locale].dispatch[key];
+      assert.equal(typeof value, 'string', `${locale}.${key}`);
+      assert.ok(value.trim().length > 0, `${locale}.${key}`);
+    }
+  }
+  assert.equal(dictionaries['pt-br'].dispatch.toastSuccessTitle, 'PROPOSTA ENVIADA!');
+  assert.equal(dictionaries.en.dispatch.toastSuccessTitle, 'BRIEF SENT!');
+  assert.equal(dictionaries.en.dispatch.toastRateLimitedTitle, 'SEND LIMIT REACHED');
+  assert.notEqual(dictionaries['pt-br'].dispatch.toastRateLimitedTitle, dictionaries['pt-br'].dispatch.toastErrorTitle);
+});
