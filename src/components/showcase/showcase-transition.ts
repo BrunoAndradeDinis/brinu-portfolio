@@ -22,6 +22,14 @@ interface ShowcaseParts {
 }
 
 function collectParts(showcase: HTMLElement): ShowcaseParts {
+  const noteLine = showcase.querySelector<HTMLElement>('[data-showcase-note-line]');
+  const otherCopy = Array.from(
+    showcase.querySelectorAll<HTMLElement>(
+      '[data-showcase-copy-title], [data-showcase-kicker], [data-showcase-lead], [data-showcase-chip]'
+    )
+  );
+  const noteTarget = noteLine ?? showcase.querySelector<HTMLElement>('[data-showcase-note]');
+
   return {
     rail: showcase.querySelector<HTMLElement>('[data-showcase-rail]'),
     banner: showcase.querySelector<HTMLElement>('[data-showcase-banner]'),
@@ -32,11 +40,7 @@ function collectParts(showcase: HTMLElement): ShowcaseParts {
     site: showcase.querySelector<HTMLElement>('[data-showcase-site]'),
     position: showcase.querySelector<HTMLElement>('[data-showcase-position]'),
     barStack: Array.from(showcase.querySelectorAll<HTMLElement>('[data-showcase-bar-stack]')),
-    copyItems: Array.from(
-      showcase.querySelectorAll<HTMLElement>(
-        '[data-showcase-copy-title], [data-showcase-kicker], [data-showcase-lead], [data-showcase-chip], [data-showcase-note]'
-      )
-    ),
+    copyItems: noteTarget ? [...otherCopy, noteTarget] : otherCopy,
   };
 }
 

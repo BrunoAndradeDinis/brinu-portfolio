@@ -210,7 +210,7 @@ const videoList = media.video
       <ul class="mt-3.5 flex list-none flex-wrap gap-2 p-0 font-mono text-[11px] font-bold tracking-[0.06em] uppercase md:mt-[18px] md:gap-2.5 md:text-[13px] lg:hidden">
         {layout.barStack.map((tech) => (<li data-showcase-chip class="border-[3px] border-space-base bg-paper-white px-2 py-1 md:px-3 md:py-1.5">{tech}</li>))}
       </ul>
-      <p class="mt-3.5 font-mono text-[11px] font-bold tracking-[0.08em] uppercase md:mt-[18px] md:text-[13px] lg:mt-3.5"><span aria-hidden="true">▸&nbsp;</span><span data-showcase-note>{copy.note["pt-br"]}</span></p>
+      <p data-showcase-note-line class="mt-3.5 font-mono text-[11px] font-bold tracking-[0.08em] uppercase md:mt-[18px] md:text-[13px] lg:mt-3.5"><span aria-hidden="true">▸&nbsp;</span><span data-showcase-note>{copy.note["pt-br"]}</span></p>
     </div>
   </div>
 

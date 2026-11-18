@@ -81,7 +81,7 @@ const EXPECTED = {
   'magalu-cloud': { position: '01 / 04', prev: 'aurastream', next: 'uriana', site: 'https://magalu.cloud/', cta: 'SITE NO AR', video: true },
   uriana: { position: '02 / 04', prev: 'magalu-cloud', next: 'efood', site: 'https://uriana.vercel.app', cta: 'DEMO NO AR', video: true },
   efood: { position: '03 / 04', prev: 'uriana', next: 'aurastream', site: 'https://efood-nine-sepia.vercel.app', cta: 'DEMO NO AR', video: true },
-  aurastream: { position: '04 / 04', prev: 'efood', next: 'magalu-cloud', site: 'https://painel-stream.vercel.app', cta: 'DEMO DO PAINEL', video: false },
+  aurastream: { position: '04 / 04', prev: 'efood', next: 'magalu-cloud', site: 'https://painel-stream.vercel.app', cta: 'DEMO DO PAINEL', video: true },
 };
 
 test('SHOW-01: every case page renders the six showcase blocks', async () => {
@@ -182,7 +182,7 @@ const waitPlaying = (page, expected) =>
 
 test('SHOW-04: the video is muted, looping, inline and autoplays with a poster', async () => {
   const { SHOWCASE_MEDIA } = await import('../src/data/showcase.ts');
-  for (const id of ['magalu-cloud', 'uriana', 'efood']) {
+  for (const id of ['magalu-cloud', 'uriana', 'efood', 'aurastream']) {
     const { context, page } = await openPath(`/cases/${id}`);
     try {
       await waitPlaying(page, true);
@@ -285,7 +285,7 @@ test('SHOW-08: a broken video or no JavaScript keeps the poster and links usable
 });
 
 test('MOB-03: the video stays inline and never goes fullscreen by itself', async () => {
-  for (const id of ['magalu-cloud', 'uriana', 'efood']) {
+  for (const id of ['magalu-cloud', 'uriana', 'efood', 'aurastream']) {
     const { context, page } = await openPath(`/cases/${id}`, { viewport: { width: 390, height: 844 } });
     try {
       await waitPlaying(page, true);
@@ -814,6 +814,7 @@ test('SHOW-10: switching between cases exits each element of the current case an
         bandTriggered: false,
         exited: false,
         enteredAtSwap: false,
+        noteHiddenAtSwap: false,
         states: [],
         stackAppearTimes: [null, null, null],
       };
@@ -838,7 +839,11 @@ test('SHOW-10: switching between cases exits each element of the current case an
       observeShowcase(document.querySelector('[data-showcase]'));
       document.addEventListener('astro:after-swap', () => {
         const next = document.querySelector('[data-showcase]');
-        if (next?.dataset.showcaseTransition === 'entering') record.enteredAtSwap = true;
+        if (next?.dataset.showcaseTransition === 'entering') {
+          record.enteredAtSwap = true;
+          const noteLine = next.querySelector('[data-showcase-note-line]');
+          record.noteHiddenAtSwap = noteLine ? getComputedStyle(noteLine).visibility === 'hidden' : false;
+        }
         observeShowcase(next);
         const sampleStack = () => {
           if (!next || next.dataset.showcaseTransition !== 'entering') return;
@@ -865,6 +870,7 @@ test('SHOW-10: switching between cases exits each element of the current case an
     assert.equal(record.bandTriggered, false, 'case-to-case transition does not trigger #route-band');
     assert.equal(record.exited, true, 'outgoing case ran exitShowcase');
     assert.equal(record.enteredAtSwap, true, 'incoming case was prepared for enterShowcase at swap');
+    assert.equal(record.noteHiddenAtSwap, true, 'incoming note and bullet are hidden at swap');
     assert.deepEqual(record.states, ['magalu-cloud:exiting', 'uriana:entering', 'uriana:idle']);
     assert.ok(
       record.stackAppearTimes.every((t) => typeof t === 'number') &&

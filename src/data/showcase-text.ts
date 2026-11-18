@@ -66,6 +66,11 @@ export const SHOWCASE_TEXT: Readonly<Record<MainCaseId, ShowcaseText>> = {
     },
   },
   aurastream: {
+    tag: t('VÍDEO · PAINEL E ENGINE 24/7', 'VIDEO · PANEL & 24/7 ENGINE'),
+    posterAlt: t(
+      'Captura do painel AuraStream com upload de mídia e gerenciamento da transmissão.',
+      'AuraStream panel media upload and live transmission management preview.'
+    ),
     alt: t('Painel-Stream, o painel de acervo da AuraStream.', 'Painel-Stream, the AuraStream library panel.'),
     highlight: {
       label: t('PAINEL · ACESSO COM LOGIN', 'PANEL · LOGIN REQUIRED'),

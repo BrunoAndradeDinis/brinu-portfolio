@@ -152,6 +152,40 @@ function mediaFor(id: MainCaseId): ShowcaseMedia {
       ];
       return { ...media, video: mainVideo, videos };
     }
+    if (id === 'aurastream') {
+      const videos: ShowcaseVideo[] = [
+        mainVideo,
+        {
+          mp4: `${ROOT}/aurastream/aurastream-iniciar-vm.mp4`,
+          webm: `${ROOT}/aurastream/aurastream-iniciar-vm.webm`,
+          ...VIDEO,
+          poster: { src: `${ROOT}/aurastream/aurastream-iniciar-vm-poster.webp`, ...SCREEN, alt: text.posterAlt },
+          tag: text.tag,
+        },
+        {
+          mp4: `${ROOT}/aurastream/aurastream-transmissao-ao-vivo.mp4`,
+          webm: `${ROOT}/aurastream/aurastream-transmissao-ao-vivo.webm`,
+          ...VIDEO,
+          poster: { src: `${ROOT}/aurastream/aurastream-transmissao-ao-vivo-poster.webp`, ...SCREEN, alt: text.posterAlt },
+          tag: text.tag,
+        },
+        {
+          mp4: `${ROOT}/aurastream/aurastream-desligar-vm.mp4`,
+          webm: `${ROOT}/aurastream/aurastream-desligar-vm.webm`,
+          ...VIDEO,
+          poster: { src: `${ROOT}/aurastream/aurastream-desligar-vm-poster.webp`, ...SCREEN, alt: text.posterAlt },
+          tag: text.tag,
+        },
+        {
+          mp4: `${ROOT}/aurastream/aurastream-gestao-usuarios.mp4`,
+          webm: `${ROOT}/aurastream/aurastream-gestao-usuarios.webm`,
+          ...VIDEO,
+          poster: { src: `${ROOT}/aurastream/aurastream-gestao-usuarios-poster.webp`, ...SCREEN, alt: text.posterAlt },
+          tag: text.tag,
+        },
+      ];
+      return { ...media, video: mainVideo, videos };
+    }
     const videos: ShowcaseVideo[] = [mainVideo, mainVideo, mainVideo];
     return { ...media, video: mainVideo, videos };
   }

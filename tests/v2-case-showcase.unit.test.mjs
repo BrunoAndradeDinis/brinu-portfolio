@@ -53,7 +53,7 @@ test('SHOW-10: video and poster come together, only on the cases that have a vid
   const { SHOWCASE_MEDIA } = await showcaseData();
   const { existsSync } = await import('node:fs');
   const withVideo = IDS.filter((id) => SHOWCASE_MEDIA[id].video);
-  assert.deepEqual(withVideo, ['magalu-cloud', 'uriana', 'efood']);
+  assert.deepEqual(withVideo, ['magalu-cloud', 'uriana', 'efood', 'aurastream']);
   for (const id of withVideo) {
     const { video } = SHOWCASE_MEDIA[id];
     for (const src of [video.mp4, video.webm, video.poster.src]) {
@@ -64,7 +64,6 @@ test('SHOW-10: video and poster come together, only on the cases that have a vid
       assert.ok(video.poster.alt[locale].trim().length > 0, `${id} poster alt ${locale}`);
     }
   }
-  assert.equal(SHOWCASE_MEDIA.aurastream.video, undefined);
 });
 
 const SHOWCASE_KEYS = [
