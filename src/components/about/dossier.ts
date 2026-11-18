@@ -1,16 +1,21 @@
-import { ScrambleTextPlugin } from 'gsap/ScrambleTextPlugin';
 import { gsap, ScrollTrigger, p5Snap } from '../../utils/motion';
 import { getLocalizedCareer } from '../../data/career';
 import { LOCALE_CHANGE_EVENT, getLocale, type Locale } from '../../i18n';
-
-gsap.registerPlugin(ScrambleTextPlugin);
 
 const WIPE_FROM = 'polygon(0% 0%, 0% 0%, -14% 100%, 0% 100%)';
 const WIPE_DURATION_S = 0.7;
 const WIPE_STAGGER_S = 0.18;
 const DECODE_DURATION_S = 0.9;
+const DECODE_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+const DECODE_FRAME_S = 1 / 30;
 
 type DecodeField = 'period' | 'org';
+
+function scrambled(finalText: string, revealed: number): string {
+  return Array.from(finalText, (char, index) =>
+    index < revealed || char === ' ' ? char : DECODE_CHARS[Math.floor(Math.random() * DECODE_CHARS.length)]
+  ).join('');
+}
 
 function prefersReducedMotion(): boolean {
   return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -49,10 +54,18 @@ export function initDossier(root: HTMLElement): (() => void) | null {
       el.dataset.decoded = 'true';
       const finalText = (el.textContent ?? '').trim();
       markDecoding(el, finalText);
-      const tween = gsap.to(el, {
+      const progress = { value: 0 };
+      let painted = -1;
+      const tween = gsap.to(progress, {
+        value: 1,
         duration: DECODE_DURATION_S,
         ease: 'none',
-        scrambleText: { text: finalText, chars: 'upperCase', speed: 0.6 },
+        onUpdate: () => {
+          const frame = Math.floor(tween.time() / DECODE_FRAME_S);
+          if (frame === painted) return;
+          painted = frame;
+          el.textContent = scrambled(finalText, Math.floor(progress.value * finalText.length));
+        },
         onComplete: () => {
           el.textContent = finalText;
           clearDecoding(el);
