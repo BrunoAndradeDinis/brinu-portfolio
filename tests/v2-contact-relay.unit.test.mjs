@@ -167,3 +167,79 @@ test('endpoint is a deployed apps script exec url', async () => {
   const { CONTACT_ENDPOINT } = await import('../src/data/contact-brief.ts');
   assert.match(CONTACT_ENDPOINT, /^https:\/\/script\.google\.com\/macros\/s\/[A-Za-z0-9_-]{20,}\/exec$/);
 });
+
+const BRIEF = {
+  name: 'Ana Souza',
+  company: null,
+  email: 'ana@example.com',
+  phone: '16991234567',
+  services: ['site'],
+  budget: 'to-discuss',
+  deadline: 'flexible',
+  message: 'Preciso de uma landing page para o estúdio.',
+};
+
+function fakeFetch(respond) {
+  const calls = [];
+  const impl = async (url, init) => {
+    calls.push({ url, init });
+    return respond(init);
+  };
+  return { calls, impl };
+}
+
+const reply = (body, status = 200) => new Response(typeof body === 'string' ? body : JSON.stringify(body), { status });
+
+test('sendBrief posts the brief as text/plain JSON', async () => {
+  const { sendBrief } = await import('../src/utils/contact-relay.ts');
+  const fetcher = fakeFetch(() => reply({ ok: true }));
+  const result = await sendBrief({ endpoint: 'https://relay.test/exec', brief: BRIEF, honeypot: '', locale: 'en', fetchImpl: fetcher.impl });
+  assert.deepEqual(result, { ok: true });
+  assert.equal(fetcher.calls.length, 1);
+  const [{ url, init }] = fetcher.calls;
+  assert.equal(url, 'https://relay.test/exec');
+  assert.equal(init.method, 'POST');
+  assert.deepEqual(init.headers, { 'Content-Type': 'text/plain;charset=utf-8' });
+  assert.equal(init.redirect, 'follow');
+  assert.ok(init.signal instanceof AbortSignal);
+  assert.deepEqual(JSON.parse(init.body), { ...BRIEF, website: '', locale: 'en' });
+
+  const trap = fakeFetch(() => reply({ ok: true }));
+  await sendBrief({ endpoint: 'https://relay.test/exec', brief: BRIEF, honeypot: 'bot', locale: 'pt-br', fetchImpl: trap.impl });
+  assert.equal(JSON.parse(trap.calls[0].init.body).website, 'bot');
+});
+
+test('sendBrief maps every failure to its code', async () => {
+  const { sendBrief } = await import('../src/utils/contact-relay.ts');
+  const run = (respond, extra = {}) =>
+    sendBrief({ endpoint: 'https://relay.test/exec', brief: BRIEF, honeypot: '', locale: 'pt-br', fetchImpl: fakeFetch(respond).impl, ...extra });
+
+  assert.deepEqual(await run(() => reply({ ok: true }, 500)), { ok: false, code: 'http' });
+  assert.deepEqual(await run(() => reply('<html>quota</html>')), { ok: false, code: 'bad-response' });
+  assert.deepEqual(await run(() => reply('null')), { ok: false, code: 'bad-response' });
+  assert.deepEqual(await run(() => reply({ ok: 'true' })), { ok: false, code: 'bad-response' });
+  assert.deepEqual(await run(() => reply({ ok: false, code: 'weird' })), { ok: false, code: 'bad-response' });
+  assert.deepEqual(await run(() => reply({ ok: false, code: 'invalid' })), { ok: false, code: 'invalid' });
+  assert.deepEqual(await run(() => reply({ ok: false, code: 'rate-limited' })), { ok: false, code: 'rate-limited' });
+  assert.deepEqual(await run(() => reply({ ok: false, code: 'server-error' })), { ok: false, code: 'server-error' });
+  assert.deepEqual(await run(() => Promise.reject(new TypeError('Failed to fetch'))), { ok: false, code: 'network' });
+
+  const hang = (init) =>
+    new Promise((_, reject) => init.signal.addEventListener('abort', () => reject(new DOMException('aborted', 'AbortError'))));
+  assert.deepEqual(await run(hang, { timeoutMs: 20 }), { ok: false, code: 'timeout' });
+
+  const never = fakeFetch(() => reply({ ok: true }));
+  assert.deepEqual(await sendBrief({ endpoint: '', brief: BRIEF, honeypot: '', locale: 'pt-br', fetchImpl: never.impl }), {
+    ok: false,
+    code: 'no-endpoint',
+  });
+  assert.equal(never.calls.length, 0);
+});
+
+test('dispatch time is formatted in the given time zone and locale', async () => {
+  const { formatDispatchTime } = await import('../src/utils/dispatch-time.ts');
+  const instant = new Date(Date.UTC(2026, 10, 17, 23, 57, 5));
+  assert.equal(formatDispatchTime(instant, 'pt-br', 'America/Sao_Paulo'), '17 de nov. de 2026, 20:57:05 BRT');
+  assert.equal(formatDispatchTime(instant, 'en', 'America/Sao_Paulo'), 'Nov 17, 2026, 20:57:05 GMT-3');
+  assert.equal(formatDispatchTime(instant, 'en', 'Asia/Tokyo'), 'Nov 18, 2026, 08:57:05 GMT+9');
+});
