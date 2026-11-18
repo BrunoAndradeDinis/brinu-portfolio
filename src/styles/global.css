@@ -33,6 +33,73 @@ body {
   line-height: 1.5;
 }
 
+.scrollbar-paper {
+  --scrollbar-thumb: var(--color-space-base);
+  --scrollbar-thumb-active: var(--color-bebop-red);
+  --scrollbar-track: var(--color-paper-white);
+}
+
+@property --scrollbar-thumb-paint {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #fe0000;
+}
+
+:root,
+body > *,
+.scroll-area {
+  --scrollbar-thumb-paint: var(--scrollbar-thumb);
+}
+
+:root,
+.scroll-area {
+  transition: --scrollbar-thumb-paint 0.4s ease-in-out;
+}
+
+:root[data-scrollbar-hot],
+.scroll-area[data-scrollbar-hot] {
+  --scrollbar-thumb-paint: var(--scrollbar-thumb-active);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root,
+  .scroll-area {
+    transition: none;
+  }
+}
+
+@supports not selector(::-webkit-scrollbar) {
+  :root,
+  .scroll-area {
+    scrollbar-color: var(--scrollbar-thumb-paint) var(--scrollbar-track);
+    scrollbar-width: thin;
+  }
+}
+
+::-webkit-scrollbar {
+  width: var(--scrollbar-size);
+  height: var(--scrollbar-size);
+  background: var(--scrollbar-track);
+}
+
+::-webkit-scrollbar-track,
+::-webkit-scrollbar-corner {
+  background: var(--scrollbar-track);
+}
+
+::-webkit-scrollbar-thumb {
+  min-height: 48px;
+  border: var(--scrollbar-edge) solid var(--scrollbar-track);
+  border-radius: var(--radius-none);
+  background: var(--scrollbar-thumb-paint);
+}
+
+::-webkit-scrollbar-button {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
 ::selection {
   background-color: var(--color-bebop-red);
   color: var(--color-paper-white);

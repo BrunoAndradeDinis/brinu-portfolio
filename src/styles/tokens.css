@@ -70,6 +70,12 @@
   --color-bebop-red-rgb: 254, 0, 0;
   --color-paper-white-rgb: 251, 250, 244;
 
+  --scrollbar-size: 14px;
+  --scrollbar-edge: 3px;
+  --scrollbar-thumb: var(--color-bebop-red);
+  --scrollbar-thumb-active: var(--color-paper-white);
+  --scrollbar-track: var(--color-space-base);
+
   --clip-p5-panel-a: polygon(0.8% 0%, 100% 0.6%, 99.1% 100%, 0% 99.2%);
   --clip-p5-panel-b: polygon(0% 0.7%, 99.2% 0%, 100% 99.1%, 0.9% 100%);
   --clip-p5-badge: polygon(5% 0%, 100% 0%, 95% 100%, 0% 100%);

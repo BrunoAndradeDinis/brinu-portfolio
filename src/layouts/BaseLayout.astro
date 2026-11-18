@@ -134,11 +134,13 @@ const bandTitle = { pt: routeBandTitle(Astro.url.pathname, "pt-br"), en: routeBa
       import { initI18nBindings } from "../i18n/index";
       import { installRouterLifecycle, onPageReady } from "../utils/page-lifecycle";
       import { installRouteBand } from "../utils/route-band";
+      import { installScrollbarHover } from "../utils/scrollbar-hover";
 
       let sessionBooted = false;
 
       installRouterLifecycle();
       installRouteBand();
+      installScrollbarHover();
       onPageReady(() => {
         if (!sessionBooted) {
           sessionBooted = true;
