@@ -255,11 +255,6 @@ export interface TranslationSchema {
     careerLogLabel: string;
     stationBaseLabel: string;
     stationBaseValue: string;
-    fmTitle: string;
-    fmOnAir: string;
-    fmPause: string;
-    fmPlay: string;
-    fmToggleAria: string;
   };
   dispatch: {
     headerTitle: string;
@@ -653,11 +648,6 @@ export const ptBrDict: TranslationSchema = {
     careerLogLabel: 'TRAJETÓRIA //',
     stationBaseLabel: 'BASE DE OPERAÇÃO //',
     stationBaseValue: PROFILE.location.remoteLabel['pt-br'],
-    fmTitle: 'TRANSMISSÃO // BRINU FM',
-    fmOnAir: 'NO AR',
-    fmPause: 'PAUSAR',
-    fmPlay: 'TOCAR',
-    fmToggleAria: 'Pausar ou retomar a transmissão animada',
   },
   dispatch: {
     headerTitle: '// SOLICITAR ORÇAMENTO OU PROPOSTA TÉCNICA',
@@ -1083,11 +1073,6 @@ export const enDict = {
     careerLogLabel: 'CAREER LOG //',
     stationBaseLabel: 'STATION BASE //',
     stationBaseValue: PROFILE.location.remoteLabel.en,
-    fmTitle: 'BROADCAST // BRINU FM',
-    fmOnAir: 'ON AIR',
-    fmPause: 'PAUSE',
-    fmPlay: 'PLAY',
-    fmToggleAria: 'Pause or resume the animated broadcast',
   },
   dispatch: {
     headerTitle: '// REQUEST A QUOTE OR TECHNICAL PROPOSAL',
