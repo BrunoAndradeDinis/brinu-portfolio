@@ -15,12 +15,13 @@ import { MAX_INPUT_LENGTH } from "../utils/terminal/sanitize";
     tabindex="-1"
     class="relative -mt-[5.5rem] sm:-mt-[6.5rem] md:-mt-[7rem] min-h-[100dvh] box-border bg-space-base px-4 py-16 sm:px-8 md:px-12 flex flex-col justify-center items-center select-none focus:outline-none"
   >
-    <div class="w-full max-w-4xl my-auto">
+    <div class="w-full max-w-[57rem] my-auto">
       <div
         data-terminal-window
-        class="border-4 border-paper-white bg-space-surface-1 shadow-[10px_10px_0_var(--color-bebop-red)] overflow-hidden text-paper-white"
+        data-lenis-prevent
+        class="flex h-[clamp(27rem,calc(100dvh-8rem),45rem)] flex-col border-4 border-paper-white bg-space-surface-1 shadow-[10px_10px_0_var(--color-bebop-red)] overflow-hidden text-paper-white"
       >
-        <div class="flex flex-wrap items-center justify-between gap-2 px-5 py-3.5 bg-space-base border-b-4 border-bebop-red font-mono text-xs">
+        <div class="flex shrink-0 flex-wrap items-center justify-between gap-2 px-5 py-3.5 bg-space-base border-b-4 border-bebop-red font-mono text-xs">
           <div class="flex items-center gap-2">
             <span class="w-3.5 h-3.5 bg-bebop-red border border-paper-white inline-block" />
             <span class="w-3.5 h-3.5 bg-paper-white border border-paper-white inline-block" />
@@ -60,16 +61,17 @@ import { MAX_INPUT_LENGTH } from "../utils/terminal/sanitize";
           </div>
         </div>
 
-        <div class="bg-space-base select-text">
+        <div class="flex min-h-0 flex-1 flex-col bg-space-base select-text">
           <div
             id="terminal-output"
             data-terminal-body
+            data-lenis-prevent
             role="log"
             aria-live="polite"
             aria-relevant="additions"
-            class="px-6 pt-6 sm:px-8 sm:pt-8 md:px-10 md:pt-10 pb-2 font-mono text-xs sm:text-sm leading-relaxed max-h-[60dvh] min-h-[22rem] overflow-y-auto overflow-x-hidden"
+            class="px-6 pt-6 sm:px-8 sm:pt-8 md:px-10 md:pt-10 pb-2 font-mono text-xs sm:text-sm leading-relaxed scroll-area min-h-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-contain"
           ></div>
-          <form data-terminal-form class="flex items-center gap-2 px-6 pb-6 sm:px-8 sm:pb-8 md:px-10 md:pb-10 font-mono text-xs sm:text-sm" autocomplete="off">
+          <form data-terminal-form class="flex shrink-0 items-center gap-2 px-6 pb-6 sm:px-8 sm:pb-8 md:px-10 md:pb-10 font-mono text-xs sm:text-sm" autocomplete="off">
             <label for="terminal-input" class="shrink-0 font-bold text-bebop-red">
               <span class="sr-only" data-i18n="whoami.promptLabel">{ptBrDict.whoami.promptLabel}</span>
               <span aria-hidden="true">{PROFILE.handle.toLowerCase()}@bebop:~$</span>
@@ -92,7 +94,7 @@ import { MAX_INPUT_LENGTH } from "../utils/terminal/sanitize";
           </form>
         </div>
 
-        <div class="px-6 py-4 bg-space-surface-1 border-t-2 border-bebop-red flex flex-col sm:flex-row items-center justify-between gap-4 font-mono text-xs">
+        <div class="shrink-0 px-6 py-4 bg-space-surface-1 border-t-2 border-bebop-red flex flex-col sm:flex-row items-center justify-between gap-4 font-mono text-xs">
           <div class="text-muted-gray text-[11px] text-center sm:text-left">
             <span data-i18n="whoami.footerHint">{ptBrDict.whoami.footerHint}</span>
           </div>

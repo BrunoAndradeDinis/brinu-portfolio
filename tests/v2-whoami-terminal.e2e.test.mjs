@@ -275,6 +275,31 @@ test('the console and the terminal share their commands', async () => {
   }
 });
 
+test('mouse wheel scrolls the terminal output without Lenis blocking', async () => {
+  const { context, page } = await openTerminal({ viewport: { width: 1024, height: 600 }, reducedMotion: 'reduce' });
+  try {
+    const output = page.locator('#terminal-output');
+    const box = await output.boundingBox();
+    assert.ok(box, 'terminal output bounding box must exist');
+
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+    const initialScroll = await output.evaluate((el) => el.scrollTop);
+    assert.ok(initialScroll > 0, 'terminal output must have scroll offset after opening');
+
+    await page.mouse.wheel(0, -100);
+    await page.waitForTimeout(200);
+    const scrolledUp = await output.evaluate((el) => el.scrollTop);
+    assert.ok(scrolledUp < initialScroll, `wheel up must decrease scrollTop (${scrolledUp} < ${initialScroll})`);
+
+    await page.mouse.wheel(0, 100);
+    await page.waitForTimeout(200);
+    const scrolledDown = await output.evaluate((el) => el.scrollTop);
+    assert.ok(scrolledDown > scrolledUp, `wheel down must increase scrollTop (${scrolledDown} > ${scrolledUp})`);
+  } finally {
+    await context.close();
+  }
+});
+
 test('the terminal is accessible and never widens the page', async () => {
   for (const locale of ['pt-br', 'en']) {
     for (const width of [320, 390, 768, 1440, 2560]) {
