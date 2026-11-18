@@ -162,3 +162,8 @@ test('relay reports a failed send as server-error', () => {
   assert.deepEqual(noRecipient.post(VALID), { ok: false, code: 'server-error' });
   assert.equal(noRecipient.sent.length, 0);
 });
+
+test('endpoint is a deployed apps script exec url', async () => {
+  const { CONTACT_ENDPOINT } = await import('../src/data/contact-brief.ts');
+  assert.match(CONTACT_ENDPOINT, /^https:\/\/script\.google\.com\/macros\/s\/[A-Za-z0-9_-]{20,}\/exec$/);
+});

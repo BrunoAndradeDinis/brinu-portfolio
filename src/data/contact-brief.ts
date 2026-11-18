@@ -16,6 +16,9 @@ export const CONTACT_BOUNDS = {
   phoneDigits: { min: 10, max: 11 },
 } as const;
 
+export const CONTACT_ENDPOINT =
+  'https://script.google.com/macros/s/AKfycbzV4bW-ZMoUIj2UzB1-wSwaI5q6PZ8KiPUo8-vtYCF8PaxsXchAI6zCxFKqN7G0oRYQ/exec';
+
 export const CONTACT_DEFAULTS: { readonly budget: BudgetId; readonly deadline: DeadlineId } = {
   budget: 'to-discuss',
   deadline: 'flexible',
