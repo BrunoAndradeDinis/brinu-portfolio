@@ -47,6 +47,8 @@ import { ptBrDict } from "../i18n/dictionaries";
     data-i18n-attr="aria-label"
   >
     <a
+      id="nav-works-btn"
+      data-nav-works
       href="#works"
       class="nav-secondary-item group hidden sm:inline-flex h-10 md:h-12 items-center gap-1.5 md:gap-2 border-3 sm:border-4 border-space-base bg-paper-white px-3 md:px-5 font-display text-xs md:text-sm font-black text-space-base shadow-[3px_3px_0_var(--color-space-base)] transition-all duration-150 hover:-translate-y-0.5 hover:bg-space-base hover:text-paper-white active:translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-space-base leading-none"
       aria-label={ptBrDict.nav.worksAria}
@@ -263,6 +265,19 @@ import { ptBrDict } from "../i18n/dictionaries";
     setupCockpitTrigger();
     setupCiladaTripleClick();
     setupScrollWatcher();
+    const header = document.getElementById("comic-nav-header");
+    if (header) {
+      header.dataset.minimal = String(Boolean(document.querySelector("[data-not-found], [data-whoami-main]")));
+    }
+    const isStickers = Boolean(document.querySelector("[data-stickers-main]"));
+    const worksBtn = document.getElementById("nav-works-btn");
+    if (worksBtn) {
+      if (isStickers) {
+        worksBtn.classList.add("hidden-on-page");
+      } else {
+        worksBtn.classList.remove("hidden-on-page");
+      }
+    }
   }
 
   onPageReady(initNav);
@@ -319,7 +334,10 @@ import { ptBrDict } from "../i18n/dictionaries";
   }
 
   #comic-nav-header[data-scrolled="true"],
-  #comic-nav-header[data-cockpit-open="true"] {
+  #comic-nav-header[data-cockpit-open="true"],
+  #comic-nav-header[data-minimal="true"],
+  :global(body:has([data-not-found])) #comic-nav-header,
+  :global(body:has([data-whoami-main])) #comic-nav-header {
     background-color: transparent !important;
     border-bottom-color: transparent !important;
     pointer-events: none;
@@ -332,15 +350,33 @@ import { ptBrDict } from "../i18n/dictionaries";
     right: var(--cockpit-scrollbar-comp, 0px) !important;
   }
 
+  :global(body:has([data-stickers-main])) #comic-nav-header [data-nav-works],
+  :global(body:has([data-stickers-main])) #comic-nav-header a[href="#works"],
+  #nav-works-btn.hidden-on-page {
+    display: none !important;
+  }
+
   #comic-nav-header[data-scrolled="true"] .nav-secondary-item,
-  #comic-nav-header[data-scrolled="true"] [data-nav-nameplate] {
+  #comic-nav-header[data-minimal="true"] .nav-secondary-item,
+  #comic-nav-header[data-scrolled="true"] [data-nav-nameplate],
+  #comic-nav-header[data-minimal="true"] [data-nav-nameplate],
+  :global(body:has([data-not-found])) #comic-nav-header .nav-secondary-item,
+  :global(body:has([data-not-found])) #comic-nav-header [data-nav-nameplate],
+  :global(body:has([data-whoami-main])) #comic-nav-header .nav-secondary-item,
+  :global(body:has([data-whoami-main])) #comic-nav-header [data-nav-nameplate] {
     display: none !important;
   }
 
   #comic-nav-header[data-scrolled="true"] .nav-secondary-item,
   #comic-nav-header[data-cockpit-open="true"] .nav-secondary-item,
+  #comic-nav-header[data-minimal="true"] .nav-secondary-item,
   #comic-nav-header[data-scrolled="true"] [data-nav-nameplate],
-  #comic-nav-header[data-cockpit-open="true"] [data-nav-nameplate] {
+  #comic-nav-header[data-cockpit-open="true"] [data-nav-nameplate],
+  #comic-nav-header[data-minimal="true"] [data-nav-nameplate],
+  :global(body:has([data-not-found])) #comic-nav-header .nav-secondary-item,
+  :global(body:has([data-not-found])) #comic-nav-header [data-nav-nameplate],
+  :global(body:has([data-whoami-main])) #comic-nav-header .nav-secondary-item,
+  :global(body:has([data-whoami-main])) #comic-nav-header [data-nav-nameplate] {
     opacity: 0;
     visibility: hidden;
     pointer-events: none;

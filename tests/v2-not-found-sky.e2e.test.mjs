@@ -235,6 +235,7 @@ test('the sign reads SEE YOU GITHUB COWBOY in the bottom-right corner', async ()
         const root = document.querySelector('[data-not-found]').getBoundingClientRect();
         const box = element.getBoundingClientRect();
         const style = getComputedStyle(element);
+        const link = element.querySelector('a[data-i18n="notFound.seeYouAccent"]');
         return {
           text: element.textContent.replace(/\s+/g, ' ').trim(),
           accent: getComputedStyle(element.querySelector('[data-i18n="notFound.seeYouAccent"]')).color,
@@ -245,10 +246,16 @@ test('the sign reads SEE YOU GITHUB COWBOY in the bottom-right corner', async ()
           rightGap: Math.round(root.right - box.right),
           bottomGap: Math.round(root.bottom - box.bottom),
           blink: getComputedStyle(element.querySelector('.not-found-dots')).animationName,
+          href: link?.getAttribute('href'),
+          target: link?.getAttribute('target'),
+          pointerEvents: link ? getComputedStyle(link).pointerEvents : null,
         };
       });
       assert.equal(sign.text, 'SEE YOU GITHUB COWBOY...');
       assert.equal(sign.accent, 'rgb(254, 0, 0)', 'GITHUB is red');
+      assert.equal(sign.href, 'https://github.com/BrunoAndradeDinis', 'links to Bruno Dinis GitHub');
+      assert.equal(sign.target, '_blank', 'opens in a new tab');
+      assert.equal(sign.pointerEvents, 'auto', 'anchor is clickable');
       assert.equal(sign.colour, 'rgb(251, 250, 244)');
       assert.match(sign.font, /Syne/);
       assert.deepEqual([sign.weight, sign.italic], ['800', 'italic']);
@@ -297,5 +304,35 @@ test('the 404 never widens the page, keeps the copy readable and ships no Three.
     } finally {
       await context.close();
     }
+  }
+});
+
+test('the 404 renders a minimal transparent navbar without nameplate or secondary items', async () => {
+  const { context, page } = await openNotFound();
+  try {
+    const nav = await page.evaluate(() => {
+      const header = document.getElementById('comic-nav-header');
+      const logo = document.getElementById('comic-nav-logo');
+      const trigger = document.getElementById('cockpit-trigger-btn');
+      const nameplate = document.querySelector('[data-nav-nameplate]');
+      const secondary = Array.from(document.querySelectorAll('.nav-secondary-item'));
+      const headerStyle = getComputedStyle(header);
+      return {
+        hasLogo: Boolean(logo),
+        hasTrigger: Boolean(trigger),
+        headerBg: headerStyle.backgroundColor,
+        headerBorder: headerStyle.borderBottomColor,
+        nameplateHidden: getComputedStyle(nameplate).display === 'none',
+        secondaryHidden: secondary.every((el) => getComputedStyle(el).display === 'none'),
+      };
+    });
+    assert.ok(nav.hasLogo, 'avatar logo is present');
+    assert.ok(nav.hasTrigger, 'cockpit trigger button is present');
+    assert.equal(nav.headerBg, 'rgba(0, 0, 0, 0)', 'header background is transparent');
+    assert.equal(nav.headerBorder, 'rgba(0, 0, 0, 0)', 'header border is transparent');
+    assert.equal(nav.nameplateHidden, true, 'nameplate is hidden');
+    assert.equal(nav.secondaryHidden, true, 'secondary items are hidden');
+  } finally {
+    await context.close();
   }
 });
