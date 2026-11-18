@@ -27,10 +27,10 @@ test('six hobbies in the approved order with their stickers, stats and copy', ()
   const cards = Object.fromEntries(getLocalizedHobbies('pt-br').map((hobby) => [hobby.id, `${hobby.rating} ${hobby.position.code} | ${hobby.stats.map((entry) => `${entry.code} ${entry.value}`).join('  ')}`]));
   assert.deepEqual(cards, {
     animes: '96 OTK | GHI 97  BEB 99  DBZ 92  OPC 90  AKI 88  P5R 95',
-    musica: '94 OUV | HIP 98  MED 97  DES 93  AFR 90  LET 89  CUL 95',
+    musica: '94 OUV | ALT 97  HCM 90  RAP 98  MPB 89  DSB 93  SRK 95',
     violao: '82 LUA | ACO 72  DES 95  FOG 90  LUA 99  SAU 97  ANI 94',
-    skate: '70 SKT | OLL 68  EQU 72  NOS 99  TOM 85  MAN 60  RUA 88',
-    jogos: '88 MOB | DUO 99  CLR 91  BRW 86  WRF 84  TIL 75  RNK 80',
+    skate: '70 SKT | OLL 68  EQU 72  NOS 99  DOF 85  MAN 60  RUA 88',
+    jogos: '88 MOB | DUO 99  CLR 91  BRW 86  WRF 84  SMW 94  TGR 95',
     natureza: '97 MAT | CAC 98  PAS 95  VER 99  CAL 96  MIN 90  REN 97',
   });
   for (const locale of ['pt-br', 'en']) {
