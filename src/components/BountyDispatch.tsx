@@ -87,13 +87,14 @@ export const BountyDispatch: React.FC = () => {
     setSending(true);
     setFailed(false);
     const submitted = validation.brief;
+    const submittedAt = new Date();
     const result = await sendBrief({ endpoint: CONTACT_ENDPOINT, brief: submitted, honeypot, locale });
     inFlight.current = false;
     setSending(false);
 
     if (result.ok) {
       setBrief(submitted);
-      setSentAt(new Date());
+      setSentAt(submittedAt);
       toast.success(copy.toastSuccessTitle, { description: copy.toastSuccessBody });
       if (!audioSynth.isMuted()) audioSynth.playBountyAcquired();
       return;

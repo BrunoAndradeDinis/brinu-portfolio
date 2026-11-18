@@ -271,6 +271,25 @@ test('receipt stamps the visitor time zone', async () => {
   assert.ok(!stamp.includes('23:57'), 'not the UTC hour');
   await context.close();
 
+  let release;
+  const held = new Promise((resolve) => (release = resolve));
+  const slow = await openForm({
+    timezoneId: 'America/Sao_Paulo',
+    fixedTime: new Date('2026-11-17T23:57:05Z'),
+    relay: async (route) => {
+      await held;
+      await route.fulfill(json({ ok: true }));
+    },
+  });
+  await fillValid(slow.page);
+  await submit(slow.page);
+  await slow.page.waitForFunction(() => document.querySelector('[data-dispatch-submit-btn]').disabled);
+  await slow.page.clock.setFixedTime(new Date('2026-11-17T23:57:19Z'));
+  release();
+  await slow.page.waitForSelector('[data-dispatch-receipt]');
+  assert.equal((await slow.page.locator('[data-dispatch-time]').textContent()).trim(), '17 de nov. de 2026, 20:57:05 BRT', 'stamped at send, not at reply');
+  await slow.context.close();
+
   const tokyo = await openForm({ timezoneId: 'Asia/Tokyo', fixedTime: new Date('2026-11-17T23:57:05Z') });
   await fillValid(tokyo.page);
   await submit(tokyo.page);
@@ -316,6 +335,9 @@ test('relay states keep the layout inside the viewport', async () => {
     for (const width of [320, 768, 1440, 2560]) {
       const { context, page, requests, setRelay } = await openForm({ locale, width, relay: (route) => route.fulfill(json({ ok: false, code: 'rate-limited' })) });
       await fillValid(page);
+      await page.check('#dispatch-budget input[value="over-15k"]');
+      await page.check('#dispatch-deadline input[value="urgent"]');
+      await page.locator('[data-dispatch-honeypot]').fill('bot');
       await submit(page);
       await toast(page, 'error').waitFor();
       await page.waitForSelector('[data-dispatch-fallback]');
@@ -332,13 +354,38 @@ test('relay states keep the layout inside the viewport', async () => {
       await page.click('[data-new-transmission-btn]');
       await page.waitForSelector('[data-dispatch-form]');
       assert.equal(await page.locator('[data-dispatch-fallback]').count(), 0, 'reset clears the backup link');
-      assert.equal(await page.inputValue('#dispatch-name'), '');
-      assert.equal(await page.inputValue('[data-dispatch-honeypot]'), '');
+      for (const id of ['dispatch-name', 'dispatch-company', 'dispatch-email', 'dispatch-phone', 'dispatch-message']) {
+        assert.equal(await page.inputValue(`#${id}`), '', `${id} empty after reset`);
+      }
+      assert.equal(await page.inputValue('[data-dispatch-honeypot]'), '', 'honeypot empty after reset');
+      assert.equal(await page.locator('#dispatch-services input:checked').count(), 0);
+      assert.equal(await page.locator('#dispatch-budget input:checked').getAttribute('value'), 'to-discuss');
+      assert.equal(await page.locator('#dispatch-deadline input:checked').getAttribute('value'), 'flexible');
       await fillValid(page);
       await submit(page);
       await page.waitForSelector('[data-dispatch-receipt]');
       assert.equal(requests.length, 3, 'the next brief after a reset is sent again');
+      assert.equal(JSON.parse(requests[2].postData()).website, '', 'the reset brief carries an empty honeypot');
       await context.close();
     }
   }
+});
+
+test('relay copy renders in english', async () => {
+  const { context, page, setRelay } = await openForm({ locale: 'en', relay: (route) => route.fulfill(json({ ok: false, code: 'server-error' })) });
+  await fillValid(page);
+  await submit(page);
+  assert.deepEqual(await toastText(page, 'error'), { title: EN.toastErrorTitle, description: EN.toastErrorBody });
+  assert.ok((await page.locator('[data-dispatch-fallback]').textContent()).includes(EN.fallbackLead));
+  assert.equal((await page.locator('[data-dispatch-fallback] a').textContent()).trim(), EN.sendEmailCopy);
+
+  setRelay((route) => route.fulfill(json({ ok: false, code: 'rate-limited' })));
+  await submit(page);
+  await page.locator(`[data-sonner-toast][data-type="error"] [data-title]:text-is("${EN.toastRateLimitedTitle}")`).waitFor();
+
+  setRelay((route) => route.fulfill(json({ ok: true })));
+  await submit(page);
+  assert.deepEqual(await toastText(page, 'success'), { title: EN.toastSuccessTitle, description: EN.toastSuccessBody });
+  assert.ok((await page.locator('[data-dispatch-receipt]').textContent()).includes(EN.receiptSuccess));
+  await context.close();
 });
