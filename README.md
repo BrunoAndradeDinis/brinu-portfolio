@@ -53,7 +53,7 @@ O formulário envia para um Web App do Google Apps Script (`apps-script/contact-
 
 ## Deploy
 
-O build gera HTML estático em `dist/`, publicável em qualquer host estático (Vercel, Netlify, Cloudflare Pages, GitHub Pages). Configure `site` em `astro.config.mjs` com o domínio final para gerar as URLs canônicas absolutas.
+O build gera HTML estático em `dist/`, publicável em qualquer host estático (Vercel, Netlify, Cloudflare Pages). O domínio de produção é `https://brinu.xyz`, definido em `site` no `astro.config.mjs`: dele saem as URLs canônicas, o `og:image` absoluto e o `sitemap.xml`. Ao trocar de domínio, atualize também `public/robots.txt`.
 
 ## Licença
 
