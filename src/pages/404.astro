@@ -4,7 +4,7 @@ import { ptBrDict } from "../i18n/dictionaries";
 import { PROFILE } from "../data/profile";
 ---
 
-<BaseLayout title={`${ptBrDict.notFound.title} // Bruno Dinis`} description={ptBrDict.notFound.hint}>
+<BaseLayout title={`${ptBrDict.notFound.title} // Bruno Dinis`} description={ptBrDict.notFound.hint} noindex>
   <div data-not-found class="not-found relative -mt-[5.5rem] sm:-mt-[6.5rem] md:-mt-[7rem] h-[100dvh] min-h-[100dvh] box-border overflow-hidden bg-space-base pt-[5.5rem] sm:pt-[6.5rem] md:pt-[7rem]">
     <canvas data-not-found-sky aria-hidden="true" class="pointer-events-none absolute inset-0 block h-full w-full"></canvas>
     <main id="main-content" tabindex="-1" class="relative z-[1] flex h-full flex-col items-start justify-center px-4 py-8 sm:px-8 md:px-12 text-paper-white focus:outline-none">
