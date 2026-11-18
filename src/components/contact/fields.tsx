@@ -129,7 +129,9 @@ export const ChoiceGroup: React.FC<ChoiceGroupProps> = ({ id, field, legend, typ
       {options.map((option) => (
         <label
           key={option.value}
-          className={`flex items-start gap-2.5 px-3 py-2.5 border-2 text-xs font-mono text-paper-white cursor-pointer transition-colors hover:border-bebop-red has-[:checked]:border-bebop-red has-[:checked]:bg-bebop-red/15 has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-bebop-red ${
+          className={`flex items-start gap-2.5 px-3 py-2.5 border-2 text-xs font-mono text-paper-white cursor-pointer transition-colors hover:border-bebop-red has-[:checked]:border-bebop-red has-[:checked]:bg-bebop-red/15 has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-bebop-red${
+            options.length % 2 === 1 ? ' @md:last:col-span-2' : ''
+          } ${
             error ? 'border-bebop-red' : 'border-paper-white/40'
           }`}
         >

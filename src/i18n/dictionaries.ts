@@ -250,9 +250,7 @@ export interface TranslationSchema {
     availableBadge: string;
     leadText: string;
     subText: string;
-    directTag: string;
-    directCta: string;
-    dispatchPill: string;
+    directEmailLabel: string;
     codeBaseLabel: string;
     careerLogLabel: string;
     stationBaseLabel: string;
@@ -645,9 +643,7 @@ export const ptBrDict: TranslationSchema = {
       'Precisa tirar um sistema web do papel, criar um painel de gestão ou lançar um site de alta performance? Vamos conversar.',
     subText:
       'Desenvolvimento Web Full Stack ponta a ponta — da modelagem de dados e APIs em Node.js/TypeScript até interfaces rápidas em React, Next.js e Astro, de Franca / SP para todo o mundo.',
-    directTag: '// CANAL DIRETO DE COMUNICAÇÃO',
-    directCta: 'SOLICITAR ORÇAMENTO DIRETO',
-    dispatchPill: 'DISPARAR',
+    directEmailLabel: 'E-MAIL DIRETO //',
     codeBaseLabel: 'CÓDIGO FONTE //',
     careerLogLabel: 'TRAJETÓRIA //',
     stationBaseLabel: 'BASE DE OPERAÇÃO //',
@@ -660,11 +656,15 @@ export const ptBrDict: TranslationSchema = {
     namePlaceholder: 'Ex: Ana Souza',
     companyLabel: '02 // EMPRESA',
     companyPlaceholder: 'Ex: Acme Tecnologia',
+    emailLabel: '03 // SEU E-MAIL DE RETORNO',
+    emailPlaceholder: 'Ex: contato@empresa.com',
     phoneLabel: '04 // WHATSAPP',
     phonePlaceholder: '(16) 99999-9999',
     servicesLegend: '05 // QUAL SERVIÇO VOCÊ PROCURA?',
     budgetLegend: '06 // QUAL O ORÇAMENTO DISPONÍVEL?',
     deadlineLegend: '07 // QUAL O PRAZO DESEJADO?',
+    messageLabel: '08 // DETALHES DO PROJETO',
+    messagePlaceholder: 'Conte sobre o sistema web, painel, site ou integração, objetivos e prazo estimado...',
     optionalTag: '(OPCIONAL)',
     services: {
       'web-system': 'Sistema web / painel',
@@ -718,10 +718,6 @@ export const ptBrDict: TranslationSchema = {
     toastErrorBody: 'Não consegui enviar agora. Suas respostas continuam no formulário: tente de novo ou use o e-mail abaixo.',
     toastRateLimitedTitle: 'LIMITE DE ENVIOS ATINGIDO',
     toastRateLimitedBody: 'Muitos envios na última hora. Tente mais tarde ou use o e-mail abaixo.',
-    emailLabel: '03 // SEU E-MAIL DE RETORNO',
-    emailPlaceholder: 'Ex: contato@empresa.com',
-    messageLabel: '08 // DETALHES DO PROJETO',
-    messagePlaceholder: 'Conte sobre o sistema web, painel, site ou integração, objetivos e prazo estimado...',
     submitCta: 'ENVIAR PROPOSTA DE PROJETO',
     receiptSuccess: 'TRANSMISSÃO ENVIADA // 100% CONFIRMADA!',
     codenameKey: 'REMETENTE:',
@@ -1072,9 +1068,7 @@ export const enDict = {
       'Need to launch a custom web system, build a management dashboard, or ship a high-performance website? Let’s talk.',
     subText:
       'End-to-end Full Stack Web Development — from database modeling and Node.js/TypeScript APIs to fast interfaces in React, Next.js, and Astro, from Franca / SP, Brazil to the world.',
-    directTag: '// DIRECT FREQUENCY COMMUNICATION',
-    directCta: 'REQUEST A DIRECT QUOTE',
-    dispatchPill: 'DISPATCH',
+    directEmailLabel: 'DIRECT EMAIL //',
     codeBaseLabel: 'CODE BASE //',
     careerLogLabel: 'CAREER LOG //',
     stationBaseLabel: 'STATION BASE //',
@@ -1087,11 +1081,15 @@ export const enDict = {
     namePlaceholder: 'e.g. Ana Souza',
     companyLabel: '02 // COMPANY',
     companyPlaceholder: 'e.g. Acme Technology',
+    emailLabel: '03 // RETURN FREQUENCY (YOUR EMAIL)',
+    emailPlaceholder: 'e.g. contact@company.com',
     phoneLabel: '04 // WHATSAPP',
     phonePlaceholder: '(16) 99999-9999',
     servicesLegend: '05 // WHAT SERVICE ARE YOU LOOKING FOR?',
     budgetLegend: '06 // WHAT IS YOUR AVAILABLE BUDGET?',
     deadlineLegend: '07 // WHAT IS YOUR DESIRED TIMELINE?',
+    messageLabel: '08 // PROJECT DETAILS',
+    messagePlaceholder: 'Tell me about the web system, dashboard, site or integration, goals, and timeline...',
     optionalTag: '(OPTIONAL)',
     services: {
       'web-system': 'Web system / dashboard',
@@ -1145,10 +1143,6 @@ export const enDict = {
     toastErrorBody: "I couldn't send it right now. Your answers are still in the form: try again or use the e-mail link below.",
     toastRateLimitedTitle: 'SEND LIMIT REACHED',
     toastRateLimitedBody: 'Too many sends in the last hour. Try again later or use the e-mail link below.',
-    emailLabel: '03 // RETURN FREQUENCY (YOUR EMAIL)',
-    emailPlaceholder: 'e.g. contact@company.com',
-    messageLabel: '08 // PROJECT DETAILS',
-    messagePlaceholder: 'Tell me about the web system, dashboard, site or integration, goals, and timeline...',
     submitCta: 'SEND PROJECT PROPOSAL',
     receiptSuccess: 'TRANSMISSION SENT // 100% CONFIRMED!',
     codenameKey: 'SENDER:',

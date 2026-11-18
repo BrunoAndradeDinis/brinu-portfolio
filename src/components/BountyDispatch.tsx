@@ -252,7 +252,7 @@ export const BountyDispatch: React.FC = () => {
             id="dispatch-message"
             field="message"
             multiline
-            label={copy.messageLabel}
+            label={showBudgetAndDeadline ? copy.messageLabel : copy.messageLabel.replace(/^08/, '06')}
             value={values.message}
             onChange={(value) => update('message', value)}
             placeholder={copy.messagePlaceholder}

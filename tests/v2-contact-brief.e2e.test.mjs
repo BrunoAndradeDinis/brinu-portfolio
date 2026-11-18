@@ -149,9 +149,14 @@ test('job-only hides budget and deadline', async () => {
   assert.equal(await page.locator('#dispatch-budget').count(), 0);
   assert.equal(await page.locator('#dispatch-deadline').count(), 0);
   assert.ok(await page.locator('#dispatch-services').isVisible());
+  assert.equal((await page.locator('label[for="dispatch-message"]').innerText()).trim(), '06 // DETALHES DO PROJETO');
+  assert.equal(await page.locator('#contact [data-primary-contact-btn]').count(), 0);
+  assert.equal(await page.locator('#contact [data-contact-email-card]').count(), 1);
+  assert.equal(await page.locator('#contact').evaluate((el) => getComputedStyle(el).userSelect), 'text');
   await page.check('#dispatch-services input[value="site"]');
   assert.ok(await page.locator('#dispatch-budget').isVisible());
   assert.ok(await page.locator('#dispatch-deadline').isVisible());
+  assert.equal((await page.locator('label[for="dispatch-message"]').innerText()).trim(), PT.messageLabel);
   await context.close();
 });
 
