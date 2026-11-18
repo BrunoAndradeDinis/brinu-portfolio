@@ -23,6 +23,9 @@ const JOB_SERVICE = 'job';
 const BOUNDS = { nameMin: 2, nameMax: 80, companyMax: 80, emailMax: 254, messageMin: 20, messageMax: 2000, phoneMin: 10, phoneMax: 11 };
 const RATE_LIMIT = { windowSeconds: 3600, perEmail: 3, overall: 20 };
 const LOCK_WAIT_MS = 5000;
+const SUBJECT = '[Portfolio] Nova proposta:';
+const FLAGGED_SUBJECT = '[Portfolio][Possível spam] Nova proposta:';
+const FLAGGED_NOTE = 'Atenção: o campo anti-bot veio preenchido (bot ou preenchimento automático do navegador). Confira antes de responder.';
 
 const LINE_BREAKS = /\r\n|[\r\u2028\u2029]/g;
 const LONE_SURROGATES = /[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]/g;
@@ -35,17 +38,21 @@ const EMAIL_PATTERN =
 
 function doPost(e) {
   const raw = parseBody(e);
-  if (!raw) return reply({ ok: false, code: 'invalid' });
-  if (raw.website !== undefined && raw.website !== null && raw.website !== '') return reply({ ok: true });
+  if (!raw) return finish({ ok: false, code: 'invalid' }, 'invalid', 'body');
+  const trapped = raw.website !== undefined && raw.website !== null && raw.website !== '';
 
-  const brief = validateBrief(raw);
-  if (!brief) return reply({ ok: false, code: 'invalid' });
+  const checked = validateBrief(raw);
+  if (!checked.brief) {
+    if (trapped) return finish({ ok: true }, 'dropped-honeypot', checked.failed.join(','));
+    return finish({ ok: false, code: 'invalid' }, 'invalid', checked.failed.join(','));
+  }
+  const brief = checked.brief;
 
   const lock = LockService.getScriptLock();
   try {
     lock.waitLock(LOCK_WAIT_MS);
   } catch (error) {
-    return reply({ ok: false, code: 'server-error' });
+    return finish({ ok: false, code: 'server-error' }, 'lock-timeout', String(error));
   }
   try {
     const cache = CacheService.getScriptCache();
@@ -53,21 +60,26 @@ function doPost(e) {
     const keys = [rateKey('overall'), rateKey('mail:' + brief.email)];
     const [overall, perEmail] = keys.map((key) => recentSends(cache, key, now));
     if (overall.length >= RATE_LIMIT.overall || perEmail.length >= RATE_LIMIT.perEmail) {
-      return reply({ ok: false, code: 'rate-limited' });
+      return finish({ ok: false, code: 'rate-limited' }, 'rate-limited', 'overall=' + overall.length + ' email=' + perEmail.length);
     }
 
     const recipient = PropertiesService.getScriptProperties().getProperty('RECIPIENT');
-    if (!recipient) return reply({ ok: false, code: 'server-error' });
-    MailApp.sendEmail({ to: recipient, replyTo: brief.email, subject: mailSubject(brief), body: mailBody(brief) });
+    if (!recipient) return finish({ ok: false, code: 'server-error' }, 'no-recipient', 'RECIPIENT script property is empty');
+    MailApp.sendEmail({ to: recipient, replyTo: brief.email, subject: mailSubject(brief, trapped), body: mailBody(brief, trapped) });
 
     recordSend(cache, keys[0], overall, now);
     recordSend(cache, keys[1], perEmail, now);
-    return reply({ ok: true });
+    return finish({ ok: true }, trapped ? 'sent-flagged' : 'sent', '');
   } catch (error) {
-    return reply({ ok: false, code: 'server-error' });
+    return finish({ ok: false, code: 'server-error' }, 'mail-error', String(error));
   } finally {
     lock.releaseLock();
   }
+}
+
+function finish(payload, outcome, detail) {
+  console.info(JSON.stringify({ outcome: outcome, detail: detail }));
+  return reply(payload);
 }
 
 function parseBody(e) {
@@ -141,18 +153,17 @@ function validateBrief(raw) {
   const message = sanitizeMultiline(text(raw.message));
   const jobOnly = services.length === 1 && services[0] === JOB_SERVICE;
 
-  const valid =
-    name.length >= BOUNDS.nameMin &&
-    name.length <= BOUNDS.nameMax &&
-    email.length <= BOUNDS.emailMax &&
-    EMAIL_PATTERN.test(email) &&
-    (!phone || (phone.length >= BOUNDS.phoneMin && phone.length <= BOUNDS.phoneMax)) &&
-    services.length > 0 &&
-    message.length >= BOUNDS.messageMin &&
-    message.length <= BOUNDS.messageMax;
-  if (!valid) return null;
+  const checks = {
+    name: name.length >= BOUNDS.nameMin && name.length <= BOUNDS.nameMax,
+    email: email.length <= BOUNDS.emailMax && EMAIL_PATTERN.test(email),
+    phone: !phone || (phone.length >= BOUNDS.phoneMin && phone.length <= BOUNDS.phoneMax),
+    services: services.length > 0,
+    message: message.length >= BOUNDS.messageMin && message.length <= BOUNDS.messageMax,
+  };
+  const failed = Object.keys(checks).filter((field) => !checks[field]);
+  if (failed.length) return { brief: null, failed };
 
-  return {
+  const brief = {
     name,
     company,
     email,
@@ -162,6 +173,7 @@ function validateBrief(raw) {
     deadline: jobOnly ? null : pick(raw.deadline, DEADLINE_LABELS, DEFAULT_DEADLINE),
     message,
   };
+  return { brief, failed };
 }
 
 function formatPhone(digits) {
@@ -169,11 +181,11 @@ function formatPhone(digits) {
   return '(' + digits.slice(0, 2) + ') ' + digits.slice(2, split) + '-' + digits.slice(split);
 }
 
-function mailSubject(brief) {
-  return sanitizeLine('[Portfolio] Nova proposta: ' + brief.name + (brief.company ? ' // ' + brief.company : ''));
+function mailSubject(brief, flagged) {
+  return sanitizeLine((flagged ? FLAGGED_SUBJECT : SUBJECT) + ' ' + brief.name + (brief.company ? ' // ' + brief.company : ''));
 }
 
-function mailBody(brief) {
+function mailBody(brief, flagged) {
   const rows = [
     ['Nome', brief.name],
     ['Empresa', brief.company],
@@ -187,6 +199,7 @@ function mailBody(brief) {
     .filter((row) => row[1])
     .map((row) => row[0] + ': ' + row[1])
     .concat(['', 'Detalhes do projeto:', brief.message])
+    .concat(flagged ? ['', FLAGGED_NOTE] : [])
     .join('\n');
 }
 

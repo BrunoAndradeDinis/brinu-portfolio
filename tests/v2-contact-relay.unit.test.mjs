@@ -9,8 +9,10 @@ const RECIPIENT = 'owner@example.com';
 
 function loadRelay({ sendThrows = false, recipient = RECIPIENT } = {}) {
   const sent = [];
+  const logs = [];
   const store = new Map();
   const context = vm.createContext({
+    console: { info: (line) => logs.push(JSON.parse(line)) },
     MailApp: {
       sendEmail(message) {
         if (sendThrows) throw new Error('quota');
@@ -40,7 +42,7 @@ function loadRelay({ sendThrows = false, recipient = RECIPIENT } = {}) {
     return JSON.parse(output.content);
   };
   const setNow = (ms) => vm.runInContext(`Date.now = () => ${ms};`, context);
-  return { post, sent, setNow };
+  return { post, sent, setNow, logs };
 }
 
 const VALID = {
@@ -129,16 +131,56 @@ test('relay rejects invalid briefs without mailing', () => {
   assert.doesNotMatch(mail.body, /[<>\u0000​‮]/);
 });
 
-test('relay drops honeypot posts silently', () => {
+test('relay delivers a valid brief with a filled honeypot flagged instead of dropping it', () => {
   const relay = loadRelay();
-  assert.deepEqual(relay.post({ ...VALID, website: 'https://spam.example' }), { ok: true });
+  assert.deepEqual(relay.post({ ...VALID, website: 'https://autofill.example' }), { ok: true });
+  assert.equal(relay.sent.length, 1, 'a person whose browser autofilled the trap still reaches the inbox');
+  const [mail] = relay.sent;
+  assert.equal(mail.subject, '[Portfolio][Possível spam] Nova proposta: Ana Souza // Hana Studio');
+  assert.match(mail.body, /campo anti-bot veio preenchido/);
+  assert.ok(mail.body.startsWith('Nome: Ana Souza\n'), 'the brief itself is intact');
+  assert.equal(relay.logs.at(-1).outcome, 'sent-flagged');
+
+  [1, 0, true, false, ['x'], {}, ' '].forEach((website, i) => {
+    assert.deepEqual(relay.post({ ...VALID, email: `trap${i}@example.com`, website }), { ok: true }, JSON.stringify(website));
+    assert.match(relay.sent.at(-1).subject, /Possível spam/, JSON.stringify(website));
+  });
+
+  relay.post({ ...VALID, email: 'clean@example.com', website: null });
+  relay.post({ ...VALID, email: 'clean2@example.com', website: '' });
+  assert.ok(relay.sent.slice(-2).every((m) => m.subject.startsWith('[Portfolio] Nova proposta:')), 'a null or empty honeypot is a person');
+  assert.doesNotMatch(relay.sent.at(-1).body, /anti-bot/);
+});
+
+test('relay drops a filled honeypot with an invalid brief silently', () => {
+  const relay = loadRelay();
   assert.deepEqual(relay.post({ website: 'x' }), { ok: true });
-  for (const website of [1, 0, true, false, ['x'], {}, ' ']) {
-    assert.deepEqual(relay.post({ ...VALID, website }), { ok: true }, JSON.stringify(website));
-  }
+  assert.deepEqual(relay.post({ ...VALID, email: 'nope', website: 'x' }), { ok: true });
   assert.equal(relay.sent.length, 0);
-  assert.deepEqual(relay.post({ ...VALID, website: null }), { ok: true });
-  assert.equal(relay.sent.length, 1, 'a null or empty honeypot is a person');
+  assert.equal(relay.logs.at(-1).outcome, 'dropped-honeypot');
+  assert.equal(relay.logs.at(-1).detail, 'email');
+});
+
+test('relay logs every outcome with the reason', () => {
+  const relay = loadRelay();
+  relay.post(VALID);
+  assert.deepEqual(relay.logs.at(-1), { outcome: 'sent', detail: '' });
+  relay.post('not json');
+  assert.deepEqual(relay.logs.at(-1), { outcome: 'invalid', detail: 'body' });
+  relay.post({ ...VALID, name: 'A', message: 'curta' });
+  assert.deepEqual(relay.logs.at(-1), { outcome: 'invalid', detail: 'name,message' });
+  relay.post(VALID);
+  relay.post(VALID);
+  relay.post(VALID);
+  assert.deepEqual(relay.logs.at(-1), { outcome: 'rate-limited', detail: 'overall=3 email=3' });
+
+  const throwing = loadRelay({ sendThrows: true });
+  throwing.post(VALID);
+  assert.deepEqual(throwing.logs.at(-1), { outcome: 'mail-error', detail: 'Error: quota' });
+  const noRecipient = loadRelay({ recipient: null });
+  noRecipient.post(VALID);
+  assert.equal(noRecipient.logs.at(-1).outcome, 'no-recipient');
+  for (const entry of [...relay.logs, ...throwing.logs]) assert.doesNotMatch(JSON.stringify(entry), /ana@example|Ana Souza/i, 'logs carry no personal data');
 });
 
 test('relay rate limits per e-mail and overall', () => {

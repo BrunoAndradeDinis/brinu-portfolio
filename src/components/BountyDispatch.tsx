@@ -30,7 +30,7 @@ const ALL_TOUCHED: Touched = { name: true, email: true, phone: true, services: t
 
 const FIELD_ORDER: readonly ContactField[] = ['name', 'email', 'phone', 'services', 'message'];
 const SUBMIT_HINT_ID = 'dispatch-submit-hint';
-const HONEYPOT_ID = 'dispatch-website';
+const HONEYPOT_ID = 'dispatch-bounty-ref';
 
 const PHONE_PASTE_LENGTH = 25;
 
@@ -150,10 +150,14 @@ export const BountyDispatch: React.FC = () => {
             <label htmlFor={HONEYPOT_ID}>{copy.honeypotLabel}</label>
             <input
               id={HONEYPOT_ID}
-              name="website"
+              name="bounty_ref"
               type="text"
               tabIndex={-1}
               autoComplete="off"
+              data-lpignore="true"
+              data-1p-ignore="true"
+              data-bwignore="true"
+              data-form-type="other"
               value={honeypot}
               onChange={(e) => setHoneypot(e.target.value)}
               data-dispatch-honeypot

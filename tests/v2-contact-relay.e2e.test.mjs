@@ -123,7 +123,9 @@ test('submit locks while the brief is in flight', async () => {
 test('honeypot field is hidden from people', async () => {
   const { context, page, requests } = await openForm();
   const input = page.locator('[data-dispatch-honeypot]');
-  assert.equal(await input.getAttribute('name'), 'website');
+  assert.equal(await input.getAttribute('name'), 'bounty_ref', 'a name browsers do not autofill');
+  assert.doesNotMatch(await input.getAttribute('id'), /website|url|email|name|phone|tel|address/i);
+  for (const attr of ['data-lpignore', 'data-1p-ignore', 'data-bwignore']) assert.equal(await input.getAttribute(attr), 'true', attr);
   assert.equal(await input.getAttribute('type'), 'text');
   assert.equal(await input.getAttribute('tabindex'), '-1');
   assert.equal(await input.getAttribute('autocomplete'), 'off');
