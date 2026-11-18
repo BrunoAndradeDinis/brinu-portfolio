@@ -188,6 +188,13 @@ export interface TranslationSchema {
     tilesAria: string;
     stackAria: string;
     stageAria: string;
+    fullscreen: string;
+    fullscreenOpenAria: string;
+    fullscreenCloseAria: string;
+    fullscreenClose: string;
+    fullscreenPrev: string;
+    fullscreenNext: string;
+    fullscreenHint: string;
   };
   casePage: {
     sectionAria: string;
@@ -574,6 +581,13 @@ export const ptBrDict: TranslationSchema = {
     tilesAria: 'Todos os cases',
     stackAria: 'Tecnologias do case',
     stageAria: 'Mídia do case',
+    fullscreen: 'FULLSCREEN',
+    fullscreenOpenAria: 'Assistir vídeo em tela cheia',
+    fullscreenCloseAria: 'Fechar tela cheia',
+    fullscreenClose: 'FECHAR',
+    fullscreenPrev: 'Vídeo anterior',
+    fullscreenNext: 'Próximo vídeo',
+    fullscreenHint: 'USE ← → OU DESLIZE PARA NAVEGAR • ESC PARA FECHAR',
   },
   casePage: {
     sectionAria: 'Página do case',
@@ -589,7 +603,7 @@ export const ptBrDict: TranslationSchema = {
     statusBadge: 'STATUS: ATIVO // EM PRODUÇÃO',
     domainLine: PROFILE.tagline['pt-br'].toUpperCase(),
     operatorTag: 'OPERADOR: BRINU',
-    bioLine1: 'Frontend na Magalu Cloud (Astro, React, Next.js e Tailwind) e desenvolvedor de sistemas web full stack com TypeScript, Node.js e PostgreSQL.',
+    bioLine1: 'Desenvolvedor de sistemas web full stack com TypeScript, Node.js e PostgreSQL.',
     bioLine2: 'Em 8 anos no ecossistema Magalu, evoluí do suporte técnico para a engenharia criando extensões, APIs, dashboards e automações reais.',
     baseLine: 'Franca / SP · Remoto · Projetos Full Stack & Consultoria',
     rankLabel: 'RANK',
@@ -994,6 +1008,13 @@ export const enDict = {
     tilesAria: 'All cases',
     stackAria: 'Case technologies',
     stageAria: 'Case media',
+    fullscreen: 'FULLSCREEN',
+    fullscreenOpenAria: 'Watch video in fullscreen',
+    fullscreenCloseAria: 'Close fullscreen',
+    fullscreenClose: 'CLOSE',
+    fullscreenPrev: 'Previous video',
+    fullscreenNext: 'Next video',
+    fullscreenHint: 'USE ← → OR SWIPE TO NAVIGATE • ESC TO CLOSE',
   },
   casePage: {
     sectionAria: 'Case page',
@@ -1009,7 +1030,7 @@ export const enDict = {
     statusBadge: 'STATUS: ACTIVE // DEPLOYED',
     domainLine: PROFILE.tagline.en.toUpperCase(),
     operatorTag: 'OPERATOR: BRINU',
-    bioLine1: 'Frontend at Magalu Cloud (Astro, React, Next.js and Tailwind) and full stack web developer with TypeScript, Node.js and PostgreSQL.',
+    bioLine1: 'Full stack web developer with TypeScript, Node.js and PostgreSQL.',
     bioLine2: 'Across 8 years in the Magalu ecosystem, I grew from technical support into engineering by building extensions, APIs, dashboards and real automations.',
     baseLine: 'Franca / SP · Remote · Full Stack Projects & Consulting',
     rankLabel: 'RANK',

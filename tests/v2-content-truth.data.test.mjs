@@ -267,9 +267,9 @@ test('T7: dictionaries carry the approved copy deck in both locales', () => {
   assert.deepEqual(hero(enDict), ['FROM DATABASE', 'TO PRODUCTION', 'INTERFACE', 'CUSTOM &', 'SCALABLE', 'WEB SYSTEMS']);
   assert.equal(ptBrDict.filmstrip.heading, 'CADA FRAME, UM PROJETO ENTREGUE');
   assert.equal(enDict.filmstrip.heading, 'EVERY FRAME, A SHIPPED PROJECT');
-  assert.match(ptBrDict.about.bioLine1, /^Frontend na Magalu Cloud/);
+  assert.match(ptBrDict.about.bioLine1, /^Desenvolvedor de sistemas web full stack/);
   assert.match(ptBrDict.about.bioLine2, /8 anos no ecossistema Magalu/);
-  assert.match(enDict.about.bioLine1, /^Frontend at Magalu Cloud/);
+  assert.match(enDict.about.bioLine1, /^Full stack web developer/);
   assert.match(ptBrDict.about.baseLine, /Franca \/ SP · Remoto · Projetos Full Stack & Consultoria$/);
   assert.match(ptBrDict.meta.title, /Desenvolvedor Frontend/);
   assert.match(ptBrDict.meta.description, /Desenvolvedor Frontend/);

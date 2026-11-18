@@ -16,7 +16,7 @@ test('copy deck: the bio lines state only approved facts', async () => {
   const { DICTIONARIES } = await import('../src/i18n/dictionaries.ts');
   for (const locale of ['pt-br', 'en']) {
     const text = `${DICTIONARIES[locale].about.bioLine1} ${DICTIONARIES[locale].about.bioLine2}`;
-    assert.match(text, /Magalu Cloud/);
+    assert.match(text, /Magalu/);
     assert.match(text, /\b8\b/);
     assert.doesNotMatch(text, /Go\b|Kubernetes|GraphQL|Three\.js/);
   }

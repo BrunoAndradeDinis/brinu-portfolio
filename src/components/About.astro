@@ -87,9 +87,10 @@ const currentId = CAREER.find((entry) => entry.end === "present")?.id;
           >
             {ptBrDict.about.operatorTag}
           </span>
-          <span class="text-[10px] sm:text-xs text-paper-white uppercase font-bold">
-            ID: {PROFILE.operatorId} // {PROFILE.location.label}
-          </span>
+          <div class="flex flex-col items-end text-[10px] sm:text-xs text-paper-white font-mono font-bold leading-tight uppercase whitespace-nowrap">
+            <span>ID: {PROFILE.operatorId}</span>
+            <span>Loc: {PROFILE.location.city} - {PROFILE.location.state}</span>
+          </div>
         </div>
       </div>
       <HobbyCards />
