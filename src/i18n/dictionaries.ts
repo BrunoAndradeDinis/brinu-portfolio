@@ -318,19 +318,64 @@ export interface TranslationSchema {
     timerLabel: string;
     dismissCta: string;
   };
+  receipt: {
+    header: string;
+    title: string;
+    operator: string;
+    status: string;
+    base: string;
+    email: string;
+    linkedin: string;
+    item: string;
+    description: string;
+    value: string;
+    total: string;
+    commands: string;
+    terminal: string;
+  };
   whoami: {
     skipCta: string;
     onlineBadge: string;
     footerHint: string;
     returnHomeCta: string;
-    sessionComplete: string;
-    steps: {
-      whoamiOut: string;
-      uptimeOut: string;
-      locationOut: string;
-      missionOut: string;
-      skillsOut: string;
-      philosophyOut: string;
+    promptLabel: string;
+    inputPlaceholder: string;
+    helpHeader: string;
+    usage: string;
+    notFound: string;
+    noFile: string;
+    hobbiesHint: string;
+    hobbyOptions: string;
+    downloaded: string;
+    langSet: string;
+    contactOut: string;
+    ciladaOut: string;
+    exitOut: string;
+    options: string;
+    commands: {
+      help: string;
+      clear: string;
+      whoami: string;
+      career: string;
+      education: string;
+      skills: string;
+      hobbies: string;
+      projects: string;
+      ls: string;
+      cat: string;
+      download: string;
+      lang: string;
+      contact: string;
+      status: string;
+      cilada: string;
+      exit: string;
+    };
+    resume: {
+      summary: string;
+      skills: string;
+      experience: string;
+      projects: string;
+      education: string;
     };
   };
 }
@@ -693,22 +738,64 @@ export const ptBrDict: TranslationSchema = {
     timerLabel: 'TEMPO RESTANTE DO ALARME',
     dismissCta: 'DESATIVAR ALARME AGORA [ESC]',
   },
+  receipt: {
+    header: 'TELEMETRIA DETECTADA — BEM-VINDO A BORDO, COWBOY',
+    title: '[RECIBO] PHANTOM & BEBOP BOUNTY #1996',
+    operator: 'OPERADOR',
+    status: 'STATUS',
+    base: 'BASE',
+    email: 'E-MAIL',
+    linkedin: 'LINKEDIN',
+    item: 'ITEM',
+    description: 'DESCRIÇÃO',
+    value: 'STATUS',
+    total: 'TOTAL',
+    commands: 'COMANDOS DO CONSOLE',
+    terminal: 'terminal interativo com todos os comandos (digite help)',
+  },
   whoami: {
     skipCta: 'PULAR DIGITAÇÃO',
     onlineBadge: 'ONLINE',
-    footerHint: 'PRESSIONE QUALQUER TECLA PARA PULAR OU RETORNE AO PORTFÓLIO',
+    footerHint: 'DIGITE help PARA VER OS COMANDOS',
     returnHomeCta: 'RETORNAR AO PORTFÓLIO PRINCIPAL',
-    sessionComplete: '[SESSÃO CONCLUÍDA // TELEMETRIA 100% VERIFICADA — FRANCA / SP]',
-    steps: {
-      whoamiOut: `${PROFILE.fullName} (@${PROFILE.handle}) — ${PROFILE.role['pt-br']}`,
-      uptimeOut: `${PROFILE.family['pt-br']} · Desenvolvedor frontend na Magalu Cloud`,
-      locationOut: `${PROFILE.location.remoteLabel['pt-br']} (${PROFILE.email})`,
-      missionOut:
-        'Sistemas Web Full Stack • Frontend na Magalu Cloud • Streaming 24/7 com AuraStream',
-      skillsOut:
-        'total 8\ndrwxr-xr-x  astro/       react-19/    typescript/  tailwind/\ndrwxr-xr-x  gsap/        playwright/  docker/      solid-arch/',
-      philosophyOut:
-        '"Arquitetura limpa SOLID, código confiável de ponta a ponta e foco em resultado para o negócio."',
+    promptLabel: 'Comando do terminal',
+    inputPlaceholder: 'digite help',
+    helpHeader: 'COMANDOS DISPONÍVEIS',
+    usage: 'uso:',
+    notFound: 'comando não encontrado. Digite help.',
+    noFile: 'arquivo não encontrado',
+    hobbiesHint: 'Digite hobbies <nome> para ver a carta.',
+    hobbyOptions: 'hobby não encontrado. Opções:',
+    downloaded: 'baixado.',
+    langSet: 'Idioma: português.',
+    contactOut: 'Abrindo um e-mail para',
+    ciladaOut: '[ALERTA] Protocolo cilada ativado.',
+    exitOut: 'Voltando ao portfólio...',
+    options: 'Opções:',
+    commands: {
+      help: 'lista os comandos disponíveis',
+      clear: 'limpa a tela',
+      whoami: 'quem é o operador',
+      career: 'trajetória profissional',
+      education: 'formação',
+      skills: 'o arsenal técnico',
+      hobbies: 'lista os hobbies ou mostra a carta de um',
+      projects: 'os quatro cases',
+      ls: 'lista os arquivos',
+      cat: 'imprime o currículo',
+      download: 'baixa o currículo em PDF',
+      lang: 'troca o idioma',
+      contact: 'abre um e-mail para o Bruno',
+      status: 'status do operador',
+      cilada: 'dispara o alarme de cilada',
+      exit: 'volta ao portfólio',
+    },
+    resume: {
+      summary: 'RESUMO PROFISSIONAL',
+      skills: 'COMPETÊNCIAS TÉCNICAS',
+      experience: 'EXPERIÊNCIA PROFISSIONAL',
+      projects: 'PROJETOS',
+      education: 'FORMAÇÃO ACADÊMICA',
     },
   },
 };
@@ -1071,22 +1158,64 @@ export const enDict = {
     timerLabel: 'REMAINING ALARM TIME',
     dismissCta: 'DEACTIVATE ALARM NOW [ESC]',
   },
+  receipt: {
+    header: 'TELEMETRY DETECTED — WELCOME ABOARD, COWBOY',
+    title: '[RECEIPT] PHANTOM & BEBOP BOUNTY #1996',
+    operator: 'OPERATOR',
+    status: 'STATUS',
+    base: 'BASE',
+    email: 'EMAIL',
+    linkedin: 'LINKEDIN',
+    item: 'ITEM',
+    description: 'DESCRIPTION',
+    value: 'STATUS',
+    total: 'TOTAL',
+    commands: 'CONSOLE COMMANDS',
+    terminal: 'interactive terminal with every command (type help)',
+  },
   whoami: {
     skipCta: 'SKIP TYPING',
     onlineBadge: 'ONLINE',
-    footerHint: 'PRESS ANY KEY TO SKIP OR RETURN TO MAIN PORTFOLIO',
+    footerHint: 'TYPE help TO SEE THE COMMANDS',
     returnHomeCta: 'RETURN TO MAIN PORTFOLIO',
-    sessionComplete: '[SESSION COMPLETE // 100% TELEMETRY VERIFIED — FRANCA / SP]',
-    steps: {
-      whoamiOut: `${PROFILE.fullName} (@${PROFILE.handle}) — ${PROFILE.role.en}`,
-      uptimeOut: `${PROFILE.family.en} · Frontend developer at Magalu Cloud`,
-      locationOut: `${PROFILE.location.remoteLabel.en} (${PROFILE.email})`,
-      missionOut:
-        'Full Stack Web Systems • Frontend at Magalu Cloud • 24/7 streaming with AuraStream',
-      skillsOut:
-        'total 8\ndrwxr-xr-x  astro/       react-19/    typescript/  tailwind/\ndrwxr-xr-x  gsap/        playwright/  docker/      solid-arch/',
-      philosophyOut:
-        '"Clean SOLID architecture, reliable end-to-end code, and business-driven execution."',
+    promptLabel: 'Terminal command',
+    inputPlaceholder: 'type help',
+    helpHeader: 'AVAILABLE COMMANDS',
+    usage: 'usage:',
+    notFound: 'command not found. Type help.',
+    noFile: 'no such file',
+    hobbiesHint: 'Type hobbies <name> to see the card.',
+    hobbyOptions: 'no such hobby. Options:',
+    downloaded: 'downloaded.',
+    langSet: 'Language: English.',
+    contactOut: 'Opening an email to',
+    ciladaOut: '[ALERT] Cilada protocol fired.',
+    exitOut: 'Back to the portfolio...',
+    options: 'Options:',
+    commands: {
+      help: 'lists the available commands',
+      clear: 'clears the screen',
+      whoami: 'who the operator is',
+      career: 'career history',
+      education: 'education',
+      skills: 'the technical arsenal',
+      hobbies: 'lists the hobbies or shows one card',
+      projects: 'the four cases',
+      ls: 'lists the files',
+      cat: 'prints the résumé',
+      download: 'saves the résumé as a PDF',
+      lang: 'switches the language',
+      contact: 'opens an email to Bruno',
+      status: 'operator status',
+      cilada: 'fires the cilada alarm',
+      exit: 'returns to the portfolio',
+    },
+    resume: {
+      summary: 'PROFESSIONAL SUMMARY',
+      skills: 'TECHNICAL SKILLS',
+      experience: 'PROFESSIONAL EXPERIENCE',
+      projects: 'PROJECTS',
+      education: 'EDUCATION',
     },
   },
 } satisfies TranslationSchema;

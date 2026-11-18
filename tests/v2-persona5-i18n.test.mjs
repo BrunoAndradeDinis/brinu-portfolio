@@ -189,14 +189,14 @@ test('C3: Hero, Contact, Footer, /whoami, and telemetry reference canonical prof
   const contactSrc = fs.readFileSync(path.resolve('src/components/Contact.astro'), 'utf8');
   const footerSrc = fs.readFileSync(path.resolve('src/components/BebopFooter.astro'), 'utf8');
   const whoamiSrc = fs.readFileSync(path.resolve('src/pages/whoami.astro'), 'utf8');
-  const telemetrySrc = fs.readFileSync(path.resolve('src/utils/telemetry.ts'), 'utf8');
+  const telemetrySrc = fs.readFileSync(path.resolve('src/utils/receipt.ts'), 'utf8');
 
   for (const [name, src] of [
     ['ComicHero.astro', heroSrc],
     ['Contact.astro', contactSrc],
     ['BebopFooter.astro', footerSrc],
     ['whoami.astro', whoamiSrc],
-    ['telemetry.ts', telemetrySrc],
+    ['receipt.ts (console telemetry)', telemetrySrc],
   ]) {
     assert.ok(src.includes('PROFILE'), `${name} must import/use PROFILE`);
   }

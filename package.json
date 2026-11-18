@@ -12,7 +12,8 @@
     "build": "astro build",
     "preview": "astro preview",
     "check": "astro check",
-    "test": "npm run build && node --test --test-concurrency=1 tests/*.test.mjs"
+    "test": "npm run build && node --test --test-concurrency=1 tests/*.test.mjs",
+    "resume:pdf": "node scripts/build-resume-pdf.mjs"
   },
   "dependencies": {
     "@astrojs/react": "^7.1.4",

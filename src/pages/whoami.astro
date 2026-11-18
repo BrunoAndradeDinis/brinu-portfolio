@@ -2,14 +2,20 @@
 import BaseLayout from "../layouts/BaseLayout.astro";
 import { ptBrDict } from "../i18n/dictionaries";
 import { PROFILE } from "../data/profile";
+import { MAX_INPUT_LENGTH } from "../utils/terminal/sanitize";
 ---
 
 <BaseLayout
   title={ptBrDict.meta.whoamiTitle}
   description={ptBrDict.meta.whoamiDescription}
 >
-  <main id="main-content" tabindex="-1" class="min-h-screen bg-space-base px-4 py-12 sm:px-8 sm:py-16 md:px-12 md:py-20 flex flex-col justify-center items-center select-none focus:outline-none">
-    <div class="w-full max-w-4xl">
+  <main
+    id="main-content"
+    data-whoami-main
+    tabindex="-1"
+    class="relative -mt-[5.5rem] sm:-mt-[6.5rem] md:-mt-[7rem] min-h-[100dvh] box-border bg-space-base px-4 py-16 sm:px-8 md:px-12 flex flex-col justify-center items-center select-none focus:outline-none"
+  >
+    <div class="w-full max-w-4xl my-auto">
       <div
         data-terminal-window
         class="border-4 border-paper-white bg-space-surface-1 shadow-[10px_10px_0_var(--color-bebop-red)] overflow-hidden text-paper-white"
@@ -54,11 +60,36 @@ import { PROFILE } from "../data/profile";
           </div>
         </div>
 
-        <div
-          id="terminal-output"
-          data-terminal-body
-          class="p-6 sm:p-8 md:p-10 font-mono text-xs sm:text-sm leading-relaxed space-y-6 min-h-[26rem] bg-space-base overflow-x-auto relative"
-        >
+        <div class="bg-space-base select-text">
+          <div
+            id="terminal-output"
+            data-terminal-body
+            role="log"
+            aria-live="polite"
+            aria-relevant="additions"
+            class="px-6 pt-6 sm:px-8 sm:pt-8 md:px-10 md:pt-10 pb-2 font-mono text-xs sm:text-sm leading-relaxed max-h-[60dvh] min-h-[22rem] overflow-y-auto overflow-x-hidden"
+          ></div>
+          <form data-terminal-form class="flex items-center gap-2 px-6 pb-6 sm:px-8 sm:pb-8 md:px-10 md:pb-10 font-mono text-xs sm:text-sm" autocomplete="off">
+            <label for="terminal-input" class="shrink-0 font-bold text-bebop-red">
+              <span class="sr-only" data-i18n="whoami.promptLabel">{ptBrDict.whoami.promptLabel}</span>
+              <span aria-hidden="true">{PROFILE.handle.toLowerCase()}@bebop:~$</span>
+            </label>
+            <input
+              id="terminal-input"
+              data-terminal-input
+              type="text"
+              inputmode="text"
+              maxlength={MAX_INPUT_LENGTH}
+              spellcheck="false"
+              autocapitalize="off"
+              autocomplete="off"
+              enterkeyhint="send"
+              placeholder={ptBrDict.whoami.inputPlaceholder}
+              data-i18n="whoami.inputPlaceholder"
+              data-i18n-attr="placeholder"
+              class="min-w-0 flex-1 border-0 border-b-2 border-paper-white/30 bg-transparent px-1 py-1 text-paper-white caret-bebop-red outline-none placeholder:text-muted-gray focus:border-bebop-red"
+            />
+          </form>
         </div>
 
         <div class="px-6 py-4 bg-space-surface-1 border-t-2 border-bebop-red flex flex-col sm:flex-row items-center justify-between gap-4 font-mono text-xs">
@@ -82,166 +113,183 @@ import { PROFILE } from "../data/profile";
 
   <script>
     import { audioSynth } from "../utils/audio";
-    import { getDictionary, getLocale, LOCALE_CHANGE_EVENT } from "../i18n/index";
+    import { getLocale, setLocale } from "../i18n/index";
     import { onPageReady } from "../utils/page-lifecycle";
+    import { runCommand, completeInput, type TerminalLine, type TerminalResult } from "../utils/terminal/commands";
 
-    interface CommandStep {
-      command: string;
-      output: string;
-      highlightClass?: string;
-    }
+    const OPENING = ["whoami", "help"] as const;
+    const TYPE_MS = 45;
+    const TONES: Record<TerminalLine["tone"], string> = {
+      plain: "text-paper-white",
+      accent: "text-bebop-red font-bold",
+      strong: "text-paper-white font-bold",
+      muted: "text-muted-gray",
+    };
 
-    function buildCommandSteps(): CommandStep[] {
-      const t = getDictionary(getLocale());
-      return [
-        {
-          command: "whoami",
-          output: t.whoami.steps.whoamiOut,
-          highlightClass: "text-paper-white font-bold",
-        },
-        {
-          command: "uptime",
-          output: t.whoami.steps.uptimeOut,
-          highlightClass: "text-bebop-red font-semibold",
-        },
-        {
-          command: "cat /etc/location",
-          output: t.whoami.steps.locationOut,
-          highlightClass: "text-paper-white font-bold",
-        },
-        {
-          command: "cat /etc/current-mission",
-          output: t.whoami.steps.missionOut,
-          highlightClass: "text-muted-gray font-semibold",
-        },
-        {
-          command: "ls -la skills/",
-          output: t.whoami.steps.skillsOut,
-          highlightClass: "text-paper-white",
-        },
-        {
-          command: "echo $PHILOSOPHY",
-          output: t.whoami.steps.philosophyOut,
-          highlightClass: "text-bebop-red italic font-bold",
-        },
-      ];
-    }
+    const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+    const prefersStill = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-    function bootWhoami(): () => void {
-      const terminalEl = document.getElementById("terminal-output");
+    function bootTerminal(): (() => void) | undefined {
+      const output = document.querySelector<HTMLElement>("[data-terminal-body]");
+      const form = document.querySelector<HTMLFormElement>("[data-terminal-form]");
+      const input = document.querySelector<HTMLInputElement>("[data-terminal-input]");
       const skipBtn = document.getElementById("skip-typing-btn");
+      if (!output || !form || !input) return undefined;
 
-      let isSkipped = false;
+      const history: string[] = [];
+      let cursor = 0;
+      let opening = true;
+      let disposed = false;
 
-      function renderAllInstant(): void {
-        if (!terminalEl) return;
-        isSkipped = true;
-        terminalEl.innerHTML = "";
+      const scrollDown = () => {
+        output.scrollTop = output.scrollHeight;
+      };
 
-        const t = getDictionary(getLocale());
-        const steps = buildCommandSteps();
+      const echo = (command: string) => {
+        const row = document.createElement("div");
+        row.className = "mt-4 first:mt-0 flex gap-2 font-bold";
+        const prompt = document.createElement("span");
+        prompt.className = "shrink-0 text-bebop-red";
+        prompt.setAttribute("aria-hidden", "true");
+        prompt.textContent = "$";
+        const text = document.createElement("span");
+        text.dataset.terminalEcho = "";
+        text.className = "min-w-0 text-paper-white [overflow-wrap:anywhere]";
+        text.textContent = command;
+        row.append(prompt, text);
+        output.append(row);
+        return text;
+      };
 
-        steps.forEach((step) => {
-          const block = document.createElement("div");
-          block.className = "space-y-1.5";
-          block.innerHTML = `
-            <div class="flex items-center gap-2 text-bebop-red font-bold">
-              <span class="text-paper-white">&gt;</span>
-              <span>${step.command}</span>
-            </div>
-            <div class="pl-4 border-l-2 border-bebop-red ${step.highlightClass || "text-paper-white"} whitespace-pre-line">
-              ${step.output}
-            </div>
-          `;
-          terminalEl.appendChild(block);
-        });
-
-        const sessionComplete = document.createElement("div");
-        sessionComplete.className = "pt-4 text-xs font-bold text-paper-white tracking-wider uppercase flex items-center gap-2 border-t border-paper-white/30 mt-6";
-        sessionComplete.innerHTML = `<span class="w-2 h-2 bg-bebop-red"></span> <span>${t.whoami.sessionComplete}</span>`;
-        terminalEl.appendChild(sessionComplete);
-      }
-
-      async function runTypingSimulator(): Promise<void> {
-        if (!terminalEl) return;
-        terminalEl.innerHTML = "";
-
-        const steps = buildCommandSteps();
-        const t = getDictionary(getLocale());
-
-        for (const step of steps) {
-          if (isSkipped) return;
-
-          const block = document.createElement("div");
-          block.className = "space-y-1.5";
-
-          const promptLine = document.createElement("div");
-          promptLine.className = "flex items-center gap-2 text-bebop-red font-bold";
-          promptLine.innerHTML = `<span class="text-paper-white">&gt;</span> <span class="typed-command"></span><span class="cursor inline-block w-2 h-4 bg-bebop-red animate-pulse"></span>`;
-          block.appendChild(promptLine);
-          terminalEl.appendChild(block);
-
-          const commandSpan = promptLine.querySelector(".typed-command");
-          const cursorEl = promptLine.querySelector(".cursor");
-
-          for (let i = 0; i < step.command.length; i++) {
-            if (isSkipped) {
-              renderAllInstant();
-              return;
-            }
-            if (commandSpan) commandSpan.textContent += step.command[i];
-            if (!audioSynth.isMuted()) {
-              audioSynth.playKeypressBeep(800 + Math.random() * 200, 0.03, 0.08);
-            }
-            await new Promise((r) => setTimeout(r, 30));
+      const print = (lines: readonly TerminalLine[]) => {
+        for (const entry of lines) {
+          const row = document.createElement("div");
+          row.dataset.terminalLine = entry.tone;
+          if (entry.term && entry.detail) {
+            row.className = "flex flex-wrap gap-x-3 [overflow-wrap:anywhere]";
+            const term = document.createElement("span");
+            term.className = "min-w-[19ch] font-bold text-paper-white";
+            term.textContent = entry.term;
+            const detail = document.createElement("span");
+            detail.className = "text-muted-gray";
+            detail.textContent = entry.detail;
+            row.append(term, detail);
+          } else {
+            row.className = `whitespace-pre-wrap [overflow-wrap:anywhere] ${TONES[entry.tone]}`;
+            row.textContent = entry.text;
           }
-
-          if (cursorEl) cursorEl.remove();
-
-          await new Promise((r) => setTimeout(r, 140));
-          if (isSkipped) {
-            renderAllInstant();
-            return;
-          }
-
-          const outputLine = document.createElement("div");
-          outputLine.className = `pl-4 border-l-2 border-bebop-red ${step.highlightClass || "text-paper-white"} whitespace-pre-line`;
-          outputLine.textContent = step.output;
-          block.appendChild(outputLine);
-
-          terminalEl.scrollTop = terminalEl.scrollHeight;
-
-          await new Promise((r) => setTimeout(r, 240));
+          output.append(row);
         }
+        scrollDown();
+      };
 
-        const sessionComplete = document.createElement("div");
-        sessionComplete.className = "pt-4 text-xs font-bold text-paper-white tracking-wider uppercase flex items-center gap-2 border-t border-paper-white/30 mt-6";
-        sessionComplete.innerHTML = `<span class="w-2 h-2 bg-bebop-red"></span> <span>${t.whoami.sessionComplete}</span>`;
-        terminalEl.appendChild(sessionComplete);
-      }
+      const download = (filename: string, href: string) => {
+        const link = document.createElement("a");
+        link.href = href;
+        link.download = filename;
+        link.hidden = true;
+        document.body.append(link);
+        link.click();
+        link.remove();
+      };
 
-      const onSkipClick = () => renderAllInstant();
-      const onKeyDown = (e: KeyboardEvent) => {
-        if (!isSkipped && e.key !== "Tab") {
-          renderAllInstant();
+      const apply = (result: TerminalResult) => {
+        const effect = result.effect;
+        if (!effect) return;
+        if (effect.type === "clear") output.replaceChildren();
+        else if (effect.type === "download") download(effect.filename, effect.href);
+        else if (effect.type === "locale") setLocale(effect.locale, { animate: false });
+        else if (effect.type === "navigate") window.location.assign(effect.href);
+        else if (effect.type === "mail") window.location.href = effect.href;
+        else if (effect.type === "cilada") window.dispatchEvent(new CustomEvent("bebop:cilada-trigger"));
+      };
+
+      const execute = (raw: string) => {
+        const result = runCommand(raw, getLocale());
+        echo(result.input);
+        print(result.lines);
+        apply(result);
+        return result;
+      };
+
+      const finishOpening = () => {
+        if (!opening) return;
+        opening = false;
+        output.replaceChildren();
+        OPENING.forEach((command) => execute(command));
+        input.focus({ preventScroll: true });
+      };
+
+      const typeOpening = async () => {
+        for (const command of OPENING) {
+          const text = echo("");
+          for (const char of command) {
+            if (!opening || disposed) return;
+            text.textContent += char;
+            if (!audioSynth.isMuted()) audioSynth.playKeypressBeep(800 + Math.random() * 200, 0.03, 0.08);
+            await wait(TYPE_MS);
+          }
+          if (!opening || disposed) return;
+          print(runCommand(command, getLocale()).lines);
+          await wait(240);
+        }
+        if (!opening || disposed) return;
+        opening = false;
+        input.focus({ preventScroll: true });
+      };
+
+      const onSubmit = (event: SubmitEvent) => {
+        event.preventDefault();
+        finishOpening();
+        const result = execute(input.value);
+        if (result.input) {
+          history.push(result.input);
+          cursor = history.length;
+        }
+        input.value = "";
+      };
+
+      const onInputKey = (event: KeyboardEvent) => {
+        if (event.key === "ArrowUp" || event.key === "ArrowDown") {
+          if (!history.length) return;
+          event.preventDefault();
+          cursor = Math.min(history.length, Math.max(0, cursor + (event.key === "ArrowUp" ? -1 : 1)));
+          input.value = history[cursor] ?? "";
+          input.setSelectionRange(input.value.length, input.value.length);
+        } else if (event.key === "Tab" && input.value.trim()) {
+          event.preventDefault();
+          const completion = completeInput(input.value, getLocale());
+          if (completion.value) input.value = completion.value;
+          else if (completion.options.length > 1) {
+            echo(input.value);
+            print([{ text: completion.options.join("  "), tone: "muted" }]);
+          }
         }
       };
-      const onLocaleChange = () => renderAllInstant();
 
-      skipBtn?.addEventListener("click", onSkipClick);
-      window.addEventListener("keydown", onKeyDown);
-      window.addEventListener(LOCALE_CHANGE_EVENT, onLocaleChange);
+      const onWindowKey = (event: KeyboardEvent) => {
+        if (opening && event.key !== "Tab") finishOpening();
+      };
 
-      void runTypingSimulator();
+      const onSkip = () => finishOpening();
+
+      form.addEventListener("submit", onSubmit);
+      input.addEventListener("keydown", onInputKey);
+      window.addEventListener("keydown", onWindowKey);
+      skipBtn?.addEventListener("click", onSkip);
+
+      if (prefersStill()) finishOpening();
+      else void typeOpening();
 
       return () => {
-        isSkipped = true;
-        skipBtn?.removeEventListener("click", onSkipClick);
-        window.removeEventListener("keydown", onKeyDown);
-        window.removeEventListener(LOCALE_CHANGE_EVENT, onLocaleChange);
+        disposed = true;
+        form.removeEventListener("submit", onSubmit);
+        input.removeEventListener("keydown", onInputKey);
+        window.removeEventListener("keydown", onWindowKey);
+        skipBtn?.removeEventListener("click", onSkip);
       };
     }
 
-    onPageReady(bootWhoami);
+    onPageReady(bootTerminal);
   </script>
 </BaseLayout>
