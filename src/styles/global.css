@@ -21,6 +21,10 @@ html {
   -moz-osx-font-smoothing: grayscale;
 }
 
+#main-content > section:first-of-type {
+  scroll-margin-top: 100vh;
+}
+
 body {
   min-height: 100vh;
   margin: 0;
