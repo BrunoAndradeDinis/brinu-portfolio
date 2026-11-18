@@ -1,6 +1,7 @@
 ---
 import { ptBrDict } from "../../i18n/dictionaries";
 import { getLocalizedHobbies } from "../../data/hobbies";
+import PanelClose from "../p5/PanelClose.astro";
 
 const hobbies = getLocalizedHobbies("pt-br");
 ---
@@ -56,17 +57,7 @@ const hobbies = getLocalizedHobbies("pt-br");
     class="fixed inset-y-0 right-0 left-auto m-0 h-dvh max-h-none w-full max-w-[36rem] overflow-hidden border-0 border-l-8 border-bebop-red bg-paper-white p-0 text-space-base select-text backdrop:bg-space-base/60"
   >
     <div data-hobby-panel-body class="relative h-full overflow-y-auto overscroll-contain p-5 sm:p-8">
-      <button
-        type="button"
-        data-hobby-panel-close
-        aria-label={ptBrDict.hobbies.closeLabel}
-        data-i18n-aria="hobbies.closeLabel"
-        class="absolute right-4 top-4 flex h-11 w-11 cursor-pointer items-center justify-center border-2 border-space-base bg-space-base text-paper-white transition-colors duration-100 hover:bg-bebop-red hover:text-space-base focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-space-base sm:right-6 sm:top-6"
-      >
-        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="square" aria-hidden="true" focusable="false">
-          <path d="M5 5l14 14M19 5L5 19" />
-        </svg>
-      </button>
+      <PanelClose />
       <div class="flex items-end gap-5">
         <div class="hobby-panel-sticker flex h-32 w-32 shrink-0 items-center justify-center bg-space-base sm:h-40 sm:w-40" aria-hidden="true">
           <img data-hobby-panel-sticker alt="" width="160" height="160" class="h-[80%] w-[80%] object-contain" />
@@ -88,6 +79,7 @@ const hobbies = getLocalizedHobbies("pt-br");
   import { getLocale, LOCALE_CHANGE_EVENT } from "../../i18n/index";
   import { getLocalizedHobbies, type LocalizedHobby } from "../../data/hobbies";
   import { createPanelTransition } from "../../utils/panel-transition";
+  import { bindPanelDismiss } from "../../utils/panel-dismiss";
 
   function statRow(entry: LocalizedHobby["stats"][number]): HTMLLIElement {
     const row = document.createElement("li");
@@ -141,14 +133,6 @@ const hobbies = getLocalizedHobbies("pt-br");
       if (panel.open) return;
       transition.open();
     };
-    const onPanelClick = (event: MouseEvent) => {
-      const target = event.target as HTMLElement;
-      if (target === panel || target.closest("[data-hobby-panel-close]")) transition.close();
-    };
-    const onCancel = (event: Event) => {
-      event.preventDefault();
-      transition.close();
-    };
     const onClose = () => opener?.focus();
     const onLocale = () => {
       const hobbies = getLocalizedHobbies(getLocale());
@@ -167,16 +151,14 @@ const hobbies = getLocalizedHobbies("pt-br");
     };
 
     cards.forEach((card) => card.addEventListener("click", onCardClick));
-    panel.addEventListener("click", onPanelClick);
-    panel.addEventListener("cancel", onCancel);
+    const unbindDismiss = bindPanelDismiss(panel, () => transition.close());
     panel.addEventListener("close", onClose);
     window.addEventListener(LOCALE_CHANGE_EVENT, onLocale);
     if (getLocale() !== "pt-br") onLocale();
 
     return () => {
       cards.forEach((card) => card.removeEventListener("click", onCardClick));
-      panel.removeEventListener("click", onPanelClick);
-      panel.removeEventListener("cancel", onCancel);
+      unbindDismiss();
       panel.removeEventListener("close", onClose);
       window.removeEventListener(LOCALE_CHANGE_EVENT, onLocale);
       transition.destroy();

@@ -133,12 +133,12 @@ test('a card opens the side panel from the right', async () => {
       assert.deepEqual(rows, PT[1].stats.map((entry) => `${entry.value}${entry.code}${entry.label}`), 'the panel lists the six stats with their full names');
       const geometry = await page.evaluate(() => {
         const box = document.querySelector('[data-hobby-panel]').getBoundingClientRect();
-        const close = document.querySelector('[data-hobby-panel-close]').getBoundingClientRect();
+        const close = document.querySelector('[data-hobby-panel] [data-panel-close]').getBoundingClientRect();
         return { right: Math.round(box.right), width: Math.min(document.documentElement.clientWidth, document.body.clientWidth), closeTop: close.top - box.top, closeRight: box.right - close.right, closeLeftHalf: close.left > box.left + box.width / 2 };
       });
       assert.ok(geometry.right >= geometry.width - 1, `the panel is docked to the right edge (${geometry.right} of ${geometry.width})`);
       assert.ok(geometry.closeTop < 40 && geometry.closeRight < 40 && geometry.closeLeftHalf, 'the X sits in the top-right corner');
-      assert.equal(await page.locator('[data-hobby-panel-close]').getAttribute('aria-label'), 'Fechar');
+      assert.equal(await page.locator('[data-hobby-panel] [data-panel-close]').getAttribute('aria-label'), 'Fechar');
       assert.equal(await page.evaluate(() => !!document.activeElement?.closest('[data-hobby-panel]')), true, 'focus moves into the panel');
     } finally {
       await context.close();
@@ -152,7 +152,7 @@ test('the x, escape and a click outside close the panel', async () => {
     const opener = () => page.evaluate(() => document.activeElement?.getAttribute('data-hobby-card'));
     await card(page, 'skate').click();
     await page.waitForTimeout(650);
-    await page.locator('[data-hobby-panel-close]').click();
+    await page.locator('[data-hobby-panel] [data-panel-close]').click();
     await waitClosed(page);
     assert.equal(await opener(), 'skate', 'X returns focus to the card');
 
@@ -206,7 +206,7 @@ test('switching language re-renders cards and the panel', async () => {
     await card(page, 'violao').click();
     assert.equal(await panel(page).locator('[data-hobby-panel-title]').textContent(), EN[2].name);
     assert.equal(await panel(page).locator('[data-hobby-panel-text]').textContent(), EN[2].text);
-    assert.equal(await page.locator('[data-hobby-panel-close]').getAttribute('aria-label'), 'Close');
+    assert.equal(await page.locator('[data-hobby-panel] [data-panel-close]').getAttribute('aria-label'), 'Close');
     assert.equal(await panel(page).locator('[data-hobby-panel-position]').textContent(), 'LUA · Luau');
     assert.deepEqual(await panel(page).locator('[data-hobby-panel-stats] li span:first-of-type').allTextContents(), EN[2].stats.map((entry) => entry.code));
     assert.deepEqual(await page.locator('[data-hobby-card="natureza"] [data-hobby-stat-code]').allTextContents(), EN[5].stats.map((entry) => entry.code));

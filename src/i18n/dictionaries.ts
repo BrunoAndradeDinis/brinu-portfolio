@@ -224,6 +224,8 @@ export interface TranslationSchema {
   hobbies: {
     title: string;
     listAria: string;
+  };
+  panel: {
     closeLabel: string;
   };
   stickers: {
@@ -563,6 +565,8 @@ export const ptBrDict: TranslationSchema = {
   hobbies: {
     title: 'HOBBIES',
     listAria: 'Hobbies',
+  },
+  panel: {
     closeLabel: 'Fechar',
   },
   stickers: {
@@ -939,6 +943,8 @@ export const enDict = {
   hobbies: {
     title: 'HOBBIES',
     listAria: 'Hobbies',
+  },
+  panel: {
     closeLabel: 'Close',
   },
   stickers: {

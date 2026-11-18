@@ -916,7 +916,7 @@ test('stickers route enters with the shared ease and duration', async () => {
   }
 });
 
-const CLOSE_PANEL_LABEL = { 'pt-br': 'FECHAR [ESC]', en: 'CLOSE [ESC]' };
+const CLOSE_PANEL_LABEL = { 'pt-br': 'Fechar', en: 'Close' };
 const PANEL_SKILL = { name: 'TypeScript', domain: 'Frontend & Motion', evidence: CASE_IDS };
 const PANEL_GRID_BLUR = /^blur\((\d+(?:\.\d+)?)px\)$/;
 
@@ -1094,6 +1094,18 @@ test('closing the panel brings the grid back', async () => {
       await waitForPanelSettled(page, false);
       record = await panelFrames(page);
       assertGridBack(record, openedByEnter, lastGesture(record, 'keydown'), `${locale} Escape`);
+
+      await tile.click();
+      await waitForPanelSettled(page, true);
+      record = await panelFrames(page);
+      const openedForOutside = lastGesture(record, 'click');
+      await page.locator('#arsenal dialog [data-skill-panel-summary]').click();
+      await page.waitForTimeout(300);
+      assert.equal(await page.evaluate(() => document.querySelector('#arsenal dialog').open), true, `${locale}: a click inside keeps the panel open`);
+      await page.mouse.click(40, 450);
+      await waitForPanelSettled(page, false);
+      record = await panelFrames(page);
+      assertGridBack(record, openedForOutside, lastGesture(record, 'click'), `${locale} outside click`);
     } finally {
       await context.close();
     }

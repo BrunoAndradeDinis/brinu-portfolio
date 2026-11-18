@@ -1,6 +1,7 @@
 ---
 import SkillsGrid from "./SkillsGrid.astro";
 import { ptBrDict } from "../i18n/dictionaries";
+import PanelClose from "./p5/PanelClose.astro";
 ---
 
 <section
@@ -18,47 +19,42 @@ import { ptBrDict } from "../i18n/dictionaries";
     data-skill-panel
     data-lenis-prevent
     aria-labelledby="skill-panel-title"
-    class="fixed inset-y-0 right-0 left-auto m-0 h-dvh max-h-none w-full max-w-[36rem] overflow-y-auto overscroll-contain border-l-8 border-bebop-red bg-paper-white p-5 sm:p-8 text-space-base select-text backdrop:bg-space-base/40"
+    class="fixed inset-y-0 right-0 left-auto m-0 h-dvh max-h-none w-full max-w-[36rem] overflow-hidden border-0 border-l-8 border-bebop-red bg-paper-white p-0 text-space-base select-text backdrop:bg-space-base/40"
   >
-    <div class="flex flex-col-reverse items-start gap-3 border-b-4 border-space-base pb-4 sm:flex-row sm:justify-between sm:gap-4">
-      <div class="min-w-0 max-w-full">
-        <p data-skill-panel-domain data-type="label" class="font-mono text-xs font-bold uppercase tracking-widest text-space-base"></p>
-        <h3
-          id="skill-panel-title"
-          data-skill-panel-title
-          data-type="label"
-          class="mt-1 font-display text-2xl sm:text-3xl font-black uppercase leading-tight break-words text-space-base"
-        >
-        </h3>
-        <p
-          data-skill-panel-summary
-          data-type="paragraph"
-          class="mt-3 font-body text-sm sm:text-base leading-relaxed text-space-base"
-        >
-        </p>
+    <div data-skill-panel-body class="relative h-full overflow-y-auto overscroll-contain p-5 sm:p-8">
+      <PanelClose />
+      <div class="border-b-4 border-space-base pb-4 pr-14 sm:pr-16">
+        <div class="min-w-0 max-w-full">
+          <p data-skill-panel-domain data-type="label" class="font-mono text-xs font-bold uppercase tracking-widest text-space-base"></p>
+          <h3
+            id="skill-panel-title"
+            data-skill-panel-title
+            data-type="label"
+            class="mt-1 font-display text-2xl sm:text-3xl font-black uppercase leading-tight break-words text-space-base"
+          >
+          </h3>
+          <p
+            data-skill-panel-summary
+            data-type="paragraph"
+            class="mt-3 font-body text-sm sm:text-base leading-relaxed text-space-base"
+          >
+          </p>
+        </div>
       </div>
-      <button
-        type="button"
-        data-skill-panel-close
-        data-i18n="menu.closeLabel"
-        class="shrink-0 cursor-pointer self-end sm:self-start border-2 border-space-base bg-space-base px-3 py-2 font-mono text-xs font-black uppercase text-paper-white transition-colors duration-100 hover:bg-bebop-red hover:text-space-base focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-space-base"
-      >
-        {ptBrDict.menu.closeLabel}
-      </button>
+      <ul data-skill-panel-evidence class="mt-6 flex list-none flex-col gap-6 p-0"></ul>
+      <template data-skill-panel-item>
+        <li class="border-l-4 border-space-base pl-4">
+          <a
+            data-skill-panel-link
+            class="inline-flex items-center gap-2 border-2 border-space-base px-3 py-1.5 font-mono text-xs font-black uppercase text-space-base transition-colors duration-100 hover:bg-bebop-red focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-space-base"
+          >
+            <span data-skill-panel-link-label data-type="label"></span>
+            <span aria-hidden="true">→</span>
+          </a>
+          <p data-skill-panel-description data-type="paragraph" class="mt-3 font-body text-sm sm:text-base leading-relaxed text-space-base"></p>
+        </li>
+      </template>
     </div>
-    <ul data-skill-panel-evidence class="mt-6 flex list-none flex-col gap-6 p-0"></ul>
-    <template data-skill-panel-item>
-      <li class="border-l-4 border-space-base pl-4">
-        <a
-          data-skill-panel-link
-          class="inline-flex items-center gap-2 border-2 border-space-base px-3 py-1.5 font-mono text-xs font-black uppercase text-space-base transition-colors duration-100 hover:bg-bebop-red focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-space-base"
-        >
-          <span data-skill-panel-link-label data-type="label"></span>
-          <span aria-hidden="true">→</span>
-        </a>
-        <p data-skill-panel-description data-type="paragraph" class="mt-3 font-body text-sm sm:text-base leading-relaxed text-space-base"></p>
-      </li>
-    </template>
   </dialog>
 </section>
 
@@ -68,6 +64,7 @@ import { ptBrDict } from "../i18n/dictionaries";
   import { getLocale } from "../i18n/index";
   import { getEvidenceDescription, getLocalizedArsenal } from "../data/arsenal";
   import { createPanelTransition } from "../utils/panel-transition";
+  import { bindPanelDismiss } from "../utils/panel-dismiss";
   import { typeText } from "../utils/text-type-bind";
 
   function setupArsenalReveal() {
@@ -136,24 +133,19 @@ import { ptBrDict } from "../i18n/dictionaries";
       panel.querySelectorAll<HTMLElement>("[data-type]").forEach(typeText);
     };
     const onPanelClick = (event: Event) => {
-      if ((event.target as HTMLElement).closest("[data-skill-panel-close]")) transition.close();
-      else if ((event.target as HTMLElement).closest("[data-skill-panel-link]")) panel.close();
-    };
-    const onCancel = (event: Event) => {
-      event.preventDefault();
-      transition.close();
+      if ((event.target as HTMLElement).closest("[data-skill-panel-link]")) panel.close();
     };
     const onClose = () => opener?.focus();
 
     tiles.forEach((tile) => tile.addEventListener("click", onTileClick));
     panel.addEventListener("click", onPanelClick);
-    panel.addEventListener("cancel", onCancel);
+    const unbindDismiss = bindPanelDismiss(panel, () => transition.close());
     panel.addEventListener("close", onClose);
 
     return () => {
       tiles.forEach((tile) => tile.removeEventListener("click", onTileClick));
       panel.removeEventListener("click", onPanelClick);
-      panel.removeEventListener("cancel", onCancel);
+      unbindDismiss();
       panel.removeEventListener("close", onClose);
       transition.destroy();
     };

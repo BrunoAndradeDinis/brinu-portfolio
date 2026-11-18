@@ -44,6 +44,7 @@ test('six hobbies in the approved order with their stickers, stats and copy', ()
       for (const entry of hobby.stats) assert.ok(Number.isInteger(entry.value) && entry.value >= 0 && entry.value <= 99);
     }
   }
-  assert.deepEqual(DICTIONARIES['pt-br'].hobbies, { title: 'HOBBIES', listAria: 'Hobbies', closeLabel: 'Fechar' });
-  assert.equal(DICTIONARIES.en.hobbies.closeLabel, 'Close');
+  assert.deepEqual(DICTIONARIES['pt-br'].hobbies, { title: 'HOBBIES', listAria: 'Hobbies' });
+  assert.equal(DICTIONARIES['pt-br'].panel.closeLabel, 'Fechar');
+  assert.equal(DICTIONARIES.en.panel.closeLabel, 'Close');
 });
