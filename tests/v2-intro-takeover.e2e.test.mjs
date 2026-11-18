@@ -683,3 +683,24 @@ test('C19: bfcache restore while the preloader is still loading finishes it inst
     await context.close();
   }
 });
+
+test('HERO-EXIT: scrolling past the hero fades and shifts the social buttons together with the right manifesto', async () => {
+  const { context, page } = await openHome();
+  try {
+    await page.evaluate(() => window.scrollTo(0, document.getElementById('hero').offsetHeight * 0.5));
+    await page.waitForTimeout(150);
+    const metrics = await page.evaluate(() => {
+      const right = document.querySelector('[data-hero-manifesto="right"]');
+      const socials = document.querySelector('[data-hero-socials]');
+      return {
+        rightOpacity: parseFloat(getComputedStyle(right).opacity),
+        socialsOpacity: parseFloat(getComputedStyle(socials).opacity),
+      };
+    });
+    assert.ok(metrics.rightOpacity < 1, 'right manifesto opacity reduced on scroll');
+    assert.ok(metrics.socialsOpacity < 1, 'socials opacity reduced on scroll');
+    assert.ok(Math.abs(metrics.rightOpacity - metrics.socialsOpacity) < 0.1, 'socials opacity matches right manifesto');
+  } finally {
+    await context.close();
+  }
+});

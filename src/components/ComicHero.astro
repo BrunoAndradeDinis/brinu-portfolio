@@ -356,6 +356,7 @@ import P5Badge from "./p5/P5Badge.astro";
     const manifestoRight = heroSection.querySelector(
       '[data-hero-manifesto="right"]',
     );
+    const heroSocials = heroSection.querySelector('[data-hero-socials]');
 
     const heroExitTl = gsap.timeline({
       scrollTrigger: {
@@ -431,9 +432,12 @@ import P5Badge from "./p5/P5Badge.astro";
       );
     }
 
-    if (manifestoRight) {
+    const rightElements = [manifestoRight, heroSocials].filter(
+      (node): node is Element => node !== null,
+    );
+    if (rightElements.length > 0) {
       heroExitTl.to(
-        manifestoRight,
+        rightElements,
         {
           x: 24,
           opacity: 0.3,
