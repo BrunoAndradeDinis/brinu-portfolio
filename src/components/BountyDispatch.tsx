@@ -1,12 +1,16 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
+import { toast } from 'sonner';
 import { audioSynth } from '../utils/audio';
 import { useLocale } from '../i18n/index';
 import { PROFILE } from '../data/profile';
-import { BUDGET_IDS, CONTACT_BOUNDS, CONTACT_DEFAULTS, DEADLINE_IDS, SERVICE_IDS } from '../data/contact-brief';
+import { BUDGET_IDS, CONTACT_BOUNDS, CONTACT_DEFAULTS, CONTACT_ENDPOINT, DEADLINE_IDS, SERVICE_IDS } from '../data/contact-brief';
 import { isJobOnly, validateContactBrief, type ContactBrief, type ContactField, type RawContactBrief } from '../utils/contact-brief';
+import { buildMailtoHref } from '../utils/contact-mailto';
+import { sendBrief } from '../utils/contact-relay';
 import { digitsOnly, formatBrPhone } from '../utils/contact-sanitize';
 import { ChoiceGroup, TextField } from './contact/fields';
 import { DispatchReceipt } from './contact/DispatchReceipt';
+import { DispatchToaster } from './contact/DispatchToaster';
 
 type FormValues = { -readonly [K in keyof RawContactBrief]: RawContactBrief[K] };
 type Touched = Partial<Record<ContactField, true>>;
@@ -26,6 +30,7 @@ const ALL_TOUCHED: Touched = { name: true, email: true, phone: true, services: t
 
 const FIELD_ORDER: readonly ContactField[] = ['name', 'email', 'phone', 'services', 'message'];
 const SUBMIT_HINT_ID = 'dispatch-submit-hint';
+const HONEYPOT_ID = 'dispatch-website';
 
 const PHONE_PASTE_LENGTH = 25;
 
@@ -36,12 +41,16 @@ function nextPhoneValue(previous: string, typed: string): string {
 }
 
 export const BountyDispatch: React.FC = () => {
-  const { dict: t } = useLocale();
+  const { dict: t, locale } = useLocale();
   const copy = t.dispatch;
   const [values, setValues] = useState<FormValues>(INITIAL_VALUES);
   const [touched, setTouched] = useState<Touched>({});
+  const [honeypot, setHoneypot] = useState('');
   const [brief, setBrief] = useState<ContactBrief | null>(null);
-  const [dispatchTime, setDispatchTime] = useState<string>('');
+  const [sentAt, setSentAt] = useState<Date | null>(null);
+  const [sending, setSending] = useState(false);
+  const [failed, setFailed] = useState(false);
+  const inFlight = useRef(false);
 
   const validation = useMemo(() => validateContactBrief(values), [values]);
   const liveErrors = validation.ok ? {} : validation.errors;
@@ -66,23 +75,55 @@ export const BountyDispatch: React.FC = () => {
     return touched[field] && code ? copy.errors[code] : undefined;
   };
 
-  const handleSubmit = (e: React.SyntheticEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!validation.ok) {
       setTouched(ALL_TOUCHED);
       return;
     }
+    if (inFlight.current) return;
 
-    setBrief(validation.brief);
-    setDispatchTime(new Date().toUTCString());
-    if (!audioSynth.isMuted()) audioSynth.playBountyAcquired();
+    inFlight.current = true;
+    setSending(true);
+    setFailed(false);
+    const submitted = validation.brief;
+    const result = await sendBrief({ endpoint: CONTACT_ENDPOINT, brief: submitted, honeypot, locale });
+    inFlight.current = false;
+    setSending(false);
+
+    if (result.ok) {
+      setBrief(submitted);
+      setSentAt(new Date());
+      toast.success(copy.toastSuccessTitle, { description: copy.toastSuccessBody });
+      if (!audioSynth.isMuted()) audioSynth.playBountyAcquired();
+      return;
+    }
+
+    setFailed(true);
+    if (result.code === 'rate-limited') {
+      toast.error(copy.toastRateLimitedTitle, { description: copy.toastRateLimitedBody });
+    } else {
+      toast.error(copy.toastErrorTitle, { description: copy.toastErrorBody });
+    }
   };
 
   const handleReset = () => {
     setValues(INITIAL_VALUES);
     setTouched({});
+    setHoneypot('');
+    setFailed(false);
     setBrief(null);
+    setSentAt(null);
   };
+
+  const fallbackHref =
+    failed && validation.ok
+      ? buildMailtoHref(
+          validation.brief,
+          { subjectPrefix: copy.mailSubjectPrefix, labels: copy.mail, services: copy.services, budgets: copy.budgets, deadlines: copy.deadlines },
+          PROFILE.email,
+        )
+      : null;
 
   const showBudgetAndDeadline = !isJobOnly(values.services);
 
@@ -100,8 +141,23 @@ export const BountyDispatch: React.FC = () => {
         <span className="text-[10px] sm:text-xs text-muted-gray uppercase text-right">{copy.headerSub}</span>
       </div>
 
-      {!brief ? (
-        <form onSubmit={handleSubmit} noValidate className="space-y-5" data-dispatch-form>
+      <DispatchToaster />
+
+      {!brief || !sentAt ? (
+        <form onSubmit={handleSubmit} noValidate aria-busy={sending} className="space-y-5" data-dispatch-form>
+          <div aria-hidden="true" className="absolute -left-[10000px] top-auto w-px h-px overflow-hidden">
+            <label htmlFor={HONEYPOT_ID}>{copy.honeypotLabel}</label>
+            <input
+              id={HONEYPOT_ID}
+              name="website"
+              type="text"
+              tabIndex={-1}
+              autoComplete="off"
+              value={honeypot}
+              onChange={(e) => setHoneypot(e.target.value)}
+              data-dispatch-honeypot
+            />
+          </div>
           <TextField
             id="dispatch-name"
             field="name"
@@ -203,20 +259,28 @@ export const BountyDispatch: React.FC = () => {
           <button
             type="submit"
             data-dispatch-submit-btn
-            disabled={!validation.ok}
+            disabled={!validation.ok || sending}
             aria-describedby={validation.ok ? undefined : SUBMIT_HINT_ID}
             className="w-full py-3.5 px-6 border-2 border-paper-white bg-bebop-red text-space-base font-mono font-black text-xs sm:text-sm uppercase tracking-wider hover:bg-paper-white hover:text-space-base transition-all duration-150 shadow-[4px_4px_0_var(--color-paper-white)] flex items-center justify-center gap-2 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none disabled:hover:bg-bebop-red"
           >
-            <span>{copy.submitCta}</span>
+            <span>{sending ? copy.sendingCta : copy.submitCta}</span>
           </button>
           {!validation.ok && (
             <p id={SUBMIT_HINT_ID} data-dispatch-submit-hint className="text-[11px] text-muted-gray uppercase tracking-wider">
               {copy.missingPrefix} {missingFields.join(', ')}
             </p>
           )}
+          {fallbackHref && (
+            <p data-dispatch-fallback className="text-[11px] text-paper-white uppercase tracking-wider flex flex-wrap items-center gap-x-2 gap-y-1">
+              <span>{copy.fallbackLead}</span>
+              <a href={fallbackHref} data-dispatch-mailto className="text-bebop-red font-bold underline underline-offset-2 break-words">
+                {copy.sendEmailCopy}
+              </a>
+            </p>
+          )}
         </form>
       ) : (
-        <DispatchReceipt brief={brief} copy={copy} to={PROFILE.email} dispatchTime={dispatchTime} onReset={handleReset} />
+        <DispatchReceipt brief={brief} copy={copy} locale={locale} sentAt={sentAt} onReset={handleReset} />
       )}
     </div>
   );

@@ -1,18 +1,18 @@
 import React from 'react';
-import type { TranslationSchema } from '../../i18n/index';
+import type { Locale, TranslationSchema } from '../../i18n/index';
 import type { ContactBrief } from '../../utils/contact-brief';
-import { buildMailtoHref } from '../../utils/contact-mailto';
 import { formatBrPhone } from '../../utils/contact-sanitize';
+import { formatDispatchTime } from '../../utils/dispatch-time';
 
 interface DispatchReceiptProps {
   brief: ContactBrief;
   copy: TranslationSchema['dispatch'];
-  to: string;
-  dispatchTime: string;
+  locale: Locale;
+  sentAt: Date;
   onReset: () => void;
 }
 
-export const DispatchReceipt: React.FC<DispatchReceiptProps> = ({ brief, copy, to, dispatchTime, onReset }) => {
+export const DispatchReceipt: React.FC<DispatchReceiptProps> = ({ brief, copy, locale, sentAt, onReset }) => {
   const rows: ReadonlyArray<readonly [field: string, key: string, value: string | null]> = [
     ['name', copy.codenameKey, brief.name],
     ['company', copy.companyKey, brief.company],
@@ -23,11 +23,6 @@ export const DispatchReceipt: React.FC<DispatchReceiptProps> = ({ brief, copy, t
     ['deadline', copy.deadlineKey, brief.deadline && copy.deadlines[brief.deadline]],
     ['target', copy.statusKey, copy.statusValue],
   ];
-  const mailtoHref = buildMailtoHref(
-    brief,
-    { subjectPrefix: copy.mailSubjectPrefix, labels: copy.mail, services: copy.services, budgets: copy.budgets, deadlines: copy.deadlines },
-    to
-  );
 
   return (
     <div data-dispatch-receipt className="space-y-6 animate-in fade-in duration-300">
@@ -47,24 +42,18 @@ export const DispatchReceipt: React.FC<DispatchReceiptProps> = ({ brief, copy, t
           ))}
         <div className="flex justify-between gap-3 pt-1">
           <dt className="text-muted-gray shrink-0">{copy.timestampKey}</dt>
-          <dd className="text-muted-gray text-[10px] text-right">{dispatchTime}</dd>
+          <dd data-dispatch-time className="text-muted-gray text-[10px] text-right">
+            {formatDispatchTime(sentAt, locale)}
+          </dd>
         </div>
       </dl>
 
-      <div className="flex flex-col sm:flex-row gap-3">
-        <a
-          href={mailtoHref}
-          data-dispatch-mailto
-          className="flex-1 py-3 px-4 border-2 border-paper-white bg-bebop-red text-space-base text-center font-bold text-xs uppercase tracking-wider hover:bg-paper-white hover:text-space-base transition-all inline-flex items-center justify-center gap-2"
-        >
-          <span>{copy.sendEmailCopy}</span>
-        </a>
-
+      <div className="flex">
         <button
           type="button"
           data-new-transmission-btn
           onClick={onReset}
-          className="py-3 px-4 border-2 border-paper-white bg-space-base text-paper-white font-bold text-xs uppercase tracking-wider hover:bg-paper-white hover:text-space-base transition-all inline-flex items-center justify-center gap-2 cursor-pointer"
+          className="w-full py-3 px-4 border-2 border-paper-white bg-space-base text-paper-white font-bold text-xs uppercase tracking-wider hover:bg-paper-white hover:text-space-base transition-all inline-flex items-center justify-center gap-2 cursor-pointer"
         >
           <span>{copy.newTransmission}</span>
         </button>

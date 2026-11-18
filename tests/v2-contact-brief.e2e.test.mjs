@@ -6,6 +6,7 @@ import http from 'node:http';
 import { chromium } from 'playwright';
 
 const { DICTIONARIES } = await import('../src/i18n/dictionaries.ts');
+const { CONTACT_ENDPOINT } = await import('../src/data/contact-brief.ts');
 const PT = DICTIONARIES['pt-br'].dispatch;
 const EN = DICTIONARIES.en.dispatch;
 const ZERO_WIDTH = String.fromCharCode(0x200b);
@@ -44,9 +45,17 @@ after(async () => {
   if (server) await new Promise((resolve) => server.close(resolve));
 });
 
+async function relayReplies(context, body, status = 200) {
+  await context.unroute(CONTACT_ENDPOINT);
+  await context.route(CONTACT_ENDPOINT, (route) =>
+    route.fulfill({ status, headers: { 'Access-Control-Allow-Origin': '*' }, contentType: 'application/json', body: JSON.stringify(body) })
+  );
+}
+
 async function openForm({ locale = 'pt-br', width = 1440, height = 900 } = {}) {
   const context = await browser.newContext({ viewport: { width, height }, reducedMotion: 'reduce' });
   await context.addInitScript((loc) => window.localStorage.setItem('brinu_locale', loc), locale);
+  await relayReplies(context, { ok: true });
   const page = await context.newPage();
   await page.goto(`${baseUrl}/`, { waitUntil: 'load' });
   await page.evaluate(() => {
@@ -98,10 +107,10 @@ async function touchEveryField(page) {
 test('form fields render in the approved order', async () => {
   const { context, page } = await openForm();
   const order = await page.locator('[data-dispatch-form]').evaluate((form) =>
-    [...form.children].map((child) => (child.tagName === 'FIELDSET' ? child.id : child.tagName === 'BUTTON' ? 'submit' : child.matches('[data-dispatch-submit-hint]') ? 'hint' : child.querySelector('input, textarea')?.id))
+    [...form.children].filter((child) => !child.matches('[aria-hidden="true"]')).map((child) => (child.tagName === 'FIELDSET' ? child.id : child.tagName === 'BUTTON' ? 'submit' : child.matches('[data-dispatch-submit-hint]') ? 'hint' : child.querySelector('input, textarea')?.id))
   );
   assert.deepEqual(order, ['dispatch-name', 'dispatch-company', 'dispatch-email', 'dispatch-phone', 'dispatch-services', 'dispatch-budget', 'dispatch-deadline', 'dispatch-message', 'submit', 'hint']);
-  const labels = await page.locator('[data-dispatch-form] > div > label').allInnerTexts();
+  const labels = await page.locator('[data-dispatch-form] > div:not([aria-hidden]) > label').allInnerTexts();
   assert.equal(labels.length, 5);
   assert.equal(labels[0].trim(), PT.nameLabel);
   assert.match(labels[1], /^02 \/\/ EMPRESA\s*\(OPCIONAL\)$/);
@@ -184,7 +193,7 @@ test('locale switch translates the form and keeps typed values', async () => {
   assert.deepEqual(await checkedValue(page, 'dispatch-services'), ['site']);
   assert.deepEqual(await checkedValue(page, 'dispatch-budget'), ['over-15k']);
   assert.deepEqual(await checkedValue(page, 'dispatch-deadline'), ['urgent']);
-  const labelTexts = (await page.locator('[data-dispatch-form] > div > label').allInnerTexts()).map((text) => text.replace(/\s+/g, ' ').trim());
+  const labelTexts = (await page.locator('[data-dispatch-form] > div:not([aria-hidden]) > label').allInnerTexts()).map((text) => text.replace(/\s+/g, ' ').trim());
   assert.deepEqual(labelTexts, [
     EN.nameLabel,
     `${EN.companyLabel} ${EN.optionalTag}`,
@@ -431,6 +440,12 @@ test('valid submit shows the receipt from sanitized values', async () => {
   await page.check('#dispatch-budget input[value="8k-15k"]');
   await page.check('#dispatch-deadline input[value="1-3-months"]');
   await page.fill('#dispatch-message', 'Linha <script>um</script>\n\n\n\n\nLinha dois com detalhes.');
+  await relayReplies(context, { ok: false, code: 'server-error' });
+  await submit(page);
+  await page.waitForSelector('[data-dispatch-fallback]');
+  const href = await page.getAttribute('[data-dispatch-fallback] [data-dispatch-mailto]', 'href');
+
+  await relayReplies(context, { ok: true });
   await submit(page);
   await page.waitForSelector('[data-dispatch-receipt]');
   assert.equal(await page.locator('[data-dispatch-form]').count(), 0);
@@ -447,7 +462,6 @@ test('valid submit shows the receipt from sanitized values', async () => {
   const receiptHtml = await page.locator('[data-dispatch-receipt]').innerHTML();
   assert.doesNotMatch(receiptHtml, /<b>|<script>/);
 
-  const href = await page.getAttribute('[data-dispatch-mailto]', 'href');
   const url = new URL(href);
   assert.equal(url.protocol, 'mailto:');
   assert.equal(url.pathname, PT.statusValue);
@@ -562,6 +576,7 @@ test('submit stays disabled until every field is valid', async () => {
   assert.equal(await button.isDisabled(), false);
   await page.focus('#dispatch-name');
   await page.keyboard.press('Enter');
+  await page.waitForSelector('[data-dispatch-receipt]');
   assert.equal(await page.locator('[data-dispatch-receipt]').count(), 1, 'enabled submit works by keyboard');
   await context.close();
 });
