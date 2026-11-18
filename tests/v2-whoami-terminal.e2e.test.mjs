@@ -268,6 +268,7 @@ test('the console and the terminal share their commands', async () => {
     assert.deepEqual(table.map((row) => row.URL), getLocalizedCases('pt-br').map((project) => `/cases/${project.id}`));
     logs.length = 0;
     await page.evaluate(() => void window.whoami);
+    await page.waitForEvent('console', { predicate: (message) => message.text().includes('Bruno de Andrade Dinis (@Brinu)'), timeout: 3000 }).catch(() => null);
     assert.ok(logs.some((entry) => entry.includes('Bruno de Andrade Dinis (@Brinu)')), 'console whoami prints the terminal whoami output');
   } finally {
     await context.close();
