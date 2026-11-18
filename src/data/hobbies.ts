@@ -1,5 +1,5 @@
 import { t, type Locale, type Localized } from './localized.ts';
-import { STICKERS } from './stickers.ts';
+import { stickerFile } from './sticker-files.ts';
 
 export type HobbyId = 'animes' | 'musica' | 'violao' | 'skate' | 'jogos' | 'natureza';
 
@@ -51,7 +51,7 @@ export const HOBBIES: readonly HobbyDefinition[] = [
   {
     id: 'animes',
     name: t('ANIMES', 'ANIME'),
-    sticker: 'space-cowboy',
+    sticker: stickerFile(3),
     rating: 96,
     position: tag(t('OTK', 'OTK'), t('Otaku', 'Otaku')),
     stats: [
@@ -71,7 +71,7 @@ export const HOBBIES: readonly HobbyDefinition[] = [
   {
     id: 'musica',
     name: t('MÚSICA', 'MUSIC'),
-    sticker: 'medulla',
+    sticker: stickerFile(31),
     rating: 94,
     position: tag(t('OUV', 'LIS'), t('Ouvinte', 'Listener')),
     stats: [
@@ -91,7 +91,7 @@ export const HOBBIES: readonly HobbyDefinition[] = [
   {
     id: 'violao',
     name: t('VIOLÃO & LUAUS', 'GUITAR & LUAUS'),
-    sticker: 'violao',
+    sticker: stickerFile(24),
     rating: 82,
     position: tag(t('LUA', 'LUA'), t('Luau', 'Luau')),
     stats: [
@@ -111,7 +111,7 @@ export const HOBBIES: readonly HobbyDefinition[] = [
   {
     id: 'skate',
     name: t('SKATE', 'SKATEBOARDING'),
-    sticker: 'skate',
+    sticker: stickerFile(23),
     rating: 70,
     position: tag(t('SKT', 'SKT'), t('Skatista', 'Skater')),
     stats: [
@@ -131,7 +131,7 @@ export const HOBBIES: readonly HobbyDefinition[] = [
   {
     id: 'jogos',
     name: t('JOGOS DE CELULAR', 'MOBILE GAMES'),
-    sticker: 'crown',
+    sticker: stickerFile(29),
     rating: 88,
     position: tag(t('MOB', 'MOB'), t('Mobile', 'Mobile')),
     stats: [
@@ -151,7 +151,7 @@ export const HOBBIES: readonly HobbyDefinition[] = [
   {
     id: 'natureza',
     name: t('NATUREZA', 'NATURE'),
-    sticker: 'montanha',
+    sticker: stickerFile(51),
     rating: 97,
     position: tag(t('MAT', 'WLD'), t('Mato', 'Wild')),
     stats: [
@@ -170,12 +170,6 @@ export const HOBBIES: readonly HobbyDefinition[] = [
   },
 ];
 
-export function hobbyStickerFile(stickerId: string): string {
-  const sticker = STICKERS.find((entry) => entry.id === stickerId);
-  if (!sticker) throw new Error(`Unknown sticker "${stickerId}"`);
-  return sticker.file;
-}
-
 const localizeStat = (entry: HobbyStat, locale: Locale): LocalizedHobbyStat => ({
   code: entry.code[locale],
   label: entry.label[locale],
@@ -186,7 +180,7 @@ export function getLocalizedHobbies(locale: Locale): LocalizedHobby[] {
   return HOBBIES.map((hobby) => ({
     id: hobby.id,
     name: hobby.name[locale],
-    sticker: hobbyStickerFile(hobby.sticker),
+    sticker: hobby.sticker,
     rating: hobby.rating,
     position: { code: hobby.position.code[locale], label: hobby.position.label[locale] },
     stats: hobby.stats.map((entry) => localizeStat(entry, locale)),
