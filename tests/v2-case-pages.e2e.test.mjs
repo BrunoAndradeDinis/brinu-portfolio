@@ -142,7 +142,7 @@ test('C3: each case page sets its own meta and updates it on locale change', asy
         assert.equal(meta.description, expected.description);
         assert.equal(meta.ogTitle, expected.title);
         assert.equal(meta.ogDescription, expected.description);
-        assert.equal(meta.canonical, `/cases/${id}`);
+        assert.equal(meta.canonical, `https://brinu.xyz/cases/${id}`);
         if (locale === 'pt-br') titles.add(meta.title);
       }
     } finally {

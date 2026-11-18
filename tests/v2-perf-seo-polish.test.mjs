@@ -163,7 +163,7 @@ test('C4: BaseLayout renders theme-color #FE0000, OpenGraph, and Twitter Card me
   );
   assert.equal(
     await page.getAttribute('meta[property="og:image"]', 'content'),
-    '/assets/brinu-avatar.jpg'
+    'https://brinu.xyz/assets/brinu-avatar.jpg'
   );
   assert.equal(
     await page.getAttribute('meta[property="og:locale"]', 'content'),
@@ -183,7 +183,7 @@ test('C4: BaseLayout renders theme-color #FE0000, OpenGraph, and Twitter Card me
   );
   assert.equal(
     await page.getAttribute('meta[name="twitter:image"]', 'content'),
-    '/assets/brinu-avatar.jpg'
+    'https://brinu.xyz/assets/brinu-avatar.jpg'
   );
 
   await context.close();
