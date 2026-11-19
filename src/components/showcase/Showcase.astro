@@ -179,6 +179,8 @@ const videoList = media.video
               <img
                 class="block h-full w-full object-cover object-top"
                 src={media.screenshot.src}
+                srcset={media.screenshot.srcset}
+                sizes="(min-width: 64rem) 50vw, 100vw"
                 width={media.screenshot.width}
                 height={media.screenshot.height}
                 data-showcase-alt

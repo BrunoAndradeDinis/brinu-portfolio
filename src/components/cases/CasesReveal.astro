@@ -99,6 +99,8 @@ const archive = getLocalizedArchive("pt-br");
                 <div data-case-el="media" class:list={["cases-media overflow-hidden border-2", project.track === 1 ? "border-space-base" : "border-paper-white"]}>
                   <img
                     src={screenshot.src}
+                    srcset={screenshot.srcset}
+                    sizes="(min-width: 64rem) 40vw, 100vw"
                     width={screenshot.width}
                     height={screenshot.height}
                     alt=""

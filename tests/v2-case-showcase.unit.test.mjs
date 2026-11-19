@@ -42,6 +42,7 @@ test('SHOW-10: every case has media files and bilingual alt texts', async () => 
   for (const id of IDS) {
     const media = SHOWCASE_MEDIA[id];
     assert.ok(existsSync(publicFile(media.screenshot.src)), `${id} screenshot file`);
+    for (const candidate of media.screenshot.srcset.split(',')) assert.ok(existsSync(publicFile(candidate.trim().split(' ')[0])), `${id} srcset file`);
     assert.ok(existsSync(publicFile(media.sticker.src)), `${id} sticker file`);
     for (const locale of ['pt-br', 'en']) {
       assert.ok(media.screenshot.alt[locale].trim().length > 0, `${id} screenshot alt ${locale}`);

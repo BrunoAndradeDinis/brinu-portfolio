@@ -8,6 +8,7 @@ export interface ShowcaseImage {
   readonly src: string;
   readonly width: number;
   readonly height: number;
+  readonly srcset?: string;
   readonly alt: Localized<string>;
 }
 
@@ -46,7 +47,12 @@ function mediaFor(id: MainCaseId): ShowcaseMedia {
   const base = `${ROOT}/${id}/${id}`;
   const media = {
     copy: text.copy,
-    screenshot: { src: `${base}-screenshot.webp`, ...SCREEN, alt: text.alt },
+    screenshot: {
+      src: `${base}-screenshot.webp`,
+      ...SCREEN,
+      srcset: `${base}-screenshot-768.webp 768w, ${base}-screenshot.webp 1024w`,
+      alt: text.alt,
+    },
     sticker: { src: `${base}-sticker.svg` },
   };
   if (text.tag && text.posterAlt) {
