@@ -41,7 +41,7 @@ install -m 755 -o "$DEPLOY_USER" -g "$DEPLOY_USER" "$SCRIPT_DIR/rollback.sh" "$S
 cat > /etc/ssh/sshd_config.d/10-hardening.conf <<'EOF'
 PasswordAuthentication no
 KbdInteractiveAuthentication no
-PermitRootLogin prohibit-password
+PermitRootLogin no
 EOF
 sshd -t
 systemctl reload ssh
