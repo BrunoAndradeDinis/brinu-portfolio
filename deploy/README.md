@@ -10,7 +10,7 @@ push na main ─▶ GitHub Actions (npm ci + build) ─▶ rsync ─▶ /var/www
 | Arquivo | Papel |
 |---|---|
 | `Caddyfile` | Domínio, `www` redirecionando para o domínio raiz, cache, compressão, 404 |
-| `bootstrap.sh` | Prepara a VM uma única vez (Caddy, usuário `deploy`, SSH só por chave, atualizações automáticas) |
+| `bootstrap.sh` | Prepara a VM uma única vez (Caddy, usuário `deploy` com chave restrita, SSH só por chave, `ufw`, `fail2ban`, atualizações automáticas) |
 | `rollback.sh` | Volta o `current` para a release anterior ou para um SHA |
 | `../.github/workflows/deploy.yml` | Build e deploy a cada push na `main` (ou manual) |
 
@@ -75,6 +75,8 @@ Actions → Deploy → Run workflow. O último passo testa `/`, `/whoami/`, `/ro
 - Logs de acesso: `/var/log/caddy/brinu.log`. Logs do Caddy: `journalctl -u caddy`.
 - Mudou o `Caddyfile`: copie para `/etc/caddy/Caddyfile` e rode `sudo systemctl reload caddy`.
 - Atualizações de segurança do Ubuntu rodam sozinhas (`unattended-upgrades`). Reinicie a VM quando existir `/var/run/reboot-required`.
+- IPs banidos pelo `fail2ban`: `sudo fail2ban-client status sshd`. O `22/tcp` fica aberto porque os runners do GitHub Actions não têm IP fixo; o login é só por chave.
+- A CSP de scripts e estilos vem no `<meta>` gerado pelo Astro (`security.csp` em `astro.config.mjs`); o `Caddyfile` só define o que o `<meta>` não cobre (`frame-ancestors`). Script `is:inline` novo precisa entrar em `src/utils/inline-scripts.mjs`, ou o navegador bloqueia; `tests/v2-security-csp.test.mjs` falha se faltar.
 
 ## Atenções
 
