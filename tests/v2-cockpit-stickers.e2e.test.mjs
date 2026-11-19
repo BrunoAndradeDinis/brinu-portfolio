@@ -385,3 +385,25 @@ test('CKP-PROTO: the open menu keeps the prototype structure at 1440, 768 and 39
     }
   }
 });
+
+test('AUD-01: sound is on with nothing stored and plays from the first gesture', async () => {
+  const { context, page } = await openPath('/');
+  try {
+    await page.evaluate(() => {
+      window.__oscillators = 0;
+      const create = AudioContext.prototype.createOscillator;
+      AudioContext.prototype.createOscillator = function () {
+        window.__oscillators += 1;
+        return create.call(this);
+      };
+    });
+    assert.equal(await page.evaluate(() => window.localStorage.getItem('bebop:audio-muted')), null);
+    assert.equal(await page.evaluate(() => window.bebopAudio.isMuted()), false);
+    await page.mouse.click(5, 450);
+    await page.waitForFunction(() => window.bebopAudio.getContext()?.state === 'running');
+    await openCockpit(page);
+    assert.ok((await page.evaluate(() => window.__oscillators)) > 0, 'opening the menu synthesizes the knob click');
+  } finally {
+    await context.close();
+  }
+});
