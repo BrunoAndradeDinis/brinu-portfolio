@@ -542,3 +542,31 @@ test('JK-12: the choice cards lift with a red shadow on hover and keyboard focus
     await still.context.close();
   }
 });
+
+test('JK-13: a loss plays the defeat sound, a win the bounty arpeggio and a draw neither', async () => {
+  const { context, page } = await openHome({ reducedMotion: 'reduce' });
+  try {
+    await toPanel(page);
+    await page.evaluate(() => {
+      window.__sounds = [];
+      const audio = window.bebopAudio;
+      for (const name of ['playBountyLost', 'playBountyAcquired']) {
+        const original = audio[name].bind(audio);
+        audio[name] = () => {
+          window.__sounds.push(name);
+          original();
+        };
+      }
+    });
+    const sounds = async (player, cpu) => {
+      await page.evaluate(() => { window.__sounds = []; });
+      await playRound(page, player, cpu);
+      return page.evaluate(() => window.__sounds);
+    };
+    assert.deepEqual(await sounds('tesoura', 'pedra'), ['playBountyLost']);
+    assert.deepEqual(await sounds('pedra', 'tesoura'), ['playBountyAcquired']);
+    assert.deepEqual(await sounds('papel', 'papel'), []);
+  } finally {
+    await context.close();
+  }
+});

@@ -293,6 +293,49 @@ class AudioSynthesizer {
     });
   }
 
+  /**
+   * Sintetiza o "wah-wah" descendente de derrota, com a última nota escorregando para baixo
+   */
+  public playBountyLost(): void {
+    if (this.muted) return;
+    const ctx = this.getContext();
+    if (!ctx || ctx.state !== 'running') return;
+
+    const notes = [392.0, 369.99, 349.23, 329.63]; // G4, F#4, F4, E4
+    const noteDuration = 0.22;
+    const lastDuration = 0.6;
+    const now = ctx.currentTime;
+
+    notes.forEach((freq, idx) => {
+      try {
+        const last = idx === notes.length - 1;
+        const startTime = now + idx * noteDuration;
+        const duration = last ? lastDuration : noteDuration * 0.9;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(freq, startTime);
+        if (last) osc.frequency.exponentialRampToValueAtTime(freq * 0.75, startTime + duration);
+
+        gain.gain.setValueAtTime(0.05, startTime);
+        gain.gain.exponentialRampToValueAtTime(0.0001, startTime + duration);
+
+        osc.connect(gain);
+        gain.connect(this.masterGain || ctx.destination);
+
+        osc.start(startTime);
+        osc.stop(startTime + duration + 0.02);
+
+        osc.onended = () => {
+          osc.disconnect();
+          gain.disconnect();
+        };
+      } catch {
+        // Ignora
+      }
+    });
+  }
 }
 
 // Exporta singleton canônico para toda a aplicação
