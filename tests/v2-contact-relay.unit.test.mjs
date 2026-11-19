@@ -7,7 +7,7 @@ import vm from 'node:vm';
 const RELAY_SOURCE = readFileSync(new URL('../apps-script/contact-relay.js', import.meta.url), 'utf8');
 const RECIPIENT = 'owner@example.com';
 
-function loadRelay({ sendThrows = false, recipient = RECIPIENT } = {}) {
+function loadRelay({ sendThrows = false, confirmThrows = false, recipient = RECIPIENT } = {}) {
   const sent = [];
   const logs = [];
   const store = new Map();
@@ -15,7 +15,7 @@ function loadRelay({ sendThrows = false, recipient = RECIPIENT } = {}) {
     console: { info: (line) => logs.push(JSON.parse(line)) },
     MailApp: {
       sendEmail(message) {
-        if (sendThrows) throw new Error('quota');
+        if (sendThrows || (confirmThrows && message.to !== recipient)) throw new Error('quota');
         sent.push(message);
       },
     },
@@ -42,7 +42,9 @@ function loadRelay({ sendThrows = false, recipient = RECIPIENT } = {}) {
     return JSON.parse(output.content);
   };
   const setNow = (ms) => vm.runInContext(`Date.now = () => ${ms};`, context);
-  return { post, sent, setNow, logs };
+  const inbox = () => sent.filter((message) => message.to === recipient);
+  const confirmations = () => sent.filter((message) => message.to !== recipient);
+  return { post, sent, inbox, confirmations, setNow, logs };
 }
 
 const VALID = {
@@ -60,11 +62,11 @@ const VALID = {
 test('relay mails a valid brief to the recipient', () => {
   const relay = loadRelay();
   assert.deepEqual(relay.post(VALID), { ok: true });
-  assert.equal(relay.sent.length, 1);
-  const [mail] = relay.sent;
+  assert.equal(relay.inbox().length, 1);
+  const [mail] = relay.inbox();
   assert.equal(mail.to, RECIPIENT);
   assert.equal(mail.replyTo, 'ana@example.com');
-  assert.equal(mail.subject, '[Portfolio] Nova proposta: Ana Souza // Hana Studio');
+  assert.equal(mail.subject, 'Nova proposta: Ana Souza // Hana Studio');
   assert.equal(
     mail.body,
     [
@@ -72,6 +74,8 @@ test('relay mails a valid brief to the recipient', () => {
       'Empresa: Hana Studio',
       'E-mail: ana@example.com',
       'WhatsApp: (16) 99123-4567',
+      'Retorno preferido: E-mail',
+      'Idioma do visitante: Português (pt-br)',
       'Serviços: Sistema web / painel, Site / landing page',
       'Orçamento: R$ 8.000 – R$ 15.000',
       'Prazo: 1 a 3 meses',
@@ -83,8 +87,9 @@ test('relay mails a valid brief to the recipient', () => {
 
   const jobOnly = loadRelay();
   assert.deepEqual(jobOnly.post({ ...VALID, company: '', phone: '', services: ['job'] }), { ok: true });
-  assert.equal(jobOnly.sent[0].subject, '[Portfolio] Nova proposta: Ana Souza');
+  assert.equal(jobOnly.sent[0].subject, 'Nova proposta: Ana Souza');
   assert.doesNotMatch(jobOnly.sent[0].body, /Empresa|WhatsApp|Orçamento|Prazo/);
+  assert.match(jobOnly.sent[0].body, /^Retorno preferido: E-mail$/m);
 });
 
 test('relay rejects invalid briefs without mailing', () => {
@@ -123,7 +128,7 @@ test('relay rejects invalid briefs without mailing', () => {
   };
   assert.deepEqual(relay.post(hostile), { ok: true });
   const [mail] = relay.sent;
-  assert.equal(mail.subject, '[Portfolio] Nova proposta: Ana scriptx/script Bcc: evil@x.com // Hana Studio');
+  assert.equal(mail.subject, 'Nova proposta: Ana scriptx/script Bcc: evil@x.com // Hana Studio');
   assert.doesNotMatch(mail.subject, /[\r\n<>]/);
   assert.match(mail.body, /^Orçamento: A combinar$/m);
   assert.match(mail.body, /^Prazo: Flexível$/m);
@@ -148,8 +153,8 @@ test('relay delivers a valid brief with a filled honeypot flagged instead of dro
 
   relay.post({ ...VALID, email: 'clean@example.com', website: null });
   relay.post({ ...VALID, email: 'clean2@example.com', website: '' });
-  assert.ok(relay.sent.slice(-2).every((m) => m.subject.startsWith('[Portfolio] Nova proposta:')), 'a null or empty honeypot is a person');
-  assert.doesNotMatch(relay.sent.at(-1).body, /anti-bot/);
+  assert.ok(relay.inbox().slice(-2).every((m) => m.subject.startsWith('Nova proposta:')), 'a null or empty honeypot is a person');
+  assert.doesNotMatch(relay.inbox().at(-1).body, /anti-bot/);
 });
 
 test('relay drops a filled honeypot with an invalid brief silently', () => {
@@ -188,7 +193,7 @@ test('relay rate limits per e-mail and overall', () => {
   relay.setNow(1_000_000);
   for (let i = 0; i < 3; i += 1) assert.deepEqual(relay.post(VALID), { ok: true });
   assert.deepEqual(relay.post({ ...VALID, email: 'ANA@example.com' }), { ok: false, code: 'rate-limited' });
-  assert.equal(relay.sent.length, 3);
+  assert.equal(relay.inbox().length, 3);
 
   relay.setNow(1_000_000 + 3600 * 1000);
   assert.deepEqual(relay.post(VALID), { ok: true }, 'the oldest brief leaves the window after an hour');
@@ -205,13 +210,13 @@ test('relay rate limits per e-mail and overall', () => {
   assert.deepEqual(sliding.post(VALID), { ok: false, code: 'rate-limited' }, 'three briefs already in the last hour');
   sliding.setNow(start + 119 * 60_000 + 1);
   assert.deepEqual(sliding.post(VALID), { ok: true });
-  assert.equal(sliding.sent.length, 5);
+  assert.equal(sliding.inbox().length, 5);
 
   const overall = loadRelay();
   overall.setNow(5_000_000);
   for (let i = 0; i < 20; i += 1) assert.deepEqual(overall.post({ ...VALID, email: `lead${i}@example.com` }), { ok: true });
   assert.deepEqual(overall.post({ ...VALID, email: 'lead20@example.com' }), { ok: false, code: 'rate-limited' });
-  assert.equal(overall.sent.length, 20);
+  assert.equal(overall.inbox().length, 20);
 });
 
 test('relay reports a failed send as server-error', () => {
@@ -377,5 +382,99 @@ test('relay accepts every brief the client accepts with the same phone', async (
     const expected = digits ? `WhatsApp: (${digits.slice(0, 2)}) ${digits.slice(2, digits.length - 4)}-${digits.slice(-4)}` : null;
     if (expected) assert.match(relay.sent[0].body, new RegExp(`^${expected.replace(/[()]/g, '\\$&')}$`, 'm'), raw);
     else assert.doesNotMatch(relay.sent[0].body, /WhatsApp/, raw);
+  }
+});
+
+test('relay requires the whatsapp number when the visitor prefers a reply there', () => {
+  const missing = loadRelay();
+  assert.deepEqual(missing.post({ ...VALID, phone: '', preferWhatsapp: true }), { ok: false, code: 'invalid' });
+  assert.equal(missing.logs.at(-1).detail, 'phone');
+  assert.equal(missing.sent.length, 0);
+
+  const relay = loadRelay();
+  assert.deepEqual(relay.post({ ...VALID, preferWhatsapp: true }), { ok: true });
+  assert.match(relay.inbox()[0].body, /^WhatsApp: \(16\) 99123-4567\nRetorno preferido: WhatsApp$/m);
+
+  const loose = loadRelay();
+  assert.deepEqual(loose.post({ ...VALID, phone: '', preferWhatsapp: 'true' }), { ok: true }, 'only a real boolean turns the preference on');
+  assert.match(loose.inbox()[0].body, /^Retorno preferido: E-mail$/m);
+});
+
+test('relay mails the visitor a confirmation with a copy of the brief', () => {
+  const relay = loadRelay();
+  relay.post({ ...VALID, locale: 'pt-br', message: 'Painel com login & relatórios.\nSegunda linha com "aspas".' });
+  assert.equal(relay.sent.length, 2);
+  const [mail] = relay.confirmations();
+  assert.equal(mail.to, 'ana@example.com');
+  assert.equal(mail.replyTo, RECIPIENT);
+  assert.equal(mail.subject, '[Brinu] Transmissão confirmada: recebi sua proposta');
+  for (const line of [
+    'Olá, Ana Souza!',
+    'O retorno vai por e-mail, para ana@example.com.',
+    'Nome: Ana Souza',
+    'Empresa: Hana Studio',
+    'E-mail: ana@example.com',
+    'WhatsApp: (16) 99123-4567',
+    'Preferência de contato: E-mail',
+    'Serviços: Sistema web / painel, Site / landing page',
+    'Orçamento: R$ 8.000 – R$ 15.000',
+    'Prazo: 1 a 3 meses',
+    'Painel com login & relatórios.',
+  ]) {
+    assert.ok(mail.body.split('\n').includes(line), line);
+  }
+  assert.match(mail.htmlBody, /^<!DOCTYPE html><html lang="pt-BR">/);
+  assert.match(mail.htmlBody, /TRANSMISSÃO CONFIRMADA/);
+  assert.match(mail.htmlBody, /role="presentation"/);
+  assert.match(mail.htmlBody, /#fe0000/);
+  assert.match(mail.htmlBody, /#0b0c10/);
+  assert.ok(mail.htmlBody.includes('Painel com login &amp; relatórios.<br>Segunda linha com &quot;aspas&quot;.'));
+  assert.doesNotMatch(mail.htmlBody, /<script|<b>/);
+  for (const label of ['Nome', 'Empresa', 'E-mail', 'WhatsApp', 'Preferência de contato', 'Serviços', 'Orçamento', 'Prazo']) {
+    assert.ok(mail.htmlBody.includes(`>${label}<`), label);
+  }
+  assert.ok(mail.htmlBody.includes('RESUMO DA TRANSMISSÃO'));
+  assert.ok(mail.htmlBody.includes('DETALHES DO PROJETO'));
+});
+
+test('confirmation follows the locale and the whatsapp preference', () => {
+  const relay = loadRelay();
+  relay.post({ ...VALID, locale: 'en', preferWhatsapp: true });
+  const [mail] = relay.confirmations();
+  assert.equal(mail.subject, '[Brinu] Transmission confirmed: I got your brief');
+  assert.ok(mail.body.includes('As you asked, the reply goes on WhatsApp: (16) 99123-4567.'));
+  assert.ok(mail.body.includes('Contact preference: WhatsApp'));
+  assert.ok(mail.body.includes('Services: Web system / dashboard, Website / landing page'));
+  assert.ok(mail.body.includes('Budget: R$ 8,000 – R$ 15,000'));
+  assert.match(mail.htmlBody, /<html lang="en">/);
+  assert.match(mail.htmlBody, /TRANSMISSION CONFIRMED/);
+
+  const unknown = loadRelay();
+  unknown.post({ ...VALID, locale: 'fr' });
+  assert.match(unknown.confirmations()[0].subject, /Transmissão confirmada/, 'unknown locales fall back to pt-br');
+});
+
+test('confirmation is never sent for a filled honeypot', () => {
+  const relay = loadRelay();
+  relay.post({ ...VALID, website: 'https://autofill.example' });
+  assert.equal(relay.confirmations().length, 0);
+  assert.equal(relay.inbox().length, 1);
+});
+
+test('a failed confirmation still confirms the brief', () => {
+  const relay = loadRelay({ confirmThrows: true });
+  assert.deepEqual(relay.post(VALID), { ok: true });
+  assert.equal(relay.inbox().length, 1);
+  assert.deepEqual(relay.logs.at(-1), { outcome: 'sent-unconfirmed', detail: 'Error: quota' });
+});
+
+test('internal mail names the visitor language so the reply matches it', () => {
+  const english = loadRelay();
+  english.post({ ...VALID, locale: 'en' });
+  assert.match(english.inbox()[0].body, /^Idioma do visitante: Inglês \(en\) — responder em inglês$/m);
+  for (const locale of ['pt-br', undefined, 'fr', 42]) {
+    const relay = loadRelay();
+    relay.post({ ...VALID, locale });
+    assert.match(relay.inbox()[0].body, /^Idioma do visitante: Português \(pt-br\)$/m, String(locale));
   }
 });

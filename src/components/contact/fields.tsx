@@ -152,3 +152,38 @@ export const ChoiceGroup: React.FC<ChoiceGroupProps> = ({ id, field, legend, typ
     {error && <FieldError id={id} field={field} message={error} />}
   </fieldset>
 );
+
+interface CheckboxFieldProps {
+  id: string;
+  field: string;
+  label: string;
+  hint: string;
+  checked: boolean;
+  onChange: (checked: boolean) => void;
+}
+
+export const CheckboxField: React.FC<CheckboxFieldProps> = ({ id, field, label, hint, checked, onChange }) => (
+  <div>
+    <label
+      htmlFor={id}
+      className="flex items-start gap-2.5 px-3 py-2.5 border-2 border-paper-white/40 text-xs font-mono text-paper-white cursor-pointer transition-colors hover:border-bebop-red has-[:checked]:border-bebop-red has-[:checked]:bg-bebop-red/15 has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-bebop-red"
+    >
+      <input
+        id={id}
+        name={field}
+        type="checkbox"
+        checked={checked}
+        onChange={(e) => onChange(e.target.checked)}
+        aria-describedby={`${id}-hint`}
+        {...{ [`data-input-${field}`]: '' }}
+        className="mt-0.5 size-4 shrink-0 accent-bebop-red"
+      />
+      <span className="min-w-0 break-words">
+        <span className="block font-bold uppercase tracking-wider">{label}</span>
+        <span id={`${id}-hint`} className="block mt-1 text-muted-gray">
+          {hint}
+        </span>
+      </span>
+    </label>
+  </div>
+);

@@ -109,14 +109,16 @@ test('form fields render in the approved order', async () => {
   const order = await page.locator('[data-dispatch-form]').evaluate((form) =>
     [...form.children].filter((child) => !child.matches('[aria-hidden="true"]')).map((child) => (child.tagName === 'FIELDSET' ? child.id : child.tagName === 'BUTTON' ? 'submit' : child.matches('[data-dispatch-submit-hint]') ? 'hint' : child.querySelector('input, textarea')?.id))
   );
-  assert.deepEqual(order, ['dispatch-name', 'dispatch-company', 'dispatch-email', 'dispatch-phone', 'dispatch-services', 'dispatch-budget', 'dispatch-deadline', 'dispatch-message', 'submit', 'hint']);
+  assert.deepEqual(order, ['dispatch-name', 'dispatch-company', 'dispatch-email', 'dispatch-phone', 'dispatch-prefer-whatsapp', 'dispatch-services', 'dispatch-budget', 'dispatch-deadline', 'dispatch-message', 'submit', 'hint']);
   const labels = await page.locator('[data-dispatch-form] > div:not([aria-hidden]) > label').allInnerTexts();
-  assert.equal(labels.length, 5);
+  assert.equal(labels.length, 6);
   assert.equal(labels[0].trim(), PT.nameLabel);
   assert.match(labels[1], /^02 \/\/ EMPRESA\s*\(OPCIONAL\)$/);
   assert.equal(labels[2].trim(), PT.emailLabel);
   assert.match(labels[3], /^04 \/\/ WHATSAPP\s*\(OPCIONAL\)$/);
-  assert.equal(labels[4].trim(), PT.messageLabel);
+  assert.equal(labels[4].replace(/\s+/g, ' ').trim(), `${PT.preferWhatsappLabel} ${PT.preferWhatsappHint}`);
+  assert.equal(labels[5].trim(), PT.messageLabel);
+  assert.equal(await page.isChecked('#dispatch-prefer-whatsapp'), false);
   assert.equal((await page.locator('#dispatch-services legend').innerText()).trim(), PT.servicesLegend);
   assert.equal((await page.locator('#dispatch-budget legend').innerText()).trim(), PT.budgetLegend);
   assert.equal((await page.locator('#dispatch-deadline legend').innerText()).trim(), PT.deadlineLegend);
@@ -204,6 +206,7 @@ test('locale switch translates the form and keeps typed values', async () => {
     `${EN.companyLabel} ${EN.optionalTag}`,
     EN.emailLabel,
     `${EN.phoneLabel} ${EN.optionalTag}`,
+    `${EN.preferWhatsappLabel} ${EN.preferWhatsappHint}`,
     EN.messageLabel,
   ]);
   const placeholders = {};
@@ -291,7 +294,7 @@ test('no service shows the service error and disables submit', async () => {
 
 test('leaving the service group untouched shows the service error', async () => {
   const { context, page } = await openForm();
-  await page.focus('#dispatch-phone');
+  await page.focus('#dispatch-prefer-whatsapp');
   await page.keyboard.press('Tab');
   assert.equal(await page.evaluate(() => document.activeElement?.closest('fieldset')?.id), 'dispatch-services');
   for (let i = 0; i < 3; i++) {
@@ -459,6 +462,7 @@ test('valid submit shows the receipt from sanitized values', async () => {
     company: 'Acme',
     email: 'ana@acme.com',
     phone: '(16) 99123-4567',
+    channel: PT.channels.email,
     services: 'Sistema web / painel, Integração / API / manutenção',
     budget: 'R$ 8.000 – R$ 15.000',
     deadline: '1 a 3 meses',
@@ -487,7 +491,7 @@ test('job-only receipt omits budget and deadline and optional blanks', async () 
   await page.check('#dispatch-services input[value="job"]');
   await submit(page);
   await page.waitForSelector('[data-dispatch-receipt]');
-  assert.deepEqual(Object.keys(await receiptRows(page)), ['name', 'email', 'services', 'target']);
+  assert.deepEqual(Object.keys(await receiptRows(page)), ['name', 'email', 'channel', 'services', 'target']);
   await context.close();
 });
 
@@ -621,5 +625,64 @@ test('disabled submit explains which fields are missing', async () => {
   await page.waitForFunction(() => document.documentElement.lang === 'en');
   await page.locator('#bounty-dispatch-container').scrollIntoViewIfNeeded();
   assert.equal((await hint.textContent()).trim(), 'TO SEND, FIX: Services');
+  await context.close();
+});
+
+test('preferring a whatsapp reply requires the number with clear feedback', async () => {
+  const { context, page } = await openForm();
+  await fillValid(page);
+  await page.fill('#dispatch-phone', '');
+  assert.equal(await page.locator('[data-dispatch-submit-btn]').isDisabled(), false, 'whatsapp is optional by default');
+  assert.match(await page.locator('label[for="dispatch-phone"]').innerText(), /\(OPCIONAL\)/);
+
+  await page.check('#dispatch-prefer-whatsapp');
+  await assertErrorWithoutReceipt(page, 'phone', PT.errors['phone-required']);
+  assert.doesNotMatch(await page.locator('label[for="dispatch-phone"]').innerText(), /OPCIONAL/);
+  assert.equal(await page.getAttribute('#dispatch-phone', 'aria-invalid'), 'true');
+  assert.match(await page.locator('[data-dispatch-submit-hint]').innerText(), /WHATSAPP/i);
+
+  await page.locator('#dispatch-phone').pressSequentially('16991234567');
+  assert.equal(await page.locator('[data-error-phone]').count(), 0);
+  await submit(page);
+  await page.waitForSelector('[data-dispatch-receipt]');
+  const rows = await receiptRows(page);
+  assert.equal(rows.channel, PT.channels.whatsapp);
+  assert.equal(rows.phone, '(16) 99123-4567');
+  assert.equal((await page.locator('[data-dispatch-reply]').innerText()).trim(), PT.receiptReplyWhatsapp);
+  assert.equal((await page.locator('[data-dispatch-copy-sent]').innerText()).trim(), `${PT.receiptCopyLead} ana@acme.com.`);
+  await context.close();
+});
+
+test('unchecking the whatsapp preference makes the number optional again', async () => {
+  const { context, page } = await openForm();
+  await fillValid(page);
+  await page.fill('#dispatch-phone', '');
+  await page.check('#dispatch-prefer-whatsapp');
+  assert.equal(await page.locator('[data-dispatch-submit-btn]').isDisabled(), true);
+  await page.uncheck('#dispatch-prefer-whatsapp');
+  assert.equal(await page.locator('[data-error-phone]').count(), 0);
+  assert.equal(await page.locator('[data-dispatch-submit-btn]').isDisabled(), false);
+  await submit(page);
+  await page.waitForSelector('[data-dispatch-receipt]');
+  assert.equal((await receiptRows(page)).channel, PT.channels.email);
+  assert.equal((await page.locator('[data-dispatch-reply]').innerText()).trim(), PT.receiptReplyEmail);
+  await context.close();
+});
+
+test('the whatsapp preference reaches the relay payload', async () => {
+  const { context, page } = await openForm();
+  let payload = null;
+  await context.unroute(CONTACT_ENDPOINT);
+  await context.route(CONTACT_ENDPOINT, (route) => {
+    payload = JSON.parse(route.request().postData());
+    return route.fulfill({ status: 200, headers: { 'Access-Control-Allow-Origin': '*' }, contentType: 'application/json', body: '{"ok":true}' });
+  });
+  await fillValid(page);
+  await page.check('#dispatch-prefer-whatsapp');
+  await submit(page);
+  await page.waitForSelector('[data-dispatch-receipt]');
+  assert.equal(payload.preferWhatsapp, true);
+  assert.equal(payload.phone, '16991234567');
+  assert.equal(payload.locale, 'pt-br');
   await context.close();
 });

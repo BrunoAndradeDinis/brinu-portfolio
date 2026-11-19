@@ -1,6 +1,6 @@
 import React from 'react';
 import type { Locale, TranslationSchema } from '../../i18n/index';
-import type { ContactBrief } from '../../utils/contact-brief';
+import { contactChannel, type ContactBrief } from '../../utils/contact-brief';
 import { formatBrPhone } from '../../utils/contact-sanitize';
 import { formatDispatchTime } from '../../utils/dispatch-time';
 
@@ -13,11 +13,13 @@ interface DispatchReceiptProps {
 }
 
 export const DispatchReceipt: React.FC<DispatchReceiptProps> = ({ brief, copy, locale, sentAt, onReset }) => {
+  const channel = contactChannel(brief);
   const rows: ReadonlyArray<readonly [field: string, key: string, value: string | null]> = [
     ['name', copy.codenameKey, brief.name],
     ['company', copy.companyKey, brief.company],
     ['email', copy.frequencyKey, brief.email],
     ['phone', copy.phoneKey, brief.phone && formatBrPhone(brief.phone)],
+    ['channel', copy.channelKey, copy.channels[channel]],
     ['services', copy.servicesKey, brief.services.map((id) => copy.services[id]).join(', ')],
     ['budget', copy.budgetKey, brief.budget && copy.budgets[brief.budget]],
     ['deadline', copy.deadlineKey, brief.deadline && copy.deadlines[brief.deadline]],
@@ -29,6 +31,15 @@ export const DispatchReceipt: React.FC<DispatchReceiptProps> = ({ brief, copy, l
       <div className="flex items-center gap-3 p-3.5 bg-bebop-red border-2 border-paper-white text-space-base">
         <span className="w-2.5 h-2.5 shrink-0 bg-space-base animate-ping" />
         <span className="font-bold text-xs uppercase tracking-wider">{copy.receiptSuccess}</span>
+      </div>
+
+      <div data-dispatch-next-steps className="space-y-2 p-4 border-l-4 border-bebop-red bg-paper-white text-space-base text-xs leading-relaxed">
+        <p data-dispatch-reply className="font-bold">
+          {channel === 'whatsapp' ? copy.receiptReplyWhatsapp : copy.receiptReplyEmail}
+        </p>
+        <p data-dispatch-copy-sent className="[overflow-wrap:anywhere]">
+          {copy.receiptCopyLead} <strong>{brief.email}</strong>.
+        </p>
       </div>
 
       <dl className="p-4 border-2 border-paper-white bg-space-base space-y-2.5 text-xs">

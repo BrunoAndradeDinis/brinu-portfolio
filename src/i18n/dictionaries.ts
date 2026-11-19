@@ -1,6 +1,6 @@
 import { PROFILE } from '../data/profile.ts';
 import type { BudgetId, DeadlineId, ServiceId } from '../data/contact-brief.ts';
-import type { ContactErrorCode } from '../utils/contact-brief.ts';
+import type { ContactChannel, ContactErrorCode } from '../utils/contact-brief.ts';
 
 export type Locale = 'pt-br' | 'en';
 
@@ -289,6 +289,8 @@ export interface TranslationSchema {
     companyPlaceholder: string;
     phoneLabel: string;
     phonePlaceholder: string;
+    preferWhatsappLabel: string;
+    preferWhatsappHint: string;
     servicesLegend: string;
     budgetLegend: string;
     deadlineLegend: string;
@@ -296,11 +298,13 @@ export interface TranslationSchema {
     services: Readonly<Record<ServiceId, string>>;
     budgets: Readonly<Record<BudgetId, string>>;
     deadlines: Readonly<Record<DeadlineId, string>>;
+    channels: Readonly<Record<ContactChannel, string>>;
     errors: Readonly<Record<ContactErrorCode, string>>;
     mailSubjectPrefix: string;
-    mail: Readonly<Record<'name' | 'company' | 'email' | 'phone' | 'services' | 'budget' | 'deadline' | 'message', string>>;
+    mail: Readonly<Record<'name' | 'company' | 'email' | 'phone' | 'channel' | 'services' | 'budget' | 'deadline' | 'message', string>>;
     companyKey: string;
     phoneKey: string;
+    channelKey: string;
     servicesKey: string;
     budgetKey: string;
     deadlineKey: string;
@@ -310,12 +314,16 @@ export interface TranslationSchema {
     fallbackLead: string;
     toastSuccessTitle: string;
     toastSuccessBody: string;
+    toastSuccessBodyWhatsapp: string;
     toastErrorTitle: string;
     toastErrorBody: string;
     toastRateLimitedTitle: string;
     toastRateLimitedBody: string;
     submitCta: string;
     receiptSuccess: string;
+    receiptReplyEmail: string;
+    receiptReplyWhatsapp: string;
+    receiptCopyLead: string;
     codenameKey: string;
     frequencyKey: string;
     statusKey: string;
@@ -700,6 +708,8 @@ export const ptBrDict: TranslationSchema = {
     emailPlaceholder: 'Ex: contato@empresa.com',
     phoneLabel: '04 // WHATSAPP',
     phonePlaceholder: '(16) 99999-9999',
+    preferWhatsappLabel: 'PREFIRO RETORNO PELO WHATSAPP',
+    preferWhatsappHint: 'Resposta mais rápida e direta. Com esta opção, o WhatsApp passa a ser obrigatório.',
     servicesLegend: '05 // QUAL SERVIÇO VOCÊ PROCURA?',
     budgetLegend: '06 // QUAL O ORÇAMENTO DISPONÍVEL?',
     deadlineLegend: '07 // QUAL O PRAZO DESEJADO?',
@@ -724,11 +734,16 @@ export const ptBrDict: TranslationSchema = {
       '1-3-months': '1 a 3 meses',
       flexible: 'Flexível',
     },
+    channels: {
+      email: 'E-mail',
+      whatsapp: 'WhatsApp',
+    },
     errors: {
       'name-length': 'Informe um nome entre 2 e 80 caracteres.',
       'email-required': 'E-mail de retorno obrigatório.',
       'email-invalid': 'Formato de e-mail inválido.',
       'phone-invalid': 'Informe DDD + número (10 ou 11 dígitos).',
+      'phone-required': 'Informe seu WhatsApp para receber o retorno por lá.',
       'services-required': 'Selecione pelo menos um serviço.',
       'message-length': 'Descreva o projeto entre 20 e 2000 caracteres.',
     },
@@ -738,6 +753,7 @@ export const ptBrDict: TranslationSchema = {
       company: 'Empresa',
       email: 'E-mail',
       phone: 'WhatsApp',
+      channel: 'Retorno preferido',
       services: 'Serviços',
       budget: 'Orçamento',
       deadline: 'Prazo',
@@ -745,6 +761,7 @@ export const ptBrDict: TranslationSchema = {
     },
     companyKey: 'EMPRESA:',
     phoneKey: 'WHATSAPP:',
+    channelKey: 'RETORNO VIA:',
     servicesKey: 'SERVIÇOS:',
     budgetKey: 'ORÇAMENTO:',
     deadlineKey: 'PRAZO:',
@@ -753,13 +770,17 @@ export const ptBrDict: TranslationSchema = {
     honeypotLabel: 'Não preencha este campo',
     fallbackLead: 'O ENVIO FALHOU? MANDE PELO SEU E-MAIL:',
     toastSuccessTitle: 'PROPOSTA ENVIADA!',
-    toastSuccessBody: 'Recebi sua mensagem e respondo no e-mail informado.',
+    toastSuccessBody: 'Recebi sua proposta e respondo por e-mail o quanto antes. Uma cópia dos dados foi para o seu e-mail.',
+    toastSuccessBodyWhatsapp: 'Recebi sua proposta e respondo pelo WhatsApp o quanto antes. Uma cópia dos dados foi para o seu e-mail.',
     toastErrorTitle: 'FALHA NA TRANSMISSÃO',
     toastErrorBody: 'Não consegui enviar agora. Suas respostas continuam no formulário: tente de novo ou use o e-mail abaixo.',
     toastRateLimitedTitle: 'LIMITE DE ENVIOS ATINGIDO',
     toastRateLimitedBody: 'Muitos envios na última hora. Tente mais tarde ou use o e-mail abaixo.',
     submitCta: 'ENVIAR PROPOSTA DE PROJETO',
     receiptSuccess: 'TRANSMISSÃO ENVIADA // 100% CONFIRMADA!',
+    receiptReplyEmail: 'Proposta recebida. Retorno por e-mail o quanto antes, com mais informações.',
+    receiptReplyWhatsapp: 'Proposta recebida. Retorno pelo WhatsApp o quanto antes, com mais informações.',
+    receiptCopyLead: 'Uma cópia dos dados preenchidos foi enviada para',
     codenameKey: 'REMETENTE:',
     frequencyKey: 'E-MAIL:',
     statusKey: 'DESTINO:',
@@ -1145,6 +1166,8 @@ export const enDict = {
     emailPlaceholder: 'e.g. contact@company.com',
     phoneLabel: '04 // WHATSAPP',
     phonePlaceholder: '(16) 99999-9999',
+    preferWhatsappLabel: 'I PREFER A REPLY ON WHATSAPP',
+    preferWhatsappHint: 'Faster, more direct reply. With this option, WhatsApp becomes required.',
     servicesLegend: '05 // WHAT SERVICE ARE YOU LOOKING FOR?',
     budgetLegend: '06 // WHAT IS YOUR AVAILABLE BUDGET?',
     deadlineLegend: '07 // WHAT IS YOUR DESIRED TIMELINE?',
@@ -1169,11 +1192,16 @@ export const enDict = {
       '1-3-months': '1 to 3 months',
       flexible: 'Flexible',
     },
+    channels: {
+      email: 'Email',
+      whatsapp: 'WhatsApp',
+    },
     errors: {
       'name-length': 'Enter a name between 2 and 80 characters.',
       'email-required': 'Return email address is required.',
       'email-invalid': 'Invalid email address format.',
       'phone-invalid': 'Enter area code + number (10 or 11 digits).',
+      'phone-required': 'Enter your WhatsApp number to get the reply there.',
       'services-required': 'Select at least one service.',
       'message-length': 'Describe the project in 20 to 2000 characters.',
     },
@@ -1183,6 +1211,7 @@ export const enDict = {
       company: 'Company',
       email: 'Email',
       phone: 'WhatsApp',
+      channel: 'Preferred reply',
       services: 'Services',
       budget: 'Budget',
       deadline: 'Timeline',
@@ -1190,6 +1219,7 @@ export const enDict = {
     },
     companyKey: 'COMPANY:',
     phoneKey: 'WHATSAPP:',
+    channelKey: 'REPLY VIA:',
     servicesKey: 'SERVICES:',
     budgetKey: 'BUDGET:',
     deadlineKey: 'TIMELINE:',
@@ -1198,13 +1228,17 @@ export const enDict = {
     honeypotLabel: 'Leave this field empty',
     fallbackLead: 'SEND FAILED? USE YOUR E-MAIL:',
     toastSuccessTitle: 'BRIEF SENT!',
-    toastSuccessBody: 'I got your message and will reply at the e-mail you gave.',
+    toastSuccessBody: 'I got your brief and will reply by email as soon as I can. A copy of your answers went to your email.',
+    toastSuccessBodyWhatsapp: 'I got your brief and will reply on WhatsApp as soon as I can. A copy of your answers went to your email.',
     toastErrorTitle: 'TRANSMISSION FAILED',
     toastErrorBody: "I couldn't send it right now. Your answers are still in the form: try again or use the e-mail link below.",
     toastRateLimitedTitle: 'SEND LIMIT REACHED',
     toastRateLimitedBody: 'Too many sends in the last hour. Try again later or use the e-mail link below.',
     submitCta: 'SEND PROJECT PROPOSAL',
     receiptSuccess: 'TRANSMISSION SENT // 100% CONFIRMED!',
+    receiptReplyEmail: 'Brief received. I will reply by email as soon as I can, with more details.',
+    receiptReplyWhatsapp: 'Brief received. I will reply on WhatsApp as soon as I can, with more details.',
+    receiptCopyLead: 'A copy of your answers was sent to',
     codenameKey: 'SENDER:',
     frequencyKey: 'EMAIL:',
     statusKey: 'TARGET:',
