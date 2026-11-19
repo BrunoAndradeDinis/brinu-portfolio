@@ -30,6 +30,8 @@ const KEY_DIRECTIONS: Readonly<Record<string, Direction>> = {
 const REVEAL_RISE_PX = 28;
 // A jump lands this far inside the pin, so a refresh that moves the pin start by a pixel still finds it pinned.
 const PIN_ENTRY_NUDGE_PX = 6;
+// Phones round the scroll to device pixels, so a jump to the exact pin edge can land short of it and stay pinned.
+const PIN_EXIT_MARGIN_PX = 2;
 
 function revealElementsOf(item: HTMLElement): HTMLElement[] {
   return CASE_REVEAL_ELEMENTS.flatMap((name) => {
@@ -166,7 +168,7 @@ function enableReveal(section: HTMLElement): (() => void) | null {
       showCase(result.index);
       return;
     }
-    jumpScrollTo(direction > 0 ? trigger.end : Math.max(0, trigger.start - 1));
+    jumpScrollTo(direction > 0 ? trigger.end + PIN_EXIT_MARGIN_PX : Math.max(0, trigger.start - PIN_EXIT_MARGIN_PX));
     ScrollTrigger.update();
   };
 
