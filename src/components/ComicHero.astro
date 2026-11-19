@@ -136,6 +136,7 @@ import P5Badge from "./p5/P5Badge.astro";
           >
             <span
               id="hero-stamp-badge"
+              aria-hidden="true"
               class="inline-flex items-center gap-1.5 -rotate-3 border-2 md:border-[0.25rem] border-space-base bg-paper-white px-2 sm:px-3 md:px-4 py-0.5 sm:py-1 font-spray text-[10px] sm:text-xs md:text-sm lg:text-base font-bold whitespace-nowrap text-space-base shadow-[0_3px_0_var(--color-space-base)] transition-all duration-200 group-hover:bg-space-base group-hover:text-paper-white"
             >
               <span class="tracking-wider" data-i18n="hero.stamp"
@@ -234,7 +235,7 @@ import P5Badge from "./p5/P5Badge.astro";
         <div
           data-hero-socials
           class="flex shrink-0 flex-col items-end gap-2"
-          role="list"
+          role="group"
           aria-label={ptBrDict.hero.socialAria}
           data-i18n="hero.socialAria"
           data-i18n-attr="aria-label"

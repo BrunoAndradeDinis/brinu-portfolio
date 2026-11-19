@@ -440,7 +440,7 @@ export const ptBrDict: TranslationSchema = {
     worksCtaShort: 'CASES',
     worksAria: 'Ir para a seção de projetos selecionados',
     menuTriggerAria: 'Abrir Menu Principal Persona',
-    langToggleAria: 'Alternar idioma entre Português e Inglês',
+    langToggleAria: 'PT-BR: alternar idioma entre português e inglês',
   },
   menu: {
     dialogAria: 'Menu de Comando Principal',
@@ -482,7 +482,7 @@ export const ptBrDict: TranslationSchema = {
     manifestoLeftLine2: 'À INTERFACE',
     manifestoLeftLine3: 'EM PRODUÇÃO',
     craftCta: 'VER PROJETOS E SERVIÇOS',
-    craftAria: 'Explorar projetos e serviços de desenvolvimento web full stack',
+    craftAria: 'Ver projetos e serviços de desenvolvimento web full stack',
     manifestoRightLine1: 'SISTEMAS WEB',
     manifestoRightLine2: 'ESCALÁVEIS E',
     manifestoRightLine3: 'SOB MEDIDA',
@@ -794,7 +794,7 @@ export const ptBrDict: TranslationSchema = {
     ticker:
       '• SEE YOU GITHUB COWBOY • 2026 BRINU.DEV • FRANCA / SP • DESENVOLVEDOR FRONTEND & FULL STACK • SISTEMAS WEB SOB MEDIDA •',
     backToTop: 'VOLTAR AO TOPO',
-    backToTopAria: 'Voltar suavemente ao topo da página',
+    backToTopAria: 'Voltar ao topo da página',
     copyright: '© 2026 BRUNO DE ANDRADE DINIS (BRINU) // TODOS OS DIREITOS RESERVADOS.',
     engineeredIn: `PROJETADO & DESENVOLVIDO EM ${PROFILE.location.label.toUpperCase()}`,
     stackLine: 'ASTRO 7 • REACT 19 • TAILWIND V4 • GSAP • SOLID',
@@ -898,7 +898,7 @@ export const enDict = {
     worksCtaShort: 'WORKS',
     worksAria: 'Jump to selected works section',
     menuTriggerAria: 'Open Persona Command Menu',
-    langToggleAria: 'Switch language between Portuguese and English',
+    langToggleAria: 'EN: switch language between Portuguese and English',
   },
   menu: {
     dialogAria: 'Primary Command Menu',
@@ -940,7 +940,7 @@ export const enDict = {
     manifestoLeftLine2: 'TO PRODUCTION',
     manifestoLeftLine3: 'INTERFACE',
     craftCta: 'VIEW PROJECTS & SERVICES',
-    craftAria: 'Explore full stack web development projects and services',
+    craftAria: 'View projects & services in full stack web development',
     manifestoRightLine1: 'CUSTOM &',
     manifestoRightLine2: 'SCALABLE',
     manifestoRightLine3: 'WEB SYSTEMS',
@@ -1252,7 +1252,7 @@ export const enDict = {
     ticker:
       '• SEE YOU GITHUB COWBOY • 2026 BRINU.DEV • FRANCA / SP • FRONTEND & FULL STACK DEVELOPER • CUSTOM WEB SYSTEMS •',
     backToTop: 'BACK TO TOP',
-    backToTopAria: 'Scroll smoothly back to top',
+    backToTopAria: 'Back to top of the page',
     copyright: '© 2026 BRUNO DE ANDRADE DINIS (BRINU) // ALL RIGHTS RESERVED.',
     engineeredIn: `DESIGNED & BUILT IN ${PROFILE.location.label.toUpperCase()}`,
     stackLine: 'ASTRO 7 • REACT 19 • TAILWIND V4 • GSAP • SOLID',

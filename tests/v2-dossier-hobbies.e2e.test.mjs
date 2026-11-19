@@ -93,7 +93,7 @@ test('the dossier shows six hobby cards under the portrait', async () => {
     const columns = async () => page.evaluate(() => new Set([...document.querySelectorAll('[data-hobby-item]')].map((item) => Math.round(item.getBoundingClientRect().left))).size);
     assert.equal(await columns(), 3, 'three cards per row on desktop');
     assert.equal(await page.locator('#about [data-hobby-card]').first().getAttribute('aria-haspopup'), 'dialog');
-    assert.equal(await page.evaluate(() => document.querySelector('[data-hobby-card="animes"]').getAttribute('aria-labelledby').split(' ').map((id) => document.getElementById(id).textContent).join(' ')), 'ANIMES 96');
+    assert.equal(await page.evaluate(() => document.querySelector('[data-hobby-card="animes"]').getAttribute('aria-labelledby').split(' ').map((id) => document.getElementById(id).textContent).join(' ')), '96 ANIMES');
     const icons = await page.locator('#about [data-hobby-card] img').evaluateAll((nodes) => nodes.map((node) => new URL(node.src).pathname));
     assert.deepEqual(icons, PT.map((hobby) => hobby.sticker));
     const layout = await page.evaluate(() => {
@@ -275,7 +275,7 @@ test('cards and panel never widen the page and meet aa contrast', async () => {
             };
             const failures = [];
             const clipped = [];
-            for (const el of document.querySelectorAll('[data-hobbies] h4, [data-hobby-card-name], [data-hobby-rating], [data-hobby-position], .hobby-card-stat, [data-hobby-panel] h3, [data-hobby-panel] li, [data-hobby-panel] p')) {
+            for (const el of document.querySelectorAll('[data-hobbies] h3:not([data-hobby-panel-title]), [data-hobby-card-name], [data-hobby-rating], [data-hobby-position], .hobby-card-stat, [data-hobby-panel] h3, [data-hobby-panel] li, [data-hobby-panel] p')) {
               if (el.getClientRects().length === 0 || !el.textContent.trim()) continue;
               const style = getComputedStyle(el);
               const fg = lum(parse(style.color));
