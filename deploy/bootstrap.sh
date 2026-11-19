@@ -31,7 +31,7 @@ if ! id "$DEPLOY_USER" &>/dev/null; then
   useradd --create-home --shell /bin/bash "$DEPLOY_USER"
 fi
 install -d -m 700 -o "$DEPLOY_USER" -g "$DEPLOY_USER" "/home/$DEPLOY_USER/.ssh"
-printf '%s\n' "$DEPLOY_PUBKEY" > "/home/$DEPLOY_USER/.ssh/authorized_keys"
+printf 'restrict %s\n' "$DEPLOY_PUBKEY" > "/home/$DEPLOY_USER/.ssh/authorized_keys"
 chown "$DEPLOY_USER:$DEPLOY_USER" "/home/$DEPLOY_USER/.ssh/authorized_keys"
 chmod 600 "/home/$DEPLOY_USER/.ssh/authorized_keys"
 
@@ -42,9 +42,46 @@ cat > /etc/ssh/sshd_config.d/10-hardening.conf <<'EOF'
 PasswordAuthentication no
 KbdInteractiveAuthentication no
 PermitRootLogin no
+AllowUsers ubuntu deploy
+X11Forwarding no
+AllowTcpForwarding no
+AllowAgentForwarding no
+MaxAuthTries 3
+LoginGraceTime 30
 EOF
 sshd -t
 systemctl reload ssh
+
+cat > /etc/sysctl.d/90-hardening.conf <<'EOF'
+net.ipv4.conf.all.accept_redirects = 0
+net.ipv4.conf.default.accept_redirects = 0
+net.ipv4.conf.all.send_redirects = 0
+net.ipv4.conf.default.send_redirects = 0
+net.ipv6.conf.all.accept_redirects = 0
+net.ipv6.conf.default.accept_redirects = 0
+EOF
+sysctl --system >/dev/null
+
+apt-get install -y ufw fail2ban
+ufw default deny incoming
+ufw default allow outgoing
+ufw allow 22/tcp
+ufw allow 80/tcp
+ufw allow 443/tcp
+ufw allow 443/udp
+ufw --force enable
+
+cat > /etc/fail2ban/jail.d/sshd.local <<'EOF'
+[sshd]
+enabled = true
+backend = systemd
+maxretry = 5
+findtime = 10m
+bantime = 1h
+bantime.increment = true
+EOF
+systemctl enable --now fail2ban
+systemctl restart fail2ban
 
 install -d -m 755 -o caddy -g caddy /var/log/caddy
 install -m 644 "$SCRIPT_DIR/Caddyfile" /etc/caddy/Caddyfile

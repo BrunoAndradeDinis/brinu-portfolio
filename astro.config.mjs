@@ -1,6 +1,11 @@
 import { defineConfig, fontProviders } from 'astro/config';
 import react from '@astrojs/react';
 import tailwindcss from '@tailwindcss/vite';
+import { createHash } from 'node:crypto';
+import { INLINE_SCRIPTS, INLINE_STYLES } from './src/utils/inline-scripts.mjs';
+import cspSharedHashes from './src/integrations/csp-shared-hashes.mjs';
+
+const sha256 = (source) => `sha256-${createHash('sha256').update(source).digest('base64')}`;
 
 export default defineConfig({
   site: 'https://brinu.xyz',
@@ -8,7 +13,26 @@ export default defineConfig({
   build: {
     inlineStylesheets: 'always',
   },
-  integrations: [react()],
+  security: {
+    csp: {
+      directives: [
+        "default-src 'self'",
+        "img-src 'self' data:",
+        "font-src 'self'",
+        "media-src 'self'",
+        "connect-src 'self' data: https://script.google.com https://script.googleusercontent.com",
+        "object-src 'none'",
+        "base-uri 'self'",
+        "form-action 'self'",
+      ],
+      scriptDirective: { resources: ["'self'"], hashes: INLINE_SCRIPTS.map(sha256) },
+      styleDirective: {
+        resources: ["'self'", { resource: "'unsafe-inline'", kind: 'attribute' }],
+        hashes: INLINE_STYLES.map(sha256),
+      },
+    },
+  },
+  integrations: [react(), cspSharedHashes()],
   fonts: [
     {
       provider: fontProviders.google(),

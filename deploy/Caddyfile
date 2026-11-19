@@ -1,17 +1,32 @@
+(no-server-header) {
+	header -Server
+}
+
 www.brinu.xyz {
+	import no-server-header
 	redir https://brinu.xyz{uri} permanent
 }
 
 brinu.xyz {
 	root * /var/www/brinu/current
 	encode zstd gzip
+	import no-server-header
 
 	header {
-		Strict-Transport-Security "max-age=31536000"
+		Strict-Transport-Security "max-age=63072000; includeSubDomains"
+		Content-Security-Policy "frame-ancestors 'none'; base-uri 'self'; object-src 'none'; form-action 'self'; upgrade-insecure-requests"
+		X-Frame-Options "DENY"
 		X-Content-Type-Options "nosniff"
 		Referrer-Policy "strict-origin-when-cross-origin"
-		-Server
+		Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=(), usb=(), browsing-topics=()"
+		Cross-Origin-Opener-Policy "same-origin"
 	}
+
+	@dotfiles {
+		path */.*
+		not path /.well-known/*
+	}
+	respond @dotfiles 404
 
 	@html path / */ *.html
 	header @html Cache-Control "no-cache"

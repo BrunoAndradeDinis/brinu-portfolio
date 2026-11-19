@@ -1,5 +1,6 @@
 ---
 import { ptBrDict } from "../i18n/dictionaries";
+import { NOSCRIPT_PRELOADER_STYLE } from "../utils/inline-scripts.mjs";
 
 const LETTERS = ["B", "R", "I", "N", "U"] as const;
 ---
@@ -39,11 +40,7 @@ const LETTERS = ["B", "R", "I", "N", "U"] as const;
 </div>
 
 <noscript>
-  <style>
-    #intro-preloader {
-      display: none !important;
-    }
-  </style>
+  <style is:inline set:html={NOSCRIPT_PRELOADER_STYLE} />
 </noscript>
 
 <style>
