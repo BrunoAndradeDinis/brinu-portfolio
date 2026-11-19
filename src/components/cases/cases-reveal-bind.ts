@@ -269,7 +269,7 @@ function enableReveal(section: HTMLElement): (() => void) | null {
     stage,
     firstCard: cardOf(items[0]),
     lastCard: cardOf(items[items.length - 1]),
-    pinEnd: () => trigger.end,
+    pinEnd: () => trigger.end + PIN_EXIT_MARGIN_PX,
   });
 
   return () => {
