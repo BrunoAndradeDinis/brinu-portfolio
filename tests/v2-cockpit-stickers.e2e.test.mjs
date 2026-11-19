@@ -216,14 +216,14 @@ test('CKP-04: the open menu shows socials, language toggle and cases link', asyn
     assert.deepEqual(await pressed(), [['pt-br', 'true'], ['en', 'false']]);
     const cases = overlay.locator('[data-cockpit-cases]');
     assert.equal((await cases.textContent()).trim(), 'CASES →');
+    assert.equal(await cases.getAttribute('href'), '/cases/magalu-cloud');
     await overlay.locator('[data-cockpit-lang="en"]').click();
     await page.waitForFunction(() => document.querySelector('[data-cockpit-lang="en"]').getAttribute('aria-pressed') === 'true');
     assert.deepEqual(await pressed(), [['pt-br', 'false'], ['en', 'true']]);
     assert.ok((await overlay.locator('[data-cockpit-social="github"]').getAttribute('aria-label')).includes('GitHub'));
     assert.equal((await cases.textContent()).trim(), 'CASES →');
     await cases.click();
-    await waitClosed(page);
-    assert.equal(new URL(page.url()).hash, '#works');
+    await page.waitForURL(/\/cases\/magalu-cloud\/?$/);
   } finally {
     await context.close();
   }

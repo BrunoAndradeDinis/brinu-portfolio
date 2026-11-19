@@ -3,6 +3,8 @@ import { gsap } from 'gsap';
 import { useLocale } from '../i18n/index.ts';
 import { audioSynth } from '../utils/audio.ts';
 import { PROFILE } from '../data/profile.ts';
+import { MAIN_CASES } from '../data/cases.ts';
+import { casePath } from '../utils/case-pages.ts';
 
 export interface CockpitNavItem {
   id: string;
@@ -454,7 +456,7 @@ export const CockpitMenu: React.FC = () => {
           </div>
 
           <a
-            href="/#works"
+            href={casePath(MAIN_CASES[0].id)}
             data-cockpit-cases
             data-prototype-contrast
             onClick={() => {
