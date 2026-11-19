@@ -151,7 +151,11 @@ test('the portrait sits centred in its column, level with the text', async () =>
           const rect = document.querySelector(selector).getBoundingClientRect();
           return { centreX: rect.left + rect.width / 2, top: rect.top };
         };
-        return { column: read('[data-about-avatar-panel]'), portrait: read('[data-about-portrait]'), text: read('[data-about-content-panel]'), bio: read('[data-about-card="bio"]') };
+        const panel = document.querySelector('[data-about-avatar-panel]');
+        const columnBox = getComputedStyle(panel).display === 'contents' ? panel.parentElement : panel;
+        const columnRect = columnBox.getBoundingClientRect();
+        const column = { centreX: columnRect.left + columnRect.width / 2, top: columnRect.top };
+        return { column, portrait: read('[data-about-portrait]'), text: read('[data-about-content-panel]'), bio: read('[data-about-card="bio"]') };
       });
       assert.ok(Math.abs(boxes.portrait.centreX - boxes.column.centreX) <= 1, `${viewport.width}px: the portrait is centred across its column (${boxes.portrait.centreX} vs ${boxes.column.centreX})`);
       if (viewport.width >= 1024) {

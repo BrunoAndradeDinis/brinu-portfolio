@@ -4,11 +4,11 @@ import { audioSynth } from '../utils/audio';
 import { useLocale } from '../i18n/index';
 import { PROFILE } from '../data/profile';
 import { BUDGET_IDS, CONTACT_BOUNDS, CONTACT_DEFAULTS, CONTACT_ENDPOINT, DEADLINE_IDS, SERVICE_IDS } from '../data/contact-brief';
-import { isJobOnly, validateContactBrief, type ContactBrief, type ContactField, type RawContactBrief } from '../utils/contact-brief';
+import { contactChannel, isJobOnly, validateContactBrief, type ContactBrief, type ContactField, type RawContactBrief } from '../utils/contact-brief';
 import { buildMailtoHref } from '../utils/contact-mailto';
 import { sendBrief } from '../utils/contact-relay';
 import { digitsOnly, formatBrPhone } from '../utils/contact-sanitize';
-import { ChoiceGroup, TextField } from './contact/fields';
+import { CheckboxField, ChoiceGroup, TextField } from './contact/fields';
 import { DispatchReceipt } from './contact/DispatchReceipt';
 import { DispatchToaster } from './contact/DispatchToaster';
 
@@ -20,6 +20,7 @@ const INITIAL_VALUES: FormValues = {
   company: '',
   email: '',
   phone: '',
+  preferWhatsapp: false,
   services: [],
   budget: CONTACT_DEFAULTS.budget,
   deadline: CONTACT_DEFAULTS.deadline,
@@ -64,6 +65,11 @@ export const BountyDispatch: React.FC = () => {
     setTouched((prev) => (prev[field] ? prev : { ...prev, [field]: true }));
   };
 
+  const togglePreferWhatsapp = (checked: boolean) => {
+    update('preferWhatsapp', checked);
+    if (checked) touch('phone');
+  };
+
   const toggleService = (id: string) => {
     const next = values.services.includes(id) ? values.services.filter((s) => s !== id) : [...values.services, id];
     update('services', next);
@@ -95,7 +101,8 @@ export const BountyDispatch: React.FC = () => {
     if (result.ok) {
       setBrief(submitted);
       setSentAt(submittedAt);
-      toast.success(copy.toastSuccessTitle, { description: copy.toastSuccessBody });
+      const description = contactChannel(submitted) === 'whatsapp' ? copy.toastSuccessBodyWhatsapp : copy.toastSuccessBody;
+      toast.success(copy.toastSuccessTitle, { description });
       if (!audioSynth.isMuted()) audioSynth.playBountyAcquired();
       return;
     }
@@ -121,7 +128,14 @@ export const BountyDispatch: React.FC = () => {
     failed && validation.ok
       ? buildMailtoHref(
           validation.brief,
-          { subjectPrefix: copy.mailSubjectPrefix, labels: copy.mail, services: copy.services, budgets: copy.budgets, deadlines: copy.deadlines },
+          {
+            subjectPrefix: copy.mailSubjectPrefix,
+            labels: copy.mail,
+            channels: copy.channels,
+            services: copy.services,
+            budgets: copy.budgets,
+            deadlines: copy.deadlines,
+          },
           PROFILE.email,
         )
       : null;
@@ -206,7 +220,7 @@ export const BountyDispatch: React.FC = () => {
             type="tel"
             inputMode="tel"
             label={copy.phoneLabel}
-            optionalTag={copy.optionalTag}
+            optionalTag={values.preferWhatsapp ? undefined : copy.optionalTag}
             value={values.phone}
             onChange={(value) => update('phone', nextPhoneValue(values.phone, value))}
             placeholder={copy.phonePlaceholder}
@@ -214,6 +228,14 @@ export const BountyDispatch: React.FC = () => {
             autoComplete="tel-national"
             onBlur={() => touch('phone')}
             error={errorText('phone')}
+          />
+          <CheckboxField
+            id="dispatch-prefer-whatsapp"
+            field="prefer-whatsapp"
+            label={copy.preferWhatsappLabel}
+            hint={copy.preferWhatsappHint}
+            checked={values.preferWhatsapp}
+            onChange={togglePreferWhatsapp}
           />
           <ChoiceGroup
             id="dispatch-services"
@@ -252,7 +274,7 @@ export const BountyDispatch: React.FC = () => {
             id="dispatch-message"
             field="message"
             multiline
-            label={copy.messageLabel}
+            label={showBudgetAndDeadline ? copy.messageLabel : copy.messageLabel.replace(/^08/, '06')}
             value={values.message}
             onChange={(value) => update('message', value)}
             placeholder={copy.messagePlaceholder}

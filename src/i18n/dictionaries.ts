@@ -1,6 +1,6 @@
 import { PROFILE } from '../data/profile.ts';
 import type { BudgetId, DeadlineId, ServiceId } from '../data/contact-brief.ts';
-import type { ContactErrorCode } from '../utils/contact-brief.ts';
+import type { ContactChannel, ContactErrorCode } from '../utils/contact-brief.ts';
 
 export type Locale = 'pt-br' | 'en';
 
@@ -188,6 +188,13 @@ export interface TranslationSchema {
     tilesAria: string;
     stackAria: string;
     stageAria: string;
+    fullscreenOpenAria: string;
+    hintDoubleClick: string;
+    hintRotate: string;
+    hintTitle: string;
+    fullscreenPrev: string;
+    fullscreenNext: string;
+    fullscreenHint: string;
   };
   casePage: {
     sectionAria: string;
@@ -243,13 +250,31 @@ export interface TranslationSchema {
     availableBadge: string;
     leadText: string;
     subText: string;
-    directTag: string;
-    directCta: string;
-    dispatchPill: string;
+    directEmailLabel: string;
     codeBaseLabel: string;
     careerLogLabel: string;
     stationBaseLabel: string;
     stationBaseValue: string;
+  };
+  jokenpo: {
+    kicker: string;
+    playerAlt: string;
+    cpuAlt: string;
+    prompt: string;
+    pedra: string;
+    papel: string;
+    tesoura: string;
+    win: string;
+    lose: string;
+    draw: string;
+    winLine: string;
+    loseLine: string;
+    drawLine: string;
+    scoreTitle: string;
+    winsLabel: string;
+    drawsLabel: string;
+    lossesLabel: string;
+    reset: string;
   };
   dispatch: {
     headerTitle: string;
@@ -264,6 +289,8 @@ export interface TranslationSchema {
     companyPlaceholder: string;
     phoneLabel: string;
     phonePlaceholder: string;
+    preferWhatsappLabel: string;
+    preferWhatsappHint: string;
     servicesLegend: string;
     budgetLegend: string;
     deadlineLegend: string;
@@ -271,11 +298,13 @@ export interface TranslationSchema {
     services: Readonly<Record<ServiceId, string>>;
     budgets: Readonly<Record<BudgetId, string>>;
     deadlines: Readonly<Record<DeadlineId, string>>;
+    channels: Readonly<Record<ContactChannel, string>>;
     errors: Readonly<Record<ContactErrorCode, string>>;
     mailSubjectPrefix: string;
-    mail: Readonly<Record<'name' | 'company' | 'email' | 'phone' | 'services' | 'budget' | 'deadline' | 'message', string>>;
+    mail: Readonly<Record<'name' | 'company' | 'email' | 'phone' | 'channel' | 'services' | 'budget' | 'deadline' | 'message', string>>;
     companyKey: string;
     phoneKey: string;
+    channelKey: string;
     servicesKey: string;
     budgetKey: string;
     deadlineKey: string;
@@ -285,12 +314,16 @@ export interface TranslationSchema {
     fallbackLead: string;
     toastSuccessTitle: string;
     toastSuccessBody: string;
+    toastSuccessBodyWhatsapp: string;
     toastErrorTitle: string;
     toastErrorBody: string;
     toastRateLimitedTitle: string;
     toastRateLimitedBody: string;
     submitCta: string;
     receiptSuccess: string;
+    receiptReplyEmail: string;
+    receiptReplyWhatsapp: string;
+    receiptCopyLead: string;
     codenameKey: string;
     frequencyKey: string;
     statusKey: string;
@@ -574,6 +607,13 @@ export const ptBrDict: TranslationSchema = {
     tilesAria: 'Todos os cases',
     stackAria: 'Tecnologias do case',
     stageAria: 'Mídia do case',
+    fullscreenOpenAria: 'Clique duas vezes no vídeo ou pressione F para assistir em tela cheia',
+    hintDoubleClick: 'CLIQUE 2X',
+    hintRotate: 'VIRE A TELA',
+    hintTitle: 'Clique 2x para ampliar',
+    fullscreenPrev: 'Vídeo anterior',
+    fullscreenNext: 'Próximo vídeo',
+    fullscreenHint: 'USE ← → OU DESLIZE PARA NAVEGAR • ESC PARA FECHAR',
   },
   casePage: {
     sectionAria: 'Página do case',
@@ -589,8 +629,8 @@ export const ptBrDict: TranslationSchema = {
     statusBadge: 'STATUS: ATIVO // EM PRODUÇÃO',
     domainLine: PROFILE.tagline['pt-br'].toUpperCase(),
     operatorTag: 'OPERADOR: BRINU',
-    bioLine1: 'Desenvolvedor de sistemas web full stack com TypeScript, Node.js e PostgreSQL.',
-    bioLine2: 'Em 8 anos no ecossistema Magalu, evoluí do suporte técnico para a engenharia criando extensões, APIs, dashboards e automações reais.',
+    bioLine1: 'Desenvolvedor de sistemas web full stack',
+    bioLine2: 'Em 8 anos no ecossistema Magalu, evoluí de assistente de help desk para a engenharia criando extensões, APIs, dashboards e automações reais.',
     baseLine: 'Franca / SP · Remoto · Projetos Full Stack & Consultoria',
     rankLabel: 'RANK',
     currentMarker: 'ATUAL',
@@ -631,13 +671,31 @@ export const ptBrDict: TranslationSchema = {
       'Precisa tirar um sistema web do papel, criar um painel de gestão ou lançar um site de alta performance? Vamos conversar.',
     subText:
       'Desenvolvimento Web Full Stack ponta a ponta — da modelagem de dados e APIs em Node.js/TypeScript até interfaces rápidas em React, Next.js e Astro, de Franca / SP para todo o mundo.',
-    directTag: '// CANAL DIRETO DE COMUNICAÇÃO',
-    directCta: 'SOLICITAR ORÇAMENTO DIRETO',
-    dispatchPill: 'DISPARAR',
+    directEmailLabel: 'E-MAIL DIRETO //',
     codeBaseLabel: 'CÓDIGO FONTE //',
     careerLogLabel: 'TRAJETÓRIA //',
     stationBaseLabel: 'BASE DE OPERAÇÃO //',
     stationBaseValue: PROFILE.location.remoteLabel['pt-br'],
+  },
+  jokenpo: {
+    kicker: 'MINIGAME // JOKENPÔ',
+    playerAlt: 'Você — Chapéus de Palha',
+    cpuAlt: 'Computador — Franky',
+    prompt: 'Faça sua próxima jogada:',
+    pedra: 'PEDRA',
+    papel: 'PAPEL',
+    tesoura: 'TESOURA',
+    win: 'VITÓRIA',
+    lose: 'DERROTA',
+    draw: 'EMPATE',
+    winLine: 'Você ganhou!',
+    loseLine: 'Você perdeu!',
+    drawLine: 'Empate!',
+    scoreTitle: 'Placar do jogo',
+    winsLabel: 'Vitórias',
+    drawsLabel: 'Empates',
+    lossesLabel: 'Derrotas',
+    reset: 'Reiniciar jogo',
   },
   dispatch: {
     headerTitle: '// SOLICITAR ORÇAMENTO OU PROPOSTA TÉCNICA',
@@ -646,11 +704,17 @@ export const ptBrDict: TranslationSchema = {
     namePlaceholder: 'Ex: Ana Souza',
     companyLabel: '02 // EMPRESA',
     companyPlaceholder: 'Ex: Acme Tecnologia',
+    emailLabel: '03 // SEU E-MAIL DE RETORNO',
+    emailPlaceholder: 'Ex: contato@empresa.com',
     phoneLabel: '04 // WHATSAPP',
     phonePlaceholder: '(16) 99999-9999',
+    preferWhatsappLabel: 'PREFIRO RETORNO PELO WHATSAPP',
+    preferWhatsappHint: 'Resposta mais rápida e direta. Com esta opção, o WhatsApp passa a ser obrigatório.',
     servicesLegend: '05 // QUAL SERVIÇO VOCÊ PROCURA?',
     budgetLegend: '06 // QUAL O ORÇAMENTO DISPONÍVEL?',
     deadlineLegend: '07 // QUAL O PRAZO DESEJADO?',
+    messageLabel: '08 // DETALHES DO PROJETO',
+    messagePlaceholder: 'Conte sobre o sistema web, painel, site ou integração, objetivos e prazo estimado...',
     optionalTag: '(OPCIONAL)',
     services: {
       'web-system': 'Sistema web / painel',
@@ -670,11 +734,16 @@ export const ptBrDict: TranslationSchema = {
       '1-3-months': '1 a 3 meses',
       flexible: 'Flexível',
     },
+    channels: {
+      email: 'E-mail',
+      whatsapp: 'WhatsApp',
+    },
     errors: {
       'name-length': 'Informe um nome entre 2 e 80 caracteres.',
       'email-required': 'E-mail de retorno obrigatório.',
       'email-invalid': 'Formato de e-mail inválido.',
       'phone-invalid': 'Informe DDD + número (10 ou 11 dígitos).',
+      'phone-required': 'Informe seu WhatsApp para receber o retorno por lá.',
       'services-required': 'Selecione pelo menos um serviço.',
       'message-length': 'Descreva o projeto entre 20 e 2000 caracteres.',
     },
@@ -684,6 +753,7 @@ export const ptBrDict: TranslationSchema = {
       company: 'Empresa',
       email: 'E-mail',
       phone: 'WhatsApp',
+      channel: 'Retorno preferido',
       services: 'Serviços',
       budget: 'Orçamento',
       deadline: 'Prazo',
@@ -691,6 +761,7 @@ export const ptBrDict: TranslationSchema = {
     },
     companyKey: 'EMPRESA:',
     phoneKey: 'WHATSAPP:',
+    channelKey: 'RETORNO VIA:',
     servicesKey: 'SERVIÇOS:',
     budgetKey: 'ORÇAMENTO:',
     deadlineKey: 'PRAZO:',
@@ -699,17 +770,17 @@ export const ptBrDict: TranslationSchema = {
     honeypotLabel: 'Não preencha este campo',
     fallbackLead: 'O ENVIO FALHOU? MANDE PELO SEU E-MAIL:',
     toastSuccessTitle: 'PROPOSTA ENVIADA!',
-    toastSuccessBody: 'Recebi sua mensagem e respondo no e-mail informado.',
+    toastSuccessBody: 'Recebi sua proposta e respondo por e-mail o quanto antes. Uma cópia dos dados foi para o seu e-mail.',
+    toastSuccessBodyWhatsapp: 'Recebi sua proposta e respondo pelo WhatsApp o quanto antes. Uma cópia dos dados foi para o seu e-mail.',
     toastErrorTitle: 'FALHA NA TRANSMISSÃO',
     toastErrorBody: 'Não consegui enviar agora. Suas respostas continuam no formulário: tente de novo ou use o e-mail abaixo.',
     toastRateLimitedTitle: 'LIMITE DE ENVIOS ATINGIDO',
     toastRateLimitedBody: 'Muitos envios na última hora. Tente mais tarde ou use o e-mail abaixo.',
-    emailLabel: '03 // SEU E-MAIL DE RETORNO',
-    emailPlaceholder: 'Ex: contato@empresa.com',
-    messageLabel: '08 // DETALHES DO PROJETO',
-    messagePlaceholder: 'Conte sobre o sistema web, painel, site ou integração, objetivos e prazo estimado...',
     submitCta: 'ENVIAR PROPOSTA DE PROJETO',
     receiptSuccess: 'TRANSMISSÃO ENVIADA // 100% CONFIRMADA!',
+    receiptReplyEmail: 'Proposta recebida. Retorno por e-mail o quanto antes, com mais informações.',
+    receiptReplyWhatsapp: 'Proposta recebida. Retorno pelo WhatsApp o quanto antes, com mais informações.',
+    receiptCopyLead: 'Uma cópia dos dados preenchidos foi enviada para',
     codenameKey: 'REMETENTE:',
     frequencyKey: 'E-MAIL:',
     statusKey: 'DESTINO:',
@@ -994,6 +1065,13 @@ export const enDict = {
     tilesAria: 'All cases',
     stackAria: 'Case technologies',
     stageAria: 'Case media',
+    fullscreenOpenAria: 'Double-click the video or press F to watch it in fullscreen',
+    hintDoubleClick: 'DOUBLE CLICK',
+    hintRotate: 'ROTATE YOUR PHONE',
+    hintTitle: 'Double-click to enlarge',
+    fullscreenPrev: 'Previous video',
+    fullscreenNext: 'Next video',
+    fullscreenHint: 'USE ← → OR SWIPE TO NAVIGATE • ESC TO CLOSE',
   },
   casePage: {
     sectionAria: 'Case page',
@@ -1009,7 +1087,7 @@ export const enDict = {
     statusBadge: 'STATUS: ACTIVE // DEPLOYED',
     domainLine: PROFILE.tagline.en.toUpperCase(),
     operatorTag: 'OPERATOR: BRINU',
-    bioLine1: 'Full stack web developer with TypeScript, Node.js and PostgreSQL.',
+    bioLine1: 'Full stack web developer',
     bioLine2: 'Across 8 years in the Magalu ecosystem, I grew from technical support into engineering by building extensions, APIs, dashboards and real automations.',
     baseLine: 'Franca / SP · Remote · Full Stack Projects & Consulting',
     rankLabel: 'RANK',
@@ -1051,13 +1129,31 @@ export const enDict = {
       'Need to launch a custom web system, build a management dashboard, or ship a high-performance website? Let’s talk.',
     subText:
       'End-to-end Full Stack Web Development — from database modeling and Node.js/TypeScript APIs to fast interfaces in React, Next.js, and Astro, from Franca / SP, Brazil to the world.',
-    directTag: '// DIRECT FREQUENCY COMMUNICATION',
-    directCta: 'REQUEST A DIRECT QUOTE',
-    dispatchPill: 'DISPATCH',
+    directEmailLabel: 'DIRECT EMAIL //',
     codeBaseLabel: 'CODE BASE //',
     careerLogLabel: 'CAREER LOG //',
     stationBaseLabel: 'STATION BASE //',
     stationBaseValue: PROFILE.location.remoteLabel.en,
+  },
+  jokenpo: {
+    kicker: 'MINIGAME // ROCK PAPER SCISSORS',
+    playerAlt: 'You — Straw Hats',
+    cpuAlt: 'Computer — Franky',
+    prompt: 'Make your next move:',
+    pedra: 'ROCK',
+    papel: 'PAPER',
+    tesoura: 'SCISSORS',
+    win: 'VICTORY',
+    lose: 'DEFEAT',
+    draw: 'DRAW',
+    winLine: 'You won!',
+    loseLine: 'You lost!',
+    drawLine: 'Draw!',
+    scoreTitle: 'Scoreboard',
+    winsLabel: 'Wins',
+    drawsLabel: 'Draws',
+    lossesLabel: 'Losses',
+    reset: 'Restart game',
   },
   dispatch: {
     headerTitle: '// REQUEST A QUOTE OR TECHNICAL PROPOSAL',
@@ -1066,11 +1162,17 @@ export const enDict = {
     namePlaceholder: 'e.g. Ana Souza',
     companyLabel: '02 // COMPANY',
     companyPlaceholder: 'e.g. Acme Technology',
+    emailLabel: '03 // RETURN FREQUENCY (YOUR EMAIL)',
+    emailPlaceholder: 'e.g. contact@company.com',
     phoneLabel: '04 // WHATSAPP',
     phonePlaceholder: '(16) 99999-9999',
+    preferWhatsappLabel: 'I PREFER A REPLY ON WHATSAPP',
+    preferWhatsappHint: 'Faster, more direct reply. With this option, WhatsApp becomes required.',
     servicesLegend: '05 // WHAT SERVICE ARE YOU LOOKING FOR?',
     budgetLegend: '06 // WHAT IS YOUR AVAILABLE BUDGET?',
     deadlineLegend: '07 // WHAT IS YOUR DESIRED TIMELINE?',
+    messageLabel: '08 // PROJECT DETAILS',
+    messagePlaceholder: 'Tell me about the web system, dashboard, site or integration, goals, and timeline...',
     optionalTag: '(OPTIONAL)',
     services: {
       'web-system': 'Web system / dashboard',
@@ -1090,11 +1192,16 @@ export const enDict = {
       '1-3-months': '1 to 3 months',
       flexible: 'Flexible',
     },
+    channels: {
+      email: 'Email',
+      whatsapp: 'WhatsApp',
+    },
     errors: {
       'name-length': 'Enter a name between 2 and 80 characters.',
       'email-required': 'Return email address is required.',
       'email-invalid': 'Invalid email address format.',
       'phone-invalid': 'Enter area code + number (10 or 11 digits).',
+      'phone-required': 'Enter your WhatsApp number to get the reply there.',
       'services-required': 'Select at least one service.',
       'message-length': 'Describe the project in 20 to 2000 characters.',
     },
@@ -1104,6 +1211,7 @@ export const enDict = {
       company: 'Company',
       email: 'Email',
       phone: 'WhatsApp',
+      channel: 'Preferred reply',
       services: 'Services',
       budget: 'Budget',
       deadline: 'Timeline',
@@ -1111,6 +1219,7 @@ export const enDict = {
     },
     companyKey: 'COMPANY:',
     phoneKey: 'WHATSAPP:',
+    channelKey: 'REPLY VIA:',
     servicesKey: 'SERVICES:',
     budgetKey: 'BUDGET:',
     deadlineKey: 'TIMELINE:',
@@ -1119,17 +1228,17 @@ export const enDict = {
     honeypotLabel: 'Leave this field empty',
     fallbackLead: 'SEND FAILED? USE YOUR E-MAIL:',
     toastSuccessTitle: 'BRIEF SENT!',
-    toastSuccessBody: 'I got your message and will reply at the e-mail you gave.',
+    toastSuccessBody: 'I got your brief and will reply by email as soon as I can. A copy of your answers went to your email.',
+    toastSuccessBodyWhatsapp: 'I got your brief and will reply on WhatsApp as soon as I can. A copy of your answers went to your email.',
     toastErrorTitle: 'TRANSMISSION FAILED',
     toastErrorBody: "I couldn't send it right now. Your answers are still in the form: try again or use the e-mail link below.",
     toastRateLimitedTitle: 'SEND LIMIT REACHED',
     toastRateLimitedBody: 'Too many sends in the last hour. Try again later or use the e-mail link below.',
-    emailLabel: '03 // RETURN FREQUENCY (YOUR EMAIL)',
-    emailPlaceholder: 'e.g. contact@company.com',
-    messageLabel: '08 // PROJECT DETAILS',
-    messagePlaceholder: 'Tell me about the web system, dashboard, site or integration, goals, and timeline...',
     submitCta: 'SEND PROJECT PROPOSAL',
     receiptSuccess: 'TRANSMISSION SENT // 100% CONFIRMED!',
+    receiptReplyEmail: 'Brief received. I will reply by email as soon as I can, with more details.',
+    receiptReplyWhatsapp: 'Brief received. I will reply on WhatsApp as soon as I can, with more details.',
+    receiptCopyLead: 'A copy of your answers was sent to',
     codenameKey: 'SENDER:',
     frequencyKey: 'EMAIL:',
     statusKey: 'TARGET:',

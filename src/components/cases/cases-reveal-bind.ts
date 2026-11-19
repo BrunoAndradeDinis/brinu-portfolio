@@ -154,6 +154,12 @@ function enableReveal(section: HTMLElement): (() => void) | null {
     },
   });
 
+  // A jump from below the pin to above it crosses no toggle, so the section must still rewind to the first case.
+  const rewindAbovePin = () => {
+    if (locked || requestedIndex !== null || window.scrollY >= trigger.start || steps.index === 0) return;
+    showAssembled(steps.goTo(0).index);
+  };
+
   const step = (direction: Direction) => {
     const result = direction > 0 ? steps.next() : steps.previous();
     if (!result.done) {
@@ -164,9 +170,32 @@ function enableReveal(section: HTMLElement): (() => void) | null {
     ScrollTrigger.update();
   };
 
+  const jumpToCase = (index: number) => {
+    if (locked) {
+      if (steps.index !== index) showCase(steps.goTo(index).index);
+      return;
+    }
+    requestedIndex = index;
+    jumpScrollTo(trigger.start + PIN_ENTRY_NUDGE_PX);
+    ScrollTrigger.update();
+    // A jump that lands inside the pin crosses no start, so the pin may be active without having toggled.
+    const lockIfPinned = () => {
+      if (!locked && trigger.isActive) lock(1);
+    };
+    lockIfPinned();
+    requestAnimationFrame(lockIfPinned);
+  };
+
   const onCaseLinkClick = (event: MouseEvent) => {
     if (event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
-    const href = (event.target as HTMLElement | null)?.closest('a[href^="#case-"]')?.getAttribute('href');
+    const href = (event.target as HTMLElement | null)?.closest('a[href^="#"]')?.getAttribute('href');
+    if (href === `#${section.id}`) {
+      event.preventDefault();
+      if (window.location.hash !== href) history.replaceState(history.state, '', href);
+      // The section link may be clicked from below the pin, where a smooth scroll would stop on the pin end.
+      jumpToCase(0);
+      return;
+    }
     const index = href ? caseIndexOf(href) : -1;
     if (index < 0) return;
     event.preventDefault();
@@ -182,19 +211,7 @@ function enableReveal(section: HTMLElement): (() => void) | null {
     const index = caseIndexOf((event as CustomEvent<{ hash: string }>).detail.hash);
     if (index < 0) return;
     event.preventDefault();
-    if (locked) {
-      if (steps.index !== index) showCase(steps.goTo(index).index);
-      return;
-    }
-    requestedIndex = index;
-    jumpScrollTo(trigger.start + PIN_ENTRY_NUDGE_PX);
-    ScrollTrigger.update();
-    // A jump that lands inside the pin crosses no start, so the pin may be active without having toggled.
-    const lockIfPinned = () => {
-      if (!locked && trigger.isActive) lock(1);
-    };
-    lockIfPinned();
-    requestAnimationFrame(lockIfPinned);
+    jumpToCase(index);
   };
 
   const acceptsInput = () => locked && !document.documentElement.classList.contains('cockpit-menu-open');
@@ -234,6 +251,7 @@ function enableReveal(section: HTMLElement): (() => void) | null {
     step(direction);
   };
 
+  window.addEventListener('scroll', rewindAbovePin, { passive: true });
   window.addEventListener('wheel', onWheel, { passive: false, capture: true });
   window.addEventListener('touchstart', onTouchStart, { passive: true });
   window.addEventListener('touchmove', onTouchMove, { passive: false });
@@ -254,6 +272,7 @@ function enableReveal(section: HTMLElement): (() => void) | null {
 
   return () => {
     unbindCubes();
+    window.removeEventListener('scroll', rewindAbovePin);
     window.removeEventListener('wheel', onWheel, { capture: true });
     window.removeEventListener('touchstart', onTouchStart);
     window.removeEventListener('touchmove', onTouchMove);

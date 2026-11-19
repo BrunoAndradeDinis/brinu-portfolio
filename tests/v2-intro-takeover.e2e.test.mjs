@@ -150,10 +150,15 @@ test('C14: manifestos render as P5Panel and social links as stacked P5Badge colu
       assert.ok(Math.abs(badges[i].right - badges[0].right) < 2, 'badges must share one column edge');
     }
     await page.setViewportSize({ width: 375, height: 812 });
-    const narrow = await page.locator('#hero [data-hero-socials] [data-p5-badge]').evaluateAll((els) => els.map((el) => ({ top: el.getBoundingClientRect().top, left: el.getBoundingClientRect().left })));
+    const narrowPanel = await page.locator('#hero [data-hero-manifesto="right"]').evaluate((el) => {
+      const r = el.getBoundingClientRect();
+      return { left: r.left, right: r.right };
+    });
+    const narrow = await page.locator('#hero [data-hero-socials] [data-p5-badge]').evaluateAll((els) => els.map((el) => ({ top: el.getBoundingClientRect().top, left: el.getBoundingClientRect().left, right: el.getBoundingClientRect().right })));
+    assert.ok(narrow[0].left >= narrowPanel.right - 2, 'socials column must sit in the right corner alongside the right manifesto panel at 375px');
     for (let i = 1; i < narrow.length; i++) {
       assert.ok(narrow[i].top > narrow[i - 1].top, 'badges must stay stacked at 375px');
-      assert.ok(Math.abs(narrow[i].left - narrow[0].left) < 2, 'badges must share one column at 375px');
+      assert.ok(Math.abs(narrow[i].right - narrow[0].right) < 2, 'badges must share one right-aligned column edge at 375px');
     }
   } finally {
     await context.close();

@@ -265,7 +265,8 @@ export function initShowcaseVideo(root: ParentNode): Teardown | undefined {
     render();
   };
 
-  const onButtonClick = () => {
+  const onButtonClick = (event: MouseEvent) => {
+    if (event.detail > 1) return;
     if (hoveredTarget === "next") {
       advanceCarousel();
     } else {

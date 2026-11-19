@@ -67,6 +67,11 @@ export function getNavClearanceOffset(): number {
   return 100;
 }
 
+export function anchorScrollTop(target: HTMLElement, layoutTop: number): number {
+  if (target === document.querySelector('#main-content > section')) return 0;
+  return Math.max(0, layoutTop - getNavClearanceOffset());
+}
+
 /**
  * Sincroniza o background-color do <html> e <body> com a seção que ocupa o topo da viewport.
  */
@@ -191,11 +196,7 @@ function setupAnchorInterception(): void {
     event.preventDefault();
 
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const clearance = getNavClearanceOffset();
-    const targetY = Math.max(
-      0,
-      window.scrollY + targetElement.getBoundingClientRect().top - clearance
-    );
+    const targetY = anchorScrollTop(targetElement, window.scrollY + targetElement.getBoundingClientRect().top);
 
     if (lenisInstance && !prefersReducedMotion) {
       lenisInstance.scrollTo(targetY, {

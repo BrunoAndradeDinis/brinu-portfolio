@@ -87,6 +87,7 @@ test('validator runs in node and returns a brief or errors', () => {
       company: null,
       email: 'ana@acme.com',
       phone: '16991234567',
+      preferWhatsapp: false,
       services: ['web-system'],
       budget: '3k-8k',
       deadline: 'urgent',
@@ -165,7 +166,8 @@ const { buildMailtoHref } = await import('../src/utils/contact-mailto.ts');
 
 const MAILTO_COPY = {
   subjectPrefix: '[Bounty Contract]',
-  labels: { name: 'Nome', company: 'Empresa', email: 'E-mail', phone: 'WhatsApp', services: 'Serviços', budget: 'Orçamento', deadline: 'Prazo', message: 'Detalhes' },
+  labels: { name: 'Nome', company: 'Empresa', email: 'E-mail', phone: 'WhatsApp', channel: 'Retorno preferido', services: 'Serviços', budget: 'Orçamento', deadline: 'Prazo', message: 'Detalhes' },
+  channels: { email: 'E-mail', whatsapp: 'WhatsApp' },
   services: { 'web-system': 'Sistema web / painel', site: 'Site / landing page', integration: 'Integração / API / manutenção', job: 'Oportunidade de vaga' },
   budgets: { 'up-to-3k': 'Até R$ 3.000', '3k-8k': 'R$ 3.000 – R$ 8.000', '8k-15k': 'R$ 8.000 – R$ 15.000', 'over-15k': 'Acima de R$ 15.000', 'to-discuss': 'A combinar' },
   deadlines: { urgent: 'Urgente (até 1 mês)', '1-3-months': '1 a 3 meses', flexible: 'Flexível' },
@@ -192,6 +194,7 @@ test('mailto href is built from the payload and url-encoded', () => {
       'Empresa: Acme',
       'E-mail: ana@acme.com',
       'WhatsApp: (16) 99123-4567',
+      'Retorno preferido: E-mail',
       'Serviços: Sistema web / painel, Integração / API / manutenção',
       'Orçamento: R$ 3.000 – R$ 8.000',
       'Prazo: Urgente (até 1 mês)',
@@ -209,7 +212,7 @@ test('mailto href is built from the payload and url-encoded', () => {
   assert.equal(minimalParsed.subject, '[Bounty Contract] Ana Souza');
   assert.equal(
     minimalParsed.body,
-    ['Nome: Ana Souza', 'E-mail: ana@acme.com', 'Serviços: Oportunidade de vaga', '', 'Detalhes:', 'Preciso de um painel administrativo.'].join('\r\n')
+    ['Nome: Ana Souza', 'E-mail: ana@acme.com', 'Retorno preferido: E-mail', 'Serviços: Oportunidade de vaga', '', 'Detalhes:', 'Preciso de um painel administrativo.'].join('\r\n')
   );
 });
 
@@ -242,7 +245,7 @@ test('budget and deadline labels match the approved copy in both locales', () =>
   assert.deepEqual(DEADLINE_IDS.map((id) => pt.deadlines[id]), ['Urgente (até 1 mês)', '1 a 3 meses', 'Flexível']);
   for (const id of BUDGET_IDS) assert.ok(en.budgets[id]?.length > 0, `en budget ${id}`);
   for (const id of DEADLINE_IDS) assert.ok(en.deadlines[id]?.length > 0, `en deadline ${id}`);
-  const codes = ['name-length', 'email-required', 'email-invalid', 'phone-invalid', 'services-required', 'message-length'];
+  const codes = ['name-length', 'email-required', 'email-invalid', 'phone-invalid', 'phone-required', 'services-required', 'message-length'];
   for (const dict of [pt, en]) assert.deepEqual(Object.keys(dict.errors).sort(), [...codes].sort());
 });
 
@@ -258,6 +261,7 @@ test('zod schema parses valid briefs and maps issues to error codes', () => {
     company: 'Acme',
     email: 'ana@acme.com',
     phone: '16991234567',
+    preferWhatsapp: false,
     services: ['job'],
     budget: null,
     deadline: null,
@@ -355,4 +359,39 @@ test('whatsapp normalizes international and trunk prefixes without inventing num
   assert.equal(trunk.ok && trunk.brief.phone, '16991234567');
   const area55 = validateContactBrief(raw({ phone: '(55) 99123-4567' }));
   assert.equal(area55.ok && area55.brief.phone, '55991234567');
+});
+
+test('preferring a whatsapp reply makes the number required', () => {
+  assert.deepEqual(errorsOf({ phone: '', preferWhatsapp: true }), { phone: 'phone-required' });
+  assert.deepEqual(errorsOf({ phone: '  ', preferWhatsapp: true }), { phone: 'phone-required' });
+  assert.deepEqual(errorsOf({ phone: '169912', preferWhatsapp: true }), { phone: 'phone-invalid' });
+  assert.deepEqual(errorsOf({ phone: '', preferWhatsapp: false }), {});
+  assert.deepEqual(errorsOf({ name: 'A', phone: '', preferWhatsapp: true }), { name: 'name-length', phone: 'phone-required' }, 'shown with other errors');
+  const preferred = validateContactBrief(raw({ preferWhatsapp: true }));
+  assert.equal(preferred.ok && preferred.brief.preferWhatsapp, true);
+  for (const loose of ['true', 1, null, undefined]) {
+    const result = validateContactBrief(raw({ phone: '', preferWhatsapp: loose }));
+    assert.equal(result.ok && result.brief.preferWhatsapp, false, String(loose));
+  }
+});
+
+test('mailto names the preferred reply channel', () => {
+  const result = validateContactBrief(raw({ preferWhatsapp: true }));
+  assert.ok(result.ok);
+  const { body } = parseMailto(buildMailtoHref(result.brief, MAILTO_COPY, 'bruno@example.com'));
+  assert.ok(body.split('\r\n').includes('Retorno preferido: WhatsApp'));
+});
+
+test('whatsapp preference copy exists in both locales', async () => {
+  const { DICTIONARIES } = await import('../src/i18n/dictionaries.ts');
+  for (const locale of ['pt-br', 'en']) {
+    const d = DICTIONARIES[locale].dispatch;
+    for (const key of ['preferWhatsappLabel', 'preferWhatsappHint', 'channelKey', 'receiptReplyEmail', 'receiptReplyWhatsapp', 'receiptCopyLead', 'toastSuccessBodyWhatsapp']) {
+      assert.ok(typeof d[key] === 'string' && d[key].trim(), `${locale}.${key}`);
+    }
+    assert.deepEqual(Object.keys(d.channels).sort(), ['email', 'whatsapp']);
+    assert.ok(d.mail.channel.trim());
+  }
+  assert.equal(DICTIONARIES['pt-br'].dispatch.errors['phone-required'], 'Informe seu WhatsApp para receber o retorno por lá.');
+  assert.equal(DICTIONARIES.en.dispatch.errors['phone-required'], 'Enter your WhatsApp number to get the reply there.');
 });

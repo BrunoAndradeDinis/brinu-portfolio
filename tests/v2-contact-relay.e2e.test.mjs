@@ -150,6 +150,8 @@ test('confirmed send shows the success toast and receipt', async () => {
   await page.waitForSelector('[data-dispatch-receipt]');
   assert.equal(await page.locator('[data-dispatch-form]').count(), 0);
   assert.equal((await page.locator('[data-dispatch-receipt]').textContent()).includes(PT.receiptSuccess), true);
+  assert.equal((await page.locator('[data-dispatch-reply]').innerText()).trim(), PT.receiptReplyEmail);
+  assert.equal((await page.locator('[data-dispatch-copy-sent]').innerText()).trim(), `${PT.receiptCopyLead} ana@acme.com.`);
 
   assert.equal(requests.length, 1);
   const request = requests[0];
@@ -160,6 +162,7 @@ test('confirmed send shows the success toast and receipt', async () => {
     company: 'Acme',
     email: 'ana@acme.com',
     phone: '16991234567',
+    preferWhatsapp: false,
     services: ['web-system'],
     budget: 'to-discuss',
     deadline: 'flexible',
@@ -389,5 +392,23 @@ test('relay copy renders in english', async () => {
   await submit(page);
   assert.deepEqual(await toastText(page, 'success'), { title: EN.toastSuccessTitle, description: EN.toastSuccessBody });
   assert.ok((await page.locator('[data-dispatch-receipt]').textContent()).includes(EN.receiptSuccess));
+  assert.equal((await page.locator('[data-dispatch-copy-sent]').innerText()).trim(), `${EN.receiptCopyLead} ana@acme.com.`);
   await context.close();
+});
+
+test('whatsapp preference changes the success toast and receipt copy', async () => {
+  for (const [locale, dict] of [['pt-br', PT], ['en', EN]]) {
+    const { context, page, requests } = await openForm({ locale });
+    await fillValid(page);
+    await page.check('#dispatch-prefer-whatsapp');
+    await submit(page);
+    assert.deepEqual(await toastText(page, 'success'), { title: dict.toastSuccessTitle, description: dict.toastSuccessBodyWhatsapp });
+    await page.waitForSelector('[data-dispatch-receipt]');
+    assert.equal((await page.locator('[data-dispatch-reply]').innerText()).trim(), dict.receiptReplyWhatsapp);
+    assert.equal((await page.locator('[data-receipt-row="channel"] dd').innerText()).trim(), dict.channels.whatsapp);
+    const payload = JSON.parse(requests.at(-1).postData());
+    assert.equal(payload.locale, locale, 'the reply language travels with the brief');
+    assert.equal(payload.preferWhatsapp, true);
+    await context.close();
+  }
 });

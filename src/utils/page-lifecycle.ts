@@ -1,4 +1,4 @@
-import { ScrollTrigger, getNavClearanceOffset, jumpScrollTo } from './motion.ts';
+import { ScrollTrigger, anchorScrollTop, jumpScrollTo } from './motion.ts';
 import { applyDomTranslations, getLocale } from '../i18n/index.ts';
 
 type Teardown = () => void;
@@ -59,7 +59,7 @@ export function scrollToHashBelowNav(hash: string): boolean {
     return false;
   }
   if (!target) return false;
-  jumpScrollTo(Math.max(0, layoutTopOf(target) - getNavClearanceOffset()));
+  jumpScrollTo(anchorScrollTop(target, layoutTopOf(target)));
   return true;
 }
 

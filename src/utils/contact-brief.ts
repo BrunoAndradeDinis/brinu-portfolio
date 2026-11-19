@@ -17,6 +17,7 @@ export interface RawContactBrief {
   readonly company: string;
   readonly email: string;
   readonly phone: string;
+  readonly preferWhatsapp: boolean;
   readonly services: readonly string[];
   readonly budget: string;
   readonly deadline: string;
@@ -28,16 +29,19 @@ export interface ContactBrief {
   readonly company: string | null;
   readonly email: string;
   readonly phone: string | null;
+  readonly preferWhatsapp: boolean;
   readonly services: readonly ServiceId[];
   readonly budget: BudgetId | null;
   readonly deadline: DeadlineId | null;
   readonly message: string;
 }
 
+export type ContactChannel = 'email' | 'whatsapp';
+
 export type ContactField = 'name' | 'email' | 'phone' | 'services' | 'message';
 
 export type ContactErrorCode =
-  'name-length' | 'email-required' | 'email-invalid' | 'phone-invalid' | 'services-required' | 'message-length';
+  'name-length' | 'email-required' | 'email-invalid' | 'phone-invalid' | 'phone-required' | 'services-required' | 'message-length';
 
 export type ContactErrors = Partial<Record<ContactField, ContactErrorCode>>;
 
@@ -56,7 +60,11 @@ const FIELD_FALLBACK_CODE: Readonly<Record<ContactField, ContactErrorCode>> = {
   message: 'message-length',
 };
 
-const ERROR_CODES = new Set<string>(Object.values(FIELD_FALLBACK_CODE).concat('email-required'));
+const ERROR_CODES = new Set<string>(Object.values(FIELD_FALLBACK_CODE).concat('email-required', 'phone-required'));
+
+export function contactChannel(brief: Pick<ContactBrief, 'preferWhatsapp'>): ContactChannel {
+  return brief.preferWhatsapp ? 'whatsapp' : 'email';
+}
 
 export function isJobOnly(services: readonly string[]): boolean {
   return services.length === 1 && services[0] === JOB_SERVICE_ID;
@@ -72,6 +80,7 @@ const EMPTY_RAW: RawContactBrief = {
   company: '',
   email: '',
   phone: '',
+  preferWhatsapp: false,
   services: [],
   budget: '',
   deadline: '',
@@ -94,6 +103,7 @@ export const contactBriefSchema = z.preprocess(
         .transform(toPhoneDigits)
         .refine((digits) => !digits || (digits.length >= phoneDigits.min && digits.length <= phoneDigits.max), 'phone-invalid')
         .transform((digits) => digits || null),
+      preferWhatsapp: z.unknown().transform((value) => value === true),
       services: z
         .unknown()
         .transform((list) => (Array.isArray(list) ? SERVICE_IDS.filter((id) => list.includes(id)) : []))
@@ -102,6 +112,12 @@ export const contactBriefSchema = z.preprocess(
       deadline: optionOrDefault(DEADLINE_IDS, CONTACT_DEFAULTS.deadline),
       message: text().transform(sanitizeMultiline).pipe(z.string().min(message.min, 'message-length').max(message.max, 'message-length')),
     })
+    .superRefine(
+      (brief, ctx) => {
+        if (brief.preferWhatsapp && !brief.phone) ctx.addIssue({ code: 'custom', path: ['phone'], message: 'phone-required' });
+      },
+      { when: (payload) => typeof payload.value === 'object' && payload.value !== null },
+    )
     .transform((brief): ContactBrief => (isJobOnly(brief.services) ? { ...brief, budget: null, deadline: null } : brief)),
 );
 

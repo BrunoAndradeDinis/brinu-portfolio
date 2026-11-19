@@ -1,0 +1,70 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    env:
+      SITE_ROOT: /var/www/brinu
+      KEEP_RELEASES: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - run: npm run build
+
+      - name: Configure SSH
+        env:
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+        run: |
+          install -d -m 700 ~/.ssh
+          printf '%s\n' "$DEPLOY_SSH_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          printf '%s\n' "$DEPLOY_KNOWN_HOSTS" > ~/.ssh/known_hosts
+
+      - name: Upload release and switch
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+        run: |
+          target="deploy@${DEPLOY_HOST}"
+          ssh_cmd="ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes"
+          release="${SITE_ROOT}/releases/${GITHUB_SHA}"
+
+          rsync -az --delete --chmod=D755,F644 \
+            --link-dest="${SITE_ROOT}/current/" \
+            -e "$ssh_cmd" dist/ "${target}:${release}/"
+
+          $ssh_cmd "$target" bash -s -- "$SITE_ROOT" "$release" "$KEEP_RELEASES" <<'EOF'
+          set -euo pipefail
+          root="$1"; release="$2"; keep="$3"
+          touch "$release"
+          ln -sfn "$release" "$root/current.tmp"
+          mv -T "$root/current.tmp" "$root/current"
+          ls -1dt "$root"/releases/*/ | tail -n +"$((keep + 1))" | xargs -r rm -rf
+          EOF
+
+      - name: Smoke test
+        run: |
+          for path in / /whoami/ /robots.txt; do
+            curl -fsS -o /dev/null -w "%{http_code} $path\n" "https://brinu.xyz$path"
+          done
+          test "$(curl -s -o /dev/null -w '%{http_code}' https://brinu.xyz/nao-existe)" = 404
