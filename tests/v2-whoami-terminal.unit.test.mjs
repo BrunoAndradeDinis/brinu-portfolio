@@ -14,7 +14,7 @@ const texts = (result) => result.lines.map((line) => line.text);
 
 test('the sanitizer keeps only plain allowed text', () => {
   assert.equal(sanitizeInput('  HELP  '), 'help');
-  assert.equal(sanitizeInput('cat\tcurriculo.pdf\n'), 'cat curriculo.pdf');
+  assert.equal(sanitizeInput('cat\tcurriculo.txt\n'), 'cat curriculo.txt');
   assert.equal(sanitizeInput('he​lp'), 'help', 'zero-width space');
   assert.equal(sanitizeInput('‮help‬'), 'help', 'bidi overrides');
   assert.equal(sanitizeInput('﻿help\u0000\u0007'), 'help', 'BOM and C0 controls');
@@ -64,12 +64,13 @@ test('command output comes from the site data', () => {
     const whoami = texts(runCommand('whoami', locale));
     assert.equal(whoami[0], `${PROFILE.fullName} (@${PROFILE.handle})`);
     assert.equal(whoami[1], PROFILE.role[locale]);
-    const resume = texts(runCommand('cat curriculo.pdf', locale)).join('\n');
+    const resume = texts(runCommand('cat curriculo.txt', locale)).join('\n');
     assert.ok(resume.includes(PROFILE.email) && resume.includes(PROFILE.linkedin.url));
     for (const entry of getLocalizedEducation(locale)) assert.ok(resume.includes(entry.institution));
     const download = runCommand('download curriculo', locale).effect;
     assert.deepEqual(download, { type: 'download', filename: 'curriculo-bruno-dinis.pdf', href: '/curriculo-bruno-dinis.pdf' });
-    assert.deepEqual(texts(runCommand('ls', locale)), ['curriculo.pdf']);
+    assert.deepEqual(texts(runCommand('ls', locale)), ['curriculo.txt']);
+    assert.match(texts(runCommand('cat curriculo.pdf', locale))[0], /^cat: curriculo.pdf: /);
   }
   const music = texts(runCommand('hobbies Música', 'pt-br'));
   assert.equal(music[0], '94 OUV · Ouvinte');
@@ -85,7 +86,7 @@ test('the résumé uses plain ATS sections, keywords and no hobbies', () => {
     en: ['PROFESSIONAL SUMMARY', 'TECHNICAL SKILLS', 'PROFESSIONAL EXPERIENCE', 'PROJECTS', 'EDUCATION'],
   };
   for (const locale of ['pt-br', 'en']) {
-    const resume = texts(runCommand('cat curriculo.pdf', locale));
+    const resume = texts(runCommand('cat curriculo.txt', locale));
     assert.equal(resume[0], PROFILE.fullName.toUpperCase());
     const positions = sections[locale].map((title) => resume.indexOf(title));
     assert.ok(positions.every((position, index) => position > 0 && (index === 0 || position > positions[index - 1])), `${locale}: sections in order`);
@@ -108,7 +109,7 @@ test('tab completion finds commands and arguments', () => {
   assert.deepEqual(completeInput('c', 'pt-br').options, ['clear', 'career', 'cat', 'contact', 'cilada']);
   assert.equal(completeInput('c', 'pt-br').value, null);
   assert.equal(completeInput('hobbies mu', 'pt-br').value, 'hobbies musica');
-  assert.equal(completeInput('cat cur', 'pt-br').value, 'cat curriculo.pdf');
+  assert.equal(completeInput('cat cur', 'pt-br').value, 'cat curriculo.txt');
   assert.equal(completeInput('download c', 'pt-br').value, 'download curriculo');
   assert.deepEqual(completeInput('lang ', 'pt-br').options, ['pt', 'en']);
   assert.deepEqual(completeInput('zzz', 'pt-br'), { value: null, options: [] });

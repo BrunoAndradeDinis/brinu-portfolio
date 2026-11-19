@@ -125,7 +125,7 @@ test('the opening types whoami and help and hands over the prompt', async () => 
 test('typed commands print their output and unknown ones are refused', async () => {
   const { context, page } = await openTerminal({ reducedMotion: 'reduce' });
   try {
-    for (const command of ['career', 'education', 'skills', 'hobbies musica', 'projects', 'status', 'ls', 'cat curriculo.pdf']) {
+    for (const command of ['career', 'education', 'skills', 'hobbies musica', 'projects', 'status', 'ls', 'cat curriculo.txt']) {
       await submit(page, command);
       assert.equal((await echoes(page)).at(-1), command);
       const expected = runCommand(command, 'pt-br').lines.map((line) => line.term ? `${line.term}${line.detail}` : line.text);
@@ -310,7 +310,7 @@ test('the terminal is accessible and never widens the page', async () => {
         assert.equal(await output.getAttribute('aria-live'), 'polite');
         const label = await page.evaluate(() => document.querySelector('label[for="terminal-input"]').textContent.replace(/\s+/g, ' ').trim());
         assert.match(label, locale === 'en' ? /Terminal command/ : /Comando do terminal/);
-        await submit(page, 'cat curriculo.pdf');
+        await submit(page, 'cat curriculo.txt');
         await submit(page, 'hobbies natureza');
         const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
         assert.ok(overflow <= 0, `${locale} ${width}px overflow ${overflow}`);
