@@ -54,12 +54,12 @@ const currentId = CAREER.find((entry) => entry.end === "present")?.id;
     </div>
   </div>
 
-  <div class="mx-auto max-w-[140rem] grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
+  <div class="mx-auto max-w-[140rem] grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-x-12 lg:gap-y-8 items-start">
     <div
       data-about-avatar-panel
-      class="lg:col-span-5 flex flex-col items-center"
+      class="contents lg:col-span-5 lg:flex lg:flex-col lg:items-center"
     >
-      <div data-about-portrait class="relative w-full max-w-[24rem] sm:max-w-[26rem] mx-auto pb-4">
+      <div data-about-portrait class="order-1 lg:order-none relative w-full max-w-[24rem] sm:max-w-[26rem] mx-auto pb-4">
         <div
           data-about-portrait-frame
           class="relative rotate-[-4deg] outline-none bg-bebop-red p-[0.45rem] sm:p-[0.6rem] [clip-path:polygon(7%_0%,100%_5%,93%_100%,0%_95%)]"
@@ -96,7 +96,7 @@ const currentId = CAREER.find((entry) => entry.end === "present")?.id;
       <HobbyCards />
     </div>
 
-    <div data-about-content-panel class="lg:col-span-7 flex flex-col gap-6">
+    <div data-about-content-panel class="order-2 lg:order-none lg:col-span-7 flex flex-col gap-6">
       <P5Panel as="div" cut="a" data-about-card="bio" class="bg-space-surface-1 border-l-8 border-bebop-red p-6 sm:p-8 text-paper-white">
         <p data-about-bio-line data-i18n="about.bioLine1" class="font-display text-lg sm:text-2xl font-black uppercase leading-tight">
           {ptBrDict.about.bioLine1}

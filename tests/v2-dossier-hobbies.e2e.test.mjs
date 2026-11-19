@@ -103,6 +103,14 @@ test('the dossier shows six hobby cards under the portrait', async () => {
     });
     assert.equal(layout.below, true, 'the badges sit below the portrait card');
     assert.equal(layout.sameColumn, true, 'the badges live in the portrait column');
+    await page.setViewportSize({ width: 390, height: 844 });
+    const mobileOrder = await page.evaluate(() => {
+      const career = document.querySelector('[data-about-card="career"]').getBoundingClientRect();
+      const hobbies = document.querySelector('[data-hobbies]').getBoundingClientRect();
+      return hobbies.top >= career.bottom - 1;
+    });
+    assert.equal(mobileOrder, true, 'on mobile viewports hobbies appear after the career trajectory');
+    await page.setViewportSize({ width: 1440, height: 900 });
     assert.equal(await page.locator('#hobbies').count(), 0, 'the fighter-select section is gone');
     const order = await page.$$eval('main > section[id]', (sections) => sections.map((section) => section.id));
     assert.equal(order[order.indexOf('about') + 1], 'arsenal');
