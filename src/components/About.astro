@@ -7,6 +7,7 @@ import P5Badge from "./p5/P5Badge.astro";
 import P5Panel from "./p5/P5Panel.astro";
 import CareerIcon from "./about/CareerIcon.astro";
 import HobbyCards from "./about/HobbyCards.astro";
+import { CAREER_PANELS_SCRIPT } from "../utils/inline-scripts.mjs";
 
 const career = getLocalizedCareer("pt-br");
 const education = getLocalizedEducation("pt-br");
@@ -206,9 +207,7 @@ const currentId = CAREER.find((entry) => entry.end === "present")?.id;
           ))}
         </ol>
       </P5Panel>
-      <script is:inline>
-        document.querySelectorAll('[data-career-panel]:not([data-career-panel="info"])').forEach((panel) => { panel.hidden = true; });
-      </script>
+      <script is:inline set:html={CAREER_PANELS_SCRIPT} />
 
       <P5Panel as="div" cut="a" data-about-card="education" class="bg-space-surface-1 p-6 sm:p-8 text-paper-white">
         <h3 class="mb-5 font-mono text-xs font-black uppercase tracking-widest text-bebop-red" data-i18n="about.educationTitle">

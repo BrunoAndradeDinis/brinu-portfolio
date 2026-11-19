@@ -11,6 +11,7 @@ import CiladaAlert from "../components/CiladaAlert";
 import { ptBrDict } from "../i18n/dictionaries";
 import { PROFILE, buildPersonJsonLd } from "../data/profile";
 import { routeBandTitle } from "../data/route-titles";
+import { ROUTE_BAND_SCRIPT } from "../utils/inline-scripts.mjs";
 
 interface Props {
   title?: string;
@@ -33,7 +34,7 @@ const {
 const absolute = (path: string) => (Astro.site ? new URL(path, Astro.site).href : path);
 const canonicalHref = noindex ? undefined : absolute(canonicalPath.replace(/(.)\/$/, "$1"));
 const ogImageHref = absolute(ogImage);
-const personJsonLd = JSON.stringify(buildPersonJsonLd());
+const personJsonLd = JSON.stringify(buildPersonJsonLd()).replace(/</g, "\\u003c");
 const bandTitle = { pt: routeBandTitle(Astro.url.pathname, "pt-br"), en: routeBandTitle(Astro.url.pathname, "en") };
 ---
 
@@ -103,25 +104,7 @@ const bandTitle = { pt: routeBandTitle(Astro.url.pathname, "pt-br"), en: routeBa
       <div class="k"></div>
       <div class="n" data-route-band-name style={`--chars: ${bandTitle.pt.length}`}>{bandTitle.pt}</div>
     </div>
-    <script is:inline>
-      (function () {
-        var band = document.getElementById("route-band");
-        if (!band || window.__brinuRouteBand) return;
-        window.__brinuRouteBand = true;
-        if (/^\/(index\.html)?$/.test(location.pathname)) return;
-        if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-        var english = false;
-        try {
-          english = window.localStorage.getItem("brinu_locale") === "en";
-        } catch (error) {}
-        if (english) {
-          var name = band.querySelector("[data-route-band-name]");
-          name.textContent = band.dataset.titleEn;
-          name.style.setProperty("--chars", String(band.dataset.titleEn.length));
-        }
-        band.classList.add("is-out");
-      })();
-    </script>
+    <script is:inline set:html={ROUTE_BAND_SCRIPT} />
 
     <ComicNav />
 
