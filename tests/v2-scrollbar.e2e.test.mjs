@@ -135,7 +135,9 @@ test('SCR-03: paper panels switch to a black thumb on a paper track', async () =
 });
 
 test('SCR-04: Firefox gets the same colors through scrollbar-color', () => {
-  const css = fs.readdirSync('dist/_astro').filter((file) => file.endsWith('.css')).map((file) => fs.readFileSync(path.join('dist/_astro', file), 'utf8')).join('\n');
+  const files = fs.readdirSync('dist/_astro').filter((file) => file.endsWith('.css')).map((file) => fs.readFileSync(path.join('dist/_astro', file), 'utf8'));
+  const inline = [...fs.readFileSync('dist/index.html', 'utf8').matchAll(/<style[^>]*>([\s\S]*?)<\/style>/g)].map((match) => match[1]);
+  const css = [...files, ...inline].join('\n');
   assert.match(css, /@supports not selector\(::-webkit-scrollbar\)/);
   assert.match(css, /scrollbar-color:\s*var\(--scrollbar-thumb-paint\)\s+var\(--scrollbar-track\)/);
   assert.match(css, /::-webkit-scrollbar-button\{[^}]*display:none/);

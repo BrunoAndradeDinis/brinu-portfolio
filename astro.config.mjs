@@ -5,6 +5,9 @@ import tailwindcss from '@tailwindcss/vite';
 export default defineConfig({
   site: 'https://brinu.xyz',
   output: 'static',
+  build: {
+    inlineStylesheets: 'always',
+  },
   integrations: [react()],
   fonts: [
     {
