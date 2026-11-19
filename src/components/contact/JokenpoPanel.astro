@@ -1,0 +1,699 @@
+---
+import { planRansomTitle } from "../p5/ransom";
+import { ptBrDict } from "../../i18n/dictionaries";
+import { JOKENPO_CHOICES } from "../../utils/jokenpo";
+
+interface Props {
+  class?: string;
+}
+
+const { class: className = "" } = Astro.props;
+const text = ptBrDict.jokenpo;
+const TITLE = "TAKE YOUR TIME";
+const PLATES = [
+  "plate-ink",
+  "plate-red",
+  "plate-paper",
+  "plate-red",
+  "plate-ink",
+  "plate-paper",
+] as const;
+const SIZES = [1.18, 0.86, 1.04, 0.92, 1.12, 0.8, 1, 0.9] as const;
+const words = planRansomTitle(TITLE);
+const choiceLabel = {
+  pedra: text.pedra,
+  papel: text.papel,
+  tesoura: text.tesoura,
+} as const;
+---
+
+<section
+  data-jokenpo
+  data-jokenpo-state="loading"
+  aria-labelledby="jokenpo-title"
+  class:list={[
+    "jokenpo relative flex flex-col overflow-hidden border-4 border-space-base bg-space-base text-paper-white shadow-[8px_8px_0_var(--color-bebop-red)]",
+    className,
+  ]}
+>
+  <header class="jk-head relative">
+    <svg
+      class="jk-burst"
+      data-jk-burst
+      viewBox="0 0 600 160"
+      preserveAspectRatio="none"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <polygon
+        data-jk-slash
+        points="0,118 600,22 600,74 0,160"
+        fill="#fe0000"
+      />
+      <polygon
+        data-jk-star
+        points="470,6 492,48 540,30 512,70 560,92 506,96 520,150 484,108 450,150 458,98 404,96 452,72 420,32 468,48"
+        fill="#fbfaf4"
+      />
+    </svg>
+    <p class="jk-kicker font-mono font-bold uppercase">
+      <img
+        src="/jokenpo/logo.webp"
+        alt=""
+        width="64"
+        height="64"
+        loading="lazy"
+        decoding="async"
+      />
+      <span data-i18n="jokenpo.kicker">{text.kicker}</span>
+    </p>
+    <h2 id="jokenpo-title" class="jk-title" aria-label={TITLE} data-jk-title>
+      {words.map((word, wordIndex) => (
+        <span class="jk-word" aria-hidden="true">
+          {word.chars.map((char) => (
+            <span
+              data-jk-char
+              class:list={["jk-char", PLATES[char.index % PLATES.length]]}
+              style={`font-family:${char.fontStack};--jk-size:${SIZES[char.index % SIZES.length]};--jk-rot:${char.rotationDeg}deg`}
+            >
+              {char.char}
+            </span>
+          ))}
+          {wordIndex < words.length - 1 ? " " : ""}
+        </span>
+      ))}
+    </h2>
+  </header>
+
+  <div class="jk-arena relative" data-jk-arena>
+    <div class="jk-crests">
+      <span class="jk-crest" data-jk-crest="player">
+        <img
+          class="jk-avatar"
+          data-jk-avatar="player"
+          src="/jokenpo/player.webp"
+          alt={text.playerAlt}
+          data-i18n="jokenpo.playerAlt"
+          data-i18n-attr="alt"
+          width="256"
+          height="223"
+          loading="lazy"
+          decoding="async"
+        />
+      </span>
+      <div
+        class="jk-splash font-display font-black uppercase"
+        data-jk-splash
+        aria-hidden="true"
+      ></div>
+      <span class="jk-crest" data-jk-crest="cpu">
+        <img
+          class="jk-avatar"
+          data-jk-avatar="cpu"
+          src="/jokenpo/computer.webp"
+          alt={text.cpuAlt}
+          data-i18n="jokenpo.cpuAlt"
+          data-i18n-attr="alt"
+          width="229"
+          height="256"
+          loading="lazy"
+          decoding="async"
+        />
+      </span>
+    </div>
+    <div class="jk-duel">
+      <div class="jk-fighter" data-jk-side="player">
+        <span class="jk-slot" data-jk-slot="player">
+          <span class="jk-empty" aria-hidden="true">
+            ?
+          </span>
+        </span>
+        <span
+          class="jk-pick font-display font-black uppercase"
+          data-jk-pick="player"
+        >
+          - - -
+        </span>
+      </div>
+      <span class="jk-vs font-display font-black" aria-hidden="true">
+        VS
+      </span>
+      <div class="jk-fighter" data-jk-side="cpu">
+        <span class="jk-slot" data-jk-slot="cpu">
+          <span class="jk-empty" aria-hidden="true">
+            ?
+          </span>
+        </span>
+        <span
+          class="jk-pick font-display font-black uppercase"
+          data-jk-pick="cpu"
+        >
+          - - -
+        </span>
+      </div>
+    </div>
+    <div
+      class="jk-count font-display font-black"
+      data-jk-count
+      aria-hidden="true"
+    ></div>
+  </div>
+
+  <p
+    class="jk-result font-mono font-bold uppercase"
+    data-jk-result
+    aria-live="polite"
+    aria-atomic="true"
+  ></p>
+
+  <div class="jk-play">
+    <p class="jk-prompt font-mono font-bold" data-i18n="jokenpo.prompt">
+      {text.prompt}
+    </p>
+    <div class="jk-choices" role="group" aria-labelledby="jokenpo-title">
+      {JOKENPO_CHOICES.map((choice, index) => (
+        <button
+          type="button"
+          class="jk-choice"
+          data-jk-choice={choice}
+          aria-keyshortcuts={String(index + 1)}
+          disabled
+        >
+          <span class="jk-choice-plate" aria-hidden="true"></span>
+          <img
+            class="jk-icon"
+            src={`/jokenpo/${choice}.webp`}
+            alt=""
+            width="200"
+            height="197"
+            loading="lazy"
+            decoding="async"
+          />
+          <span
+            class="jk-choice-label font-display font-black uppercase"
+            data-i18n={`jokenpo.${choice}`}
+          >
+            {choiceLabel[choice]}
+          </span>
+        </button>
+      ))}
+    </div>
+  </div>
+
+  <footer class="jk-score font-mono font-bold uppercase">
+    <span class="sr-only" data-i18n="jokenpo.scoreTitle">
+      {text.scoreTitle}
+    </span>
+    <span class="jk-tally">
+      <span data-i18n="jokenpo.winsLabel">{text.winsLabel}</span>{" "}
+      <b data-jk-score="win">0</b>
+    </span>
+    <span class="jk-tally">
+      <span data-i18n="jokenpo.drawsLabel">{text.drawsLabel}</span>{" "}
+      <b data-jk-score="draw">0</b>
+    </span>
+    <span class="jk-tally">
+      <span data-i18n="jokenpo.lossesLabel">{text.lossesLabel}</span>{" "}
+      <b data-jk-score="lose">0</b>
+    </span>
+    <button
+      type="button"
+      class="jk-reset"
+      data-jk-reset
+      data-i18n="jokenpo.reset"
+    >
+      {text.reset}
+    </button>
+  </footer>
+</section>
+
+<style>
+  .jokenpo {
+    container-type: inline-size;
+    --jk-gap: clamp(0.6rem, 2.4cqw, 1.25rem);
+    justify-content: space-between;
+    gap: var(--jk-gap);
+    padding: var(--jk-gap);
+    min-height: 34rem;
+  }
+
+  .jk-head {
+    padding-top: 0.25rem;
+  }
+
+  .jk-burst {
+    position: absolute;
+    inset: -0.5rem -1rem auto;
+    width: calc(100% + 2rem);
+    height: 120%;
+  }
+
+  .jk-kicker {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: var(--color-space-base);
+    padding-right: 0.5rem;
+    font-size: clamp(10px, 1.6cqw, 13px);
+    letter-spacing: 0.16em;
+    color: var(--color-paper-white);
+  }
+
+  .jk-kicker img {
+    width: 1.75rem;
+    height: 1.75rem;
+    background: var(--color-paper-white);
+    border-radius: 50%;
+  }
+
+  .jk-title {
+    position: relative;
+    margin: 0.35rem 0 0;
+    font-size: clamp(1.7rem, 8.4cqw, 4.6rem);
+    line-height: 1.12;
+    text-transform: uppercase;
+  }
+
+  .jk-word {
+    display: inline-block;
+    white-space: nowrap;
+  }
+
+  .jk-char {
+    display: inline-block;
+    margin: 0 0.02em;
+    padding: 0.04em 0.12em;
+    font-size: calc(1em * var(--jk-size));
+    font-weight: 900;
+    line-height: 1;
+    transform: rotate(var(--jk-rot));
+    box-shadow: 0.06em 0.06em 0 var(--color-space-base);
+  }
+
+  .plate-ink {
+    background: var(--color-space-base);
+    color: var(--color-paper-white);
+    outline: 2px solid var(--color-paper-white);
+  }
+
+  .plate-red {
+    background: var(--color-bebop-red);
+    color: var(--color-space-base);
+  }
+
+  .plate-paper {
+    background: var(--color-paper-white);
+    color: var(--color-space-base);
+  }
+
+  .jk-arena {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: var(--jk-gap);
+    flex: 1 1 0;
+    min-height: fit-content;
+    max-height: max(18rem, min(34rem, 72cqw));
+    padding: var(--jk-gap);
+    overflow: hidden;
+    background: var(--color-paper-white);
+    color: var(--color-space-base);
+    clip-path: polygon(0 3%, 100% 0, 99% 100%, 1% 97%);
+  }
+
+  .jk-crests,
+  .jk-duel {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    align-items: center;
+    gap: var(--jk-gap);
+  }
+
+  .jk-crests {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    padding: 2rem clamp(1rem, 7cqw, 2rem) 0;
+  }
+
+  .jk-crest {
+    display: block;
+    will-change: transform;
+  }
+
+  .jk-avatar {
+    width: clamp(2.5rem, 11cqw, 6rem);
+    height: auto;
+    aspect-ratio: 1;
+    object-fit: contain;
+  }
+
+  .jk-fighter {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    text-align: center;
+  }
+
+  [data-jk-dim] {
+    opacity: 0.5;
+    filter: grayscale(1);
+  }
+
+  .jk-avatar,
+  .jk-fighter {
+    transition:
+      opacity 0.3s ease,
+      filter 0.3s ease;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .jk-avatar,
+    .jk-fighter {
+      transition: none;
+    }
+  }
+
+  .jk-slot {
+    display: grid;
+    width: clamp(4.5rem, 16cqw, 8rem);
+    aspect-ratio: 1;
+    place-items: center;
+    border: 4px solid var(--color-space-base);
+    background: var(--color-paper-white);
+    box-shadow: 5px 5px 0 var(--color-bebop-red);
+    transform: rotate(-3deg);
+  }
+
+  [data-jk-side="cpu"] .jk-slot {
+    transform: rotate(3deg);
+  }
+
+  .jk-slot :global(img) {
+    width: 82%;
+    height: auto;
+  }
+
+  .jk-slot :global(.jk-empty) {
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 9cqw, 4rem);
+    font-weight: 900;
+    color: var(--color-bebop-red);
+  }
+
+  .jk-pick {
+    max-width: 100%;
+    font-size: clamp(0.66rem, 3.2cqw, 1.4rem);
+    white-space: nowrap;
+  }
+
+  .jk-vs {
+    font-size: clamp(1.4rem, 5cqw, 3rem);
+    color: var(--color-bebop-red);
+    transform: rotate(-8deg);
+  }
+
+  .jk-count {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    pointer-events: none;
+    visibility: hidden;
+    text-align: center;
+  }
+
+  .jk-splash {
+    display: grid;
+    min-width: 0;
+    place-items: center;
+    visibility: hidden;
+    text-align: center;
+    pointer-events: none;
+  }
+
+  .jk-count {
+    font-size: clamp(2.6rem, 14cqw, 8rem);
+    color: var(--color-space-base);
+    -webkit-text-stroke: 0;
+  }
+
+  .jk-splash {
+    font-size: clamp(0.64rem, 4.4cqw, 3.6rem);
+    line-height: 0.9;
+  }
+
+  .jk-splash :global(span) {
+    padding: 0.08em 0.25em;
+    transform: rotate(-6deg);
+    box-shadow: 0.08em 0.08em 0 var(--color-space-base);
+  }
+
+  .jk-splash[data-result="vitoria"] :global(span) {
+    background: var(--color-bebop-red);
+    color: var(--color-space-base);
+  }
+
+  .jk-splash[data-result="derrota"] :global(span) {
+    background: var(--color-space-base);
+    color: var(--color-paper-white);
+    box-shadow: 0.08em 0.08em 0 var(--color-bebop-red);
+  }
+
+  .jk-splash[data-result="empate"] :global(span) {
+    background: var(--color-paper-white);
+    color: var(--color-space-base);
+    outline: 4px solid var(--color-space-base);
+  }
+
+  .jk-result {
+    min-height: 1.4em;
+    font-size: clamp(11px, 1.8cqw, 15px);
+    letter-spacing: 0.08em;
+    text-align: center;
+    display: none;
+  }
+
+  .jk-prompt {
+    margin-bottom: 0.5rem;
+    font-size: clamp(11px, 1.7cqw, 14px);
+  }
+
+  .jk-choices {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--jk-gap);
+  }
+
+  .jk-choice {
+    --jk-poly: polygon(4% 0, 100% 6%, 95% 100%, 0 92%);
+    --jk-lift: 0px;
+    --jk-grow: 1;
+    --jk-shadow: 0px;
+    --jk-shadow-color: var(--color-bebop-red);
+    --jk-plate: var(--color-paper-white);
+    position: relative;
+    display: flex;
+    min-width: 0;
+    min-height: 44px;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.35rem;
+    padding: clamp(0.5rem, 2cqw, 1rem) 0.25rem;
+    border: 0;
+    background: transparent;
+    color: var(--color-space-base);
+    cursor: pointer;
+    transform: translateY(var(--jk-lift)) scale(var(--jk-grow));
+    transition: transform 0.35s cubic-bezier(0.18, 1.28, 0.36, 1);
+  }
+
+  .jk-choice:nth-child(2) {
+    --jk-poly: polygon(0 6%, 96% 0, 100% 94%, 5% 100%);
+  }
+
+  .jk-choice::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: var(--jk-shadow-color);
+    clip-path: var(--jk-poly);
+    transform: translate(var(--jk-shadow), var(--jk-shadow));
+    transition: transform 0.25s ease-out;
+  }
+
+  .jk-choice-plate {
+    position: absolute;
+    inset: 0;
+    background: var(--jk-plate);
+    clip-path: var(--jk-poly);
+    transition: background-color 120ms ease-out;
+  }
+
+  .jk-choice[aria-pressed="true"] {
+    --jk-shadow-color: var(--color-paper-white);
+    --jk-plate: var(--color-bebop-red);
+  }
+
+  .jk-choice:not(:disabled, [aria-disabled="true"]):focus-visible {
+    --jk-lift: -6px;
+    --jk-grow: 1.04;
+    --jk-shadow: 7px;
+  }
+
+  .jk-choice[aria-pressed="true"]:not(:disabled, [aria-disabled="true"]):focus-visible {
+    --jk-lift: -3px;
+    --jk-grow: 1.02;
+    --jk-shadow: 4px;
+  }
+
+  .jk-choice:not(:disabled, [aria-disabled="true"], [aria-pressed="true"]):focus-visible .jk-icon {
+    animation: jk-punch 0.45s ease-out;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .jk-choice:not(:disabled, [aria-disabled="true"]):hover {
+      --jk-lift: -6px;
+      --jk-grow: 1.04;
+      --jk-shadow: 7px;
+    }
+
+    .jk-choice[aria-pressed="true"]:not(:disabled, [aria-disabled="true"]):hover {
+      --jk-lift: -3px;
+      --jk-grow: 1.02;
+      --jk-shadow: 4px;
+    }
+
+    .jk-choice:not(:disabled, [aria-disabled="true"], [aria-pressed="true"]):hover .jk-icon {
+      animation: jk-punch 0.45s ease-out;
+    }
+  }
+
+  @keyframes jk-punch {
+    35% { transform: scale(1.14) rotate(-8deg); }
+    65% { transform: scale(0.98) rotate(5deg); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .jk-choice,
+    .jk-choice::before {
+      transition: none;
+    }
+
+    .jk-choice {
+      transform: none;
+    }
+
+    .jk-choice .jk-icon {
+      animation: none !important;
+    }
+  }
+
+  .jk-choice:focus-visible {
+    outline: 3px solid var(--color-bebop-red);
+    outline-offset: 4px;
+  }
+
+  .jk-choice:disabled {
+    cursor: wait;
+  }
+
+  .jk-choice:disabled {
+    --jk-plate: var(--color-muted-gray, #8a8a8a);
+  }
+
+  .jk-icon,
+  .jk-choice-label,
+  .jk-key {
+    position: relative;
+  }
+
+  .jk-icon {
+    width: clamp(2.4rem, 9cqw, 4.5rem);
+    height: auto;
+  }
+
+  .jk-choice-label,
+  .jk-key {
+    background: var(--jk-plate);
+  }
+
+  .jk-choice-label {
+    max-width: 100%;
+    font-size: clamp(0.6rem, 3.3cqw, 1.25rem);
+    white-space: nowrap;
+  }
+
+  .jk-key {
+    position: absolute;
+    top: 0.3rem;
+    right: 0.5rem;
+    font-size: 10px;
+  }
+
+  .jk-score {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 1rem;
+    border-top: 2px solid var(--color-paper-white);
+    padding-top: var(--jk-gap);
+    font-size: clamp(10px, 1.7cqw, 14px);
+  }
+
+  .jk-tally b {
+    color: var(--color-bebop-red);
+    font-size: 1.3em;
+  }
+
+  .jk-reset {
+    margin-left: auto;
+    min-height: 2.5rem;
+    border: 2px solid var(--color-paper-white);
+    padding: 0 0.9rem;
+    background: var(--color-space-base);
+    color: var(--color-paper-white);
+    font: inherit;
+    cursor: pointer;
+  }
+
+  .jk-reset:hover {
+    background: var(--color-bebop-red);
+    color: var(--color-space-base);
+  }
+
+  .jk-reset:focus-visible {
+    outline: 3px solid var(--color-bebop-red);
+    outline-offset: 3px;
+  }
+</style>
+
+<script>
+  import { onPageReady } from "../../utils/page-lifecycle";
+
+  onPageReady(() => {
+    const root = document.querySelector<HTMLElement>("[data-jokenpo]");
+    if (!root) return;
+
+    let teardown: (() => void) | null = null;
+    let disposed = false;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (!entries.some((entry) => entry.isIntersecting)) return;
+        observer.disconnect();
+        void import("./jokenpo-game").then(({ startJokenpo }) => {
+          if (!disposed) teardown = startJokenpo(root);
+        });
+      },
+      { rootMargin: "600px 0px" },
+    );
+    observer.observe(root);
+
+    return () => {
+      disposed = true;
+      observer.disconnect();
+      teardown?.();
+    };
+  });
+</script>

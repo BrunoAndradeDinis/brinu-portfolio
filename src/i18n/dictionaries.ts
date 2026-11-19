@@ -256,6 +256,26 @@ export interface TranslationSchema {
     stationBaseLabel: string;
     stationBaseValue: string;
   };
+  jokenpo: {
+    kicker: string;
+    playerAlt: string;
+    cpuAlt: string;
+    prompt: string;
+    pedra: string;
+    papel: string;
+    tesoura: string;
+    win: string;
+    lose: string;
+    draw: string;
+    winLine: string;
+    loseLine: string;
+    drawLine: string;
+    scoreTitle: string;
+    winsLabel: string;
+    drawsLabel: string;
+    lossesLabel: string;
+    reset: string;
+  };
   dispatch: {
     headerTitle: string;
     headerSub: string;
@@ -648,6 +668,26 @@ export const ptBrDict: TranslationSchema = {
     careerLogLabel: 'TRAJETÓRIA //',
     stationBaseLabel: 'BASE DE OPERAÇÃO //',
     stationBaseValue: PROFILE.location.remoteLabel['pt-br'],
+  },
+  jokenpo: {
+    kicker: 'MINIGAME // JOKENPÔ',
+    playerAlt: 'Você — Chapéus de Palha',
+    cpuAlt: 'Computador — Franky',
+    prompt: 'Faça sua próxima jogada:',
+    pedra: 'PEDRA',
+    papel: 'PAPEL',
+    tesoura: 'TESOURA',
+    win: 'VITÓRIA',
+    lose: 'DERROTA',
+    draw: 'EMPATE',
+    winLine: 'Você ganhou!',
+    loseLine: 'Você perdeu!',
+    drawLine: 'Empate!',
+    scoreTitle: 'Placar do jogo',
+    winsLabel: 'Vitórias',
+    drawsLabel: 'Empates',
+    lossesLabel: 'Derrotas',
+    reset: 'Reiniciar jogo',
   },
   dispatch: {
     headerTitle: '// SOLICITAR ORÇAMENTO OU PROPOSTA TÉCNICA',
@@ -1073,6 +1113,26 @@ export const enDict = {
     careerLogLabel: 'CAREER LOG //',
     stationBaseLabel: 'STATION BASE //',
     stationBaseValue: PROFILE.location.remoteLabel.en,
+  },
+  jokenpo: {
+    kicker: 'MINIGAME // ROCK PAPER SCISSORS',
+    playerAlt: 'You — Straw Hats',
+    cpuAlt: 'Computer — Franky',
+    prompt: 'Make your next move:',
+    pedra: 'ROCK',
+    papel: 'PAPER',
+    tesoura: 'SCISSORS',
+    win: 'VICTORY',
+    lose: 'DEFEAT',
+    draw: 'DRAW',
+    winLine: 'You won!',
+    loseLine: 'You lost!',
+    drawLine: 'Draw!',
+    scoreTitle: 'Scoreboard',
+    winsLabel: 'Wins',
+    drawsLabel: 'Draws',
+    lossesLabel: 'Losses',
+    reset: 'Restart game',
   },
   dispatch: {
     headerTitle: '// REQUEST A QUOTE OR TECHNICAL PROPOSAL',
