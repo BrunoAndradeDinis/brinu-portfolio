@@ -1579,6 +1579,36 @@ test('arrow keys and a swipe step one case', async () => {
   }
 });
 
+test('a swipe past the last case leaves the pin when the phone lands the scroll short of its edge', async () => {
+  const { context, page } = await openHome({
+    viewport: { width: 360, height: 740 },
+    hasTouch: true,
+    isMobile: true,
+    deviceScaleFactor: 2.625,
+    prepare: (target) =>
+      target.addInitScript(() => {
+        const scrollTo = window.scrollTo.bind(window);
+        window.scrollTo = (options, y) => (typeof options === 'object' && options && typeof options.top === 'number' ? scrollTo({ ...options, top: options.top - 0.6 }) : scrollTo(options, y));
+      }),
+  });
+  try {
+    await pinCases(page);
+    await waitForActiveCase(page, CASE_IDS[0]);
+    const client = await context.newCDPSession(page);
+    for (const id of CASE_IDS.slice(1)) {
+      await swipe(page, client, 600, 450);
+      await waitForActiveCase(page, id);
+      await betweenGestures(page);
+    }
+    await swipe(page, client, 600, 450);
+    await page.waitForFunction(() => document.getElementById('works').dataset.casesPinned === 'false');
+    assert.equal(await page.evaluate(() => document.documentElement.classList.contains('lenis-stopped')), false, 'the page scrolls again');
+    await client.detach();
+  } finally {
+    await context.close();
+  }
+});
+
 test('phone cards keep the open link and hide the external links', async () => {
   const BREAKPOINT_PX = 48 * 16;
   const measured = [];

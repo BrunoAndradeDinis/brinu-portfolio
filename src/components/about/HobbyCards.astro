@@ -7,9 +7,9 @@ const hobbies = getLocalizedHobbies("pt-br");
 ---
 
 <div data-hobbies class="order-3 lg:order-none mx-auto lg:mt-8 w-full max-w-[24rem] sm:max-w-[26rem]">
-  <h4 class="mb-4 font-mono text-xs font-black uppercase tracking-widest text-bebop-red" data-i18n="hobbies.title">
+  <h3 class="mb-4 font-mono text-xs font-black uppercase tracking-widest text-bebop-red" data-i18n="hobbies.title">
     {ptBrDict.hobbies.title}
-  </h4>
+  </h3>
   <ul
     data-hobby-list
     aria-label={ptBrDict.hobbies.listAria}
@@ -24,7 +24,7 @@ const hobbies = getLocalizedHobbies("pt-br");
             type="button"
             data-hobby-card={hobby.id}
             aria-haspopup="dialog"
-            aria-labelledby={`hobby-card-name-${hobby.id} hobby-card-rating-${hobby.id}`}
+            aria-labelledby={`hobby-card-rating-${hobby.id} hobby-card-name-${hobby.id}`}
             class="hobby-card"
           >
             <span class="hobby-card-face">

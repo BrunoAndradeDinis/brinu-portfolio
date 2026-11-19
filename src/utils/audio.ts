@@ -3,27 +3,28 @@
  * Motor de Síntese Sonora Nativo (Web Audio API).
  * Invariante AD-4: Todos os efeitos sonoros são sintetizados matematicamente em tempo real.
  * Zero assets de áudio externos (zero MP3/WAV/OGG).
- * Permanece mudo por padrão (muted: true) até consentimento explícito do usuário.
+ * O som começa ligado; o navegador só libera o AudioContext depois do primeiro gesto do visitante.
  */
+
+// The events browsers accept as user activation for starting audio.
+const UNLOCK_EVENTS = ['pointerdown', 'pointerup', 'touchend', 'keydown', 'click'] as const;
 
 class AudioSynthesizer {
   private ctx: AudioContext | null = null;
-  private muted: boolean = true;
+  private muted: boolean = false;
   private masterGain: GainNode | null = null;
 
   constructor() {
-    // Escuta preferências salvas se estiver no navegador
-    if (typeof window !== 'undefined') {
-      try {
-        const storedMute = localStorage.getItem('bebop:audio-muted');
-        if (storedMute !== null) {
-          this.muted = storedMute === 'true';
-        }
-      } catch {
-        // Fallback para ambientes restritos de storage
-        this.muted = true;
-      }
-    }
+    if (typeof window !== 'undefined') this.unlockOnFirstGesture();
+  }
+
+  private unlockOnFirstGesture(): void {
+    const unlock = () => {
+      this.initAudio().then((running) => {
+        if (running) UNLOCK_EVENTS.forEach((type) => window.removeEventListener(type, unlock, true));
+      });
+    };
+    UNLOCK_EVENTS.forEach((type) => window.addEventListener(type, unlock, { capture: true, passive: true }));
   }
 
   /**
@@ -79,12 +80,6 @@ class AudioSynthesizer {
   public setMuted(muted: boolean): boolean {
     this.muted = muted;
     if (typeof window !== 'undefined') {
-      try {
-        localStorage.setItem('bebop:audio-muted', String(muted));
-      } catch {
-        // Ignora erro de storage
-      }
-
       window.dispatchEvent(
         new CustomEvent('bebop:audio-mute-change', {
           detail: { muted: this.muted }
@@ -287,6 +282,50 @@ class AudioSynthesizer {
 
         osc.start(startTime);
         osc.stop(startTime + 0.2);
+
+        osc.onended = () => {
+          osc.disconnect();
+          gain.disconnect();
+        };
+      } catch {
+        // Ignora
+      }
+    });
+  }
+
+  /**
+   * Sintetiza o "wah-wah" descendente de derrota, com a última nota escorregando para baixo
+   */
+  public playBountyLost(): void {
+    if (this.muted) return;
+    const ctx = this.getContext();
+    if (!ctx || ctx.state !== 'running') return;
+
+    const notes = [392.0, 369.99, 349.23, 329.63]; // G4, F#4, F4, E4
+    const noteDuration = 0.22;
+    const lastDuration = 0.6;
+    const now = ctx.currentTime;
+
+    notes.forEach((freq, idx) => {
+      try {
+        const last = idx === notes.length - 1;
+        const startTime = now + idx * noteDuration;
+        const duration = last ? lastDuration : noteDuration * 0.9;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(freq, startTime);
+        if (last) osc.frequency.exponentialRampToValueAtTime(freq * 0.75, startTime + duration);
+
+        gain.gain.setValueAtTime(0.05, startTime);
+        gain.gain.exponentialRampToValueAtTime(0.0001, startTime + duration);
+
+        osc.connect(gain);
+        gain.connect(this.masterGain || ctx.destination);
+
+        osc.start(startTime);
+        osc.stop(startTime + duration + 0.02);
 
         osc.onended = () => {
           osc.disconnect();

@@ -207,6 +207,7 @@ export function startJokenpo(root: HTMLElement): Teardown {
     animateCrests(round.result);
     announce(round);
     if (round.result === 'vitoria') audioSynth.playBountyAcquired();
+    if (round.result === 'derrota') audioSynth.playBountyLost();
     setBusy(false);
   };
 
