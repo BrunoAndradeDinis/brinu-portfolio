@@ -59,3 +59,16 @@ for (const page of htmlPages(DIST)) {
     }
   });
 }
+
+test('style-src allows the <style> sonner injects at runtime, empty and filled', async () => {
+  const { RUNTIME_STYLES } = await import('../src/utils/runtime-styles.mjs');
+  const bundle = fs.readdirSync(path.join(DIST, '_astro')).filter((file) => file.endsWith('.js'))
+    .map((file) => fs.readFileSync(path.join(DIST, '_astro', file), 'utf8'))
+    .find((source) => source.includes('[data-sonner-toaster]'));
+  assert.ok(bundle, 'sonner CSS not found in the client bundle');
+  const styleSrc = directive(cspOf(fs.readFileSync(path.join(DIST, 'index.html'), 'utf8')), 'style-src');
+  assert.ok(RUNTIME_STYLES.some((css) => css.includes('[data-sonner-toaster]') && bundle.includes(css)), 'shipped sonner CSS differs from the hashed one');
+  for (const css of RUNTIME_STYLES) {
+    assert.ok(styleSrc.includes(sha256(css)), `runtime style not hashed: ${css.slice(0, 40)}`);
+  }
+});

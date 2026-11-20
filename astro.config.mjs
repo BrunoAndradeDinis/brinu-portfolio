@@ -3,6 +3,7 @@ import react from '@astrojs/react';
 import tailwindcss from '@tailwindcss/vite';
 import { createHash } from 'node:crypto';
 import { INLINE_SCRIPTS, INLINE_STYLES } from './src/utils/inline-scripts.mjs';
+import { RUNTIME_STYLES } from './src/utils/runtime-styles.mjs';
 import cspSharedHashes from './src/integrations/csp-shared-hashes.mjs';
 
 const sha256 = (source) => `sha256-${createHash('sha256').update(source).digest('base64')}`;
@@ -28,7 +29,7 @@ export default defineConfig({
       scriptDirective: { resources: ["'self'"], hashes: INLINE_SCRIPTS.map(sha256) },
       styleDirective: {
         resources: ["'self'", { resource: "'unsafe-inline'", kind: 'attribute' }],
-        hashes: INLINE_STYLES.map(sha256),
+        hashes: [...INLINE_STYLES, ...RUNTIME_STYLES].map(sha256),
       },
     },
   },
