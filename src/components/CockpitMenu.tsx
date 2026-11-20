@@ -322,7 +322,7 @@ export const CockpitMenu: React.FC = () => {
       aria-modal="true"
       aria-hidden={!isOpen}
       aria-label={t.menu.dialogAria}
-      className={`fixed inset-0 w-screen h-screen min-h-dvh max-h-screen z-[9990] overflow-y-auto overflow-x-hidden bg-space-base text-paper-white select-none ${
+      className={`fixed inset-0 w-screen h-dvh z-[9990] overflow-y-auto overflow-x-hidden bg-space-base text-paper-white select-none ${
         isOpen ? 'block' : 'hidden'
       }`}
       onClick={(e) => {
@@ -348,13 +348,13 @@ export const CockpitMenu: React.FC = () => {
       </div>
 
       {/* Fullscreen Content Container */}
-      <div className="relative z-10 w-full min-h-full box-border flex flex-col justify-between pt-20 sm:pt-24 md:pt-28 pb-6 sm:pb-8 px-3 sm:px-6 md:px-8 lg:px-12 max-w-7xl mx-auto">
+      <div className="relative z-10 w-full min-h-full box-border flex flex-col justify-between pt-20 sm:pt-24 md:pt-28 pb-[clamp(0.75rem,2dvh,1.5rem)] sm:pb-8 px-3 sm:px-6 md:px-8 lg:px-12 max-w-7xl mx-auto">
         <div>
           {/* Header Row */}
-          <div className="relative border-b-4 border-paper-white pb-5 mb-8" />
+          <div className="relative border-b-4 border-paper-white pb-[clamp(0.5rem,1.5dvh,1.25rem)] mb-[clamp(0.75rem,3dvh,2rem)] sm:pb-5 sm:mb-8" />
 
           {/* Oversized Persona 5 Navigation Blades */}
-          <nav ref={bladesContainerRef} aria-label={t.menu.title} className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-5 mb-10">
+          <nav ref={bladesContainerRef} aria-label={t.menu.title} className="grid grid-cols-1 md:grid-cols-2 gap-[clamp(0.5rem,1.25dvh,0.75rem)] sm:gap-5 mb-[clamp(1rem,3dvh,2.5rem)] sm:mb-10">
             {COCKPIT_NAV_ITEMS.map((item, idx) => {
               const label = t.menu.navItems[item.labelKey];
               const isEven = idx % 2 === 0;
@@ -378,7 +378,7 @@ export const CockpitMenu: React.FC = () => {
                     audioSynth.playKeypressBeep(740, 0.025, 0.06);
                     closeMenu();
                   }}
-                  className={`group relative flex items-center justify-between border-4 border-paper-white px-2.5 sm:px-5 py-2.5 sm:py-3.5 font-display text-[11px] min-[360px]:text-xs sm:text-sm md:text-base lg:text-base xl:text-lg font-black uppercase tracking-tight transition-all duration-150 -skew-x-6 sm:-skew-x-12 ${
+                  className={`group relative flex items-center justify-between min-h-11 border-4 border-paper-white px-2.5 sm:px-5 py-[clamp(0.25rem,1dvh,0.625rem)] sm:py-3.5 font-display text-[11px] min-[360px]:text-xs sm:text-sm md:text-base lg:text-base xl:text-lg font-black uppercase tracking-tight transition-all duration-150 -skew-x-6 sm:-skew-x-12 ${
                     isActive
                       ? 'bg-bebop-red text-paper-white shadow-[8px_8px_0_var(--color-paper-white)] scale-[1.01]'
                       : isEven
@@ -417,9 +417,9 @@ export const CockpitMenu: React.FC = () => {
             </li>
           ))}
         </ul>
-          <div className="grid grid-cols-1 md:grid-cols-[1.5fr_1fr_1fr] gap-4 border-t-4 border-paper-white pt-[1.75rem]">
+          <div className="grid grid-cols-1 md:grid-cols-[1.5fr_1fr_1fr] gap-[clamp(0.5rem,1.5dvh,1rem)] sm:gap-4 border-t-4 border-paper-white pt-[clamp(0.75rem,2.5dvh,1.75rem)] sm:pt-[1.75rem]">
           {/* Language Switcher Box */}
-          <div className="flex items-center justify-between border-3 border-paper-white bg-space-surface-1 px-5 py-3.5 shadow-[4px_4px_0_var(--color-bebop-red)]">
+          <div className="flex items-center justify-between border-3 border-paper-white bg-space-surface-1 px-5 py-[clamp(0.25rem,1dvh,0.875rem)] sm:py-3.5 shadow-[4px_4px_0_var(--color-bebop-red)]">
             <span className="font-mono text-xs sm:text-sm font-bold uppercase tracking-widest text-paper-white">
               {t.menu.languageLabel}
             </span>
@@ -463,7 +463,7 @@ export const CockpitMenu: React.FC = () => {
               audioSynth.playKeypressBeep(740, 0.025, 0.06);
               closeMenu();
             }}
-            className="inline-flex min-h-11 items-center justify-center gap-2 border-3 border-paper-white bg-bebop-red px-3.5 py-3.5 font-mono text-xs sm:text-sm font-black uppercase tracking-widest text-paper-white shadow-[4px_4px_0_var(--color-bebop-red)] transition-colors hover:bg-paper-white hover:text-space-base focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-paper-white"
+            className="inline-flex min-h-11 items-center justify-center gap-2 border-3 border-paper-white bg-bebop-red px-3.5 py-[clamp(0.5rem,1.25dvh,0.875rem)] sm:py-3.5 font-mono text-xs sm:text-sm font-black uppercase tracking-widest text-paper-white shadow-[4px_4px_0_var(--color-bebop-red)] transition-colors hover:bg-paper-white hover:text-space-base focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-paper-white"
           >
             {t.menu.casesCta}
           </a>
@@ -472,7 +472,7 @@ export const CockpitMenu: React.FC = () => {
             href="/curriculo-bruno-dinis.pdf"
             download
             data-cockpit-cv
-            className="inline-flex min-h-11 items-center justify-center gap-2 border-3 border-paper-white bg-space-base px-3.5 py-3.5 font-mono text-xs sm:text-sm font-black uppercase tracking-widest text-paper-white shadow-[4px_4px_0_var(--color-bebop-red)] transition-colors hover:bg-paper-white hover:text-space-base focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-bebop-red"
+            className="inline-flex min-h-11 items-center justify-center gap-2 border-3 border-paper-white bg-space-base px-3.5 py-[clamp(0.5rem,1.25dvh,0.875rem)] sm:py-3.5 font-mono text-xs sm:text-sm font-black uppercase tracking-widest text-paper-white shadow-[4px_4px_0_var(--color-bebop-red)] transition-colors hover:bg-paper-white hover:text-space-base focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-bebop-red"
           >
             {t.menu.downloadCvLabel}
           </a>
