@@ -269,15 +269,7 @@ import { ptBrDict } from "../i18n/dictionaries";
     if (header) {
       header.dataset.minimal = String(Boolean(document.querySelector("[data-not-found], [data-whoami-main]")));
     }
-    const isStickers = Boolean(document.querySelector("[data-stickers-main]"));
-    const worksBtn = document.getElementById("nav-works-btn");
-    if (worksBtn) {
-      if (isStickers) {
-        worksBtn.classList.add("hidden-on-page");
-      } else {
-        worksBtn.classList.remove("hidden-on-page");
-      }
-    }
+    document.getElementById("nav-works-btn")?.classList.toggle("hidden-on-page", !document.getElementById("works"));
   }
 
   onPageReady(initNav);
@@ -350,8 +342,7 @@ import { ptBrDict } from "../i18n/dictionaries";
     right: var(--cockpit-scrollbar-comp, 0px) !important;
   }
 
-  :global(body:has([data-stickers-main])) #comic-nav-header [data-nav-works],
-  :global(body:has([data-stickers-main])) #comic-nav-header a[href="#works"],
+  :global(body:not(:has(#works))) #comic-nav-header [data-nav-works],
   #nav-works-btn.hidden-on-page {
     display: none !important;
   }
