@@ -132,7 +132,7 @@ export const EDUCATION: readonly EducationEntry[] = [
     id: 'alura',
     institution: 'Alura',
     start: '2022-05',
-    end: null,
+    end: '2023-02',
     completed: true,
     text: { course: t('Formação técnica em programação', 'Technical programming track') },
   },

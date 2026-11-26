@@ -246,7 +246,7 @@ test('career and education show the approved entries', async () => {
       const alura = await page.locator('#education-alura').innerText();
       assert.match(alura.toUpperCase(), locale === 'en' ? /COMPLETED/ : /CONCLUÍDO/);
       assert.doesNotMatch(alura.toLowerCase(), /atual|present/, 'Alura has no running end');
-      assert.equal((await page.locator('#education-alura [data-education-period]').innerText()).trim().toLowerCase(), locale === 'en' ? 'may 2022' : 'mai/2022');
+      assert.equal((await page.locator('#education-alura [data-education-period]').innerText()).trim().toLowerCase(), locale === 'en' ? 'may 2022 – feb 2023' : 'mai/2022 – fev/2023');
     } finally {
       await context.close();
     }
