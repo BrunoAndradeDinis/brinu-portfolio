@@ -30,17 +30,17 @@ import P5Badge from "./p5/P5Badge.astro";
 </div>
 
 <section
-  class="relative flex min-h-[calc(100vh-7rem-4.125rem)] flex-col bg-bebop-red px-4 py-4 sm:px-8 sm:py-7 md:px-10 md:py-8 lg:px-20 lg:py-10"
+  class="relative flex min-h-[calc(100vh-7rem-4.125rem)] flex-col bg-bebop-red px-4 py-4 sm:px-8 sm:py-7 md:px-10 md:py-8 lg:px-20 lg:py-10 short:py-4"
   id="hero"
 >
   <div
     class="mx-auto flex w-full max-w-[160rem] flex-1 flex-col justify-between"
   >
     <div
-      class="relative my-auto flex w-full items-center justify-center py-6 sm:py-8 md:py-10 lg:py-16"
+      class="relative my-auto flex w-full items-center justify-center py-6 sm:py-8 md:py-10 lg:py-16 short:py-2"
     >
       <h1
-        class="flex w-full select-none flex-row flex-nowrap items-center justify-between whitespace-nowrap font-display text-[clamp(3rem,15vw,5.5rem)] sm:text-[clamp(4.5rem,13.5vw,7rem)] md:text-[clamp(6.5rem,13.5vw,9.5rem)] lg:text-[clamp(9.5rem,14vw,14rem)] font-black leading-[0.85] tracking-tight text-space-base"
+        class="flex w-full select-none flex-row flex-nowrap items-center justify-between whitespace-nowrap font-display text-[clamp(3rem,15vw,5.5rem)] sm:text-[clamp(4.5rem,13.5vw,7rem)] md:text-[clamp(6.5rem,13.5vw,9.5rem)] lg:text-[clamp(9.5rem,14vw,14rem)] short:text-[min(14vw,30vh)] font-black leading-[0.85] tracking-tight text-space-base"
         aria-label="BRINU"
       >
         <span
@@ -107,7 +107,7 @@ import P5Badge from "./p5/P5Badge.astro";
 
           <div
             data-hero-avatar-frame
-            class="relative h-[clamp(3.2rem,13vw,4.5rem)] w-[clamp(3.2rem,13vw,4.5rem)] sm:h-[clamp(5.5rem,12vw,7.5rem)] sm:w-[clamp(5.5rem,12vw,7.5rem)] md:h-[clamp(8rem,13vw,11.5rem)] md:w-[clamp(8rem,13vw,11.5rem)] lg:h-[clamp(11.5rem,14vw,15.5rem)] lg:w-[clamp(11.5rem,14vw,15.5rem)] bg-space-base p-[0.3rem] sm:p-[0.4rem] md:p-[0.5rem] shadow-comic-md sm:shadow-comic-lg"
+            class="relative h-[clamp(3.2rem,13vw,4.5rem)] w-[clamp(3.2rem,13vw,4.5rem)] sm:h-[clamp(5.5rem,12vw,7.5rem)] sm:w-[clamp(5.5rem,12vw,7.5rem)] md:h-[clamp(8rem,13vw,11.5rem)] md:w-[clamp(8rem,13vw,11.5rem)] lg:h-[clamp(11.5rem,14vw,15.5rem)] lg:w-[clamp(11.5rem,14vw,15.5rem)] short:h-[25vh] short:w-[25vh] bg-space-base p-[0.3rem] sm:p-[0.4rem] md:p-[0.5rem] shadow-comic-md sm:shadow-comic-lg"
           >
             <div
               class="relative h-full w-full overflow-hidden bg-paper-white"
@@ -159,16 +159,16 @@ import P5Badge from "./p5/P5Badge.astro";
     </div>
 
     <div
-      class="mt-6 sm:mt-10 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6 sm:gap-8 pt-2 sm:pt-4"
+      class="mt-6 sm:mt-10 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6 sm:gap-8 pt-2 sm:pt-4 short:mt-2 short:pt-0"
     >
       <P5Panel
         as="div"
         cut="a"
         data-hero-manifesto="left"
-        class="-rotate-1 bg-space-base px-4 py-4 sm:px-6 sm:py-5 flex flex-col items-start text-left max-w-full sm:max-w-[48%] lg:max-w-md shrink-0"
+        class="-rotate-1 bg-space-base px-4 py-4 sm:px-6 sm:py-5 short:py-3 flex flex-col items-start text-left max-w-full sm:max-w-[48%] lg:max-w-md shrink-0"
       >
         <p
-          class="mb-2 sm:mb-4 font-body text-xs sm:text-base md:text-lg lg:text-2xl font-black leading-snug tracking-tight text-paper-white uppercase"
+          class="mb-2 sm:mb-4 short:mb-2 font-body text-xs sm:text-base md:text-lg lg:text-2xl short:text-lg font-black leading-snug tracking-tight text-paper-white uppercase"
         >
           <span data-i18n="hero.manifestoLeftLine1"
             >{ptBrDict.hero.manifestoLeftLine1}</span
@@ -211,16 +211,16 @@ import P5Badge from "./p5/P5Badge.astro";
       </P5Panel>
 
       <div
-        class="flex w-full flex-row items-end justify-between gap-3 sm:w-auto sm:flex-col sm:items-end sm:justify-start sm:gap-4 max-w-full sm:max-w-[50%] lg:max-w-md shrink-0"
+        class="flex w-full flex-row items-end justify-between gap-3 sm:w-auto sm:flex-col sm:items-end sm:justify-start sm:gap-4 short:gap-3 max-w-full sm:max-w-[50%] lg:max-w-md shrink-0"
       >
         <P5Panel
           as="div"
           cut="b"
           data-hero-manifesto="right"
-          class="rotate-1 bg-paper-white px-4 py-4 sm:px-6 sm:py-5 flex flex-col items-start sm:items-end text-left sm:text-right min-w-0"
+          class="rotate-1 bg-paper-white px-4 py-4 sm:px-6 sm:py-5 short:py-3 flex flex-col items-start sm:items-end text-left sm:text-right min-w-0"
         >
           <p
-            class="font-body text-xs sm:text-base md:text-lg lg:text-2xl font-black leading-snug tracking-tight text-space-base text-left sm:text-right uppercase"
+            class="font-body text-xs sm:text-base md:text-lg lg:text-2xl short:text-lg font-black leading-snug tracking-tight text-space-base text-left sm:text-right uppercase"
           >
             <span data-i18n="hero.manifestoRightLine1"
               >{ptBrDict.hero.manifestoRightLine1}</span
@@ -235,7 +235,7 @@ import P5Badge from "./p5/P5Badge.astro";
         </P5Panel>
         <div
           data-hero-socials
-          class="flex shrink-0 flex-col items-end gap-2"
+          class="flex shrink-0 flex-col items-end gap-2 short:flex-row"
           role="group"
           aria-label={ptBrDict.hero.socialAria}
           data-i18n="hero.socialAria"

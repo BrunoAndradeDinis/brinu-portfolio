@@ -37,8 +37,8 @@ const nameClass =
   "font-display font-extrabold leading-[0.88] tracking-[-0.02em] uppercase";
 const polygon = "[clip-path:polygon(0_1.5%,3%_0,100%_.8%,99.4%_100%,2%_99%)]";
 const card = `relative shrink-0 snap-start overflow-hidden border-[5px] border-space-base bg-space-base ${polygon}`;
-const sizeFirst = "h-[300px] w-[min(350px,calc(100vw-2rem))] md:h-[504px] md:w-[680px] lg:h-[580px] lg:w-[984px]";
-const sizeSecond = "h-[300px] w-[280px] md:h-[504px] md:w-[460px] lg:h-[580px] lg:w-[640px]";
+const sizeFirst = "h-[300px] w-[min(350px,calc(100vw-2rem))] md:h-[504px] md:w-[680px] lg:h-[580px] lg:w-[984px] short:h-full short:w-auto short:aspect-[984/580]";
+const sizeSecond = "h-[300px] w-[280px] md:h-[504px] md:w-[460px] lg:h-[580px] lg:w-[640px] short:h-full short:w-auto short:aspect-[640/580]";
 const tag =
   "absolute top-5 left-[22px] max-w-[calc(100%-44px)] bg-space-base px-3 py-1.5 font-mono text-xs font-bold tracking-[0.1em] text-paper-white uppercase";
 
@@ -110,13 +110,13 @@ const videoList = media.video
     >{layout.name}</p>
   </div>
 
-  <div data-showcase-stage class="flex h-[330px] border-b-4 border-space-base bg-paper-white md:h-[540px] lg:h-[620px]">
+  <div data-showcase-stage class="flex h-[330px] border-b-4 border-space-base bg-paper-white md:h-[540px] lg:h-[620px] short:h-[max(24rem,calc(100svh-13rem))]">
     <div data-showcase-rail class="hidden w-32 shrink-0 items-center justify-center border-r-4 border-space-base bg-bebop-red lg:flex">
       <span
         data-showcase-name
         aria-hidden="true"
-        style={`view-transition-name: case-title-${project.id}`}
-        class={`${nameClass} rotate-180 text-[45px] whitespace-nowrap [writing-mode:vertical-rl]`}
+        style={`view-transition-name: case-title-${project.id}; --rail-em: ${layout.name.length * 1.2}`}
+        class={`${nameClass} rotate-180 text-[45px] short:text-[length:min(45px,calc((100svh-15rem)/var(--rail-em)))] whitespace-nowrap [writing-mode:vertical-rl]`}
       >{layout.name}</span>
     </div>
     <div data-showcase-viewport class="relative min-w-0 flex-1 overflow-hidden">

@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* Desktop com pouca altura útil (ex.: notebook 1366×768 com a barra do navegador → 1366×641). */
+@custom-variant short (@media (min-width: 64rem) and (max-height: 45rem));
+
 @theme {
   --color-space-base: #080808;
   --color-space-surface-1: #0D0D0D;
