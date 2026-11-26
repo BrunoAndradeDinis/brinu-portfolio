@@ -308,8 +308,8 @@ test('C30: education lists the four approved entries with status', async () => {
       assert.deepEqual(courses.map((c) => c.trim()), expectedCourses[locale]);
       const periods = await page.locator('#about [data-education-period]').allInnerTexts();
       const expectedPeriods = {
-        'pt-br': ['nov/2024 – jun/2026', 'mai/2023 – dez/2024', 'jun/2025 – atual', 'mai/2022'],
-        en: ['Nov 2024 – Jun 2026', 'May 2023 – Dec 2024', 'Jun 2025 – present', 'May 2022'],
+        'pt-br': ['nov/2024 – jun/2026', 'mai/2023 – dez/2024', 'jun/2025 – atual', 'mai/2022 – fev/2023'],
+        en: ['Nov 2024 – Jun 2026', 'May 2023 – Dec 2024', 'Jun 2025 – present', 'May 2022 – Feb 2023'],
       };
       assert.deepEqual(periods.map((p) => p.trim().toLowerCase()), expectedPeriods[locale].map((p) => p.toLowerCase()));
     } finally {

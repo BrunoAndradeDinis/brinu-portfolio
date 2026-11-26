@@ -197,7 +197,7 @@ test('T4: education lists the four approved entries without fatec', () => {
     [['EBAC', 'Concluído'], ['Ampli - Anhanguera', 'Concluído'], ['Full Stack Club', 'Em andamento'], ['Alura', 'Concluído']]
   );
   assert.deepEqual(getLocalizedEducation('en').map((e) => e.status), ['Completed', 'Completed', 'In progress', 'Completed']);
-  assert.equal(getLocalizedEducation('pt-br').at(-1).period, 'mai/2022', 'Alura shows only its start');
+  assert.equal(getLocalizedEducation('pt-br').at(-1).period, 'mai/2022 – fev/2023', 'Alura shows its LinkedIn period');
   assert.doesNotMatch(fs.readFileSync('src/data/career.ts', 'utf8'), /fatec/i);
 });
 
